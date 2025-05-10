@@ -22,7 +22,7 @@ const DesktopNavigation: FC<Props> = ({ locale }) => {
 
   return (
     <nav className='mr-2 hidden gap-0 lg:inline-flex lg:items-center lg:justify-center lg:gap-0  lg:text-sm lg:font-semibold'>
-      <Link
+      {/* <Link
         lang={locale}
         href={`/conferences`}
         className={`group relative mx-2 font-semibold transition-colors duration-300 ease-in-out hover:text-button md:mx-4 ${isActive(`/${locale}/conferences`) ? 'text-button' : ''}`}
@@ -35,9 +35,9 @@ const DesktopNavigation: FC<Props> = ({ locale }) => {
               : 'scale-x-0 group-hover:scale-x-100'
           }`}
         ></span>
-      </Link>
+      </Link> */}
 
-      <Link
+      {/* <Link
         lang={locale}
         href={`/journals`}
         className={`group relative mx-2 font-semibold transition-colors duration-300 ease-in-out hover:text-button md:mx-4 ${isActive(`/${locale}/journals`) ? 'text-button' : ''}`}
@@ -50,9 +50,9 @@ const DesktopNavigation: FC<Props> = ({ locale }) => {
               : 'scale-x-0 group-hover:scale-x-100'
           }`}
         ></span>
-      </Link>
+      </Link> */}
 
-      <Link
+      {/* <Link
         lang={locale}
         href={`/visualization`}
         className={`group relative mx-2 font-semibold transition-colors duration-300 ease-in-out hover:text-button md:mx-4 ${isActive(`/${locale}/visualization`) ? 'text-button' : ''}`}
@@ -65,15 +65,14 @@ const DesktopNavigation: FC<Props> = ({ locale }) => {
               : 'scale-x-0 group-hover:scale-x-100'
           }`}
         ></span>
-      </Link>
+      </Link> */}
 
-      <Link
+      {/* <Link
         lang={locale}
         href={`/chatbot/landingchatbot`}
         className={`group relative mx-2 font-semibold transition-colors duration-300 ease-in-out hover:text-button md:mx-4 ${isActive(`/${locale}/chatbot`) ? 'text-button' : ''}`}
       >
         {t('Chatbot')}
-        {/* Thêm thẻ span cho chữ NEW */}
         <span className='mb-1 ml-1 inline-block rounded bg-button px-1.5 py-0.5 align-middle text-xs font-semibold text-button-text'>
           {t('NEW')}
         </span>
@@ -84,9 +83,9 @@ const DesktopNavigation: FC<Props> = ({ locale }) => {
               : 'scale-x-0 group-hover:scale-x-100'
           }`}
         ></span>
-      </Link>
+      </Link> */}
 
-      <Link
+      {/* <Link
         lang={locale}
         href={`/support`}
         className={`group relative mx-2 font-semibold transition-colors duration-300 ease-in-out hover:text-button md:mx-4 ${isActive(`/${locale}/support`) ? 'text-button' : ''}`}
@@ -99,9 +98,9 @@ const DesktopNavigation: FC<Props> = ({ locale }) => {
               : 'scale-x-0 group-hover:scale-x-100'
           }`}
         ></span>
-      </Link>
+      </Link> */}
 
-      <Link lang={locale} href={`/addconference`}>
+      {/* <Link lang={locale} href={`/addconference`}>
         <Button
           className={`group relative mx-2 font-semibold md:mx-4`}
           variant='primary'
@@ -109,7 +108,7 @@ const DesktopNavigation: FC<Props> = ({ locale }) => {
         >
           {t('Publish')}
         </Button>
-      </Link>
+      </Link> */}
 
       <div className=' font-semibold'>
         <ThemeSwitch />

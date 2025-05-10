@@ -169,45 +169,64 @@ const UserDropdown: FC<Props> = ({
               href={{ pathname: `/dashboard`, query: { tab: 'analysis' } }}
               locale={locale}
               className='block px-2 py-2 text-sm  hover:bg-gray-100  dark:hover:bg-gray-700'
-              onClick={handleLinkClick} // Chỉ truyền hàm xử lý click
+              onClick={handleLinkClick}
             >
               {t('Analysis')}
+            </Link>
+            <Link
+              href={{ pathname: `/dashboard`, query: { tab: 'moderation' } }}
+              locale={locale}
+              className='block px-2 py-2 text-sm  hover:bg-gray-100  dark:hover:bg-gray-700'
+              onClick={handleLinkClick}
+            >
+              {t('Moderation')}
+            </Link>
+            <Link
+              href={{
+                pathname: `/dashboard`,
+                query: { tab: 'requestadmintab' }
+              }}
+              locale={locale}
+              className='block px-2 py-2 text-sm  hover:bg-gray-100  dark:hover:bg-gray-700'
+              onClick={handleLinkClick}
+            >
+              {t('Request_Admin_Tab')}
             </Link>
             <Link
               href={{ pathname: `/dashboard`, query: { tab: 'profile' } }}
               locale={locale}
               className='block px-2 py-2 text-sm  hover:bg-gray-100  dark:hover:bg-gray-700'
-              onClick={handleLinkClick} // Chỉ truyền hàm xử lý click
+              onClick={handleLinkClick}
             >
               {t('Profile')}
             </Link>
-            <Link
+            {/* <Link
               href={{
                 pathname: `/dashboard`,
                 query: { tab: 'myconferences' }
               }}
               locale={locale}
               className='block px-2 py-2 text-sm  hover:bg-gray-100  dark:hover:bg-gray-700'
-              onClick={handleLinkClick} // Chỉ truyền hàm xử lý click
+              onClick={handleLinkClick}
             >
               {t('My_Conferences')}
-            </Link>
-            <Link
+            </Link> */}
+            {/* <Link
               href={{ pathname: `/dashboard`, query: { tab: 'followed' } }}
               locale={locale}
               className='block px-2 py-2 text-sm  hover:bg-gray-100  dark:hover:bg-gray-700'
-              onClick={handleLinkClick} // Chỉ truyền hàm xử lý click
+              onClick={handleLinkClick}
             >
               {t('Followed')}
-            </Link>
-            <Link
+            </Link> */}
+            {/* <Link
               href={{ pathname: `/dashboard`, query: { tab: 'note' } }}
               locale={locale}
               className='block px-2 py-2 text-sm  hover:bg-gray-100  dark:hover:bg-gray-700'
-              onClick={handleLinkClick} // Chỉ truyền hàm xử lý click
+              onClick={handleLinkClick}
             >
               {t('Note')}
-            </Link>
+            </Link> */}
             <Link
               href={{
                 pathname: `/dashboard`,
@@ -215,29 +234,29 @@ const UserDropdown: FC<Props> = ({
               }}
               locale={locale}
               className='block px-2 py-2 text-sm  hover:bg-gray-100  dark:hover:bg-gray-700'
-              onClick={handleLinkClick} // Chỉ truyền hàm xử lý click
+              onClick={handleLinkClick}
             >
               {t('Notifications')}
             </Link>
-            <Link
+            {/* <Link
               href={{
                 pathname: `/dashboard`,
                 query: { tab: 'blacklisted' }
               }}
               locale={locale}
               className='block px-2 py-2 text-sm  hover:bg-gray-100  dark:hover:bg-gray-700'
-              onClick={handleLinkClick} // Chỉ truyền hàm xử lý click
+              onClick={handleLinkClick}
             >
               {t('Blacklisted')}
-            </Link>
-            <Link
+            </Link> */}
+            {/* <Link
               href={{ pathname: `/dashboard`, query: { tab: 'setting' } }}
               locale={locale}
               className='block px-2 py-2 text-sm  hover:bg-gray-100  dark:hover:bg-gray-700'
-              onClick={handleLinkClick} // Chỉ truyền hàm xử lý click
+              onClick={handleLinkClick}
             >
               {t('Setting')}
-            </Link>
+            </Link> */}
 
             <hr className='my-1 border-gray-200 dark:border-gray-700' />
 

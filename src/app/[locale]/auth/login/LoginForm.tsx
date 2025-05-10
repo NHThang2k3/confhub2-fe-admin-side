@@ -217,7 +217,7 @@ const LoginForm: React.FC<LoginFormProps> = (props: LoginFormProps) => {
             </form>
 
             <div className='text-center text-sm'>
-              <div className='flex items-center justify-center space-x-1'>
+              {/* <div className='flex items-center justify-center space-x-1'>
                 <span className=''>{t('Dont_have_an_account')}</span>
                 <Link
                   href='/auth/register'
@@ -225,7 +225,7 @@ const LoginForm: React.FC<LoginFormProps> = (props: LoginFormProps) => {
                 >
                   {t('Sign_Up_Now')}
                 </Link>
-              </div>
+              </div> */}
               <div className='flex items-center justify-center space-x-1'>
                 <Link
                   href='/'

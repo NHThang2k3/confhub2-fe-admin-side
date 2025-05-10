@@ -103,16 +103,7 @@ export default function RootLayout({
           enableSystem
           attribute='class'
           defaultTheme='light'
-          themes={[
-            'light',
-            'dark',
-            'instagram',
-            'facebook',
-            'discord',
-            'netflix',
-            'twilight',
-            'reddit'
-          ]}
+          themes={['light', 'dark']}
         >
           {/* --- ToastContainer đặt ở đây --- */}
           {/* Có thể thêm props để tùy chỉnh, ví dụ: position, autoClose, theme */}

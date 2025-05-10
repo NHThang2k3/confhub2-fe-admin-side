@@ -25,16 +25,9 @@ const LangSwitcher: React.FC = () => {
   // --- Options array ---
   const options: Option[] = [
     { country: 'English', code: 'en', flagCode: 'gb' },
-    { country: 'Deutsch', code: 'de', flagCode: 'de' },
-    { country: 'Français', code: 'fr', flagCode: 'fr' },
+
     { country: 'Tiếng Việt', code: 'vi', flagCode: 'vn' },
-    { country: 'Español', code: 'es', flagCode: 'es' },
-    { country: 'Русский', code: 'ru', flagCode: 'ru' },
-    { country: '中文', code: 'zh', flagCode: 'cn' },
-    { country: '日本語', code: 'ja', flagCode: 'jp' },
-    { country: '한국어', code: 'ko', flagCode: 'kr' },
-    { country: 'العربية', code: 'ar', flagCode: 'sa' },
-    { country: 'فارسی', code: 'fa', flagCode: 'ir' }
+    { country: '中文', code: 'zh', flagCode: 'cn' }
   ]
   // --- End of options ---
 
