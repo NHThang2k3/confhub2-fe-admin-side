@@ -222,12 +222,9 @@ export default function Dashboard({ locale }: { locale: string }) {
   // Render chính
   return (
     <>
-
       <Header locale={locale} />
-
-
       <div
-        className='container mx-0 flex min-h-screen px-0'
+        className=' mx-0 flex min-h-screen px-0'
         style={{ paddingTop: `${HEADER_HEIGHT_PX}px` }} // Add padding equal to header height
       >
   
@@ -251,7 +248,7 @@ export default function Dashboard({ locale }: { locale: string }) {
                       flex w-full items-center py-2
                       transition-colors duration-500 ease-in-out
                       hover:bg-button hover:opacity-60 focus:outline-none active:bg-blue-700
-                      ${isSidebarOpen ? 'justify-start px-4' : 'justify-center px-0 md:px-4'} /* Adjust padding */
+                      ${isSidebarOpen ? 'justify-start px-4' : 'justify-center px-0 md:px-4'} 
                     `}
                 >
   
@@ -304,9 +301,7 @@ export default function Dashboard({ locale }: { locale: string }) {
 
         <div
           className={`
-              /* removed here, 
-              handled by parent
-              */ container flex min-h-screen flex-1 overflow-y-auto p-4 transition-all duration-300 ease-in-out
+                container flex min-h-screen flex-1 overflow-y-auto px-2 m-0 transition-all duration-300 ease-in-out 
             `}
         >
           {/* Render page based on activePage */}
