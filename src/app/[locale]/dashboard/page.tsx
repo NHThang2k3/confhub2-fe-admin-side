@@ -7,46 +7,32 @@ import { Link } from '@/src/navigation' // Assuming this is your next-intl Link
 import Analysis from './logAnalysis/Analysis'
 import Moderation from './moderation/Moderation'
 import RequestAdminTab from './requestAdminTab/RequestAdminTab'
-// import SettingTab from './setting/SettingTab'
 import NotificationsTab from './notification/NotificationsTab'
-// import FollowedTab from './follow/FollowedTab'
-// import BlacklistTab from './blacklist/BlacklistTab'
+
 import ProfileTab from './profile/ProfileTab'
-// import NoteTab from './note/NoteTab'
-// import MyConferencesTab from './myConferences/MyConferencesTab'
+
 import { Header } from '../utils/Header' // Assuming Header component handles its own width/centering
 
 export default function Dashboard({ locale }: { locale: string }) {
   const t = useTranslations('')
   const searchParams = useSearchParams()
   const [activePage, setActivePage] = useState<string>('')
-  // Sidebar starts closed on small screens, open on large screens
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
 
   // Logic cập nhật activePage dựa trên searchParams (giữ nguyên)
   useEffect(() => {
     const tab = searchParams.get('tab')
     let initialPage = 'Analysis' // Default
-    // if (tab === 'followed') initialPage = 'Followed'
     if (tab === 'profile') initialPage = 'Profile'
-    // else if (tab === 'myconferences') initialPage = 'My Conferences'
-    // else if (tab === 'note') initialPage = 'Note'
+
     else if (tab === 'notifications') initialPage = 'Notifications'
-    // else if (tab === 'blacklisted') initialPage = 'Blacklisted'
-    // else if (tab === 'setting') initialPage = 'Setting'
+   
     else if (tab === 'moderation') initialPage = 'Moderation'
     else if (tab === 'requestadmintab') initialPage = 'RequestAdminTab'
     else if (tab === 'analysis') initialPage = 'Analysis' // Ensure 'analysis' param works
 
     setActivePage(initialPage)
 
-    // Optional: On mobile, assume sidebar should be closed by default on navigation
-    // and needs a separate toggle (likely in the header).
-    // On desktop, maybe default to open? Or let state manage it.
-    // The current state manages it, initial is false. Let's keep it simple.
-    // If you want it open by default on desktop, you'd need a client-side check here.
-    // Example: if (typeof window !== 'undefined' && window.innerWidth > 768) { setIsSidebarOpen(true); }
-    // But this can cause hydration issues. Better to manage state or rely on user interaction.
   }, [searchParams])
 
   // Set initial sidebar state based on screen size after mount
@@ -164,7 +150,6 @@ export default function Dashboard({ locale }: { locale: string }) {
         </svg>
       )
     },
-
     {
       page: 'Notifications',
       label: t('Notifications'),
@@ -237,18 +222,15 @@ export default function Dashboard({ locale }: { locale: string }) {
   // Render chính
   return (
     <>
-      {/* Header component - Assume it's sticky/fixed and has its own width/centering */}
-      {/* The Header should likely also be contained, aligning with the container used below */}
+
       <Header locale={locale} />
 
-      {/* Container cho Sidebar và Main Content */}
-      {/* Added container mx-auto to center this section */}
-      {/* Used flex to place sidebar and content side-by-side */}
+
       <div
         className='container mx-0 flex min-h-screen px-0'
         style={{ paddingTop: `${HEADER_HEIGHT_PX}px` }} // Add padding equal to header height
       >
-        {/* Sidebar - Now a flex item */}
+  
         <aside
           className={`
             h-full flex-shrink-0 overflow-y-auto transition-all 
@@ -260,11 +242,9 @@ export default function Dashboard({ locale }: { locale: string }) {
         >
           <nav className='w-full'>
             <ul className='w-full'>
-              {/* Toggle Button */}
-              {/* Ẩn button trên mobile (w-0 state) */}
+   
               <li className='w-full'>
                 {' '}
-                {/* Keep as li for consistency */}
                 <button
                   onClick={toggleSidebar}
                   className={`
@@ -274,16 +254,13 @@ export default function Dashboard({ locale }: { locale: string }) {
                       ${isSidebarOpen ? 'justify-start px-4' : 'justify-center px-0 md:px-4'} /* Adjust padding */
                     `}
                 >
-                  {/* Icon and spacing */}
-                  {/* Icon is always visible on md+ when closed (w-16) */}
+  
                   <span className={isSidebarOpen ? 'mr-4' : ''}>
                     {isSidebarOpen ? closeIcon : openIcon}
                   </span>
-                  {/* Only show text when sidebar open AND not on mobile (w-0) */}
                   {isSidebarOpen && (
                     <span className='whitespace-nowrap'>{t('Close')}</span>
                   )}
-                  {/* For desktop closed (w-16), the button text is hidden by overflow-hidden */}
                 </button>
               </li>
 
@@ -313,11 +290,9 @@ export default function Dashboard({ locale }: { locale: string }) {
                       <span className={isSidebarOpen ? 'mr-4' : ''}>
                         {item.icon}
                       </span>
-                      {/* Only display text when sidebar is open */}
                       {isSidebarOpen && (
                         <span className='whitespace-nowrap'>{item.label}</span>
                       )}
-                      {/* When closed on desktop (md:w-16), text is hidden by parent overflow */}
                     </Link>
                   </li>
                 )
@@ -326,9 +301,7 @@ export default function Dashboard({ locale }: { locale: string }) {
           </nav>
         </aside>
 
-        {/* Main Content Area - Takes remaining space */}
-        {/* Removed margin-left, flex handles spacing */}
-        {/* Added padding for content spacing */}
+
         <div
           className={`
               /* removed here, 
@@ -340,7 +313,6 @@ export default function Dashboard({ locale }: { locale: string }) {
           {renderPage()}
         </div>
       </div>
-      {/* <Footer /> */}
     </>
   )
 }
