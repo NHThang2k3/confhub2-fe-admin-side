@@ -1,0 +1,5527 @@
+[
+  {
+    "testCaseId": "TC_Login_001",
+    "testCaseName": "Đăng nhập thành công với tài khoản hợp lệ",
+    "description": "Kiểm tra người dùng có thể đăng nhập vào hệ thống bằng cách nhập đúng Email và Mật khẩu.",
+    "preconditions": [
+      "Người dùng đã đăng ký một tài khoản hợp lệ.",
+      "Người dùng đang ở trang Đăng nhập (URL: /auth/login)."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhập Email hợp lệ vào trường 'Email'."
+      },
+      {
+        "stepNumber": 2,
+        "action": "Nhập Mật khẩu hợp lệ vào trường 'Password'."
+      },
+      {
+        "stepNumber": 3,
+        "action": "Nhấp vào nút 'Sign In'."
+      }
+    ],
+    "expectedResult": "Hệ thống chuyển hướng người dùng đến trang chủ (Homepage). Biểu tượng profile/avatar người dùng xuất hiện trên header.",
+    "actualResult": "",
+    "status": "",
+    "priority": "High",
+    "relatedRequirements": [
+      "YC_DN_001_DangNhap"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_Login_002",
+    "testCaseName": "Đăng nhập thất bại với mật khẩu không hợp lệ",
+    "description": "Kiểm tra hệ thống hiển thị thông báo lỗi khi người dùng nhập sai mật khẩu.",
+    "preconditions": [
+      "Người dùng đã đăng ký một tài khoản hợp lệ.",
+      "Người dùng đang ở trang Đăng nhập (URL: /auth/login)."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhập Email hợp lệ vào trường 'Email'."
+      },
+      {
+        "stepNumber": 2,
+        "action": "Nhập Mật khẩu *không* hợp lệ vào trường 'Password'."
+      },
+      {
+        "stepNumber": 3,
+        "action": "Nhấp vào nút 'Sign In'."
+      }
+    ],
+    "expectedResult": "Hệ thống hiển thị thông báo lỗi ('Wrong password' hoặc 'Sai mật khẩu'). Người dùng vẫn ở trang Đăng nhập.",
+    "actualResult": "",
+    "status": "",
+    "priority": "High",
+    "relatedRequirements": [
+      "YC_DN_002_SaiMatKhau"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_Login_003",
+    "testCaseName": "Đăng nhập thất bại với Email chưa đăng ký",
+    "description": "Kiểm tra hệ thống hiển thị thông báo lỗi khi người dùng nhập Email chưa tồn tại.",
+    "preconditions": [
+      "Người dùng đang ở trang Đăng nhập (URL: /auth/login)."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhập Email *chưa* đăng ký vào trường 'Email'."
+      },
+      {
+        "stepNumber": 2,
+        "action": "Nhập bất kỳ mật khẩu nào vào trường 'Password'."
+      },
+      {
+        "stepNumber": 3,
+        "action": "Nhấp vào nút 'Sign In'."
+      }
+    ],
+    "expectedResult": "Hệ thống hiển thị thông báo lỗi 'No email match'. Người dùng vẫn ở trang Đăng nhập.",
+    "actualResult": "",
+    "status": "",
+    "priority": "High",
+    "relatedRequirements": [
+      "YC_DN_003_EmailChuaDangKy"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_Login_004",
+    "testCaseName": "Đăng nhập thất bại khi để trống trường bắt buộc",
+    "description": "Kiểm tra hệ thống hiển thị thông báo lỗi khi để trống Email hoặc Mật khẩu.",
+    "preconditions": [
+      "Người dùng đang ở trang Đăng nhập (URL: /auth/login)."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Để trống trường 'Email'."
+      },
+      {
+        "stepNumber": 2,
+        "action": "Để trống trường 'Password'."
+      },
+      {
+        "stepNumber": 3,
+        "action": "Nhấp vào nút 'Sign In'."
+      }
+    ],
+    "expectedResult": "Hệ thống hiển thị thông báo lỗi validation dưới các trường bị trống ('Please fill out this field'). Người dùng vẫn ở trang Đăng nhập.",
+    "actualResult": "",
+    "status": "",
+    "priority": "High",
+    "relatedRequirements": [
+      "YC_DN_004_DeTrongTruong"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_Login_005",
+    "testCaseName": "Kiểm tra liên kết 'Forgot Password?'",
+    "description": "Kiểm tra liên kết 'Forgot Password?' hoạt động và chuyển hướng đúng trang.",
+    "preconditions": [
+      "Người dùng đang ở trang Đăng nhập (URL: /auth/login)."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhấp vào liên kết 'Forgot Password?'."
+      }
+    ],
+    "expectedResult": "Hệ thống chuyển hướng người dùng đến trang 'Quên mật khẩu'.",
+    "actualResult": "",
+    "status": "",
+    "priority": "Medium",
+    "relatedRequirements": [
+      "YC_DN_005_QuenMatKhau"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_Login_006",
+    "testCaseName": "Kiểm tra liên kết 'Sign Up Now'",
+    "description": "Kiểm tra liên kết 'Sign Up Now' hoạt động và chuyển hướng đúng trang.",
+    "preconditions": [
+      "Người dùng đang ở trang Đăng nhập (URL: /auth/login)."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhấp vào liên kết 'Sign Up Now'."
+      }
+    ],
+    "expectedResult": "Hệ thống chuyển hướng người dùng đến trang 'Đăng ký' (URL: /auth/register).",
+    "actualResult": "",
+    "status": "",
+    "priority": "Medium",
+    "relatedRequirements": [
+      "YC_DN_006_ChuyenTrangDangKy"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_Login_007",
+    "testCaseName": "Kiểm tra nút 'Continue with Google'",
+    "description": "Kiểm tra nút 'Continue with Google' kích hoạt luồng đăng nhập/đăng ký bằng Google.",
+    "preconditions": [
+      "Người dùng đang ở trang Đăng nhập (URL: /auth/login)."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhấp vào nút 'Continue with Google'."
+      }
+    ],
+    "expectedResult": "Hệ thống hiển thị cửa sổ popup hoặc chuyển hướng đến trang xác thực của Google để người dùng chọn tài khoản Google.",
+    "actualResult": "",
+    "status": "",
+    "priority": "High",
+    "relatedRequirements": [
+      "YC_DN_007_DangNhapGoogle"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_Register_001",
+    "testCaseName": "Đăng ký tài khoản thành công với dữ liệu hợp lệ",
+    "description": "Kiểm tra người dùng có thể tạo tài khoản mới khi nhập đầy đủ và hợp lệ các trường bắt buộc.",
+    "preconditions": [
+      "Người dùng đang ở trang Đăng ký (URL: /auth/register).",
+      "Địa chỉ Email chưa được sử dụng để đăng ký tài khoản khác."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhập First Name hợp lệ vào trường 'First Name'."
+      },
+      {
+        "stepNumber": 2,
+        "action": "Nhập Last Name hợp lệ vào trường 'Last Name'."
+      },
+      {
+        "stepNumber": 3,
+        "action": "Nhập/chọn Date of Birth hợp lệ vào trường 'Date of Birth'."
+      },
+      {
+        "stepNumber": 4,
+        "action": "Nhập Email hợp lệ và chưa tồn tại vào trường 'Email'."
+      },
+      {
+        "stepNumber": 5,
+        "action": "Nhập Mật khẩu hợp lệ vào trường 'Password'."
+      },
+      {
+        "stepNumber": 6,
+        "action": "Nhập lại Mật khẩu giống với trường 'Password' vào trường 'Confirm Password'."
+      },
+      {
+        "stepNumber": 7,
+        "action": "Nhấp vào nút 'Create account'."
+      }
+    ],
+    "expectedResult": "Hệ thống chuyển hướng đến trang xác thực tài khoản",
+    "actualResult": "",
+    "status": "",
+    "priority": "High",
+    "relatedRequirements": [
+      "YC_DK_001_DangKyThanhCong"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_Register_002",
+    "testCaseName": "Đăng ký thất bại khi để trống trường bắt buộc",
+    "description": "Kiểm tra hệ thống hiển thị thông báo lỗi khi bất kỳ trường bắt buộc nào bị bỏ trống.",
+    "preconditions": [
+      "Người dùng đang ở trang Đăng ký (URL: /auth/register)."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Để trống một trong các trường có dấu sao * (ví dụ: 'Email')."
+      },
+      {
+        "stepNumber": 2,
+        "action": "Điền đầy đủ các trường bắt buộc còn lại với dữ liệu hợp lệ."
+      },
+      {
+        "stepNumber": 3,
+        "action": "Nhấp vào nút 'Create account'."
+      }
+    ],
+    "expectedResult": "Hệ thống hiển thị thông báo lỗi validation dưới trường bị bỏ trống. Tài khoản không được tạo. Người dùng vẫn ở trang Đăng ký.",
+    "actualResult": "",
+    "status": "",
+    "priority": "High",
+    "relatedRequirements": [
+      "YC_DK_002_DeTrongTruong"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_Register_003",
+    "testCaseName": "Đăng ký thất bại với Email đã tồn tại",
+    "description": "Kiểm tra hệ thống hiển thị thông báo lỗi khi cố gắng đăng ký bằng Email đã có người sử dụng.",
+    "preconditions": [
+      "Người dùng đang ở trang Đăng ký (URL: /auth/register).",
+      "Một tài khoản khác đã tồn tại với địa chỉ Email này."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Điền đầy đủ các trường bắt buộc với dữ liệu hợp lệ, ngoại trừ trường 'Email'."
+      },
+      {
+        "stepNumber": 2,
+        "action": "Nhập một địa chỉ Email đã được sử dụng vào trường 'Email'."
+      },
+      {
+        "stepNumber": 3,
+        "action": "Nhấp vào nút 'Create account'."
+      }
+    ],
+    "expectedResult": "Hệ thống hiển thị thông báo lỗi 'User already exists'. Tài khoản không được tạo. Người dùng vẫn ở trang Đăng ký.",
+    "actualResult": "",
+    "status": "",
+    "priority": "High",
+    "relatedRequirements": [
+      "YC_DK_003_EmailTonTai"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_Register_004",
+    "testCaseName": "Đăng ký thất bại khi Mật khẩu và Xác nhận Mật khẩu không khớp",
+    "description": "Kiểm tra hệ thống hiển thị thông báo lỗi khi giá trị trong trường 'Password' và 'Confirm Password' không giống nhau.",
+    "preconditions": [
+      "Người dùng đang ở trang Đăng ký (URL: /auth/register)."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Điền đầy đủ các trường bắt buộc với dữ liệu hợp lệ, ngoại trừ trường 'Confirm Password'."
+      },
+      {
+        "stepNumber": 2,
+        "action": "Nhập giá trị trong trường 'Confirm Password' *khác* với giá trị trong trường 'Password'."
+      },
+      {
+        "stepNumber": 3,
+        "action": "Nhấp vào nút 'Create account'."
+      }
+    ],
+    "expectedResult": "Hệ thống hiển thị thông báo lỗi validation dưới trường 'Confirm Password' ('The passwords you entered do not match. Please re-enter your password.'). Tài khoản không được tạo. Người dùng vẫn ở trang Đăng ký.",
+    "actualResult": "",
+    "status": "",
+    "priority": "High",
+    "relatedRequirements": [
+      "YC_DK_004_MatKhauKhongKhop"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_Register_005",
+    "testCaseName": "Kiểm tra liên kết 'Sign In' trên trang Đăng ký",
+    "description": "Kiểm tra liên kết 'Sign In' hoạt động và chuyển hướng đúng trang.",
+    "preconditions": [
+      "Người dùng đang ở trang Đăng ký (URL: /auth/register)."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhấp vào liên kết 'Sign In'."
+      }
+    ],
+    "expectedResult": "Hệ thống chuyển hướng người dùng đến trang 'Đăng nhập' (URL: /auth/login).",
+    "actualResult": "",
+    "status": "",
+    "priority": "Medium",
+    "relatedRequirements": [
+      "YC_DK_005_ChuyenTrangDangNhap"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_Register_006",
+    "testCaseName": "Đăng ký thất bại khi ngày sinh hiện tại chưa đủ 18 tuổi trở lên",
+    "description": "Kiểm tra hệ thống hiển thị thông báo lỗi khi giá trị trong trường 'Date of Birth' tính đến hiện tại có đủ 18 tuổi",
+    "preconditions": [
+      "Người dùng đang ở trang Đăng ký (URL: /auth/register)."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Điền đầy đủ các trường bắt buộc với dữ liệu hợp lệ, ngoại trừ trường 'Date of Birth'."
+      },
+      {
+        "stepNumber": 2,
+        "action": "Nhập giá trị trong trường 'Date of Birth' với ngày sinh không hợp lệ ."
+      },
+      {
+        "stepNumber": 3,
+        "action": "Nhấp vào nút 'Create account'."
+      }
+    ],
+    "expectedResult": "Hệ thống hiển thị thông báo lỗi ('You must be at least 18 years old to use this service. Please check the age requirement and try again.'). Tài khoản không được tạo. Người dùng vẫn ở trang Đăng ký.",
+    "actualResult": "",
+    "status": "",
+    "priority": "High",
+    "relatedRequirements": [
+      "YC_DK_004_MatKhauKhongKhop"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_Register_007",
+    "testCaseName": "Đăng ký thất bại khi mật khẩu không đủ 8 kí tự",
+    "description": "Kiểm tra hệ thống hiển thị thông báo lỗi khi giá trị trong trường 'Password' không đủ 8 kí tự",
+    "preconditions": [
+      "Người dùng đang ở trang Đăng ký (URL: /auth/register)."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Điền đầy đủ các trường bắt buộc với dữ liệu hợp lệ, ngoại trừ trường 'Password'."
+      },
+      {
+        "stepNumber": 2,
+        "action": "Nhập giá trị trong trường 'Password' với mật khẩu không đủ 8 kí tự ."
+      },
+      {
+        "stepNumber": 3,
+        "action": "Nhấp vào nút 'Create account'."
+      }
+    ],
+    "expectedResult": "Hệ thống hiển thị thông báo lỗi ('Your password must be at least 8 characters long. Please enter a longer password.'). Tài khoản không được tạo. Người dùng vẫn ở trang Đăng ký.",
+    "actualResult": "",
+    "status": "",
+    "priority": "High",
+    "relatedRequirements": [
+      "YC_DK_004_MatKhauKhongKhop"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_Search_001",
+    "testCaseName": "Tìm kiếm Conferences theo từ khóa",
+    "description": "Kiểm tra kết quả tìm kiếm hiển thị đúng các conference chứa từ khóa đã nhập.",
+    "preconditions": [
+      "Người dùng đang ở trang Conferences Search (URL: /conferences)."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhập một từ khóa hợp lệ vào trường tìm kiếm chính."
+      },
+      {
+        "stepNumber": 2,
+        "action": "Nhấp vào nút 'Search'."
+      }
+    ],
+    "expectedResult": "Trang hiển thị danh sách các conference có chứa từ khóa đã nhập. Số lượng kết quả ('Conference Results (XXX)') cập nhật.",
+    "actualResult": "",
+    "status": "",
+    "priority": "High",
+    "relatedRequirements": [
+      "YC_TK_001_TimTheoTuKhoa"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_Search_001",
+    "testCaseName": "Tìm kiếm Conferences theo tiêu đề",
+    "description": "Kiểm tra kết quả tìm kiếm hiển thị đúng các conference chứa tiêu đề đã nhập.",
+    "preconditions": [
+      "Người dùng đang ở trang Conferences Search (URL: /conferences)."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Ấn vào ô 'Keyword', chọn 'Title' trong cửa sổ thả xuống"
+      },
+      {
+        "stepNumber": 2,
+        "action": "Nhập một tiêu đề hợp lệ vào trường tìm kiếm chính."
+      },
+      {
+        "stepNumber": 3,
+        "action": "Nhấp vào nút 'Search'."
+      }
+    ],
+    "expectedResult": "Trang hiển thị danh sách các conference có chứa tiêu đề đã nhập. Số lượng kết quả ('Conference Results (XXX)') cập nhật.",
+    "actualResult": "",
+    "status": "",
+    "priority": "High",
+    "relatedRequirements": [
+      "YC_TK_001_TimTheoTuKhoa"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_Search_001",
+    "testCaseName": "Tìm kiếm Conferences theo tên viết tắt",
+    "description": "Kiểm tra kết quả tìm kiếm hiển thị đúng các conference có tên viết tắt đã nhập.",
+    "preconditions": [
+      "Người dùng đang ở trang Conferences Search (URL: /conferences)."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Ấn vào ô 'Keyword', chọn 'Acronym' trong cửa sổ thả xuống"
+      },
+      {
+        "stepNumber": 2,
+        "action": "Nhập một tên viết tắt hợp lệ vào trường tìm kiếm chính."
+      },
+      {
+        "stepNumber": 3,
+        "action": "Nhấp vào nút 'Search'."
+      }
+    ],
+    "expectedResult": "Trang hiển thị danh sách các conference có tên viết tắt đã nhập. Số lượng kết quả ('Conference Results (XXX)') cập nhật.",
+    "actualResult": "",
+    "status": "",
+    "priority": "High",
+    "relatedRequirements": [
+      "YC_TK_001_TimTheoTuKhoa"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_Search_002",
+    "testCaseName": "Tìm kiếm Conferences với từ khóa không tồn tại",
+    "description": "Kiểm tra hệ thống hiển thị thông báo khi không tìm thấy kết quả cho từ khóa.",
+    "preconditions": [
+      "Người dùng đang ở trang Conferences Search (URL: /conferences)."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhập một từ khóa không tồn tại vào trường tìm kiếm chính."
+      },
+      {
+        "stepNumber": 2,
+        "action": "Nhấp vào nút 'Search'."
+      }
+    ],
+    "expectedResult": "Hệ thống hiển thị thông báo 'No results found'. Danh sách kết quả trống.",
+    "actualResult": "",
+    "status": "",
+    "priority": "Medium",
+    "relatedRequirements": [
+      "YC_TK_002_KhongCoKetQua"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_Search_003",
+    "testCaseName": "Tìm kiếm với trường trống",
+    "description": "Kiểm tra hành vi khi nhấp nút Search mà không nhập bất kỳ tiêu chí nào.",
+    "preconditions": [
+      "Người dùng đang ở trang Conferences Search (URL: /conferences).",
+      "Các trường tìm kiếm đều trống."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhấp vào nút 'Search'."
+      }
+    ],
+    "expectedResult": "Trang hiển thị lại danh sách đầy đủ tất cả các conference.",
+    "actualResult": "",
+    "status": "",
+    "priority": "Medium",
+    "relatedRequirements": [
+      "YC_TK_003_TimKiemTrong"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_Search_004",
+    "testCaseName": "Sử dụng nút Clear để xóa bộ lọc",
+    "description": "Kiểm tra nút 'Clear' xóa tất cả nội dung trong các trường tìm kiếm và hiển thị lại danh sách đầy đủ.",
+    "preconditions": [
+      "Người dùng đang ở trang Conferences Search (URL: /conferences).",
+      "Đã nhập dữ liệu vào ít nhất một trường tìm kiếm."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhấp vào nút 'Clear'."
+      }
+    ],
+    "expectedResult": "Tất cả các trường tìm kiếm (từ khóa, ngày, địa điểm, loại, các tìm kiếm nâng cao) được làm trống. Trang hiển thị lại danh sách đầy đủ tất cả các conference.",
+    "actualResult": "",
+    "status": "",
+    "priority": "Medium",
+    "relatedRequirements": [
+      "YC_TK_004_XoaBoLoc"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_Search_005",
+    "testCaseName": "Sắp xếp kết quả tìm kiếm theo Ngày",
+    "description": "Kiểm tra chức năng sắp xếp kết quả theo tiêu chí 'Date'.",
+    "preconditions": [
+      "Người dùng đang ở trang Conferences Search (URL: /conferences).",
+      "Có danh sách kết quả được hiển thị."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhấp vào dropdown 'Sort By'."
+      },
+      {
+        "stepNumber": 2,
+        "action": "Chọn tùy chọn 'Date'."
+      }
+    ],
+    "expectedResult": "Danh sách các conference được sắp xếp lại theo ngày (tăng dần hoặc giảm dần tùy theo quy định).",
+    "actualResult": "",
+    "status": "",
+    "priority": "Medium",
+    "relatedRequirements": [
+      "YC_TK_005_SapXepTheoNgay"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_Search_006",
+    "testCaseName": "Thay đổi số lượng kết quả hiển thị trên mỗi trang",
+    "description": "Kiểm tra chức năng 'Events per page' điều chỉnh số lượng conference hiển thị.",
+    "preconditions": [
+      "Người dùng đang ở trang Conferences Search (URL: /conferences).",
+      "Có nhiều hơn số lượng kết quả mặc định trên trang đầu tiên."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhấp vào dropdown 'Events per page'."
+      },
+      {
+        "stepNumber": 2,
+        "action": "Chọn một giá trị khác giá trị hiện tại (10, 20, 50, 100)."
+      }
+    ],
+    "expectedResult": "Số lượng conference hiển thị trên trang được cập nhật theo giá trị đã chọn. Các điều khiển phân trang (pagination) có thể thay đổi.",
+    "actualResult": "",
+    "status": "",
+    "priority": "Medium",
+    "relatedRequirements": [
+      "YC_TK_006_EventsPerPage"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_Search_007",
+    "testCaseName": "Chuyển hướng đến trang chi tiết Conference",
+    "description": "Kiểm tra khi nhấp vào tên hội nghị của một conference card, người dùng được đưa đến trang chi tiết của conference đó.",
+    "preconditions": [
+      "Người dùng đang ở trang Conferences Search (URL: /conferences).",
+      "Có ít nhất một conference hiển thị trong danh sách."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhấp vào tên hội nghị bất kỳ conference card nào trong danh sách kết quả."
+      }
+    ],
+    "expectedResult": "Hệ thống chuyển hướng người dùng đến trang chi tiết của conference đã nhấp.",
+    "actualResult": "",
+    "status": "",
+    "priority": "High",
+    "relatedRequirements": [
+      "YC_TK_007_XemChiTiet"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_Navigation_001",
+    "testCaseName": "Chuyển hướng đến trang Journals từ Header",
+    "description": "Kiểm tra liên kết 'Journals' trên header hoạt động.",
+    "preconditions": [
+      "Người dùng đang ở bất kỳ trang nào có hiển thị header."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhấp vào liên kết 'Journals' trên header."
+      }
+    ],
+    "expectedResult": "Hệ thống chuyển hướng người dùng đến trang Journals.",
+    "actualResult": "",
+    "status": "",
+    "priority": "Medium",
+    "relatedRequirements": [
+      "YC_Nav_001_Journals"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_Navigation_002",
+    "testCaseName": "Thay đổi ngôn ngữ từ Header",
+    "description": "Kiểm tra chức năng thay đổi ngôn ngữ trên header hoạt động.",
+    "preconditions": [
+      "Người dùng đang ở bất kỳ trang nào có hiển thị header.",
+      "Hệ thống hỗ trợ nhiều ngôn ngữ."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhấp vào dropdown chọn ngôn ngữ trên header (ví dụ: 'English')."
+      },
+      {
+        "stepNumber": 2,
+        "action": "Chọn một ngôn ngữ khác từ danh sách (ví dụ: chọn 'Vietnamese')."
+      }
+    ],
+    "expectedResult": "Giao diện trang hiện tại được cập nhật sang ngôn ngữ đã chọn.",
+    "actualResult": "",
+    "status": "",
+    "priority": "Medium",
+    "relatedRequirements": [
+      "YC_Nav_002_ChangeLanguage"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_Navigation_003",
+    "testCaseName": "Chuyển hướng đến trang Login từ Header (khi chưa đăng nhập)",
+    "description": "Kiểm tra nút 'Login' trên header (khi chưa đăng nhập) hoạt động.",
+    "preconditions": [
+      "Người dùng đang ở trang Homepage hoặc trang bất kỳ có header khi chưa đăng nhập."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhấp vào nút 'Login' trên header."
+      }
+    ],
+    "expectedResult": "Hệ thống chuyển hướng người dùng đến trang Đăng nhập (URL: /auth/login).",
+    "actualResult": "",
+    "status": "",
+    "priority": "High",
+    "relatedRequirements": [
+      "YC_Nav_003_HeaderLogin"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_Search_008",
+    "testCaseName": "Sử dụng phân trang để xem các kết quả tiếp theo",
+    "description": "Kiểm tra nút phân trang chuyển đến trang kết quả tiếp theo.",
+    "preconditions": [
+      "Người dùng đang ở trang Conferences Search (URL: /conferences).",
+      "Tổng số kết quả lớn hơn số lượng kết quả trên một trang."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhấp vào biểu tượng mũi tên 'Next page' trong phần phân trang."
+      }
+    ],
+    "expectedResult": "Trang hiển thị các conference của trang tiếp theo. URL có thể thay đổi tham số trang (ví dụ: ?page=2).",
+    "actualResult": "",
+    "status": "",
+    "priority": "Medium",
+    "relatedRequirements": [
+      "YC_TK_008_PhanTrang"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_Search_009",
+    "testCaseName": "Hiển thị các tùy chọn tìm kiếm nâng cao",
+    "description": "Kiểm tra liên kết 'Show advanced search options' hiển thị các trường lọc bổ sung.",
+    "preconditions": [
+      "Người dùng đang ở trang Conferences Search (URL: /conferences).",
+      "Các tùy chọn tìm kiếm nâng cao đang bị ẩn."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhấp vào liên kết 'Show advanced search options'."
+      }
+    ],
+    "expectedResult": "Các trường 'Submission Date', 'Publisher', 'Rank', 'Source', 'Avg. Score', 'Topics', 'Field of Research' xuất hiện dưới thanh tìm kiếm chính. Liên kết đổi thành 'Hide advanced search options'.",
+    "actualResult": "",
+    "status": "",
+    "priority": "Medium",
+    "relatedRequirements": [
+      "YC_TK_009_HienTimKiemNangCao"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_Search_010",
+    "testCaseName": "Ẩn các tùy chọn tìm kiếm nâng cao",
+    "description": "Kiểm tra liên kết 'Hide advanced search options' ẩn các trường lọc bổ sung.",
+    "preconditions": [
+      "Người dùng đang ở trang Conferences Search (URL: /conferences).",
+      "Các tùy chọn tìm kiếm nâng cao đang được hiển thị."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhấp vào liên kết 'Hide advanced search options'."
+      }
+    ],
+    "expectedResult": "Các trường 'Submission Date', 'Publisher', 'Rank', 'Source', 'Avg. Score', 'Topics', 'Field of Research' bị ẩn. Liên kết đổi thành 'Show advanced search options'.",
+    "actualResult": "",
+    "status": "",
+    "priority": "Medium",
+    "relatedRequirements": [
+      "YC_TK_010_AnTimKiemNangCao"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_Search_011",
+    "testCaseName": "Tìm kiếm Conferences theo Rank nâng cao",
+    "description": "Kiểm tra lọc kết quả theo Rank trong tùy chọn nâng cao.",
+    "preconditions": [
+      "Người dùng đang ở trang Conferences Search (URL: /conferences).",
+      "Các tùy chọn tìm kiếm nâng cao đang được hiển thị."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhập hoặc chọn một Rank (ví dụ: 'A*') vào trường 'Rank'."
+      },
+      {
+        "stepNumber": 2,
+        "action": "Nhấp vào nút 'Search'."
+      }
+    ],
+    "expectedResult": "Trang hiển thị danh sách các conference có Rank tương ứng (ví dụ: Conference Results (60)). Bộ lọc 'Rank: A*' xuất hiện phía trên danh sách. Số lượng kết quả cập nhật.",
+    "actualResult": "",
+    "status": "",
+    "priority": "High",
+    "relatedRequirements": [
+      "YC_TK_011_TimTheoRank"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_Search_012",
+    "testCaseName": "Tìm kiếm Conferences theo Loại (Type) - Basic Filter",
+    "description": "Kiểm tra lọc kết quả theo loại (Offline, Hybrid).",
+    "preconditions": [
+      "Người dùng đang ở trang Conferences Search (URL: /conferences)."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhấp vào dropdown 'Type'."
+      },
+      {
+        "stepNumber": 2,
+        "action": "Chọn một loại (ví dụ: 'Hybrid')."
+      },
+      {
+        "stepNumber": 3,
+        "action": "Nhấp vào nút 'Search'."
+      }
+    ],
+    "expectedResult": "Trang hiển thị danh sách các conference có Loại tương ứng (ví dụ: Conference Results (74)). Bộ lọc 'Type: Hybrid' xuất hiện phía trên danh sách. Số lượng kết quả cập nhật.",
+    "actualResult": "",
+    "status": "",
+    "priority": "High",
+    "relatedRequirements": [
+      "YC_TK_012_TimTheoType"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_Search_013",
+    "testCaseName": "Tìm kiếm Conferences theo Khoảng ngày (Date Range) - Basic Filter",
+    "description": "Kiểm tra lọc kết quả theo khoảng ngày bắt đầu và kết thúc của hội nghị.",
+    "preconditions": [
+      "Người dùng đang ở trang Conferences Search (URL: /conferences)."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhập ngày bắt đầu (ví dụ: '04/01/2025') vào trường 'Start: mm/dd/yyyy'."
+      },
+      {
+        "stepNumber": 2,
+        "action": "Nhập ngày kết thúc (ví dụ: '04/30/2025') vào trường 'End: mm/dd/yyyy'."
+      },
+      {
+        "stepNumber": 3,
+        "action": "Nhấp vào nút 'Search'."
+      }
+    ],
+    "expectedResult": "Trang hiển thị danh sách các conference diễn ra trong khoảng ngày đã nhập (ví dụ: Conference Results (61')). Bộ lọc 'Date=2025-04-01&Date=2025-04-30' xuất hiện trong URL. Số lượng kết quả cập nhật.",
+    "actualResult": "",
+    "status": "",
+    "priority": "High",
+    "relatedRequirements": [
+      "YC_TK_013_TimTheoKhoangNgay"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_Search_014",
+    "testCaseName": "Tìm kiếm Conferences theo Địa điểm (Location) - Basic Filter",
+    "description": "Kiểm tra lọc kết quả theo địa điểm.",
+    "preconditions": [
+      "Người dùng đang ở trang Conferences Search (URL: /conferences)."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhập địa điểm (ví dụ: 'Armenia') vào trường 'Location'."
+      },
+      {
+        "stepNumber": 2,
+        "action": "Nhấp vào nút 'Search'."
+      }
+    ],
+    "expectedResult": "Trang hiển thị danh sách các conference ở địa điểm tương ứng (ví dụ: Conference Results (1)). Bộ lọc 'Country=Armenia' xuất hiện trong URL. Số lượng kết quả cập nhật.",
+    "actualResult": "",
+    "status": "",
+    "priority": "High",
+    "relatedRequirements": [
+      "YC_TK_014_TimTheoDiaDiem"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_Search_015",
+    "testCaseName": "Tìm kiếm kết hợp nhiều bộ lọc",
+    "description": "Kiểm tra hệ thống xử lý tìm kiếm khi áp dụng nhiều bộ lọc cùng lúc (ví dụ: Từ khóa + Ngày + Rank).",
+    "preconditions": [
+      "Người dùng đang ở trang Conferences Search (URL: /conferences).",
+      "Các tùy chọn tìm kiếm nâng cao đang được hiển thị."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhập từ khóa (ví dụ: 'Computer')."
+      },
+      {
+        "stepNumber": 2,
+        "action": "Nhập ngày bắt đầu (ví dụ: '01/01/2025')."
+      },
+      {
+        "stepNumber": 3,
+        "action": "Nhập ngày kết thúc (ví dụ: '12/31/2025')."
+      },
+      {
+        "stepNumber": 4,
+        "action": "Nhập Rank (ví dụ: 'A') vào trường 'Rank'."
+      },
+      {
+        "stepNumber": 5,
+        "action": "Nhấp vào nút 'Search'."
+      }
+    ],
+    "expectedResult": "Trang hiển thị danh sách các conference thỏa mãn TẤT CẢ các tiêu chí đã lọc. Các bộ lọc tương ứng xuất hiện phía trên danh sách. Số lượng kết quả cập nhật.",
+    "actualResult": "",
+    "status": "",
+    "priority": "High",
+    "relatedRequirements": [
+      "YC_TK_015_KetHopBoLoc"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_Search_016",
+    "testCaseName": "Xóa một bộ lọc topic đã áp dụng",
+    "description": "Kiểm tra khi nhấp vào biểu tượng 'x' trên thẻ bộ lọc, bộ lọc đó bị gỡ bỏ và kết quả cập nhật.",
+    "preconditions": [
+      "Người dùng đang ở trang Conferences Search (URL: /conferences).",
+      "Đã áp dụng ít nhất một bộ lọc topic và thẻ bộ lọc hiển thị phía trên danh sách kết quả (ví dụ: 'Topics: Human-in-the-loop AI x')."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhấp vào biểu tượng 'x' trên thẻ bộ lọc muốn gỡ bỏ (ví dụ: thẻ 'Topics: Human-in-the-loop AI')."
+      },
+      {
+        "stepNumber": 2,
+        "action": "Nhấp vào nút 'Search'"
+      }
+    ],
+    "expectedResult": "Thẻ bộ lọc đã chọn bị gỡ bỏ. Danh sách kết quả cập nhật để chỉ áp dụng các bộ lọc còn lại (hoặc hiển thị tất cả nếu không còn bộ lọc nào). Số lượng kết quả cập nhật.",
+    "actualResult": "",
+    "status": "",
+    "priority": "High",
+    "relatedRequirements": [
+      "YC_TK_016_XoaMotBoLoc"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_Detail_001",
+    "testCaseName": "Hiển thị thông tin chi tiết Conference",
+    "description": "Kiểm tra trang chi tiết hiển thị đầy đủ các thông tin chính của conference.",
+    "preconditions": [
+      "Người dùng đang ở trang chi tiết của một conference cụ thể (URL: /conferences/detail?id=...). Ví dụ: 'ACM Conference on Computer Supported Cooperative Work'."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Truy cập trang chi tiết conference."
+      },
+      {
+        "stepNumber": 2,
+        "action": "Quan sát các thông tin hiển thị."
+      }
+    ],
+    "expectedResult": "Trang hiển thị các thông tin như Tiêu đề, Ngày, Địa điểm, Ratings, Publisher, Followers, Topics, Rank, Trạng thái (Offline/Online/Hybrid), và các tab (Overview, Important Dates,...).",
+    "actualResult": "",
+    "status": "",
+    "priority": "High",
+    "relatedRequirements": [
+      "YC_CT_001_HienThiThongTin"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_Detail_002",
+    "testCaseName": "Chuyển đổi giữa các tab thông tin",
+    "description": "Kiểm tra việc nhấp vào các tab khác nhau hiển thị nội dung tương ứng.",
+    "preconditions": [
+      "Người dùng đang ở trang chi tiết của một conference có nhiều tab thông tin."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhấp vào tab 'Important Dates'."
+      },
+      {
+        "stepNumber": 2,
+        "action": "Quan sát nội dung bên dưới các tab."
+      },
+      {
+        "stepNumber": 3,
+        "action": "Nhấp vào tab 'Call for papers'."
+      },
+      {
+        "stepNumber": 4,
+        "action": "Quan sát nội dung bên dưới các tab."
+      }
+    ],
+    "expectedResult": "Nội dung hiển thị bên dưới các tab thay đổi tương ứng với tab được chọn.",
+    "actualResult": "",
+    "status": "",
+    "priority": "Medium",
+    "relatedRequirements": [
+      "YC_CT_002_ChuyenTab"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_Detail_003",
+    "testCaseName": "Nhấp vào thẻ Topic",
+    "description": "Kiểm tra khi nhấp vào một thẻ Topic, người dùng được chuyển đến trang tìm kiếm lọc theo Topic đó.",
+    "preconditions": [
+      "Người dùng đang ở trang chi tiết của một conference có các thẻ Topic."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhấp vào một thẻ Topic bất kỳ (ví dụ: 'Computer-Supported Cooperative Work')."
+      }
+    ],
+    "expectedResult": "Hệ thống chuyển hướng người dùng đến trang tìm kiếm Conferences. Trường tìm kiếm 'Topics' được điền với Topic đã chọn. Danh sách kết quả hiển thị các conference liên quan đến Topic đó.",
+    "actualResult": "",
+    "status": "",
+    "priority": "High",
+    "relatedRequirements": [
+      "YC_CT_003_ClickTopic"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_Detail_004",
+    "testCaseName": "Sử dụng nút 'Follow'",
+    "description": "Kiểm tra chức năng 'Follow' conference.",
+    "preconditions": [
+      "Người dùng đã đăng nhập.",
+      "Người dùng đang ở trang chi tiết của một conference.",
+      "Conference hiện tại chưa được 'Follow'."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhấp vào nút 'Follow' ở sidebar bên phải."
+      }
+    ],
+    "expectedResult": "Nút 'Follow' thay đổi trạng thái/màu sắc (thành 'Followed'). Số lượng 'Followers' tăng lên 1. Hệ thống hiển thị thông báo xác nhận.",
+    "actualResult": "",
+    "status": "",
+    "priority": "High",
+    "relatedRequirements": [
+      "YC_CT_004_Follow"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_Detail_005",
+    "testCaseName": "Sử dụng nút 'Unfollow'",
+    "description": "Kiểm tra chức năng 'Unfollow' conference.",
+    "preconditions": [
+      "Người dùng đã đăng nhập.",
+      "Người dùng đang ở trang chi tiết của một conference.",
+      "Conference hiện tại đang được 'Follow'."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhấp vào nút 'Follow' (đang ở trạng thái 'Followed') ở sidebar bên phải."
+      }
+    ],
+    "expectedResult": "Nút 'Follow' thay đổi trạng thái/màu sắc trở lại ban đầu. Số lượng 'Followers' giảm xuống 1. Hệ thống có thể hiển thị thông báo xác nhận.",
+    "actualResult": "",
+    "status": "",
+    "priority": "High",
+    "relatedRequirements": [
+      "YC_CT_005_Unfollow"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_Detail_006",
+    "testCaseName": "Sử dụng nút 'Website'",
+    "description": "Kiểm tra nút 'Website' mở trang web chính thức của conference.",
+    "preconditions": [
+      "Người dùng đang ở trang chi tiết của một conference.",
+      "Conference này có thông tin URL trang web chính thức."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhấp vào nút 'Website' ở sidebar bên phải."
+      }
+    ],
+    "expectedResult": "Hệ thống mở một tab mới trên trình duyệt, điều hướng đến URL trang web chính thức của conference.",
+    "actualResult": "",
+    "status": "",
+    "priority": "High",
+    "relatedRequirements": [
+      "YC_CT_006_Website"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_Notifications_001",
+    "testCaseName": "Mở bảng thông báo",
+    "description": "Kiểm tra khi nhấp vào biểu tượng thông báo, bảng thông báo hiển thị.",
+    "preconditions": [
+      "Người dùng đã đăng nhập.",
+      "Biểu tượng thông báo hiển thị trên header."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhấp vào biểu tượng thông báo (hình quả chuông) trên header."
+      }
+    ],
+    "expectedResult": "Một bảng/popup thông báo xuất hiện, hiển thị danh sách các thông báo gần đây.",
+    "actualResult": "",
+    "status": "",
+    "priority": "High",
+    "relatedRequirements": [
+      "YC_TB_001_MoThongBao"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_Notifications_002",
+    "testCaseName": "Xem nội dung thông báo",
+    "description": "Kiểm tra thông báo hiển thị đúng nội dung (ví dụ: thông báo khi Follow conference).",
+    "preconditions": [
+      "Người dùng đã đăng nhập.",
+      "Có ít nhất một thông báo mới (ví dụ: sau khi Follow một conference).",
+      "Bảng thông báo đang mở."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Quan sát danh sách thông báo."
+      }
+    ],
+    "expectedResult": "Thông báo về việc 'You have followed the conference ACM Conference...' được hiển thị trong danh sách.",
+    "actualResult": "",
+    "status": "",
+    "priority": "High",
+    "relatedRequirements": [
+      "YC_TB_002_XemNoiDung"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_Notifications_003",
+    "testCaseName": "Đánh dấu tất cả thông báo là đã đọc",
+    "description": "Kiểm tra chức năng 'Mark All As Read' đánh dấu tất cả thông báo thành đã đọc.",
+    "preconditions": [
+      "Người dùng đã đăng nhập.",
+      "Có ít nhất một thông báo chưa đọc trong bảng thông báo.",
+      "Bảng thông báo đang mở."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhấp vào liên kết 'Mark All As Read'."
+      }
+    ],
+    "expectedResult": "Tất cả các thông báo trong danh sách được đánh dấu là đã đọc. Số lượng thông báo chưa đọc trên biểu tượng chuông trở về 0.",
+    "actualResult": "",
+    "status": "",
+    "priority": "High",
+    "relatedRequirements": [
+      "YC_TB_003_MarkAllRead"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_Notifications_004",
+    "testCaseName": "Chuyển hướng từ thông báo",
+    "description": "Kiểm tra khi nhấp vào một thông báo, người dùng được chuyển hướng đến trang liên quan.",
+    "preconditions": [
+      "Người dùng đã đăng nhập.",
+      "Có ít nhất một thông báo hiển thị trong bảng thông báo (ví dụ: thông báo Follow conference).",
+      "Bảng thông báo đang mở."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhấp vào nội dung của thông báo (ví dụ: dòng 'You have followed the conference...')."
+      }
+    ],
+    "expectedResult": "Hệ thống chuyển hướng người dùng đến trang chi tiết của conference được nhắc đến trong thông báo.",
+    "actualResult": "",
+    "status": "",
+    "priority": "High",
+    "relatedRequirements": [
+      "YC_TB_004_ChuyenHuong"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_Notifications_005",
+    "testCaseName": "Chuyển hướng đến trang 'View all' thông báo",
+    "description": "Kiểm tra khi nhấp vào liên kết 'View all', người dùng được chuyển hướng đến trang hiển thị tất cả thông báo.",
+    "preconditions": [
+      "Người dùng đã đăng nhập.",
+      "Bảng thông báo đang mở."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhấp vào liên kết 'View all' ở cuối bảng thông báo."
+      }
+    ],
+    "expectedResult": "Hệ thống chuyển hướng người dùng đến một trang riêng hiển thị danh sách đầy đủ các thông báo.",
+    "actualResult": "",
+    "status": "",
+    "priority": "Medium",
+    "relatedRequirements": [
+      "YC_TB_005_ViewAll"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_Detail_007",
+    "testCaseName": "Sử dụng nút 'Blacklist'",
+    "description": "Kiểm tra chức năng 'Blacklist' conference.",
+    "preconditions": [
+      "Người dùng đã đăng nhập.",
+      "Người dùng đang ở trang chi tiết của một conference.",
+      "Conference hiện tại chưa bị 'Blacklist'. Nút hiển thị là 'Blacklist'."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhấp vào nút 'Blacklist' ở sidebar bên phải."
+      }
+    ],
+    "expectedResult": "Nút 'Blacklist' thay đổi thành 'Blacklisted'. Hệ thống có thể hiển thị thông báo xác nhận (ví dụ: popup notification 'You have added the conference... to blacklist'). Conference này không xuất hiện trong kết quả tìm kiếm mặc định của người dùng.",
+    "actualResult": "",
+    "status": "",
+    "priority": "High",
+    "relatedRequirements": [
+      "YC_CT_007_Blacklist"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_Detail_008",
+    "testCaseName": "Sử dụng nút 'Blacklisted' (để bỏ Blacklist)",
+    "description": "Kiểm tra chức năng bỏ 'Blacklist' conference.",
+    "preconditions": [
+      "Người dùng đã đăng nhập.",
+      "Người dùng đang ở trang chi tiết của một conference.",
+      "Conference hiện tại đang bị 'Blacklist'. Nút hiển thị là 'Blacklisted'."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhấp vào nút 'Blacklisted' ở sidebar bên phải."
+      }
+    ],
+    "expectedResult": "Nút 'Blacklisted' thay đổi thành 'Blacklist'. Hệ thống có thể hiển thị thông báo xác nhận (ví dụ: popup notification 'You have removed the conference... from blacklist'). Conference này xuất hiện lại trong kết quả tìm kiếm mặc định của người dùng.",
+    "actualResult": "",
+    "status": "",
+    "priority": "High",
+    "relatedRequirements": [
+      "YC_CT_008_RemoveBlacklist"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_Detail_009",
+    "testCaseName": "Sử dụng nút 'Calendar'",
+    "description": "Kiểm tra chức năng 'Calendar' để thêm conference vào lịch cá nhân.",
+    "preconditions": [
+      "Người dùng đã đăng nhập.",
+      "Người dùng đang ở trang chi tiết của một conference."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhấp vào nút 'Calendar' ở sidebar bên phải."
+      }
+    ],
+    "expectedResult": "Hệ thống thêm hội nghị này lịch cá nhân của người dùng trên hệ thống. Hệ thống hiển thị thông báo xác nhận (ví dụ: popup notification 'You have added the conference... to your calendar').",
+    "actualResult": "",
+    "status": "",
+    "priority": "High",
+    "relatedRequirements": [
+      "YC_CT_009_Calendar"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_Detail_010",
+    "testCaseName": "Sử dụng nút 'Share'",
+    "description": "Kiểm tra chức năng 'Share' conference.",
+    "preconditions": [
+      "Người dùng đang ở trang chi tiết của một conference."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhấp vào nút 'Share' ở sidebar bên phải."
+      }
+    ],
+    "expectedResult": "Hệ thống hiển thị một cửa sổ popup với các tùy chọn chia sẻ (ví dụ: Copy Link, Chia sẻ qua mạng xã hội, Email,...).",
+    "actualResult": "",
+    "status": "",
+    "priority": "Medium",
+    "relatedRequirements": [
+      "YC_CT_010_Share"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_Detail_011",
+    "testCaseName": "Sử dụng nút 'Update'",
+    "description": "Kiểm tra chức năng 'Update'",
+    "preconditions": [
+      "Người dùng đã đăng nhập.",
+      "Người dùng đang ở trang chi tiết của một conference."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhấp vào nút 'Update' ở sidebar bên phải."
+      }
+    ],
+    "expectedResult": "Các thông tin chi tiết của hội nghị được cập nhất mới nhất từ trang chính thức của hội nghị",
+    "actualResult": "",
+    "status": "",
+    "priority": "Medium",
+    "relatedRequirements": [
+      "YC_CT_011_Update"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_Feedback_001",
+    "testCaseName": "Hiển thị phần Feedback",
+    "description": "Kiểm tra phần hiển thị đánh giá trung bình, biểu đồ rating và danh sách review.",
+    "preconditions": [
+      "Người dùng đang ở trang chi tiết của một conference.",
+      "Phần Feedback hiển thị (có thể là một tab phụ hoặc phần scrollable)."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Cuộn xuống hoặc chuyển đến phần Feedback."
+      },
+      {
+        "stepNumber": 2,
+        "action": "Quan sát nội dung hiển thị."
+      }
+    ],
+    "expectedResult": "Phần Feedback hiển thị rating trung bình, số lượng reviews, biểu đồ phân bổ rating (1-5 sao) và danh sách các review đã được đăng.",
+    "actualResult": "",
+    "status": "",
+    "priority": "High",
+    "relatedRequirements": [
+      "YC_FB_001_HienThiFeedback"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_Feedback_002",
+    "testCaseName": "Gửi Feedback thành công (Rating và Comment)",
+    "description": "Kiểm tra người dùng có thể gửi đánh giá bằng cách chọn sao và nhập comment.",
+    "preconditions": [
+      "Người dùng đã đăng nhập.",
+      "Người dùng đang ở phần Feedback của conference.",
+      "Người dùng chưa gửi feedback cho conference này."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Chọn số sao trong phần 'Rate the Conference' (ví dụ: 5 sao)."
+      },
+      {
+        "stepNumber": 2,
+        "action": "Nhập nội dung vào ô 'Write your feedback...' (ví dụ: 'Tuyệt vời!')."
+      },
+      {
+        "stepNumber": 3,
+        "action": "Nhấp vào nút 'Post Feedback'."
+      }
+    ],
+    "expectedResult": "Feedback được gửi thành công. Feedback mới xuất hiện trong danh sách review. Average rating và biểu đồ phân bổ rating được cập nhật. Hệ thống có thể hiển thị thông báo gửi thành công.",
+    "actualResult": "",
+    "status": "",
+    "priority": "High",
+    "relatedRequirements": [
+      "YC_FB_002_GuiFeedback"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_Feedback_005",
+    "testCaseName": "Lọc Review theo Rating",
+    "description": "Kiểm tra chức năng lọc review theo số sao.",
+    "preconditions": [
+      "Người dùng đang ở phần Feedback của conference.",
+      "Có nhiều review với rating khác nhau."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhấp vào dropdown 'All Feedback'."
+      },
+      {
+        "stepNumber": 2,
+        "action": "Chọn một tùy chọn lọc theo số sao (ví dụ: '5 Stars')."
+      }
+    ],
+    "expectedResult": "Danh sách review được cập nhật chỉ hiển thị các review có số sao tương ứng.",
+    "actualResult": "",
+    "status": "",
+    "priority": "Medium",
+    "relatedRequirements": [
+      "YC_FB_005_LocTheoRating"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_Feedback_006",
+    "testCaseName": "Sắp xếp Review theo tiêu chí",
+    "description": "Kiểm tra chức năng sắp xếp review theo 'Recently Added' và 'Highest Rated'.",
+    "preconditions": [
+      "Người dùng đang ở phần Feedback của conference.",
+      "Có nhiều review với thời gian hoặc rating khác nhau."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhấp vào dropdown 'Recently Added'."
+      },
+      {
+        "stepNumber": 2,
+        "action": "Chọn tùy chọn 'Highest Rated'."
+      },
+      {
+        "stepNumber": 3,
+        "action": "Quan sát danh sách review."
+      },
+      {
+        "stepNumber": 4,
+        "action": "Nhấp lại vào dropdown sắp xếp."
+      },
+      {
+        "stepNumber": 5,
+        "action": "Chọn tùy chọn 'Recently Added'."
+      },
+      {
+        "stepNumber": 6,
+        "action": "Quan sát danh sách review."
+      }
+    ],
+    "expectedResult": "Danh sách review được sắp xếp lại theo tiêu chí đã chọn ('Highest Rated' hoặc 'Recently Added').",
+    "actualResult": "",
+    "status": "",
+    "priority": "Medium",
+    "relatedRequirements": [
+      "YC_FB_006_SapXepReview"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_Feedback_007",
+    "testCaseName": "Hiển thị Feedback khi chưa có Review",
+    "description": "Kiểm tra giao diện phần Feedback khi chưa có bất kỳ review nào.",
+    "preconditions": [
+      "Người dùng đang ở phần Feedback của một conference chưa có review nào."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Cuộn xuống hoặc chuyển đến phần Feedback."
+      },
+      {
+        "stepNumber": 2,
+        "action": "Quan sát nội dung hiển thị."
+      }
+    ],
+    "expectedResult": "Average rating hiển thị 0.0 và 'Based on 0 reviews'. Biểu đồ phân bổ rating hiển thị tất cả là 0. Danh sách review hiển thị thông báo 'No feedback yet'. Form gửi feedback vẫn hiển thị.",
+    "actualResult": "",
+    "status": "",
+    "priority": "Low",
+    "relatedRequirements": [
+      "YC_FB_007_KhongCoReview"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_Notifications_001",
+    "testCaseName": "Mở bảng thông báo",
+    "description": "Kiểm tra khi nhấp vào biểu tượng thông báo, bảng thông báo hiển thị.",
+    "preconditions": [
+      "Người dùng đã đăng nhập.",
+      "Biểu tượng thông báo hiển thị trên header."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhấp vào biểu tượng thông báo (hình quả chuông) trên header."
+      }
+    ],
+    "expectedResult": "Một bảng/popup thông báo xuất hiện dưới biểu tượng chuông, hiển thị danh sách các thông báo gần đây.",
+    "actualResult": "",
+    "status": "",
+    "priority": "High",
+    "relatedRequirements": [
+      "YC_TB_001_MoThongBao"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_Notifications_002",
+    "testCaseName": "Xem nội dung và trạng thái thông báo",
+    "description": "Kiểm tra thông báo hiển thị đúng nội dung và trạng thái (mới/đã đọc).",
+    "preconditions": [
+      "Người dùng đã đăng nhập.",
+      "Có các thông báo mới và cũ trong hệ thống.",
+      "Bảng thông báo đang mở."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Quan sát danh sách thông báo trong bảng."
+      }
+    ],
+    "expectedResult": "Các thông báo được hiển thị với nội dung phù hợp (ví dụ: 'You have added...', 'You have followed...', 'You have unfollowed...', 'You have removed...', 'You have feedback about...'). Các thông báo mới được đánh dấu (ví dụ: chữ 'NEW' hoặc màu nền khác).",
+    "actualResult": "",
+    "status": "",
+    "priority": "High",
+    "relatedRequirements": [
+      "YC_TB_002_XemNoiDung"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_Navigation_004",
+    "testCaseName": "Mở dropdown menu từ biểu tượng User",
+    "description": "Kiểm tra khi nhấp vào biểu tượng user, menu chứa các liên kết Dashboard/Profile hiển thị.",
+    "preconditions": [
+      "Người dùng đã đăng nhập.",
+      "Biểu tượng user (có avatar) hiển thị trên header."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhấp vào biểu tượng user trên header."
+      }
+    ],
+    "expectedResult": "Một dropdown menu xuất hiện, hiển thị tên người dùng (ví dụ: 'Hello DONG QUAN') và các liên kết điều hướng đến các mục trong Dashboard (Profile, My Conferences, Followed, Note, Notifications, Blacklisted, Setting, Logout).",
+    "actualResult": "",
+    "status": "",
+    "priority": "High",
+    "relatedRequirements": [
+      "YC_Nav_004_UserMenu"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_Navigation_005",
+    "testCaseName": "Đăng xuất từ User menu",
+    "description": "Kiểm tra chức năng đăng xuất thông qua dropdown menu user.",
+    "preconditions": [
+      "Người dùng đã đăng nhập.",
+      "Dropdown menu user đang mở."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhấp vào liên kết 'Logout' trong dropdown menu user."
+      }
+    ],
+    "expectedResult": "Người dùng được đăng xuất thành công. Hệ thống chuyển hướng người dùng đến trang chủ (với nút Login/Sign In hiển thị). Session của người dùng bị hủy.",
+    "actualResult": "",
+    "status": "",
+    "priority": "High",
+    "relatedRequirements": [
+      "YC_Nav_005_Logout"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_DashboardNav_001",
+    "testCaseName": "Chuyển đến trang Analysis từ Sidebar",
+    "description": "Kiểm tra liên kết 'Analysis' trên sidebar chuyển hướng đến trang Analysis.",
+    "preconditions": [
+      "Người dùng đã đăng nhập.",
+      "Sidebar đang hiển thị."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhấp vào liên kết 'Analysis' trên sidebar."
+      }
+    ],
+    "expectedResult": "Nội dung trang Dashboard thay đổi để hiển thị phần 'Analysis'. URL có thể thay đổi (ví dụ: /dashboard?tab=analysis).",
+    "actualResult": "",
+    "status": "",
+    "priority": "Medium",
+    "relatedRequirements": [
+      "YC_DashNav_001_Analysis"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_DashboardNav_002",
+    "testCaseName": "Chuyển đến trang Profile từ Sidebar",
+    "description": "Kiểm tra liên kết 'Profile' trên sidebar chuyển hướng đến trang Profile.",
+    "preconditions": [
+      "Người dùng đã đăng nhập.",
+      "Sidebar đang hiển thị."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhấp vào liên kết 'Profile' trên sidebar."
+      }
+    ],
+    "expectedResult": "Nội dung trang Dashboard thay đổi để hiển thị phần 'Profile'. URL có thể thay đổi (ví dụ: /dashboard?tab=profile).",
+    "actualResult": "",
+    "status": "",
+    "priority": "High",
+    "relatedRequirements": [
+      "YC_DashNav_002_Profile"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_DashboardNav_003",
+    "testCaseName": "Chuyển đến trang Followed từ Sidebar",
+    "description": "Kiểm tra liên kết 'Followed' trên sidebar chuyển hướng đến trang Followed Conferences.",
+    "preconditions": [
+      "Người dùng đã đăng nhập.",
+      "Sidebar đang hiển thị."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhấp vào liên kết 'Followed' trên sidebar."
+      }
+    ],
+    "expectedResult": "Nội dung trang Dashboard thay đổi để hiển thị phần 'Followed Conferences'. URL có thể thay đổi (ví dụ: /dashboard?tab=followed).",
+    "actualResult": "",
+    "status": "",
+    "priority": "High",
+    "relatedRequirements": [
+      "YC_DashNav_003_Followed"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_DashboardNav_004",
+    "testCaseName": "Chuyển đến trang My Conferences từ Sidebar",
+    "description": "Kiểm tra liên kết 'My Conferences' trên sidebar chuyển hướng đến trang quản lý conferences cá nhân.",
+    "preconditions": [
+      "Người dùng đã đăng nhập.",
+      "Sidebar đang hiển thị."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhấp vào liên kết 'My Conferences' trên sidebar."
+      }
+    ],
+    "expectedResult": "Nội dung trang Dashboard thay đổi để hiển thị phần 'My Conferences'. URL có thể thay đổi (ví dụ: /dashboard?tab=myconferences). Mặc định hiển thị tab 'Pending'.",
+    "actualResult": "",
+    "status": "",
+    "priority": "High",
+    "relatedRequirements": [
+      "YC_DashNav_004_MyConferences"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_DashboardNav_005",
+    "testCaseName": "Chuyển đến trang Note từ Sidebar",
+    "description": "Kiểm tra liên kết 'Note' trên sidebar chuyển hướng đến trang ghi chú/sự kiện.",
+    "preconditions": [
+      "Người dùng đã đăng nhập.",
+      "Sidebar đang hiển thị."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhấp vào liên kết 'Note' trên sidebar."
+      }
+    ],
+    "expectedResult": "Nội dung trang Dashboard thay đổi để hiển thị phần 'Note'. URL có thể thay đổi (ví dụ: /dashboard?tab=note).",
+    "actualResult": "",
+    "status": "",
+    "priority": "Medium",
+    "relatedRequirements": [
+      "YC_DashNav_005_Note"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_DashboardNav_006",
+    "testCaseName": "Chuyển đến trang Notifications từ Sidebar",
+    "description": "Kiểm tra liên kết 'Notifications' trên sidebar chuyển hướng đến trang quản lý thông báo đầy đủ.",
+    "preconditions": [
+      "Người dùng đã đăng nhập.",
+      "Sidebar đang hiển thị."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhấp vào liên kết 'Notifications' trên sidebar."
+      }
+    ],
+    "expectedResult": "Nội dung trang Dashboard thay đổi để hiển thị phần 'Notifications'. URL có thể thay đổi (ví dụ: /dashboard?tab=notifications).",
+    "actualResult": "",
+    "status": "",
+    "priority": "High",
+    "relatedRequirements": [
+      "YC_DashNav_006_Notifications"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_DashboardNav_007",
+    "testCaseName": "Chuyển đến trang Blacklisted từ Sidebar",
+    "description": "Kiểm tra liên kết 'Blacklisted' trên sidebar chuyển hướng đến trang danh sách conference bị blacklist.",
+    "preconditions": [
+      "Người dùng đã đăng nhập.",
+      "Sidebar đang hiển thị."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhấp vào liên kết 'Blacklisted' trên sidebar."
+      }
+    ],
+    "expectedResult": "Nội dung trang Dashboard thay đổi để hiển thị phần 'Blacklisted Conferences'. URL có thể thay đổi (ví dụ: /dashboard?tab=blacklisted).",
+    "actualResult": "",
+    "status": "",
+    "priority": "High",
+    "relatedRequirements": [
+      "YC_DashNav_007_Blacklisted"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_DashboardNav_008",
+    "testCaseName": "Chuyển đến trang Setting từ Sidebar",
+    "description": "Kiểm tra liên kết 'Setting' trên sidebar chuyển hướng đến trang cài đặt.",
+    "preconditions": [
+      "Người dùng đã đăng nhập.",
+      "Sidebar đang hiển thị."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhấp vào liên kết 'Setting' trên sidebar."
+      }
+    ],
+    "expectedResult": "Nội dung trang Dashboard thay đổi để hiển thị phần 'Setting'. URL có thể thay đổi (ví dụ: /dashboard?tab=setting).",
+    "actualResult": "",
+    "status": "",
+    "priority": "High",
+    "relatedRequirements": [
+      "YC_DashNav_008_Setting"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_DashboardNav_009",
+    "testCaseName": "Đóng Sidebar",
+    "description": "Kiểm tra nút 'Close' ở đầu sidebar ẩn sidebar.",
+    "preconditions": [
+      "Người dùng đã đăng nhập.",
+      "Sidebar đang hiển thị."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhấp vào biểu tượng 'Close' (hình chữ X) ở góc trên bên trái của sidebar."
+      }
+    ],
+    "expectedResult": "Sidebar bị ẩn đi, nội dung chính của trang có thể mở rộng ra. Biểu tượng để mở lại sidebar sẽ hiển thị.",
+    "actualResult": "",
+    "status": "",
+    "priority": "Low",
+    "relatedRequirements": [
+      "YC_DashNav_009_CloseSidebar"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_MyConferences_001",
+    "testCaseName": "Xem danh sách Conference ở trạng thái Pending",
+    "description": "Kiểm tra trang My Conferences hiển thị các conference đang chờ duyệt.",
+    "preconditions": [
+      "Người dùng đã đăng nhập và đang ở trang My Conferences (URL: /dashboard?tab=myconferences).",
+      "Người dùng có các conference ở trạng thái Pending."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Đảm bảo tab 'Pending' đang được chọn (hoặc nhấp vào tab 'Pending')."
+      },
+      {
+        "stepNumber": 2,
+        "action": "Quan sát danh sách các conference hiển thị."
+      }
+    ],
+    "expectedResult": "Trang hiển thị danh sách các conference có trạng thái 'Pending'. Nếu không có, hiển thị thông báo 'You do not have any conferences in this category yet.'.",
+    "actualResult": "",
+    "status": "",
+    "priority": "High",
+    "relatedRequirements": [
+      "YC_MyConf_001_Pending"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_MyConferences_002",
+    "testCaseName": "Xem danh sách Conference ở trạng thái Approved",
+    "description": "Kiểm tra khi nhấp vào tab 'Approved', trang hiển thị các conference đã được duyệt.",
+    "preconditions": [
+      "Người dùng đã đăng nhập và đang ở trang My Conferences (URL: /dashboard?tab=myconferences).",
+      "Người dùng có các conference ở trạng thái Approved."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhấp vào tab 'Approved'."
+      },
+      {
+        "stepNumber": 2,
+        "action": "Quan sát danh sách các conference hiển thị."
+      }
+    ],
+    "expectedResult": "Nội dung trang thay đổi để hiển thị danh sách các conference có trạng thái 'Approved'. Nếu không có, hiển thị thông báo phù hợp.",
+    "actualResult": "",
+    "status": "",
+    "priority": "High",
+    "relatedRequirements": [
+      "YC_MyConf_002_Approved"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_MyConferences_003",
+    "testCaseName": "Xem danh sách Conference ở trạng thái Rejected",
+    "description": "Kiểm tra khi nhấp vào tab 'Rejected', trang hiển thị các conference đã bị từ chối.",
+    "preconditions": [
+      "Người dùng đã đăng nhập và đang ở trang My Conferences (URL: /dashboard?tab=myconferences).",
+      "Người dùng có các conference ở trạng thái Rejected."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhấp vào tab 'Rejected'."
+      },
+      {
+        "stepNumber": 2,
+        "action": "Quan sát danh sách các conference hiển thị."
+      }
+    ],
+    "expectedResult": "Nội dung trang thay đổi để hiển thị danh sách các conference có trạng thái 'Rejected'. Nếu không có, hiển thị thông báo phù hợp.",
+    "actualResult": "",
+    "status": "",
+    "priority": "High",
+    "relatedRequirements": [
+      "YC_MyConf_003_Rejected"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_MyConferences_004",
+    "testCaseName": "Sử dụng nút 'Add Conference'",
+    "description": "Kiểm tra nút 'Add Conference' chuyển hướng đến form thêm conference mới.",
+    "preconditions": [
+      "Người dùng đã đăng nhập và đang ở trang My Conferences (URL: /dashboard?tab=myconferences)."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhấp vào nút 'Add Conference'."
+      }
+    ],
+    "expectedResult": "Hệ thống chuyển hướng người dùng đến trang/form để điền thông tin thêm conference mới.",
+    "actualResult": "",
+    "status": "",
+    "priority": "High",
+    "relatedRequirements": [
+      "YC_MyConf_004_AddConference"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_MyConferences_005",
+    "testCaseName": "Sử dụng nút 'Refetch Data'",
+    "description": "Kiểm tra nút 'Refetch Data' làm mới danh sách conference hiện tại.",
+    "preconditions": [
+      "Người dùng đã đăng nhập và đang ở trang My Conferences (URL: /dashboard?tab=myconferences)."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhấp vào nút 'Refetch Data'."
+      }
+    ],
+    "expectedResult": "Hệ thống tải lại dữ liệu cho tab My Conferences hiện tại. Có thể hiển thị biểu tượng loading trong quá trình tải.",
+    "actualResult": "",
+    "status": "",
+    "priority": "Medium",
+    "relatedRequirements": [
+      "YC_MyConf_005_Refetch"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_Followed_001",
+    "testCaseName": "Xem danh sách Followed Conferences",
+    "description": "Kiểm tra trang Followed Conferences hiển thị các conference mà người dùng đã theo dõi.",
+    "preconditions": [
+      "Người dùng đã đăng nhập và đang ở trang Followed (URL: /dashboard?tab=followed)."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Truy cập trang Followed Conferences."
+      },
+      {
+        "stepNumber": 2,
+        "action": "Quan sát danh sách các conference hiển thị."
+      }
+    ],
+    "expectedResult": "Trang hiển thị danh sách các conference đã được Follow. Mỗi mục hiển thị thông tin cơ bản của conference và thời gian Follow. Có nút 'Detail' cho mỗi mục. Nếu không có, hiển thị thông báo phù hợp.",
+    "actualResult": "",
+    "status": "",
+    "priority": "High",
+    "relatedRequirements": [
+      "YC_Followed_001_ViewList"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_Followed_002",
+    "testCaseName": "Chuyển đến trang chi tiết từ Followed list",
+    "description": "Kiểm tra khi nhấp nút 'Detail' trên mục conference trong danh sách Followed, chuyển đến trang chi tiết.",
+    "preconditions": [
+      "Người dùng đã đăng nhập và đang ở trang Followed (URL: /dashboard?tab=followed).",
+      "Danh sách Followed không trống."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhấp vào nút 'Detail' bên cạnh một conference trong danh sách Followed."
+      }
+    ],
+    "expectedResult": "Hệ thống chuyển hướng người dùng đến trang chi tiết của conference đó (URL: /conferences/detail?id=...).",
+    "actualResult": "",
+    "status": "",
+    "priority": "High",
+    "relatedRequirements": [
+      "YC_Followed_002_ViewDetail"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_Followed_003",
+    "testCaseName": "Sử dụng nút Refresh trên trang Followed",
+    "description": "Kiểm tra nút refresh trên trang Followed Conferences làm mới danh sách.",
+    "preconditions": [
+      "Người dùng đã đăng nhập và đang ở trang Followed (URL: /dashboard?tab=followed)."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhấp vào biểu tượng Refresh (hình vòng tròn mũi tên) ở góc trên bên phải danh sách."
+      }
+    ],
+    "expectedResult": "Hệ thống tải lại dữ liệu cho danh sách Followed Conferences. Có thể hiển thị biểu tượng loading.",
+    "actualResult": "",
+    "status": "",
+    "priority": "Medium",
+    "relatedRequirements": [
+      "YC_Followed_003_Refresh"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_Blacklisted_001",
+    "testCaseName": "Xem danh sách Blacklisted Conferences",
+    "description": "Kiểm tra trang Blacklisted Conferences hiển thị các conference mà người dùng đã đưa vào blacklist.",
+    "preconditions": [
+      "Người dùng đã đăng nhập và đang ở trang Blacklisted (URL: /dashboard?tab=blacklisted)."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Truy cập trang Blacklisted Conferences."
+      },
+      {
+        "stepNumber": 2,
+        "action": "Quan sát danh sách các conference hiển thị."
+      }
+    ],
+    "expectedResult": "Trang hiển thị danh sách các conference đã bị Blacklist. Mỗi mục hiển thị thông tin cơ bản của conference và thời gian Blacklist. Có nút 'Detail' cho mỗi mục. Nếu không có, hiển thị thông báo phù hợp.",
+    "actualResult": "",
+    "status": "",
+    "priority": "High",
+    "relatedRequirements": [
+      "YC_Blacklisted_001_ViewList"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_Blacklisted_002",
+    "testCaseName": "Chuyển đến trang chi tiết từ Blacklisted list",
+    "description": "Kiểm tra khi nhấp nút 'Detail' trên mục conference trong danh sách Blacklisted, chuyển đến trang chi tiết.",
+    "preconditions": [
+      "Người dùng đã đăng nhập và đang ở trang Blacklisted (URL: /dashboard?tab=blacklisted).",
+      "Danh sách Blacklisted không trống."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhấp vào nút 'Detail' bên cạnh một conference trong danh sách Blacklisted."
+      }
+    ],
+    "expectedResult": "Hệ thống chuyển hướng người dùng đến trang chi tiết của conference đó (URL: /conferences/detail?id=...).",
+    "actualResult": "",
+    "status": "",
+    "priority": "High",
+    "relatedRequirements": [
+      "YC_Blacklisted_002_ViewDetail"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_Blacklisted_003",
+    "testCaseName": "Sử dụng nút Refresh trên trang Blacklisted",
+    "description": "Kiểm tra nút refresh trên trang Blacklisted Conferences làm mới danh sách.",
+    "preconditions": [
+      "Người dùng đã đăng nhập và đang ở trang Blacklisted (URL: /dashboard?tab=blacklisted)."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhấp vào biểu tượng Refresh (hình vòng tròn mũi tên) ở góc trên bên phải danh sách."
+      }
+    ],
+    "expectedResult": "Hệ thống tải lại dữ liệu cho danh sách Blacklisted Conferences. Có thể hiển thị biểu tượng loading.",
+    "actualResult": "",
+    "status": "",
+    "priority": "Medium",
+    "relatedRequirements": [
+      "YC_Blacklisted_003_Refresh"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_Note_001",
+    "testCaseName": "Xem danh sách Upcoming Notes",
+    "description": "Kiểm tra trang Note hiển thị danh sách các ghi chú/sự kiện sắp tới.",
+    "preconditions": [
+      "Người dùng đã đăng nhập và đang ở trang Note (URL: /dashboard?tab=note)."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Truy cập trang Note."
+      },
+      {
+        "stepNumber": 2,
+        "action": "Quan sát danh sách các ghi chú hiển thị bên trái."
+      }
+    ],
+    "expectedResult": "Trang hiển thị danh sách các Upcoming Notes với tiêu đề, thông tin liên quan (conference, submission, notification,...) và nút 'More Details'. Nếu không có, hiển thị thông báo phù hợp.",
+    "actualResult": "",
+    "status": "",
+    "priority": "High",
+    "relatedRequirements": [
+      "YC_Note_001_ViewList"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_Note_002",
+    "testCaseName": "Lọc Notes theo loại",
+    "description": "Kiểm tra các nút lọc theo loại sự kiện/ghi chú hoạt động.",
+    "preconditions": [
+      "Người dùng đã đăng nhập và đang ở trang Note (URL: /dashboard?tab=note).",
+      "Có các ghi chú thuộc nhiều loại khác nhau."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhấp vào nút lọc 'Submission'."
+      },
+      {
+        "stepNumber": 2,
+        "action": "Quan sát danh sách ghi chú."
+      },
+      {
+        "stepNumber": 3,
+        "action": "Nhấp vào nút lọc 'Your notes'."
+      },
+      {
+        "stepNumber": 4,
+        "action": "Quan sát danh sách ghi chú."
+      }
+    ],
+    "expectedResult": "Danh sách ghi chú hiển thị chỉ các mục thuộc loại đã chọn. Màu sắc của nút lọc được chọn thay đổi.",
+    "actualResult": "",
+    "status": "",
+    "priority": "High",
+    "relatedRequirements": [
+      "YC_Note_002_FilterType"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_Note_003",
+    "testCaseName": "Sử dụng lịch để xem Notes theo tháng",
+    "description": "Kiểm tra lịch hiển thị các sự kiện/ghi chú trong tháng và chuyển đổi tháng.",
+    "preconditions": [
+      "Người dùng đã đăng nhập và đang ở trang Note (URL: /dashboard?tab=note)."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Quan sát lịch bên phải."
+      },
+      {
+        "stepNumber": 2,
+        "action": "Nhấp vào nút mũi tên 'Next' để chuyển sang tháng sau."
+      },
+      {
+        "stepNumber": 3,
+        "action": "Quan sát lịch và danh sách ghi chú (nếu có liên kết giữa lịch và danh sách)."
+      }
+    ],
+    "expectedResult": "Lịch hiển thị các ngày trong tháng hiện tại. Các ngày có ghi chú/sự kiện có thể được đánh dấu. Việc chuyển tháng/năm hiển thị lịch tương ứng.",
+    "actualResult": "",
+    "status": "",
+    "priority": "Medium",
+    "relatedRequirements": [
+      "YC_Note_003_CalendarView"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_Note_004",
+    "testCaseName": "Chuyển đến chi tiết Note từ danh sách",
+    "description": "Kiểm tra nút 'More Details' trên mục ghi chú chuyển đến trang/popup chi tiết của ghi chú đó.",
+    "preconditions": [
+      "Người dùng đã đăng nhập và đang ở trang Note (URL: /dashboard?tab=note).",
+      "Danh sách Upcoming Notes không trống."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhấp vào nút 'More Details' trên một ghi chú bất kỳ trong danh sách."
+      }
+    ],
+    "expectedResult": "Hệ thống hiển thị trang chi tiết hội nghị đã chọn.",
+    "actualResult": "",
+    "status": "",
+    "priority": "High",
+    "relatedRequirements": [
+      "YC_Note_004_MoreDetails"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_Note_005",
+    "testCaseName": "Tìm kiếm Notes",
+    "description": "Kiểm tra trường tìm kiếm trên trang Note lọc danh sách ghi chú.",
+    "preconditions": [
+      "Người dùng đã đăng nhập và đang ở trang Note (URL: /dashboard?tab=note).",
+      "Có các ghi chú chứa từ khóa tìm kiếm."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhập một từ khóa (ví dụ: 'Conference') vào trường 'Search events...'."
+      }
+    ],
+    "expectedResult": "Danh sách ghi chú hiển thị chỉ các mục chứa từ khóa đã nhập.",
+    "actualResult": "",
+    "status": "",
+    "priority": "Medium",
+    "relatedRequirements": [
+      "YC_Note_005_Search"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_FullNotifications_001",
+    "testCaseName": "Xem tất cả thông báo trên trang đầy đủ",
+    "description": "Kiểm tra trang Notifications đầy đủ hiển thị tất cả các thông báo.",
+    "preconditions": [
+      "Người dùng đã đăng nhập và đang ở trang Notifications (URL: /dashboard?tab=notifications).",
+      "Có nhiều loại thông báo khác nhau."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Truy cập trang Notifications."
+      },
+      {
+        "stepNumber": 2,
+        "action": "Đảm bảo tab 'All' đang được chọn (hoặc nhấp vào tab 'All')."
+      },
+      {
+        "stepNumber": 3,
+        "action": "Quan sát danh sách thông báo hiển thị."
+      }
+    ],
+    "expectedResult": "Trang hiển thị danh sách đầy đủ tất cả các thông báo của người dùng. Mỗi thông báo hiển thị loại, nội dung, và thời gian. Có checkbox bên cạnh mỗi thông báo và các nút hành động hàng loạt.",
+    "actualResult": "",
+    "status": "",
+    "priority": "High",
+    "relatedRequirements": [
+      "YC_FullTB_001_ViewAll"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_FullNotifications_002",
+    "testCaseName": "Lọc thông báo theo trạng thái (Unread, Read, Important)",
+    "description": "Kiểm tra các tab lọc thông báo hoạt động đúng.",
+    "preconditions": [
+      "Người dùng đã đăng nhập và đang ở trang Notifications (URL: /dashboard?tab=notifications).",
+      "Có các thông báo ở các trạng thái khác nhau (chưa đọc, đã đọc, quan trọng)."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhấp vào tab 'Unread'."
+      },
+      {
+        "stepNumber": 2,
+        "action": "Quan sát danh sách thông báo."
+      },
+      {
+        "stepNumber": 3,
+        "action": "Nhấp vào tab 'Read'."
+      },
+      {
+        "stepNumber": 4,
+        "action": "Quan sát danh sách thông báo."
+      },
+      {
+        "stepNumber": 5,
+        "action": "Nhấp vào tab 'Important'."
+      },
+      {
+        "stepNumber": 6,
+        "action": "Quan sát danh sách thông báo."
+      }
+    ],
+    "expectedResult": "Danh sách thông báo được lọc chỉ hiển thị các thông báo có trạng thái tương ứng với tab được chọn.",
+    "actualResult": "",
+    "status": "",
+    "priority": "High",
+    "relatedRequirements": [
+      "YC_FullTB_002_FilterStatus"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_FullNotifications_003",
+    "testCaseName": "Tìm kiếm thông báo",
+    "description": "Kiểm tra trường tìm kiếm lọc thông báo theo nội dung.",
+    "preconditions": [
+      "Người dùng đã đăng nhập và đang ở trang Notifications (URL: /dashboard?tab=notifications)."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhập một từ khóa (ví dụ: 'followed') vào trường 'Search notifications...'."
+      }
+    ],
+    "expectedResult": "Danh sách thông báo hiển thị chỉ các mục chứa từ khóa đã nhập.",
+    "actualResult": "",
+    "status": "",
+    "priority": "Medium",
+    "relatedRequirements": [
+      "YC_FullTB_003_Search"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_FullNotifications_004",
+    "testCaseName": "Chọn tất cả thông báo",
+    "description": "Kiểm tra checkbox 'Select All' chọn/bỏ chọn tất cả các thông báo đang hiển thị.",
+    "preconditions": [
+      "Người dùng đã đăng nhập và đang ở trang Notifications (URL: /dashboard?tab=notifications).",
+      "Có ít nhất một thông báo hiển thị trong danh sách."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhấp vào checkbox 'Select All'."
+      },
+      {
+        "stepNumber": 2,
+        "action": "Quan sát các checkbox của từng thông báo."
+      },
+      {
+        "stepNumber": 3,
+        "action": "Nhấp lại vào checkbox 'Select All'."
+      },
+      {
+        "stepNumber": 4,
+        "action": "Quan sát các checkbox của từng thông báo."
+      }
+    ],
+    "expectedResult": "Khi nhấp lần đầu, tất cả checkbox của các thông báo hiển thị trên trang đều được chọn. Khi nhấp lại, tất cả đều bị bỏ chọn.",
+    "actualResult": "",
+    "status": "",
+    "priority": "Medium",
+    "relatedRequirements": [
+      "YC_FullTB_004_SelectAll"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_FullNotifications_005",
+    "testCaseName": "Chọn một hoặc nhiều thông báo cụ thể",
+    "description": "Kiểm tra checkbox riêng lẻ của mỗi thông báo hoạt động.",
+    "preconditions": [
+      "Người dùng đã đăng nhập và đang ở trang Notifications (URL: /dashboard?tab=notifications).",
+      "Có ít nhất một thông báo hiển thị trong danh sách."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhấp vào checkbox bên cạnh một hoặc nhiều thông báo cụ thể."
+      },
+      {
+        "stepNumber": 2,
+        "action": "Quan sát trạng thái của các checkbox đã nhấp."
+      }
+    ],
+    "expectedResult": "Checkbox của thông báo được nhấp sẽ được chọn. Các nút hành động hàng loạt ('Mark As Read', 'Mark As Unimportant', 'Delete Selected') sẽ hiển thị/kích hoạt.",
+    "actualResult": "",
+    "status": "",
+    "priority": "Low",
+    "relatedRequirements": [
+      "YC_FullTB_005_SelectIndividual"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_FullNotifications_006",
+    "testCaseName": "Đánh dấu thông báo đã chọn là Đã đọc",
+    "description": "Kiểm tra nút 'Mark As Read' áp dụng cho các thông báo đã chọn.",
+    "preconditions": [
+      "Người dùng đã đăng nhập và đang ở trang Notifications (URL: /dashboard?tab=notifications).",
+      "Có ít nhất một thông báo chưa đọc đã được chọn (tick vào checkbox)."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Chọn một hoặc nhiều thông báo chưa đọc."
+      },
+      {
+        "stepNumber": 2,
+        "action": "Nhấp vào nút 'Mark As Read'."
+      }
+    ],
+    "expectedResult": "Các thông báo đã chọn được đánh dấu là đã đọc. Trạng thái của chúng thay đổi (màu nền dòng tin nhắn thay đổi).",
+    "actualResult": "",
+    "status": "",
+    "priority": "High",
+    "relatedRequirements": [
+      "YC_FullTB_006_MarkSelectedRead"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_FullNotifications_007",
+    "testCaseName": "Đánh dấu thông báo đã chọn là Quan trọng/Không quan trọng",
+    "description": "Kiểm tra nút 'Mark As Important' (hoặc Unimportant) áp dụng cho các thông báo đã chọn.",
+    "preconditions": [
+      "Người dùng đã đăng nhập và đang ở trang Notifications (URL: /dashboard?tab=notifications).",
+      "Có ít nhất một thông báo đã được chọn (tick vào checkbox)."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Chọn một hoặc nhiều thông báo."
+      },
+      {
+        "stepNumber": 2,
+        "action": "Nhấp vào nút 'Mark As Important' (hoặc 'Mark As Unimportant')."
+      }
+    ],
+    "expectedResult": "Các thông báo đã chọn được đánh dấu là quan trọng/không quan trọng (ví dụ: xuất hiện/biến mất biểu tượng ngôi sao).",
+    "actualResult": "",
+    "status": "",
+    "priority": "Medium",
+    "relatedRequirements": [
+      "YC_FullTB_007_MarkSelectedImportant"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_FullNotifications_008",
+    "testCaseName": "Xóa thông báo đã chọn",
+    "description": "Kiểm tra nút 'Delete Selected' xóa các thông báo đã chọn.",
+    "preconditions": [
+      "Người dùng đã đăng nhập và đang ở trang Notifications (URL: /dashboard?tab=notifications).",
+      "Có ít nhất một thông báo đã được chọn (tick vào checkbox)."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Chọn một hoặc nhiều thông báo."
+      },
+      {
+        "stepNumber": 2,
+        "action": "Nhấp vào nút 'Delete Selected'."
+      },
+      {
+        "stepNumber": 3,
+        "action": "Xác nhận hành động xóa."
+      }
+    ],
+    "expectedResult": "Các thông báo đã chọn bị xóa khỏi danh sách. Danh sách hiển thị được cập nhật. Có thể hiển thị thông báo xác nhận xóa thành công.",
+    "actualResult": "",
+    "status": "",
+    "priority": "High",
+    "relatedRequirements": [
+      "YC_FullTB_008_DeleteSelected"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_Profile_001",
+    "testCaseName": "Xem thông tin Profile",
+    "description": "Kiểm tra trang Profile hiển thị thông tin cơ bản của người dùng.",
+    "preconditions": [
+      "Người dùng đã đăng nhập và đang ở trang Profile (URL: /dashboard?tab=profile)."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Truy cập trang Profile."
+      },
+      {
+        "stepNumber": 2,
+        "action": "Quan sát các thông tin hiển thị."
+      }
+    ],
+    "expectedResult": "Trang Profile hiển thị tên người dùng, email, ngày sinh. Các nút 'Edit Profile' và 'Change Password' được hiển thị.",
+    "actualResult": "",
+    "status": "",
+    "priority": "High",
+    "relatedRequirements": [
+      "YC_Profile_001_View"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_Profile_002",
+    "testCaseName": "Chuyển đến trang Edit Profile",
+    "description": "Kiểm tra nút 'Edit Profile' chuyển hướng đến trang chỉnh sửa thông tin cá nhân.",
+    "preconditions": [
+      "Người dùng đã đăng nhập và đang ở trang Profile (URL: /dashboard?tab=profile)."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhấp vào nút 'Edit Profile'."
+      }
+    ],
+    "expectedResult": "Hệ thống chuyển hướng người dùng đến trang cho phép chỉnh sửa thông tin profile (Tên, Ngày sinh, v.v.).",
+    "actualResult": "",
+    "status": "",
+    "priority": "High",
+    "relatedRequirements": [
+      "YC_Profile_002_Edit"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_Profile_003",
+    "testCaseName": "Chuyển đến trang Change Password",
+    "description": "Kiểm tra nút 'Change Password' chuyển hướng đến trang thay đổi mật khẩu.",
+    "preconditions": [
+      "Người dùng đã đăng nhập và đang ở trang Profile (URL: /dashboard?tab=profile)."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhấp vào nút 'Change Password'."
+      }
+    ],
+    "expectedResult": "Hệ thống chuyển hướng người dùng đến trang/form để thay đổi mật khẩu hiện tại.",
+    "actualResult": "",
+    "status": "",
+    "priority": "High",
+    "relatedRequirements": [
+      "YC_Profile_003_ChangePassword"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_Settings_001",
+    "testCaseName": "Xem các tùy chọn Setting",
+    "description": "Kiểm tra trang Setting hiển thị các tùy chọn cài đặt thông báo và quản lý tài khoản.",
+    "preconditions": [
+      "Người dùng đã đăng nhập và đang ở trang Setting (URL: /dashboard?tab=setting)."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Truy cập trang Setting."
+      },
+      {
+        "stepNumber": 2,
+        "action": "Quan sát các tùy chọn hiển thị."
+      }
+    ],
+    "expectedResult": "Trang hiển thị các nhóm cài đặt 'Receive Notifications', 'Auto add Events to Schedule', 'Change and Update', 'Your Upcoming Event', 'Customize Notification Delivery' với các toggle switch tương ứng. Dưới cùng là nút 'Delete Account'.",
+    "actualResult": "",
+    "status": "",
+    "priority": "High",
+    "relatedRequirements": [
+      "YC_Settings_001_View"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_Settings_002",
+    "testCaseName": "Thay đổi trạng thái Toggle Setting",
+    "description": "Kiểm tra việc bật/tắt các toggle switch cho cài đặt thông báo.",
+    "preconditions": [
+      "Người dùng đã đăng nhập và đang ở trang Setting (URL: /dashboard?tab=setting)."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhấp vào một toggle switch bất kỳ để thay đổi trạng thái của nó (ví dụ: toggle 'Receive Notifications')."
+      },
+      {
+        "stepNumber": 2,
+        "action": "Quan sát trạng thái của toggle switch sau khi nhấp."
+      },
+      {
+        "stepNumber": 3,
+        "action": "Làm mới trang hoặc thoát rồi vào lại trang Setting."
+      }
+    ],
+    "expectedResult": "Trạng thái của toggle switch thay đổi (On/Off). Cài đặt mới được lưu lại và vẫn giữ nguyên sau khi tải lại trang.",
+    "actualResult": "",
+    "status": "",
+    "priority": "High",
+    "relatedRequirements": [
+      "YC_Settings_002_Toggle"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_Settings_003",
+    "testCaseName": "Nhấp nút 'Delete Account'",
+    "description": "Kiểm tra nút 'Delete Account' kích hoạt quy trình xóa tài khoản.",
+    "preconditions": [
+      "Người dùng đã đăng nhập và đang ở trang Setting (URL: /dashboard?tab=setting)."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhấp vào nút 'Delete Account'."
+      }
+    ],
+    "expectedResult": "Hệ thống hiển thị một popup xác nhận hoặc chuyển hướng đến một trang riêng để xác nhận việc xóa tài khoản. Thông báo cảnh báo về việc mất dữ liệu có thể hiển thị.",
+    "actualResult": "",
+    "status": "",
+    "priority": "Critical",
+    "relatedRequirements": [
+      "YC_Settings_003_DeleteAccount"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_Chatbot_001",
+    "testCaseName": "Chuyển hướng đến trang Chatbot Live Chat",
+    "description": "Kiểm tra người dùng có thể truy cập trang Live Chat từ trang giới thiệu Chatbot.",
+    "preconditions": [
+      "Người dùng đang ở trang giới thiệu Chatbot (URL: /chatbot)."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhấp vào nút 'Live Chat'."
+      }
+    ],
+    "expectedResult": "Hệ thống chuyển hướng người dùng đến trang Live Chat của Chatbot (URL: /chatbot/livechat).",
+    "actualResult": "",
+    "status": "",
+    "priority": "High",
+    "relatedRequirements": [
+      "YC_CB_001_TruyCapLiveChat"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_Chatbot_002",
+    "testCaseName": "Chọn chế độ 'Regular Chat'",
+    "description": "Kiểm tra người dùng có thể chọn chế độ 'Regular Chat'.",
+    "preconditions": [
+      "Người dùng đang ở trang Chatbot Live Chat (URL: /chatbot/livechat)."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Quan sát khu vực 'Chat Mode & History'."
+      },
+      {
+        "stepNumber": 2,
+        "action": "Nhấp vào nút 'Regular Chat'."
+      }
+    ],
+    "expectedResult": "Nút 'Regular Chat' được đánh dấu là đang chọn. Giao diện khu vực chat chính hiển thị trạng thái sẵn sàng nhập tin nhắn.",
+    "actualResult": "",
+    "status": "",
+    "priority": "High",
+    "relatedRequirements": [
+      "YC_CB_002_ChonRegularChat"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_Chatbot_003",
+    "testCaseName": "Bắt đầu cuộc hội thoại mới ('New Chat')",
+    "description": "Kiểm tra người dùng có thể xóa lịch sử chat hiện tại và bắt đầu một cuộc hội thoại mới.",
+    "preconditions": [
+      "Người dùng đang ở trang Chatbot Live Chat (URL: /chatbot/livechat)."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhấp vào nút 'New Chat' trong phần 'Chat History'."
+      }
+    ],
+    "expectedResult": "Nội dung khu vực chat chính bị xóa trống. Khu vực 'Chat History' hiển thị thêm 1 thẻ lịch sử chat mới.",
+    "actualResult": "",
+    "status": "",
+    "priority": "High",
+    "relatedRequirements": [
+      "YC_CB_003_NewChat"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_Chatbot_004",
+    "testCaseName": "Gửi tin nhắn đến Chatbot",
+    "description": "Kiểm tra người dùng có thể nhập và gửi tin nhắn cho Chatbot.",
+    "preconditions": [
+      "Người dùng đang ở trang Chatbot Live Chat (URL: /chatbot/livechat).",
+      "Đang ở chế độ 'Regular Chat'."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhập một tin nhắn (ví dụ: 'Hello') vào trường 'Nhập tin nhắn'."
+      },
+      {
+        "stepNumber": 2,
+        "action": "Nhấp vào biểu tượng gửi tin nhắn (mũi tên)."
+      }
+    ],
+    "expectedResult": "Tin nhắn của người dùng ('Hello') xuất hiện trong khu vực chat. Chatbot xử lý và hiển thị phản hồi.",
+    "actualResult": "",
+    "status": "",
+    "priority": "High",
+    "relatedRequirements": [
+      "YC_CB_004_GuiTinNhan"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_Chatbot_005",
+    "testCaseName": "Nhận và hiển thị phản hồi từ Chatbot (Text)",
+    "description": "Kiểm tra Chatbot trả về phản hồi dạng văn bản cho một truy vấn cụ thể.",
+    "preconditions": [
+      "Người dùng đang ở trang Chatbot Live Chat (URL: /chatbot/livechat).",
+      "Đang ở chế độ 'Regular Chat'."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhập một truy vấn rõ ràng ('List some AI conferences in Asia.') vào trường 'Nhập tin nhắn'."
+      },
+      {
+        "stepNumber": 2,
+        "action": "Nhấp vào biểu tượng gửi tin nhắn (mũi tên)."
+      }
+    ],
+    "expectedResult": "Chatbot hiển thị phản hồi dạng văn bản trong khu vực chat, bao gồm danh sách các hội nghị liên quan đến truy vấn.",
+    "actualResult": "",
+    "status": "",
+    "priority": "High",
+    "relatedRequirements": [
+      "YC_CB_005_PhanHoiText"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_Chatbot_006",
+    "testCaseName": "Nhấp vào một gợi ý câu hỏi ban đầu",
+    "description": "Kiểm tra khi nhấp vào một trong các câu hỏi gợi ý, câu hỏi đó được gửi đi.",
+    "preconditions": [
+      "Người dùng đang ở trang Chatbot Live Chat (URL: /chatbot/livechat).",
+      "Đang ở chế độ 'Regular Chat'.",
+      "Giao diện hiển thị các câu hỏi gợi ý ('Xin chào!', 'Liệt kê cho tôi...', 'Tìm các hội nghị...')."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhấp vào một câu hỏi gợi ý (ví dụ: 'Tôi muốn biết về các hội nghị blockchain tại châu Âu.')."
+      }
+    ],
+    "expectedResult": "Câu hỏi gợi ý đã nhấp xuất hiện dưới dạng tin nhắn của người dùng trong khu vực chat. Chatbot xử lý và hiển thị phản hồi cho câu hỏi đó.",
+    "actualResult": "",
+    "status": "",
+    "priority": "High",
+    "relatedRequirements": [
+      "YC_CB_006_ClickGoiY"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_Chatbot_007",
+    "testCaseName": "Nhấp vào liên kết trong phản hồi của Chatbot",
+    "description": "Kiểm tra khi nhấp vào một liên kết trong phản hồi của Chatbot, liên kết đó hoạt động.",
+    "preconditions": [
+      "Người dùng đang ở trang Chatbot Live Chat (URL: /chatbot/livechat).",
+      "Đã nhận được phản hồi từ Chatbot có chứa liên kết (ví dụ: danh sách conference có URL Website)."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhấp vào một liên kết bất kỳ trong phản hồi của Chatbot (ví dụ: liên kết trang web của một conference)."
+      }
+    ],
+    "expectedResult": "Hệ thống mở một tab mới trên trình duyệt, điều hướng đến địa chỉ URL của liên kết đã nhấp.",
+    "actualResult": "",
+    "status": "",
+    "priority": "High",
+    "relatedRequirements": [
+      "YC_CB_007_ClickLink"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_Chatbot_008",
+    "testCaseName": "Xem lịch sử Chat",
+    "description": "Kiểm tra các cuộc hội thoại cũ hiển thị trong 'Chat History'.",
+    "preconditions": [
+      "Người dùng đang ở trang Chatbot Live Chat (URL: /chatbot/livechat).",
+      "Đã thực hiện ít nhất một cuộc hội thoại trước đó."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Quan sát khu vực 'Chat History'."
+      }
+    ],
+    "expectedResult": "Các cuộc hội thoại trước đó được liệt kê trong danh sách 'Chat History', hiển thị tiêu đề và thời gian tương đối.",
+    "actualResult": "",
+    "status": "",
+    "priority": "Medium",
+    "relatedRequirements": [
+      "YC_CB_008_XemLichSu"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_Chatbot_009",
+    "testCaseName": "Tải lại cuộc hội thoại từ lịch sử",
+    "description": "Kiểm tra khi nhấp vào một mục trong 'Chat History', nội dung hội thoại đó được tải và hiển thị.",
+    "preconditions": [
+      "Người dùng đang ở trang Chatbot Live Chat (URL: /chatbot/livechat).",
+      "Có ít nhất một mục trong 'Chat History'."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhấp vào một mục trong danh sách 'Chat History'."
+      }
+    ],
+    "expectedResult": "Nội dung của cuộc hội thoại đã chọn từ lịch sử được tải và hiển thị trong khu vực chat chính.",
+    "actualResult": "",
+    "status": "",
+    "priority": "High",
+    "relatedRequirements": [
+      "YC_CB_009_TaiLichSu"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_Chatbot_010",
+    "testCaseName": "Thay đổi ngôn ngữ Chatbot (Settings)",
+    "description": "Kiểm tra người dùng có thể thay đổi ngôn ngữ giao tiếp của Chatbot.",
+    "preconditions": [
+      "Người dùng đang ở trang Chatbot Live Chat (URL: /chatbot/livechat)."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Quan sát khu vực 'Settings'."
+      },
+      {
+        "stepNumber": 2,
+        "action": "Nhấp vào dropdown 'Language'."
+      },
+      {
+        "stepNumber": 3,
+        "action": "Chọn một ngôn ngữ khác ngôn ngữ hiện tại (ví dụ: từ 'Tiếng Việt' sang 'English')."
+      },
+      {
+        "stepNumber": 4,
+        "action": "Gửi một tin nhắn mới (ví dụ: 'List conferences in USA')."
+      }
+    ],
+    "expectedResult": "Giao diện Chatbot (ví dụ: câu chào, nhãn trường nhập liệu) được cập nhật sang ngôn ngữ đã chọn ('English'). Phản hồi của Chatbot cho tin nhắn mới cũng được hiển thị bằng ngôn ngữ đã chọn.",
+    "actualResult": "",
+    "status": "",
+    "priority": "High",
+    "relatedRequirements": [
+      "YC_CB_010_ThayDoiNgonNgu"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_Chatbot_011",
+    "testCaseName": "Chọn định dạng Output là Text (Settings)",
+    "description": "Kiểm tra người dùng có thể chọn định dạng phản hồi của Chatbot là Text.",
+    "preconditions": [
+      "Người dùng đang ở trang Chatbot Live Chat (URL: /chatbot/livechat).",
+      "Người dùng đang ở chế độ 'Live Chat'."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Quan sát khu vực 'Settings', phần 'Output Format'."
+      },
+      {
+        "stepNumber": 2,
+        "action": "Nhấp vào nút 'Text'."
+      }
+    ],
+    "expectedResult": "Nút 'Text' được đánh dấu là đang chọn (ví dụ: màu xanh). Các phản hồi của Chatbot sẽ hiển thị dưới dạng văn bản.",
+    "actualResult": "",
+    "status": "",
+    "priority": "Medium",
+    "relatedRequirements": [
+      "YC_CB_011_ChonOutputText"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_Chatbot_012",
+    "testCaseName": "Chọn định dạng Output là Audio (Settings)",
+    "description": "Kiểm tra người dùng có thể chọn định dạng phản hồi của Chatbot là Audio.",
+    "preconditions": [
+      "Người dùng đang ở trang Chatbot Live Chat (URL: /chatbot/livechat).",
+      "Người dùng đang ở chế độ 'Live Chat'."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Quan sát khu vực 'Settings', phần 'Output Format'."
+      },
+      {
+        "stepNumber": 2,
+        "action": "Nhấp vào nút 'Audio'."
+      }
+    ],
+    "expectedResult": "Nút 'Audio' được đánh dấu là đang chọn (ví dụ: màu xanh). Phản hồi của Chatbot có thể hiển thị kèm theo trình phát âm thanh hoặc chỉ phát âm thanh.",
+    "actualResult": "",
+    "status": "",
+    "priority": "Medium",
+    "relatedRequirements": [
+      "YC_CB_012_ChonOutputAudio"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_Chatbot_013",
+    "testCaseName": "Kiểm tra nút 'Show Thought Process'",
+    "description": "Kiểm tra khi nhấp vào 'Show Thought Process', thông tin bổ sung hiển thị.",
+    "preconditions": [
+      "Người dùng đang ở trang Chatbot Live Chat (URL: /chatbot/livechat).",
+      "Đã nhận được phản hồi từ Chatbot kèm theo liên kết 'Show Thought Process'."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhấp vào liên kết 'Show Thought Process'."
+      }
+    ],
+    "expectedResult": "Một khu vực nội dung bổ sung (ví dụ: dropdown, popup, hoặc phần text mở rộng) xuất hiện dưới phản hồi của Chatbot, hiển thị các bước suy nghĩ của bot.",
+    "actualResult": "",
+    "status": "",
+    "priority": "Medium",
+    "relatedRequirements": [
+      "YC_CB_013_ShowThoughtProcess"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_Chatbot_014",
+    "testCaseName": "Kiểm tra chức năng Copy phản hồi",
+    "description": "Kiểm tra nút copy hoặc chức năng copy phản hồi hoạt động.",
+    "preconditions": [
+      "Người dùng đang ở trang Chatbot Live Chat (URL: /chatbot/livechat).",
+      "Đã nhận được phản hồi từ Chatbot."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Tìm và nhấp vào biểu tượng/nút 'Copy' liên quan đến phản hồi của Chatbot."
+      },
+      {
+        "stepNumber": 2,
+        "action": "Kiểm tra nội dung clipboard (ví dụ: dán vào một trình soạn thảo khác)."
+      }
+    ],
+    "expectedResult": "Nội dung phản hồi của Chatbot được sao chép vào clipboard. Hệ thống hiển thị thông báo xác nhận 'Copied to clipboard!'.",
+    "actualResult": "",
+    "status": "",
+    "priority": "High",
+    "relatedRequirements": [
+      "YC_CB_014_CopyResponse"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_Chatbot_LS_001",
+    "testCaseName": "Chọn chế độ 'Live Stream'",
+    "description": "Kiểm tra người dùng có thể chọn chế độ 'Live Stream' cho Chatbot.",
+    "preconditions": [
+      "Người dùng đang ở trang Chatbot Live Chat (URL: /chatbot/livechat).",
+      "Chế độ 'Regular Chat' đang được chọn."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhấp vào nút 'Live Stream' trong phần 'Chat Mode & History'."
+      }
+    ],
+    "expectedResult": "Nút 'Live Stream' được đánh dấu là đang chọn (ví dụ: màu xanh). Giao diện khu vực chat chính hiển thị trạng thái sẵn sàng nhận giọng nói ('Live Chat with Our Chatbot'). Biểu tượng microphone và loa xuất hiện ở trường nhập liệu. Status 'Connected' xuất hiện.",
+    "actualResult": "",
+    "status": "",
+    "priority": "High",
+    "relatedRequirements": [
+      "YC_CB_LS_001_ChonLiveStream"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_Chatbot_LS_002",
+    "testCaseName": "Nhập liệu bằng giọng nói (Bắt đầu ghi âm)",
+    "description": "Kiểm tra người dùng có thể bắt đầu ghi âm giọng nói để nhập liệu.",
+    "preconditions": [
+      "Người dùng đang ở trang Chatbot Live Chat (URL: /chatbot/livechat).",
+      "Chế độ 'Live Stream' đang được chọn.",
+      "Trình duyệt đã cấp quyền truy cập microphone."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhấp vào biểu tượng play ở trường nhập liệu."
+      }
+    ],
+    "expectedResult": "Biểu tượng play thay đổi trạng thái. Hệ thống bắt đầu ghi âm giọng nói của người dùng. Hiển thị sóng giao động thể hiện đang ghi âm.",
+    "actualResult": "",
+    "status": "",
+    "priority": "High",
+    "relatedRequirements": [
+      "YC_CB_LS_002_BatDauGhiAm"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_Chatbot_LS_003",
+    "testCaseName": "Nhập liệu bằng giọng nói (Dừng ghi âm)",
+    "description": "Kiểm tra người dùng có thể dừng ghi âm giọng nói.",
+    "preconditions": [
+      "Người dùng đang ở trang Chatbot Live Chat (URL: /chatbot/livechat).",
+      "Output Format đang chọn 'Audio'",
+      "Đang trong quá trình ghi âm."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhấp lại vào biểu tượng microphone đang ghi âm."
+      }
+    ],
+    "expectedResult": "Biểu tượng microphone dừng ghi âm, chuyển thành biểu tượng microphone bị gạch chéo. Hệ thống xử lý bản ghi âm và gửi nó đến Chatbot dưới dạng bản ghi âm.",
+    "actualResult": "",
+    "status": "",
+    "priority": "High",
+    "relatedRequirements": [
+      "YC_CB_LS_003_DungGhiAm"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_Chatbot_LS_004",
+    "testCaseName": "Nhận và hiển thị phản hồi từ Chatbot (Audio)",
+    "description": "Kiểm tra Chatbot trả về phản hồi dạng âm thanh cho một truy vấn.",
+    "preconditions": [
+      "Người dùng đang ở trang Chatbot Live Chat (URL: /chatbot/livechat).",
+      "Chế độ 'Live Stream' đang được chọn.",
+      "Output Format đang chọn 'Audio'."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Gửi một truy vấn bằng giọng nói hoặc văn bản."
+      }
+    ],
+    "expectedResult": "Chatbot xử lý và hiển thị phản hồi dạng âm thanh trong khu vực chat (hiển thị trình phát audio với nút play, pause, thời lượng).",
+    "actualResult": "",
+    "status": "",
+    "priority": "High",
+    "relatedRequirements": [
+      "YC_CB_LS_004_PhanHoiAudio"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_Chatbot_LS_005",
+    "testCaseName": "Phát lại phản hồi dạng Audio",
+    "description": "Kiểm tra người dùng có thể phát lại nội dung âm thanh trong phản hồi của Chatbot.",
+    "preconditions": [
+      "Người dùng đang ở trang Chatbot Live Chat (URL: /chatbot/livechat).",
+      "Đã nhận được phản hồi dạng Audio từ Chatbot."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhấp vào nút 'Play' trên trình phát audio của phản hồi Chatbot."
+      }
+    ],
+    "expectedResult": "Hệ thống phát lại nội dung âm thanh của phản hồi. Nút 'Play' chuyển thành 'Pause'. Thanh tiến trình cập nhật.",
+    "actualResult": "",
+    "status": "",
+    "priority": "High",
+    "relatedRequirements": [
+      "YC_CB_LS_005_PhatAudio"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_Chatbot_LS_006",
+    "testCaseName": "Tạm dừng/Tiếp tục phát lại Audio",
+    "description": "Kiểm tra người dùng có thể tạm dừng và tiếp tục phát lại âm thanh.",
+    "preconditions": [
+      "Người dùng đang ở trang Chatbot Live Chat (URL: /chatbot/livechat).",
+      "Một phản hồi dạng Audio đang được phát."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhấp vào nút 'Pause' trên trình phát audio."
+      },
+      {
+        "stepNumber": 2,
+        "action": "Nhấp vào nút 'Play' (hiện tại) trên trình phát audio."
+      }
+    ],
+    "expectedResult": "Âm thanh tạm dừng. Nút 'Pause' chuyển thành 'Play'. Âm thanh tiếp tục phát từ vị trí đã tạm dừng.",
+    "actualResult": "",
+    "status": "",
+    "priority": "High",
+    "relatedRequirements": [
+      "YC_CB_LS_006_TamDungTiepTuc"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_Chatbot_LS_007",
+    "testCaseName": "Thay đổi giọng đọc Chatbot (Voice)",
+    "description": "Kiểm tra người dùng có thể chọn giọng đọc khác cho phản hồi dạng Audio.",
+    "preconditions": [
+      "Người dùng đang ở trang Chatbot Live Chat (URL: /chatbot/livechat).",
+      "Chế độ 'Live Stream' đang được chọn.",
+      "Output Format đang chọn 'Audio'."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhấp vào dropdown 'Voice' trong phần 'Settings'."
+      },
+      {
+        "stepNumber": 2,
+        "action": "Chọn một giọng đọc khác giọng hiện tại (ví dụ: chọn 'Charon' nếu đang là 'Puck')."
+      },
+      {
+        "stepNumber": 3,
+        "action": "Gửi một truy vấn mới."
+      }
+    ],
+    "expectedResult": "Dropdown 'Voice' hiển thị giọng đã chọn. Phản hồi dạng Audio tiếp theo của Chatbot sẽ được đọc bằng giọng mới ('Charon').",
+    "actualResult": "",
+    "status": "",
+    "priority": "High",
+    "relatedRequirements": [
+      "YC_CB_LS_007_ChonGiongDoc"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_Chatbot_LS_008",
+    "testCaseName": "Kiểm tra trạng thái kết nối 'Connected'",
+    "description": "Kiểm tra hiển thị trạng thái kết nối thành công khi ở chế độ Live Stream.",
+    "preconditions": [
+      "Người dùng đang ở trang Chatbot Live Chat (URL: /chatbot/livechat).",
+      "Chế độ 'Live Stream' đang được chọn."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Quan sát khu vực thông báo trạng thái kết nối."
+      }
+    ],
+    "expectedResult": "Trạng thái hiển thị 'Connected' với màu xanh lá cây, kèm theo thông tin thời gian kết nối (ví dụ: 'Connected for 00:19 / 10:00').",
+    "actualResult": "",
+    "status": "",
+    "priority": "High",
+    "relatedRequirements": [
+      "YC_CB_LS_008_TrangThaiConnected"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_Chatbot_LS_009",
+    "testCaseName": "Xử lý khi mất kết nối",
+    "description": "Kiểm tra hệ thống hiển thị thông báo và xử lý khi kết nối bị mất đột ngột.",
+    "preconditions": [
+      "Người dùng đang ở trang Chatbot Live Chat (URL: /chatbot/livechat).",
+      "Chế độ 'Live Stream' đang được chọn.",
+      "Kết nối mạng bị ngắt hoặc server bot gặp sự cố."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Gây mất kết nối mạng (ví dụ: tắt wifi/ethernet)."
+      },
+      {
+        "stepNumber": 2,
+        "action": "Quan sát khu vực trạng thái kết nối và khu vực chat."
+      }
+    ],
+    "expectedResult": "Trạng thái kết nối thay đổi sang trạng thái lỗi (ví dụ: 'Connection lost!'). Một thông báo lỗi xuất hiện trong khu vực chat (ví dụ: 'Connection lost unexpectedly'). Có thể các nút chức năng bị vô hiệu hóa.",
+    "actualResult": "",
+    "status": "",
+    "priority": "Critical",
+    "relatedRequirements": [
+      "YC_CB_LS_009_MatKetNoi"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_Chatbot_LS_010",
+    "testCaseName": "Chuyển ngôn ngữ ở chế độ Live Stream + Audio Output",
+    "description": "Kiểm tra Chatbot trả lời bằng âm thanh theo ngôn ngữ đã chọn.",
+    "preconditions": [
+      "Người dùng đang ở trang Chatbot Live Chat (URL: /chatbot/livechat).",
+      "Chế độ 'Live Stream' đang được chọn.",
+      "Output Format đang chọn 'Audio'.",
+      "Hệ thống hỗ trợ ngôn ngữ khác tiếng Anh (ví dụ: Tiếng Việt, Tiếng Trung)."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Trong phần 'Settings', nhấp vào dropdown 'Language' và chọn một ngôn ngữ (ví dụ: 'Tiếng Việt')."
+      },
+      {
+        "stepNumber": 2,
+        "action": "Gửi một truy vấn (bằng giọng nói hoặc văn bản tùy quy định)."
+      }
+    ],
+    "expectedResult": "Chatbot trả lời bằng âm thanh sử dụng ngôn ngữ đã chọn ('Tiếng Việt').",
+    "actualResult": "",
+    "status": "",
+    "priority": "High",
+    "relatedRequirements": [
+      "YC_CB_LS_010_NgonNguAudio"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_Support_Contact_001",
+    "testCaseName": "Gửi form Contact Us thành công với dữ liệu hợp lệ",
+    "description": "Kiểm tra người dùng có thể gửi form Contact Us khi điền đầy đủ và hợp lệ các trường bắt buộc và đồng ý với điều khoản.",
+    "preconditions": [
+      "Người dùng đang ở trang Contact Us (URL: /support).",
+      "Người dùng biết cách điền thông tin hợp lệ."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhập Subject hợp lệ vào trường 'Subject'."
+      },
+      {
+        "stepNumber": 2,
+        "action": "Chọn một loại yêu cầu từ dropdown 'Request type' (ví dụ: 'Contact')."
+      },
+      {
+        "stepNumber": 3,
+        "action": "Nhập nội dung tin nhắn hợp lệ vào trường 'Your message'."
+      },
+      {
+        "stepNumber": 4,
+        "action": "Tích chọn checkbox 'I agree to the Terms & Conditions and Privacy Policy'."
+      },
+      {
+        "stepNumber": 5,
+        "action": "Nhấp vào nút 'Send message'."
+      }
+    ],
+    "expectedResult": "Hệ thống hiển thị thông báo gửi thành công (ví dụ: 'Your message has been sent successfully'). Form có thể được làm trống hoặc chuyển hướng đến trang khác.",
+    "actualResult": "",
+    "status": "",
+    "priority": "High",
+    "relatedRequirements": [
+      "YC_HT_001_GuiContactUs"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_Support_Contact_002",
+    "testCaseName": "Gửi form Contact Us thất bại khi để trống trường bắt buộc",
+    "description": "Kiểm tra hệ thống hiển thị thông báo lỗi khi một trong các trường bắt buộc bị bỏ trống.",
+    "preconditions": [
+      "Người dùng đang ở trang Contact Us (URL: /support)."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Để trống trường 'Subject'."
+      },
+      {
+        "stepNumber": 2,
+        "action": "Chọn một loại yêu cầu từ dropdown 'Request type' (ví dụ: 'Contact')."
+      },
+      {
+        "stepNumber": 3,
+        "action": "Nhập nội dung tin nhắn hợp lệ vào trường 'Your message'."
+      },
+      {
+        "stepNumber": 4,
+        "action": "Tích chọn checkbox 'I agree to the Terms & Conditions and Privacy Policy'."
+      },
+      {
+        "stepNumber": 5,
+        "action": "Nhấp vào nút 'Send message'."
+      }
+    ],
+    "expectedResult": "Hệ thống hiển thị thông báo lỗi validation dưới trường 'Subject'. Form không được gửi.",
+    "actualResult": "",
+    "status": "",
+    "priority": "High",
+    "relatedRequirements": [
+      "YC_HT_002_DeTrongTruong"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_Support_Contact_003",
+    "testCaseName": "Gửi form Contact Us thất bại khi chưa tích chọn đồng ý điều khoản",
+    "description": "Kiểm tra hệ thống hiển thị thông báo lỗi khi người dùng chưa tích chọn checkbox đồng ý điều khoản.",
+    "preconditions": [
+      "Người dùng đang ở trang Contact Us (URL: /support)."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhập Subject hợp lệ vào trường 'Subject'."
+      },
+      {
+        "stepNumber": 2,
+        "action": "Chọn một loại yêu cầu từ dropdown 'Request type' (ví dụ: 'Report')."
+      },
+      {
+        "stepNumber": 3,
+        "action": "Nhập nội dung tin nhắn hợp lệ vào trường 'Your message'."
+      },
+      {
+        "stepNumber": 4,
+        "action": "Để trống checkbox 'I agree to the Terms & Conditions and Privacy Policy' (chưa tích chọn)."
+      },
+      {
+        "stepNumber": 5,
+        "action": "Nhấp vào nút 'Send message'."
+      }
+    ],
+    "expectedResult": "Hệ thống hiển thị thông báo lỗi validation yêu cầu tích chọn checkbox. Form không được gửi.",
+    "actualResult": "",
+    "status": "",
+    "priority": "High",
+    "relatedRequirements": [
+      "YC_HT_003_ChuaDongYDK"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_Support_Contact_004",
+    "testCaseName": "Kiểm tra liên kết Terms & Conditions",
+    "description": "Kiểm tra liên kết 'Terms & Conditions' hoạt động và mở trang/modal chứa điều khoản.",
+    "preconditions": [
+      "Người dùng đang ở trang Contact Us (URL: /support)."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhấp vào liên kết 'Terms & Conditions'."
+      }
+    ],
+    "expectedResult": "Hệ thống mở một trang hoặc modal mới hiển thị nội dung về Điều khoản và Điều kiện sử dụng.",
+    "actualResult": "",
+    "status": "",
+    "priority": "Medium",
+    "relatedRequirements": [
+      "YC_HT_004_LienKetDK"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_Support_Contact_005",
+    "testCaseName": "Kiểm tra liên kết Privacy Policy",
+    "description": "Kiểm tra liên kết 'Privacy Policy' hoạt động và mở trang/modal chứa chính sách bảo mật.",
+    "preconditions": [
+      "Người dùng đang ở trang Contact Us (URL: /support)."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhấp vào liên kết 'Privacy Policy'."
+      }
+    ],
+    "expectedResult": "Hệ thống mở một trang hoặc modal mới hiển thị nội dung về Chính sách bảo mật.",
+    "actualResult": "",
+    "status": "",
+    "priority": "Medium",
+    "relatedRequirements": [
+      "YC_HT_005_LienKetCSBM"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_Support_FAQ_001",
+    "testCaseName": "Tìm kiếm trong FAQ với từ khóa tồn tại",
+    "description": "Kiểm tra chức năng tìm kiếm hiển thị các câu hỏi FAQ chứa từ khóa đã nhập.",
+    "preconditions": [
+      "Người dùng đang ở trang Support (URL: /support).",
+      "Trang hiển thị phần FAQ."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhập một từ khóa hợp lệ (ví dụ: 'account') vào trường tìm kiếm 'How can we help you?'."
+      }
+    ],
+    "expectedResult": "Danh sách các câu hỏi FAQ được lọc, chỉ hiển thị những câu chứa từ khóa đã nhập. Các mục FAQ không chứa từ khóa bị ẩn.",
+    "actualResult": "",
+    "status": "",
+    "priority": "High",
+    "relatedRequirements": [
+      "YC_HT_006_TimKiemFAQ"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_Support_FAQ_002",
+    "testCaseName": "Tìm kiếm trong FAQ với từ khóa không tồn tại",
+    "description": "Kiểm tra chức năng tìm kiếm hiển thị thông báo khi không có câu hỏi FAQ nào chứa từ khóa.",
+    "preconditions": [
+      "Người dùng đang ở trang Support (URL: /support).",
+      "Trang hiển thị phần FAQ."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhập một từ khóa không tồn tại (ví dụ: 'randomtext123') vào trường tìm kiếm 'How can we help you?'."
+      }
+    ],
+    "expectedResult": "Hệ thống hiển thị thông báo không có kết quả. Danh sách FAQ trống.",
+    "actualResult": "",
+    "status": "",
+    "priority": "Medium",
+    "relatedRequirements": [
+      "YC_HT_007_TimKiemFAQNoResult"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_Support_FAQ_003",
+    "testCaseName": "Lọc FAQ theo danh mục",
+    "description": "Kiểm tra khi nhấp vào một danh mục ở sidebar, danh sách FAQ được lọc theo danh mục đó.",
+    "preconditions": [
+      "Người dùng đang ở trang Support (URL: /support).",
+      "Trang hiển thị phần FAQ với sidebar danh mục."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhấp vào một danh mục ở sidebar bên trái (ví dụ: 'Account')."
+      }
+    ],
+    "expectedResult": "Danh sách các câu hỏi FAQ được lọc, chỉ hiển thị những câu thuộc danh mục đã chọn.",
+    "actualResult": "",
+    "status": "",
+    "priority": "High",
+    "relatedRequirements": [
+      "YC_HT_008_LocFAQTheoDanhMuc"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_Support_FAQ_004",
+    "testCaseName": "Mở/Đóng nội dung FAQ",
+    "description": "Kiểm tra khi nhấp vào tiêu đề một câu hỏi FAQ, nội dung chi tiết của câu hỏi đó hiển thị hoặc ẩn đi.",
+    "preconditions": [
+      "Người dùng đang ở trang Support (URL: /support).",
+      "Trang hiển thị phần FAQ."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhấp vào tiêu đề của một câu hỏi FAQ (ví dụ: 'What is this website?')."
+      }
+    ],
+    "expectedResult": "Phần nội dung chi tiết dưới tiêu đề câu hỏi xuất hiện (hiển thị). Biểu tượng bên cạnh tiêu đề có thể thay đổi (từ mũi tên xuống thành mũi tên lên).",
+    "actualResult": "",
+    "status": "",
+    "priority": "High",
+    "relatedRequirements": [
+      "YC_HT_009_MoDongFAQ"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_Support_FAQ_005",
+    "testCaseName": "Mở/Đóng nội dung FAQ lần thứ hai (Toggle)",
+    "description": "Kiểm tra khi nhấp lại vào tiêu đề câu hỏi FAQ đã mở, nội dung chi tiết sẽ ẩn đi.",
+    "preconditions": [
+      "Người dùng đang ở trang Support (URL: /support).",
+      "Trang hiển thị phần FAQ.",
+      "Một câu hỏi FAQ đang hiển thị nội dung (đã được mở)."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhấp lại vào tiêu đề của câu hỏi FAQ đang mở."
+      }
+    ],
+    "expectedResult": "Phần nội dung chi tiết dưới tiêu đề câu hỏi ẩn đi. Biểu tượng bên cạnh tiêu đề có thể thay đổi (từ mũi tên lên thành mũi tên xuống).",
+    "actualResult": "",
+    "status": "",
+    "priority": "High",
+    "relatedRequirements": [
+      "YC_HT_010_ToggleFAQ"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_JournalsSearch_001",
+    "testCaseName": "Tìm kiếm Journals theo từ khóa/tiêu đề",
+    "description": "Kiểm tra kết quả tìm kiếm hiển thị đúng các journal chứa từ khóa/tiêu đề đã nhập.",
+    "preconditions": [
+      "Người dùng đang ở trang Journals Search (URL: /journals)."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhập một từ khóa/tiêu đề hợp lệ (ví dụ: 'admin') vào trường tìm kiếm chính 'Enter Keyword Title/Journal Name'."
+      },
+      {
+        "stepNumber": 2,
+        "action": "Nhấp vào nút 'Search'."
+      }
+    ],
+    "expectedResult": "Trang hiển thị danh sách các journal có chứa từ khóa/tiêu đề đã nhập (ví dụ: Results (76)). Số lượng kết quả cập nhật.",
+    "actualResult": "",
+    "status": "",
+    "priority": "High",
+    "relatedRequirements": [
+      "YC_TKJ_001_TimTheoKeyword"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_JournalsSearch_002",
+    "testCaseName": "Tìm kiếm Journals với từ khóa không tồn tại",
+    "description": "Kiểm tra hệ thống hiển thị thông báo khi không tìm thấy kết quả cho từ khóa.",
+    "preconditions": [
+      "Người dùng đang ở trang Journals Search (URL: /journals)."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhập một từ khóa không tồn tại (ví dụ: 'nonexistentjournal123') vào trường tìm kiếm chính."
+      },
+      {
+        "stepNumber": 2,
+        "action": "Nhấp vào nút 'Search'."
+      }
+    ],
+    "expectedResult": "Hệ thống hiển thị thông báo 'No results found'. Danh sách kết quả trống.",
+    "actualResult": "",
+    "status": "",
+    "priority": "Medium",
+    "relatedRequirements": [
+      "YC_TKJ_002_KhongCoKetQua"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_JournalsSearch_003",
+    "testCaseName": "Tìm kiếm Journal với trường trống",
+    "description": "Kiểm tra hành vi khi nhấp nút Search mà không nhập bất kỳ tiêu chí nào.",
+    "preconditions": [
+      "Người dùng đang ở trang Journals Search (URL: /journals).",
+      "Các trường tìm kiếm đều trống."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhấp vào nút 'Search'."
+      }
+    ],
+    "expectedResult": "Trang hiển thị lại danh sách đầy đủ tất cả các journal.",
+    "actualResult": "",
+    "status": "",
+    "priority": "Medium",
+    "relatedRequirements": [
+      "YC_TKJ_003_TimKiemTrong"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_JournalsSearch_004",
+    "testCaseName": "Sử dụng nút Clear trên trang Journals Search",
+    "description": "Kiểm tra nút 'Clear' xóa tất cả nội dung trong các trường tìm kiếm và hiển thị lại danh sách đầy đủ.",
+    "preconditions": [
+      "Người dùng đang ở trang Journals Search (URL: /journals).",
+      "Đã nhập dữ liệu vào ít nhất một trường tìm kiếm."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhập từ khóa (ví dụ: 'test')."
+      },
+      {
+        "stepNumber": 2,
+        "action": "Nhấp vào nút 'Search'."
+      },
+      {
+        "stepNumber": 3,
+        "action": "Nhấp vào nút 'Clear'."
+      }
+    ],
+    "expectedResult": "Tất cả các trường tìm kiếm (từ khóa, nâng cao) được làm trống. Trang hiển thị lại danh sách đầy đủ tất cả các journal.",
+    "actualResult": "",
+    "status": "",
+    "priority": "Medium",
+    "relatedRequirements": [
+      "YC_TKJ_004_XoaBoLoc"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_JournalsSearch_005",
+    "testCaseName": "Sắp xếp kết quả tìm kiếm Journals theo Tiêu đề",
+    "description": "Kiểm tra chức năng sắp xếp kết quả theo tiêu chí 'Title'.",
+    "preconditions": [
+      "Người dùng đang ở trang Journals Search (URL: /journals).",
+      "Có danh sách kết quả được hiển thị."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhấp vào dropdown 'Sort By'."
+      },
+      {
+        "stepNumber": 2,
+        "action": "Chọn tùy chọn 'Title'."
+      }
+    ],
+    "expectedResult": "Danh sách các journal được sắp xếp lại theo Tiêu đề (theo thứ tự bảng chữ cái A-Z).",
+    "actualResult": "",
+    "status": "",
+    "priority": "Medium",
+    "relatedRequirements": [
+      "YC_TKJ_005_SapXepTheoTieuDe"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_JournalsSearch_006",
+    "testCaseName": "Chuyển hướng đến trang chi tiết Journal từ danh sách",
+    "description": "Kiểm tra khi nhấp vào một journal card, người dùng được đưa đến trang chi tiết của journal đó.",
+    "preconditions": [
+      "Người dùng đang ở trang Journals Search (URL: /journals).",
+      "Có ít nhất một journal hiển thị trong danh sách."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhấp vào nút 'Details' trên bất kỳ journal card nào trong danh sách kết quả (ví dụ: Journal '@GRH')."
+      }
+    ],
+    "expectedResult": "Hệ thống chuyển hướng người dùng đến trang chi tiết của journal đã nhấp (URL: /journals/detail?id=...).",
+    "actualResult": "",
+    "status": "",
+    "priority": "High",
+    "relatedRequirements": [
+      "YC_TKJ_006_XemChiTietTuList"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_JournalsSearch_007",
+    "testCaseName": "Sử dụng phân trang để xem các kết quả Journals tiếp theo",
+    "description": "Kiểm tra nút phân trang chuyển đến trang kết quả tiếp theo.",
+    "preconditions": [
+      "Người dùng đang ở trang Journals Search (URL: /journals).",
+      "Tổng số kết quả lớn hơn số lượng kết quả trên một trang."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhấp vào biểu tượng mũi tên 'Next page' trong phần phân trang."
+      }
+    ],
+    "expectedResult": "Trang hiển thị các journal của trang tiếp theo. URL có thể thay đổi tham số trang.",
+    "actualResult": "",
+    "status": "",
+    "priority": "Medium",
+    "relatedRequirements": [
+      "YC_TKJ_007_PhanTrang"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_JournalsSearch_008",
+    "testCaseName": "Hiển thị các tùy chọn tìm kiếm Journals nâng cao",
+    "description": "Kiểm tra liên kết 'Hide advanced search options' hiển thị các trường lọc bổ sung.",
+    "preconditions": [
+      "Người dùng đang ở trang Journals Search (URL: /journals).",
+      "Các tùy chọn tìm kiếm nâng cao đang bị ẩn (chữ 'Hide advanced search options' được hiển thị)."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhấp vào liên kết 'Hide advanced search options'."
+      }
+    ],
+    "expectedResult": "Các trường 'Subject Areas', 'Quartile', 'ISSN', 'Open Access Types', 'Publisher', 'Language', 'Metrics' xuất hiện dưới thanh tìm kiếm chính. Liên kết đổi thành 'Hide advanced search options'.",
+    "actualResult": "",
+    "status": "",
+    "priority": "Medium",
+    "relatedRequirements": [
+      "YC_TKJ_008_HienTimKiemNangCao"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_JournalsSearch_009",
+    "testCaseName": "Ẩn các tùy chọn tìm kiếm Journals nâng cao",
+    "description": "Kiểm tra liên kết 'Hide advanced search options' ẩn các trường lọc bổ sung.",
+    "preconditions": [
+      "Người dùng đang ở trang Journals Search (URL: /journals).",
+      "Các tùy chọn tìm kiếm nâng cao đang được hiển thị (chữ 'Hide advanced search options' được hiển thị)."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhấp vào liên kết 'Hide advanced search options'."
+      }
+    ],
+    "expectedResult": "Các trường 'Subject Areas', 'Quartile', 'ISSN', 'Open Access Types', 'Publisher', 'Language', 'Metrics' bị ẩn. Liên kết đổi thành 'Show advanced search options'.",
+    "actualResult": "",
+    "status": "",
+    "priority": "Medium",
+    "relatedRequirements": [
+      "YC_TKJ_009_AnTimKiemNangCao"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_JournalsSearch_010",
+    "testCaseName": "Tìm kiếm Journals theo ISSN nâng cao",
+    "description": "Kiểm tra lọc kết quả theo ISSN trong tùy chọn nâng cao.",
+    "preconditions": [
+      "Người dùng đang ở trang Journals Search (URL: /journals).",
+      "Các tùy chọn tìm kiếm nâng cao đang được hiển thị."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhập một ISSN hợp lệ (ví dụ: '20349130') vào trường 'ISSN'."
+      },
+      {
+        "stepNumber": 2,
+        "action": "Nhấp vào nút 'Search'."
+      }
+    ],
+    "expectedResult": "Trang hiển thị danh sách các journal có ISSN tương ứng (ví dụ: Results (1)). Bộ lọc 'ISSN: 20349130' xuất hiện phía trên danh sách. Số lượng kết quả cập nhật.",
+    "actualResult": "",
+    "status": "",
+    "priority": "High",
+    "relatedRequirements": [
+      "YC_TKJ_010_TimTheoISSN"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_JournalsSearch_011",
+    "testCaseName": "Tìm kiếm Journals theo Rank (Quartile) nâng cao",
+    "description": "Kiểm tra lọc kết quả theo Quartile trong tùy chọn nâng cao.",
+    "preconditions": [
+      "Người dùng đang ở trang Journals Search (URL: /journals).",
+      "Các tùy chọn tìm kiếm nâng cao đang được hiển thị."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Chọn một Quartile (ví dụ: 'Q1') từ dropdown 'Quartile'."
+      },
+      {
+        "stepNumber": 2,
+        "action": "Nhấp vào nút 'Search'."
+      }
+    ],
+    "expectedResult": "Trang hiển thị danh sách các journal có Quartile tương ứng. Bộ lọc 'Quartile: Q1' xuất hiện phía trên danh sách. Số lượng kết quả cập nhật.",
+    "actualResult": "",
+    "status": "",
+    "priority": "High",
+    "relatedRequirements": [
+      "YC_TKJ_011_TimTheoQuartile"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_JournalDetail_001",
+    "testCaseName": "Hiển thị thông tin chi tiết Journal",
+    "description": "Kiểm tra trang chi tiết hiển thị đầy đủ các thông tin chính của journal.",
+    "preconditions": [
+      "Người dùng đang ở trang chi tiết của một journal cụ thể (URL: /journals/detail?id=...). Ví dụ: Journal '@GRH'."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Truy cập trang chi tiết journal."
+      },
+      {
+        "stepNumber": 2,
+        "action": "Quan sát các thông tin hiển thị."
+      }
+    ],
+    "expectedResult": "Trang hiển thị các thông tin như Tiêu đề (@GRH), ISSN, Overall Rank, Impact Factor, H-index, SJR, Best Quartile, Coverage History, Publisher, Country, Areas, và các tab (Overview, Impact Factor,...).",
+    "actualResult": "",
+    "status": "",
+    "priority": "High",
+    "relatedRequirements": [
+      "YC_CTJ_001_HienThiThongTin"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_JournalDetail_002",
+    "testCaseName": "Chuyển đổi giữa các tab thông tin Journal",
+    "description": "Kiểm tra việc nhấp vào các tab khác nhau hiển thị nội dung tương ứng.",
+    "preconditions": [
+      "Người dùng đang ở trang chi tiết của một journal có nhiều tab thông tin."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhấp vào tab 'Impact Factor'."
+      },
+      {
+        "stepNumber": 2,
+        "action": "Quan sát nội dung bên dưới các tab."
+      },
+      {
+        "stepNumber": 3,
+        "action": "Nhấp vào tab 'SJR'."
+      },
+      {
+        "stepNumber": 4,
+        "action": "Quan sát nội dung bên dưới các tab."
+      }
+    ],
+    "expectedResult": "Nội dung hiển thị bên dưới các tab thay đổi tương ứng với tab được chọn.",
+    "actualResult": "",
+    "status": "",
+    "priority": "Medium",
+    "relatedRequirements": [
+      "YC_CTJ_002_ChuyenTab"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_JournalDetail_003",
+    "testCaseName": "Sử dụng nút 'Follow' Journal",
+    "description": "Kiểm tra chức năng 'Follow' journal.",
+    "preconditions": [
+      "Người dùng đã đăng nhập.",
+      "Người dùng đang ở trang chi tiết của một journal.",
+      "Journal hiện tại chưa được 'Follow'."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhấp vào nút 'Follow'."
+      }
+    ],
+    "expectedResult": "Nút 'Follow' thay đổi trạng thái/màu sắc (ví dụ: thành 'Following'). Hệ thống hiển thị thông báo xác nhận.",
+    "actualResult": "",
+    "status": "",
+    "priority": "High",
+    "relatedRequirements": [
+      "YC_CTJ_003_Follow"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_JournalDetail_004",
+    "testCaseName": "Sử dụng nút 'Unfollow' Journal",
+    "description": "Kiểm tra chức năng 'Unfollow' journal.",
+    "preconditions": [
+      "Người dùng đã đăng nhập.",
+      "Người dùng đang ở trang chi tiết của một journal.",
+      "Journal hiện tại đang được 'Follow'."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhấp vào nút 'Follow' (đang ở trạng thái 'Following')."
+      }
+    ],
+    "expectedResult": "Nút 'Follow' thay đổi trạng thái/màu sắc trở lại ban đầu. Hệ thống có thể hiển thị thông báo xác nhận.",
+    "actualResult": "",
+    "status": "",
+    "priority": "High",
+    "relatedRequirements": [
+      "YC_CTJ_004_Unfollow"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_JournalDetail_005",
+    "testCaseName": "Sử dụng nút 'Journal Website'",
+    "description": "Kiểm tra nút 'Journal Website' mở trang web chính thức của journal.",
+    "preconditions": [
+      "Người dùng đang ở trang chi tiết của một journal.",
+      "Journal này có thông tin URL trang web chính thức."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhấp vào nút 'Journal Website'."
+      }
+    ],
+    "expectedResult": "Hệ thống mở một tab mới trên trình duyệt, điều hướng đến URL trang web chính thức của journal.",
+    "actualResult": "",
+    "status": "",
+    "priority": "High",
+    "relatedRequirements": [
+      "YC_CTJ_005_Website"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_AddConference_001",
+    "testCaseName": "Thêm Conference thành công với dữ liệu hợp lệ",
+    "description": "Kiểm tra người dùng có thể thêm conference mới khi điền đầy đủ và hợp lệ các trường bắt buộc, thêm các thông tin phụ (ngày quan trọng, topics, URL ảnh, mô tả), xem lại và đồng ý điều khoản.",
+    "preconditions": [
+      "Người dùng đã đăng nhập với vai trò/quyền hạn được phép thêm conference (implied by 'Publish' button).",
+      "Người dùng đang ở trang Add New Conference (URL: /addConference)."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhập 'Conference name' hợp lệ (ví dụ: 'Hội nghị thượng đỉnh')."
+      },
+      {
+        "stepNumber": 2,
+        "action": "Nhập 'Acronym' hợp lệ (ví dụ: 'HNTD')."
+      },
+      {
+        "stepNumber": 3,
+        "action": "Nhập 'Link' hợp lệ (ví dụ: 'https://www.facebook.com/')."
+      },
+      {
+        "stepNumber": 4,
+        "action": "Chọn 'Type' (ví dụ: 'Offline')."
+      },
+      {
+        "stepNumber": 5,
+        "action": "Trong phần Location, nhập 'Address' (ví dụ: '12')."
+      },
+      {
+        "stepNumber": 6,
+        "action": "Trong phần Location, chọn 'Continent' (ví dụ: 'Asia')."
+      },
+      {
+        "stepNumber": 7,
+        "action": "Trong phần Location, chọn 'Country' (ví dụ: 'Vietnam')."
+      },
+      {
+        "stepNumber": 8,
+        "action": "Trong phần Location, chọn 'State/Province' (ví dụ: 'Yên Bái')."
+      },
+      {
+        "stepNumber": 9,
+        "action": "Trong phần Important Dates, nhập 'Name' (ví dụ: 'Conference Date')."
+      },
+      {
+        "stepNumber": 10,
+        "action": "Trong phần Important Dates, chọn 'Type' (ví dụ: 'Conference Dates')."
+      },
+      {
+        "stepNumber": 11,
+        "action": "Trong phần Important Dates, nhập 'Start' date (ví dụ: '04/29/2025')."
+      },
+      {
+        "stepNumber": 12,
+        "action": "Trong phần Important Dates, nhập 'End' date (ví dụ: '04/30/2025')."
+      },
+      {
+        "stepNumber": 13,
+        "action": "Nhấp nút 'Add Date' để thêm ngày khác (tùy chọn, nếu có)."
+      },
+      {
+        "stepNumber": 14,
+        "action": "Trong phần Topics, nhập một Topic (ví dụ: 'IT')."
+      },
+      {
+        "stepNumber": 15,
+        "action": "Nhấp nút 'Add' bên cạnh trường Topic."
+      },
+      {
+        "stepNumber": 16,
+        "action": "Nhập một Topic khác (ví dụ: 'AI')."
+      },
+      {
+        "stepNumber": 17,
+        "action": "Nhấp nút 'Add' bên cạnh trường Topic."
+      },
+      {
+        "stepNumber": 18,
+        "action": "Nhập 'Image URL' hợp lệ (tùy chọn, nếu có)."
+      },
+      {
+        "stepNumber": 19,
+        "action": "Nhập 'Description' (tùy chọn, nếu có)."
+      },
+      {
+        "stepNumber": 20,
+        "action": "Nhấp nút 'Next'."
+      },
+      {
+        "stepNumber": 21,
+        "action": "Tại trang 'Review Information', kiểm tra lại các thông tin đã nhập có hiển thị đúng không."
+      },
+      {
+        "stepNumber": 22,
+        "action": "Nhấp nút 'Next'."
+      },
+      {
+        "stepNumber": 23,
+        "action": "Tại trang 'Terms and Conditions', tích chọn checkbox 'I agree to the terms and conditions'."
+      },
+      {
+        "stepNumber": 24,
+        "action": "Nhấp nút 'Add Conference'."
+      }
+    ],
+    "expectedResult": "Hệ thống hiển thị thông báo thêm conference thành công. Conference mới được thêm vào danh sách các conference (cần chờ duyệt). Người dùng được chuyển hướng đến trang danh sách conference.",
+    "actualResult": "",
+    "status": "",
+    "priority": "High",
+    "relatedRequirements": [
+      "YC_AC_001_ThemThanhCong"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_AddConference_002",
+    "testCaseName": "Thêm Conference thất bại khi để trống trường bắt buộc (Bước 1)",
+    "description": "Kiểm tra hệ thống hiển thị thông báo lỗi validation khi một trong các trường bắt buộc ở bước 1 bị bỏ trống.",
+    "preconditions": [
+      "Người dùng đang ở trang Add New Conference (URL: /addConference)."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhập đầy đủ các trường bắt buộc khác, nhưng để trống một trường bắt buộc (ví dụ: 'Conference name')."
+      },
+      {
+        "stepNumber": 2,
+        "action": "Điền hoặc bỏ trống các trường không bắt buộc khác."
+      },
+      {
+        "stepNumber": 3,
+        "action": "Nhấp nút 'Next'."
+      }
+    ],
+    "expectedResult": "Hệ thống hiển thị thông báo lỗi validation dưới trường bắt buộc bị bỏ trống. Người dùng vẫn ở bước 1 'Add Conference'.",
+    "actualResult": "",
+    "status": "",
+    "priority": "High",
+    "relatedRequirements": [
+      "YC_AC_002_DeTrongBatBuoc1"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_AddConference_003",
+    "testCaseName": "Thêm Conference thất bại với dữ liệu không hợp lệ (Ví dụ: Link)",
+    "description": "Kiểm tra hệ thống hiển thị thông báo lỗi validation khi nhập dữ liệu không đúng định dạng yêu cầu.",
+    "preconditions": [
+      "Người dùng đang ở trang Add New Conference (URL: /addConference)."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhập đầy đủ các trường bắt buộc khác với dữ liệu hợp lệ."
+      },
+      {
+        "stepNumber": 2,
+        "action": "Nhập dữ liệu không hợp lệ vào trường 'Link' (ví dụ: 'daykhongphailaurl')."
+      },
+      {
+        "stepNumber": 3,
+        "action": "Điền hoặc bỏ trống các trường còn lại."
+      },
+      {
+        "stepNumber": 4,
+        "action": "Nhấp nút 'Next'."
+      }
+    ],
+    "expectedResult": "Hệ thống hiển thị thông báo lỗi validation dưới trường 'Link' (ví dụ: 'Invalid URL format'). Người dùng vẫn ở bước 1 'Add Conference'.",
+    "actualResult": "",
+    "status": "",
+    "priority": "High",
+    "relatedRequirements": [
+      "YC_AC_003_SaiDinhDangLink"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_AddConference_004",
+    "testCaseName": "Thêm Important Date thất bại với ngày không hợp lệ",
+    "description": "Kiểm tra hệ thống hiển thị thông báo lỗi validation khi nhập ngày không đúng định dạng hoặc logic (ví dụ: End date trước Start date).",
+    "preconditions": [
+      "Người dùng đang ở trang Add New Conference (URL: /addConference)."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Trong phần Important Dates, nhập 'Name' và chọn 'Type'."
+      },
+      {
+        "stepNumber": 2,
+        "action": "Nhập ngày 'Start' sau ngày 'End' (ví dụ: Start: 04/30/2025, End: 04/29/2025)."
+      },
+      {
+        "stepNumber": 3,
+        "action": "Nhấp nút 'Add Date'."
+      }
+    ],
+    "expectedResult": "Hệ thống hiển thị thông báo lỗi validation liên quan đến ngày. Date entry không được thêm vào danh sách.",
+    "actualResult": "",
+    "status": "",
+    "priority": "High",
+    "relatedRequirements": [
+      "YC_AC_004_NgayKhongHopLe"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_AddConference_005",
+    "testCaseName": "Thêm Topic thành công",
+    "description": "Kiểm tra người dùng có thể thêm topic vào danh sách.",
+    "preconditions": [
+      "Người dùng đang ở trang Add New Conference (URL: /addConference)."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Trong phần Topics, nhập một từ khóa vào trường 'Add a topic'."
+      },
+      {
+        "stepNumber": 2,
+        "action": "Nhấp nút 'Add'."
+      }
+    ],
+    "expectedResult": "Từ khóa đã nhập xuất hiện dưới dạng một thẻ (tag/chip) bên dưới trường nhập liệu Topics. Trường nhập liệu Topics được làm trống.",
+    "actualResult": "",
+    "status": "",
+    "priority": "High",
+    "relatedRequirements": [
+      "YC_AC_005_ThemTopic"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_AddConference_006",
+    "testCaseName": "Xóa Topic đã thêm",
+    "description": "Kiểm tra người dùng có thể xóa topic đã thêm.",
+    "preconditions": [
+      "Người dùng đang ở trang Add New Conference (URL: /addConference).",
+      "Đã có ít nhất một topic được thêm."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Thêm một hoặc nhiều topic."
+      },
+      {
+        "stepNumber": 2,
+        "action": "Nhấp vào biểu tượng 'x' trên thẻ topic muốn xóa."
+      }
+    ],
+    "expectedResult": "Thẻ topic đã chọn bị xóa khỏi danh sách.",
+    "actualResult": "",
+    "status": "",
+    "priority": "High",
+    "relatedRequirements": [
+      "YC_AC_006_XoaTopic"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_AddConference_007",
+    "testCaseName": "Kiểm tra sự phụ thuộc giữa Continent, Country, State/Province",
+    "description": "Kiểm tra danh sách Country phụ thuộc vào Continent được chọn và danh sách State/Province phụ thuộc vào Country được chọn.",
+    "preconditions": [
+      "Người dùng đang ở trang Add New Conference (URL: /addConference)."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Trong phần Location, nhấp vào dropdown 'Continent'."
+      },
+      {
+        "stepNumber": 2,
+        "action": "Quan sát danh sách các châu lục."
+      },
+      {
+        "stepNumber": 3,
+        "action": "Chọn một 'Continent' (ví dụ: 'Asia')."
+      },
+      {
+        "stepNumber": 4,
+        "action": "Nhấp vào dropdown 'Country'."
+      },
+      {
+        "stepNumber": 5,
+        "action": "Quan sát danh sách các quốc gia. Xác nhận danh sách chỉ bao gồm các quốc gia thuộc châu lục đã chọn."
+      },
+      {
+        "stepNumber": 6,
+        "action": "Chọn một 'Country' (ví dụ: 'Vietnam')."
+      },
+      {
+        "stepNumber": 7,
+        "action": "Nhấp vào dropdown 'State/Province'."
+      },
+      {
+        "stepNumber": 8,
+        "action": "Quan sát danh sách các tỉnh/thành phố. Xác nhận danh sách chỉ bao gồm các tỉnh/thành phố của quốc gia đã chọn."
+      }
+    ],
+    "expectedResult": "Danh sách các quốc gia trong dropdown 'Country' thay đổi sau khi chọn 'Continent'. Danh sách các tỉnh/thành phố trong dropdown 'State/Province' thay đổi sau khi chọn 'Country'.",
+    "actualResult": "",
+    "status": "",
+    "priority": "High",
+    "relatedRequirements": [
+      "YC_AC_007_DependentDropdowns"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_AddConference_008",
+    "testCaseName": "Kiểm tra nút 'Back' tại trang Review",
+    "description": "Kiểm tra khi nhấp nút 'Back' tại trang Review, người dùng quay về bước 1 với dữ liệu đã nhập còn nguyên.",
+    "preconditions": [
+      "Người dùng đã điền đầy đủ dữ liệu ở bước 1 và đang ở trang 'Review Information'."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhấp nút 'Back'."
+      }
+    ],
+    "expectedResult": "Hệ thống quay trở lại trang 'Add Conference' (Bước 1). Tất cả dữ liệu đã nhập trước đó vẫn hiển thị trong các trường.",
+    "actualResult": "",
+    "status": "",
+    "priority": "High",
+    "relatedRequirements": [
+      "YC_AC_008_BackTuReview"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_AddConference_009",
+    "testCaseName": "Kiểm tra nút 'Back' tại trang Terms and Conditions",
+    "description": "Kiểm tra khi nhấp nút 'Back' tại trang Terms and Conditions, người dùng quay về trang Review.",
+    "preconditions": [
+      "Người dùng đã hoàn thành bước 1, bước 2 và đang ở trang 'Terms and Conditions'."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhấp nút 'Back'."
+      }
+    ],
+    "expectedResult": "Hệ thống quay trở lại trang 'Review Information' (Bước 2).",
+    "actualResult": "",
+    "status": "",
+    "priority": "High",
+    "relatedRequirements": [
+      "YC_AC_009_BackTuTerms"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_AddConference_010",
+    "testCaseName": "Thêm Conference thất bại khi chưa đồng ý điều khoản",
+    "description": "Kiểm tra hệ thống hiển thị thông báo lỗi khi cố gắng hoàn thành quy trình mà chưa tích chọn checkbox 'I agree to the terms and conditions' ở bước cuối.",
+    "preconditions": [
+      "Người dùng đã hoàn thành bước 1, bước 2 và đang ở trang 'Terms and Conditions'.",
+      "Checkbox 'I agree to the terms and conditions' chưa được tích chọn."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhấp nút 'Add Conference'."
+      }
+    ],
+    "expectedResult": "Hệ thống hiển thị thông báo lỗi validation yêu cầu tích chọn checkbox. Người dùng vẫn ở trang 'Terms and Conditions'.",
+    "actualResult": "",
+    "status": "",
+    "priority": "High",
+    "relatedRequirements": [
+      "YC_AC_010_ChuaDongYDieuKhoan"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_AddConference_011",
+    "testCaseName": "Kiểm tra dữ liệu hiển thị chính xác tại trang Review",
+    "description": "Kiểm tra các thông tin hiển thị trên trang Review có khớp với dữ liệu đã nhập ở bước 1 hay không.",
+    "preconditions": [
+      "Người dùng đã điền đầy đủ dữ liệu (bao gồm cả tùy chọn) ở bước 1 và đang ở trang 'Review Information'."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Quan sát và so sánh tất cả các thông tin hiển thị trên trang Review (Conference name, Acronym, Link, Type, Location, Important Dates, Topics, Description) với dữ liệu đã nhập ở bước 1."
+      }
+    ],
+    "expectedResult": "Tất cả các thông tin hiển thị trên trang Review phải chính xác và khớp với dữ liệu người dùng đã nhập/chọn ở bước 1.",
+    "actualResult": "",
+    "status": "",
+    "priority": "High",
+    "relatedRequirements": [
+      "YC_AC_011_ReviewDataAccuracy"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_AddConference_012",
+    "testCaseName": "Thêm Conference với các trường tùy chọn bị bỏ trống",
+    "description": "Kiểm tra hệ thống có thể xử lý thành công việc thêm conference ngay cả khi các trường không bắt buộc (Image URL, Description) bị bỏ trống.",
+    "preconditions": [
+      "Người dùng đã đăng nhập với vai trò/quyền hạn được phép thêm conference.",
+      "Người dùng đang ở trang Add New Conference (URL: /addConference)."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhập đầy đủ các trường bắt buộc với dữ liệu hợp lệ."
+      },
+      {
+        "stepNumber": 2,
+        "action": "Để trống các trường tùy chọn như 'Image URL', 'Description'."
+      },
+      {
+        "stepNumber": 3,
+        "action": "Thêm ít nhất một Important Date và một Topic (hoặc bỏ trống nếu logic cho phép)."
+      },
+      {
+        "stepNumber": 4,
+        "action": "Nhấp nút 'Next'."
+      },
+      {
+        "stepNumber": 5,
+        "action": "Tại trang 'Review Information', kiểm tra các trường tùy chọn bị bỏ trống có hiển thị đúng không (ví dụ: 'No description provided')."
+      },
+      {
+        "stepNumber": 6,
+        "action": "Nhấp nút 'Next'."
+      },
+      {
+        "stepNumber": 7,
+        "action": "Tại trang 'Terms and Conditions', tích chọn checkbox 'I agree to the terms and conditions'."
+      },
+      {
+        "stepNumber": 8,
+        "action": "Nhấp nút 'Add Conference'."
+      }
+    ],
+    "expectedResult": "Hệ thống hiển thị thông báo thêm conference thành công. Conference mới được thêm vào hệ thống mà không cần các thông tin tùy chọn.",
+    "actualResult": "",
+    "status": "",
+    "priority": "High",
+    "relatedRequirements": [
+      "YC_AC_012_BoTrongTuyChon"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_JournalsSearch_Sort_002",
+    "testCaseName": "Sắp xếp kết quả tìm kiếm Journals theo Publisher",
+    "description": "Kiểm tra chức năng sắp xếp kết quả theo tiêu chí 'Publisher'.",
+    "preconditions": [
+      "Người dùng đang ở trang Journals Search (URL: /journals).",
+      "Có danh sách kết quả được hiển thị.",
+      "Tùy chọn 'Publisher' tồn tại trong dropdown 'Sort By'."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhấp vào dropdown 'Sort By'."
+      },
+      {
+        "stepNumber": 2,
+        "action": "Chọn tùy chọn 'Publisher'."
+      }
+    ],
+    "expectedResult": "Danh sách các journal được sắp xếp lại theo tên Publisher (theo thứ tự bảng chữ cái A-Z hoặc Z-A).",
+    "actualResult": "",
+    "status": "",
+    "priority": "Medium",
+    "relatedRequirements": [
+      "YC_TKJ_Sort_001"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_JournalsSearch_Sort_003",
+    "testCaseName": "Sắp xếp kết quả tìm kiếm Journals theo Impact Factor",
+    "description": "Kiểm tra chức năng sắp xếp kết quả theo tiêu chí 'Impact Factor'.",
+    "preconditions": [
+      "Người dùng đang ở trang Journals Search (URL: /journals).",
+      "Có danh sách kết quả được hiển thị.",
+      "Tùy chọn 'Impact Factor' tồn tại trong dropdown 'Sort By'.",
+      "Có dữ liệu Impact Factor cho các journal."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhấp vào dropdown 'Sort By'."
+      },
+      {
+        "stepNumber": 2,
+        "action": "Chọn tùy chọn 'Impact Factor'."
+      }
+    ],
+    "expectedResult": "Danh sách các journal được sắp xếp lại theo giá trị Impact Factor.",
+    "actualResult": "",
+    "status": "",
+    "priority": "Medium",
+    "relatedRequirements": [
+      "YC_TKJ_Sort_002"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_JournalsSearch_Sort_004",
+    "testCaseName": "Sắp xếp kết quả tìm kiếm Journals theo H-index",
+    "description": "Kiểm tra chức năng sắp xếp kết quả theo tiêu chí 'H-index'.",
+    "preconditions": [
+      "Người dùng đang ở trang Journals Search (URL: /journals).",
+      "Có danh sách kết quả được hiển thị.",
+      "Tùy chọn 'H-index' tồn tại trong dropdown 'Sort By'.",
+      "Có dữ liệu H-index cho các journal."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhấp vào dropdown 'Sort By'."
+      },
+      {
+        "stepNumber": 2,
+        "action": "Chọn tùy chọn 'H-index'."
+      }
+    ],
+    "expectedResult": "Danh sách các journal được sắp xếp lại theo giá trị H-index.",
+    "actualResult": "",
+    "status": "",
+    "priority": "Medium",
+    "relatedRequirements": [
+      "YC_TKJ_Sort_003"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_JournalsSearch_Sort_005",
+    "testCaseName": "Sắp xếp kết quả tìm kiếm Journals theo SJR",
+    "description": "Kiểm tra chức năng sắp xếp kết quả theo tiêu chí 'SJR'.",
+    "preconditions": [
+      "Người dùng đang ở trang Journals Search (URL: /journals).",
+      "Có danh sách kết quả được hiển thị.",
+      "Tùy chọn 'SJR' tồn tại trong dropdown 'Sort By'.",
+      "Có dữ liệu SJR cho các journal."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhấp vào dropdown 'Sort By'."
+      },
+      {
+        "stepNumber": 2,
+        "action": "Chọn tùy chọn 'SJR'."
+      }
+    ],
+    "expectedResult": "Danh sách các journal được sắp xếp lại theo giá trị SJR.",
+    "actualResult": "",
+    "status": "",
+    "priority": "Medium",
+    "relatedRequirements": [
+      "YC_TKJ_Sort_004"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_JournalsSearch_Filter_001",
+    "testCaseName": "Tìm kiếm Journals theo Subject Areas nâng cao",
+    "description": "Kiểm tra lọc kết quả theo Subject Areas trong tùy chọn nâng cao.",
+    "preconditions": [
+      "Người dùng đang ở trang Journals Search (URL: /journals).",
+      "Các tùy chọn tìm kiếm nâng cao đang được hiển thị.",
+      "Hệ thống có journal với Subject Areas mong muốn."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Đảm bảo các tùy chọn tìm kiếm nâng cao đang hiển thị."
+      },
+      {
+        "stepNumber": 2,
+        "action": "Nhập hoặc chọn một Subject Area hợp lệ vào trường 'Subject Areas' (ví dụ: 'Business, Management and Accounting')."
+      },
+      {
+        "stepNumber": 3,
+        "action": "Nhấp vào nút 'Search'."
+      }
+    ],
+    "expectedResult": "Trang hiển thị danh sách các journal có Subject Areas tương ứng. Số lượng kết quả cập nhật.",
+    "actualResult": "",
+    "status": "",
+    "priority": "High",
+    "relatedRequirements": [
+      "YC_TKJ_Filter_001"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_JournalsSearch_Filter_002",
+    "testCaseName": "Tìm kiếm Journals theo Open Access Types nâng cao",
+    "description": "Kiểm tra lọc kết quả theo Open Access Types trong tùy chọn nâng cao.",
+    "preconditions": [
+      "Người dùng đang ở trang Journals Search (URL: /journals).",
+      "Các tùy chọn tìm kiếm nâng cao đang được hiển thị.",
+      "Hệ thống có journal với Open Access Types mong muốn."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Đảm bảo các tùy chọn tìm kiếm nâng cao đang hiển thị."
+      },
+      {
+        "stepNumber": 2,
+        "action": "Nhập hoặc chọn một Open Access Type hợp lệ vào trường 'Open Access Types'."
+      },
+      {
+        "stepNumber": 3,
+        "action": "Nhấp vào nút 'Search'."
+      }
+    ],
+    "expectedResult": "Trang hiển thị danh sách các journal có Open Access Types tương ứng. Số lượng kết quả cập nhật.",
+    "actualResult": "",
+    "status": "",
+    "priority": "Medium",
+    "relatedRequirements": [
+      "YC_TKJ_Filter_002"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_JournalsSearch_Filter_003",
+    "testCaseName": "Tìm kiếm Journals theo Publisher nâng cao",
+    "description": "Kiểm tra lọc kết quả theo Publisher trong tùy chọn nâng cao.",
+    "preconditions": [
+      "Người dùng đang ở trang Journals Search (URL: /journals).",
+      "Các tùy chọn tìm kiếm nâng cao đang được hiển thị.",
+      "Hệ thống có journal với Publisher mong muốn."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Đảm bảo các tùy chọn tìm kiếm nâng cao đang hiển thị."
+      },
+      {
+        "stepNumber": 2,
+        "action": "Nhập hoặc chọn một Publisher hợp lệ vào trường 'Publisher'."
+      },
+      {
+        "stepNumber": 3,
+        "action": "Nhấp vào nút 'Search'."
+      }
+    ],
+    "expectedResult": "Trang hiển thị danh sách các journal có Publisher tương ứng. Số lượng kết quả cập nhật.",
+    "actualResult": "",
+    "status": "",
+    "priority": "High",
+    "relatedRequirements": [
+      "YC_TKJ_Filter_003"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_JournalsSearch_Filter_004",
+    "testCaseName": "Tìm kiếm Journals theo Language nâng cao",
+    "description": "Kiểm tra lọc kết quả theo Language trong tùy chọn nâng cao.",
+    "preconditions": [
+      "Người dùng đang ở trang Journals Search (URL: /journals).",
+      "Các tùy chọn tìm kiếm nâng cao đang được hiển thị.",
+      "Hệ thống có journal với Language mong muốn."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Đảm bảo các tùy chọn tìm kiếm nâng cao đang hiển thị."
+      },
+      {
+        "stepNumber": 2,
+        "action": "Chọn một Language hợp lệ từ dropdown 'Language'."
+      },
+      {
+        "stepNumber": 3,
+        "action": "Nhấp vào nút 'Search'."
+      }
+    ],
+    "expectedResult": "Trang hiển thị danh sách các journal có Language tương ứng. Số lượng kết quả cập nhật.",
+    "actualResult": "",
+    "status": "",
+    "priority": "High",
+    "relatedRequirements": [
+      "YC_TKJ_Filter_004"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_JournalsSearch_Filter_005",
+    "testCaseName": "Tìm kiếm Journals theo Impact Factor >= X nâng cao",
+    "description": "Kiểm tra lọc kết quả theo Impact Factor lớn hơn hoặc bằng một giá trị trong tùy chọn nâng cao.",
+    "preconditions": [
+      "Người dùng đang ở trang Journals Search (URL: /journals).",
+      "Các tùy chọn tìm kiếm nâng cao đang được hiển thị.",
+      "Hệ thống có journal thỏa mãn điều kiện Impact Factor."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Đảm bảo các tùy chọn tìm kiếm nâng cao đang hiển thị."
+      },
+      {
+        "stepNumber": 2,
+        "action": "Nhập một giá trị (ví dụ: '10') vào trường 'Impact Factor' (e.g., >10)."
+      },
+      {
+        "stepNumber": 3,
+        "action": "Nhấp vào nút 'Search'."
+      }
+    ],
+    "expectedResult": "Trang hiển thị danh sách các journal có Impact Factor lớn hơn hoặc bằng 10 (hoặc logic tương ứng với placeholder). Số lượng kết quả cập nhật.",
+    "actualResult": "",
+    "status": "",
+    "priority": "High",
+    "relatedRequirements": [
+      "YC_TKJ_Filter_005"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_JournalsSearch_Filter_006",
+    "testCaseName": "Tìm kiếm Journals theo H-index >= X nâng cao",
+    "description": "Kiểm tra lọc kết quả theo H-index lớn hơn hoặc bằng một giá trị trong tùy chọn nâng cao.",
+    "preconditions": [
+      "Người dùng đang ở trang Journals Search (URL: /journals).",
+      "Các tùy chọn tìm kiếm nâng cao đang được hiển thị.",
+      "Hệ thống có journal thỏa mãn điều kiện H-index."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Đảm bảo các tùy chọn tìm kiếm nâng cao đang hiển thị."
+      },
+      {
+        "stepNumber": 2,
+        "action": "Nhập một giá trị (ví dụ: '50') vào trường 'H-index' (e.g., >50)."
+      },
+      {
+        "stepNumber": 3,
+        "action": "Nhấp vào nút 'Search'."
+      }
+    ],
+    "expectedResult": "Trang hiển thị danh sách các journal có H-index lớn hơn hoặc bằng 50 (hoặc logic tương ứng với placeholder). Số lượng kết quả cập nhật.",
+    "actualResult": "",
+    "status": "",
+    "priority": "High",
+    "relatedRequirements": [
+      "YC_TKJ_Filter_006"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_JournalsSearch_Filter_007",
+    "testCaseName": "Tìm kiếm Journals theo CiteScore >= X nâng cao",
+    "description": "Kiểm tra lọc kết quả theo CiteScore lớn hơn hoặc bằng một giá trị trong tùy chọn nâng cao.",
+    "preconditions": [
+      "Người dùng đang ở trang Journals Search (URL: /journals).",
+      "Các tùy chọn tìm kiếm nâng cao đang được hiển thị.",
+      "Hệ thống có journal thỏa mãn điều kiện CiteScore."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Đảm bảo các tùy chọn tìm kiếm nâng cao đang hiển thị."
+      },
+      {
+        "stepNumber": 2,
+        "action": "Nhập một giá trị (ví dụ: '5') vào trường 'CiteScore' (e.g., >5)."
+      },
+      {
+        "stepNumber": 3,
+        "action": "Nhấp vào nút 'Search'."
+      }
+    ],
+    "expectedResult": "Trang hiển thị danh sách các journal có CiteScore lớn hơn hoặc bằng 5 (hoặc logic tương ứng với placeholder). Số lượng kết quả cập nhật.",
+    "actualResult": "",
+    "status": "",
+    "priority": "High",
+    "relatedRequirements": [
+      "YC_TKJ_Filter_007"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_JournalsSearch_Filter_008",
+    "testCaseName": "Tìm kiếm Journals theo SJR >= X nâng cao",
+    "description": "Kiểm tra lọc kết quả theo SJR lớn hơn hoặc bằng một giá trị trong tùy chọn nâng cao.",
+    "preconditions": [
+      "Người dùng đang ở trang Journals Search (URL: /journals).",
+      "Các tùy chọn tìm kiếm nâng cao đang được hiển thị.",
+      "Hệ thống có journal thỏa mãn điều kiện SJR."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Đảm bảo các tùy chọn tìm kiếm nâng cao đang hiển thị."
+      },
+      {
+        "stepNumber": 2,
+        "action": "Nhập một giá trị (ví dụ: '1') vào trường 'SJR' (e.g., >1)."
+      },
+      {
+        "stepNumber": 3,
+        "action": "Nhấp vào nút 'Search'."
+      }
+    ],
+    "expectedResult": "Trang hiển thị danh sách các journal có SJR lớn hơn hoặc bằng 1 (hoặc logic tương ứng với placeholder). Số lượng kết quả cập nhật.",
+    "actualResult": "",
+    "status": "",
+    "priority": "High",
+    "relatedRequirements": [
+      "YC_TKJ_Filter_008"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_JournalsSearch_Filter_009",
+    "testCaseName": "Tìm kiếm Journals theo Overall Rank <= X nâng cao",
+    "description": "Kiểm tra lọc kết quả theo Overall Rank nhỏ hơn hoặc bằng một giá trị trong tùy chọn nâng cao.",
+    "preconditions": [
+      "Người dùng đang ở trang Journals Search (URL: /journals).",
+      "Các tùy chọn tìm kiếm nâng cao đang được hiển thị.",
+      "Hệ thống có journal thỏa mãn điều kiện Overall Rank."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Đảm bảo các tùy chọn tìm kiếm nâng cao đang hiển thị."
+      },
+      {
+        "stepNumber": 2,
+        "action": "Nhập một giá trị (ví dụ: '1000') vào trường 'Overall Rank' (e.g., <1000)."
+      },
+      {
+        "stepNumber": 3,
+        "action": "Nhấp vào nút 'Search'."
+      }
+    ],
+    "expectedResult": "Trang hiển thị danh sách các journal có Overall Rank nhỏ hơn hoặc bằng 1000 (hoặc logic tương ứng với placeholder). Số lượng kết quả cập nhật.",
+    "actualResult": "",
+    "status": "",
+    "priority": "High",
+    "relatedRequirements": [
+      "YC_TKJ_Filter_009"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_JournalsSearch_Filter_010",
+    "testCaseName": "Tìm kiếm Journals kết hợp nhiều bộ lọc nâng cao",
+    "description": "Kiểm tra hệ thống xử lý tìm kiếm khi áp dụng nhiều bộ lọc nâng cao cùng lúc.",
+    "preconditions": [
+      "Người dùng đang ở trang Journals Search (URL: /journals).",
+      "Các tùy chọn tìm kiếm nâng cao đang được hiển thị.",
+      "Hệ thống có journal thỏa mãn TẤT CẢ các điều kiện lọc kết hợp."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Đảm bảo các tùy chọn tìm kiếm nâng cao đang hiển thị."
+      },
+      {
+        "stepNumber": 2,
+        "action": "Nhập từ khóa vào trường tìm kiếm chính."
+      },
+      {
+        "stepNumber": 3,
+        "action": "Nhập hoặc chọn giá trị cho ít nhất hai bộ lọc nâng cao khác nhau (ví dụ: 'Subject Areas' và 'Impact Factor')."
+      },
+      {
+        "stepNumber": 4,
+        "action": "Nhấp vào nút 'Search'."
+      }
+    ],
+    "expectedResult": "Trang hiển thị danh sách các journal thỏa mãn TẤT CẢ các tiêu chí đã lọc. Số lượng kết quả cập nhật.",
+    "actualResult": "",
+    "status": "",
+    "priority": "High",
+    "relatedRequirements": [
+      "YC_TKJ_Filter_010"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_Search_017",
+    "testCaseName": "Tìm kiếm theo Khoảng ngày Submission Date (Nâng cao)",
+    "description": "Kiểm tra lọc kết quả conference theo khoảng ngày submission date trong tùy chọn nâng cao.",
+    "preconditions": [
+      "Người dùng đang ở trang Conferences Search (URL: /conferences).",
+      "Các tùy chọn tìm kiếm nâng cao đang được hiển thị ('Hide advanced search options')."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhập ngày bắt đầu (ví dụ: '01/01/2025') vào trường 'Submission Date'."
+      },
+      {
+        "stepNumber": 2,
+        "action": "Nhập ngày kết thúc (ví dụ: '03/31/2025') vào trường 'Submission Date'."
+      },
+      {
+        "stepNumber": 3,
+        "action": "Nhấp vào nút 'Search'."
+      }
+    ],
+    "expectedResult": "Trang hiển thị danh sách các conference có submission date nằm trong hoặc bằng khoảng ngày đã nhập. Bộ lọc tương ứng xuất hiện phía trên danh sách. Số lượng kết quả cập nhật.",
+    "actualResult": "",
+    "status": "",
+    "priority": "High",
+    "relatedRequirements": [
+      "YC_TK_017_TimTheoSubmissionDate"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_Search_018",
+    "testCaseName": "Tìm kiếm theo Publisher (Nâng cao)",
+    "description": "Kiểm tra lọc kết quả conference theo tên Publisher trong tùy chọn nâng cao.",
+    "preconditions": [
+      "Người dùng đang ở trang Conferences Search (URL: /conferences).",
+      "Các tùy chọn tìm kiếm nâng cao đang được hiển thị."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhập tên Publisher hợp lệ (ví dụ: 'ACM') vào trường 'Publisher'."
+      },
+      {
+        "stepNumber": 2,
+        "action": "Nhấp vào nút 'Search'."
+      }
+    ],
+    "expectedResult": "Trang hiển thị danh sách các conference của Publisher đã nhập. Bộ lọc 'Publisher: ACM' xuất hiện phía trên danh sách. Số lượng kết quả cập nhật.",
+    "actualResult": "",
+    "status": "",
+    "priority": "High",
+    "relatedRequirements": [
+      "YC_TK_018_TimTheoPublisher"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_Search_019",
+    "testCaseName": "Tìm kiếm theo Source (Nâng cao)",
+    "description": "Kiểm tra lọc kết quả conference theo Source trong tùy chọn nâng cao.",
+    "preconditions": [
+      "Người dùng đang ở trang Conferences Search (URL: /conferences).",
+      "Các tùy chọn tìm kiếm nâng cao đang được hiển thị."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhập Source vào trường 'Source'."
+      },
+      {
+        "stepNumber": 2,
+        "action": "Nhấp vào nút 'Search'."
+      }
+    ],
+    "expectedResult": "Trang hiển thị danh sách các conference có Source đã nhập. Bộ lọc tương ứng xuất hiện phía trên danh sách. Số lượng kết quả cập nhật.",
+    "actualResult": "",
+    "status": "",
+    "priority": "High",
+    "relatedRequirements": [
+      "YC_TK_019_TimTheoSource"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_Search_020",
+    "testCaseName": "Tìm kiếm theo Avg. Score (1-5) (Nâng cao)",
+    "description": "Kiểm tra lọc kết quả conference theo Avg. Score trong tùy chọn nâng cao.",
+    "preconditions": [
+      "Người dùng đang ở trang Conferences Search (URL: /conferences).",
+      "Các tùy chọn tìm kiếm nâng cao đang được hiển thị."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhập Avg. Score hợp lệ (ví dụ: '4') vào trường 'Avg. Score (1-5)'."
+      },
+      {
+        "stepNumber": 2,
+        "action": "Nhấp vào nút 'Search'."
+      }
+    ],
+    "expectedResult": "Trang hiển thị danh sách các conference có Avg. Score đã nhập (hoặc trong khoảng điểm nếu ô nhập hỗ trợ). Bộ lọc tương ứng xuất hiện phía trên danh sách. Số lượng kết quả cập nhật.",
+    "actualResult": "",
+    "status": "",
+    "priority": "High",
+    "relatedRequirements": [
+      "YC_TK_020_TimTheoAvgScore"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_Search_021",
+    "testCaseName": "Tìm kiếm theo Field of Research (Nâng cao)",
+    "description": "Kiểm tra lọc kết quả conference theo Field of Research trong tùy chọn nâng cao.",
+    "preconditions": [
+      "Người dùng đang ở trang Conferences Search (URL: /conferences).",
+      "Các tùy chọn tìm kiếm nâng cao đang được hiển thị."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhập Field of Research (ví dụ: 'Human Computer Interaction') vào trường 'Field of Research'."
+      },
+      {
+        "stepNumber": 2,
+        "action": "Nhấp vào nút 'Search'."
+      }
+    ],
+    "expectedResult": "Trang hiển thị danh sách các conference có Field of Research đã nhập. Bộ lọc tương ứng xuất hiện phía trên danh sách. Số lượng kết quả cập nhật.",
+    "actualResult": "",
+    "status": "",
+    "priority": "High",
+    "relatedRequirements": [
+      "YC_TK_021_TimTheoFieldOfResearch"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_Search_022",
+    "testCaseName": "Tìm kiếm nâng cao với dữ liệu không hợp lệ/không tồn tại",
+    "description": "Kiểm tra hệ thống xử lý khi nhập dữ liệu không hợp lệ hoặc không tồn tại vào các trường tìm kiếm nâng cao.",
+    "preconditions": [
+      "Người dùng đang ở trang Conferences Search (URL: /conferences).",
+      "Các tùy chọn tìm kiếm nâng cao đang được hiển thị."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhập dữ liệu không hợp lệ vào một hoặc nhiều trường tìm kiếm nâng cao (ví dụ: Publisher không tồn tại, Avg. Score '6', định dạng ngày sai, Topic không tồn tại)."
+      },
+      {
+        "stepNumber": 2,
+        "action": "Nhấp vào nút 'Search'."
+      }
+    ],
+    "expectedResult": "Hệ thống hiển thị thông báo lỗi validation gần các trường không hợp lệ HOẶC hiển thị thông báo 'No results found'. Danh sách kết quả trống.",
+    "actualResult": "",
+    "status": "",
+    "priority": "Medium",
+    "relatedRequirements": [
+      "YC_TK_022_TimKiemNangCaoInvalid"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_Theme_001",
+    "testCaseName": "Chuyển sang chế độ Dark Mode",
+    "description": "Kiểm tra hệ thống chuyển sang giao diện tối khi chọn Dark Mode từ menu Theme.",
+    "preconditions": [
+      "Người dùng đang ở bất kỳ trang nào có hiển thị header.",
+      "Hệ thống đang ở chế độ Light Mode hoặc chế độ mặc định."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhấp vào dropdown 'Theme' trên header."
+      },
+      {
+        "stepNumber": 2,
+        "action": "Chọn tùy chọn 'Dark'."
+      }
+    ],
+    "expectedResult": "Giao diện của trang hiện tại (bao gồm nền, chữ, các thành phần UI) chuyển sang tông màu tối.",
+    "actualResult": "",
+    "status": "",
+    "priority": "Medium",
+    "relatedRequirements": [
+      "YC_Theme_001_Dark"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_Theme_002",
+    "testCaseName": "Chuyển sang chế độ Light Mode",
+    "description": "Kiểm tra hệ thống chuyển sang giao diện sáng khi chọn Light Mode từ menu Theme.",
+    "preconditions": [
+      "Người dùng đang ở bất kỳ trang nào có hiển thị header.",
+      "Hệ thống đang ở chế độ Dark Mode."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhấp vào dropdown 'Theme' trên header."
+      },
+      {
+        "stepNumber": 2,
+        "action": "Chọn tùy chọn 'Light'."
+      }
+    ],
+    "expectedResult": "Giao diện của trang hiện tại (bao gồm nền, chữ, các thành phần UI) chuyển sang tông màu sáng.",
+    "actualResult": "",
+    "status": "",
+    "priority": "Medium",
+    "relatedRequirements": [
+      "YC_Theme_002_Light"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_Navigation_006",
+    "testCaseName": "Chuyển hướng đến trang Conference từ Header",
+    "description": "Kiểm tra liên kết 'Conference' trên header hoạt động.",
+    "preconditions": [
+      "Người dùng đang ở bất kỳ trang nào có hiển thị header."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhấp vào liên kết 'Conference' trên header."
+      }
+    ],
+    "expectedResult": "Hệ thống chuyển hướng người dùng đến trang Conference.",
+    "actualResult": "",
+    "status": "",
+    "priority": "Medium",
+    "relatedRequirements": [
+      "YC_Nav_001_Conference"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_Navigation_007",
+    "testCaseName": "Chuyển hướng đến trang Publish từ Header",
+    "description": "Kiểm tra liên kết 'Publish' trên header hoạt động.",
+    "preconditions": [
+      "Người dùng đang ở bất kỳ trang nào có hiển thị header."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhấp vào liên kết 'Publish' trên header."
+      }
+    ],
+    "expectedResult": "Hệ thống chuyển hướng người dùng đến trang Publish.",
+    "actualResult": "",
+    "status": "",
+    "priority": "Medium",
+    "relatedRequirements": [
+      "YC_Nav_001_Publish"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_Navigation_008",
+    "testCaseName": "Chuyển hướng đến trang Chatbot từ Header",
+    "description": "Kiểm tra liên kết 'Chatbot' trên header hoạt động.",
+    "preconditions": [
+      "Người dùng đang ở bất kỳ trang nào có hiển thị header."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhấp vào liên kết 'Chatbot' trên header."
+      }
+    ],
+    "expectedResult": "Hệ thống chuyển hướng người dùng đến trang Chatbot.",
+    "actualResult": "",
+    "status": "",
+    "priority": "Medium",
+    "relatedRequirements": [
+      "YC_Nav_001_Chatbot"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_Navigation_009",
+    "testCaseName": "Chuyển hướng đến trang Visualize từ Header",
+    "description": "Kiểm tra liên kết 'Visualize' trên header hoạt động.",
+    "preconditions": [
+      "Người dùng đang ở bất kỳ trang nào có hiển thị header."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhấp vào liên kết 'Visualize' trên header."
+      }
+    ],
+    "expectedResult": "Hệ thống chuyển hướng người dùng đến trang Visualize.",
+    "actualResult": "",
+    "status": "",
+    "priority": "Medium",
+    "relatedRequirements": [
+      "YC_Nav_001_Visualize"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_Navigation_010",
+    "testCaseName": "Chuyển hướng đến trang Support từ Header",
+    "description": "Kiểm tra liên kết 'Support' trên header hoạt động.",
+    "preconditions": [
+      "Người dùng đang ở bất kỳ trang nào có hiển thị header."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhấp vào liên kết 'Support' trên header."
+      }
+    ],
+    "expectedResult": "Hệ thống chuyển hướng người dùng đến trang Support.",
+    "actualResult": "",
+    "status": "",
+    "priority": "Medium",
+    "relatedRequirements": [
+      "YC_Nav_001_Support"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_Chatbot_015",
+    "testCaseName": "Tìm kiếm hội nghị theo địa điểm (REGULAR CHAT)",
+    "description": "Kiểm tra Chatbot ở chế độ REGULAR CHAT có thể tìm kiếm và trả lời các câu hỏi về hội nghị theo địa điểm yêu cầu.",
+    "preconditions": [
+      "Chatbot đang ở chế độ REGULAR CHAT và có thể truy cập/hiển thị.",
+      "Có dữ liệu về các hội nghị và địa điểm liên quan trong hệ thống."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhập câu hỏi vào khung chat của Chatbot, ví dụ: 'list some conference in Vietnam'."
+      },
+      {
+        "stepNumber": 2,
+        "action": "Nhấp vào biểu tượng gửi tin nhắn (mũi tên)."
+      }
+    ],
+    "expectedResult": "Chatbot hiển thị danh sách (hoặc liên kết đến danh sách) các hội nghị liên quan đến địa điểm được hỏi (ví dụ: Vietnam), hoặc thông báo không tìm thấy nếu không có dữ liệu phù hợp.",
+    "actualResult": "",
+    "status": "",
+    "priority": "High",
+    "relatedRequirements": [
+      "YC_Chatbot_015_SearchLocation"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_Chatbot_016",
+    "testCaseName": "Cung cấp chi tiết hội nghị cụ thể (REGULAR CHAT)",
+    "description": "Kiểm tra Chatbot ở chế độ REGULAR CHAT có thể cung cấp chi tiết về một hội nghị cụ thể khi được hỏi tên/mã.",
+    "preconditions": [
+      "Chatbot đang ở chế độ REGULAR CHAT và có thể truy cập/hiển thị.",
+      "Hội nghị được hỏi (ví dụ: MEDES) tồn tại trong hệ thống và có thông tin chi tiết."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhập câu hỏi vào khung chat của Chatbot, ví dụ: 'can you give details of MEDES'."
+      },
+      {
+        "stepNumber": 2,
+        "action": "Nhấp vào biểu tượng gửi tin nhắn (mũi tên)."
+      }
+    ],
+    "expectedResult": "Chatbot cung cấp thông tin chi tiết về hội nghị được hỏi (ví dụ: tên đầy đủ, ngày, địa điểm, chủ đề tóm tắt) và cung cấp liên kết đến trang chi tiết của hội nghị đó.",
+    "actualResult": "",
+    "status": "",
+    "priority": "High",
+    "relatedRequirements": [
+      "YC_Chatbot_016_GetDetails"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_Chatbot_017",
+    "testCaseName": "Mở bản đồ địa chỉ hội nghị (REGULAR CHAT)",
+    "description": "Kiểm tra Chatbot ở chế độ REGULAR CHAT có thể xử lý yêu cầu mở bản đồ địa chỉ của một hội nghị cụ thể.",
+    "preconditions": [
+      "Chatbot đang ở chế độ REGULAR CHAT và có thể truy cập/hiển thị.",
+      "Hội nghị được hỏi (ví dụ: SERA) tồn tại trong hệ thống và có thông tin địa chỉ hợp lệ."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhập yêu cầu vào khung chat của Chatbot, ví dụ: 'Can you open a map showing the address of conference SERA'."
+      },
+      {
+        "stepNumber": 2,
+        "action": "Nhấp vào biểu tượng gửi tin nhắn (mũi tên)."
+      }
+    ],
+    "expectedResult": "Chatbot phản hồi bản đồ Google Maps với địa chỉ của hội nghị được hỏi.",
+    "actualResult": "",
+    "status": "",
+    "priority": "High",
+    "relatedRequirements": [
+      "YC_Chatbot_017_OpenMap"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_Chatbot_018",
+    "testCaseName": "Chuyển hướng đến trang chi tiết hội nghị (REGULAR CHAT)",
+    "description": "Kiểm tra Chatbot ở chế độ REGULAR CHAT có thể chuyển hướng người dùng đến trang chi tiết của một hội nghị cụ thể.",
+    "preconditions": [
+      "Chatbot đang ở chế độ REGULAR CHAT và có thể truy cập/hiển thị.",
+      "Hội nghị được hỏi (ví dụ: SERA) tồn tại trong hệ thống và có trang chi tiết."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhập yêu cầu vào khung chat của Chatbot, ví dụ: 'Can you direct me to the SERA conference details page?'."
+      },
+      {
+        "stepNumber": 2,
+        "action": "Nhấp vào biểu tượng gửi tin nhắn (mũi tên)."
+      }
+    ],
+    "expectedResult": "Chatbot phản hồi và mở cửa sổ chuyển hướng người dùng đến trang chính thức của hội nghị được hỏi.",
+    "actualResult": "",
+    "status": "",
+    "priority": "High",
+    "relatedRequirements": [
+      "YC_Chatbot_018_RedirectDetails"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_Chatbot_019",
+    "testCaseName": "Hướng dẫn sử dụng tính năng Theo dõi (Follow) (REGULAR CHAT)",
+    "description": "Kiểm tra Chatbot ở chế độ REGULAR CHAT có thể cung cấp hướng dẫn về cách sử dụng tính năng Theo dõi hội nghị.",
+    "preconditions": [
+      "Chatbot đang ở chế độ REGULAR CHAT và có thể truy cập/hiển thị."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhập câu hỏi/yêu cầu vào khung chat của Chatbot, ví dụ: 'can you help me how to use follow conference feature'."
+      },
+      {
+        "stepNumber": 2,
+        "action": "Nhấp vào biểu tượng gửi tin nhắn (mũi tên)."
+      }
+    ],
+    "expectedResult": "Chatbot trả về hướng dẫn chi tiết (bằng văn bản, hoặc kèm hình ảnh/video nếu có) về cách người dùng có thể sử dụng tính năng Theo dõi (Follow) hội nghị trên website.",
+    "actualResult": "",
+    "status": "",
+    "priority": "Medium",
+    "relatedRequirements": [
+      "YC_Chatbot_019_Instructions"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_Chatbot_020",
+    "testCaseName": "Chatbot Theo dõi hội nghị (Follow) (REGULAR CHAT)",
+    "description": "Kiểm tra Chatbot ở chế độ REGULAR CHAT có thể giúp người dùng Theo dõi hội nghị.",
+    "preconditions": [
+      "Chatbot đang ở chế độ REGULAR CHAT và có thể truy cập/hiển thị."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhập câu hỏi/yêu cầu vào khung chat của Chatbot, ví dụ: 'can you help me follow HNTD conference'."
+      },
+      {
+        "stepNumber": 2,
+        "action": "Nhấp vào biểu tượng gửi tin nhắn (mũi tên)."
+      }
+    ],
+    "expectedResult": "Chatbot trả về đã theo dõi hội nghị thành công và cung cấp thông báo xác nhận.",
+    "actualResult": "",
+    "status": "",
+    "priority": "Medium",
+    "relatedRequirements": [
+      "YC_Chatbot_020_FollowConference"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_Chatbot_021",
+    "testCaseName": "Chatbot Hủy theo dõi hội nghị (UnFollow) (REGULAR CHAT)",
+    "description": "Kiểm tra Chatbot ở chế độ REGULAR CHAT có thể giúp người dùng Hủy theo dõi hội nghị.",
+    "preconditions": [
+      "Chatbot đang ở chế độ REGULAR CHAT và có thể truy cập/hiển thị."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhập câu hỏi/yêu cầu vào khung chat của Chatbot, ví dụ: 'can you help me unfollow HNTD conference'."
+      },
+      {
+        "stepNumber": 2,
+        "action": "Nhấp vào biểu tượng gửi tin nhắn (mũi tên)."
+      }
+    ],
+    "expectedResult": "Chatbot trả về đã hủy theo dõi hội nghị thành công và cung cấp thông báo xác nhận.",
+    "actualResult": "",
+    "status": "",
+    "priority": "Medium",
+    "relatedRequirements": [
+      "YC_Chatbot_021_UnFollowConference"
+    ],
+    "tester": "",
+    "executionDate": ""
+  },
+  {
+    "testCaseId": "TC_Chatbot_022",
+    "testCaseName": "Xử lý câu hỏi không rõ ràng/ngoài phạm vi (REGULAR CHAT)",
+    "description": "Kiểm tra Chatbot ở chế độ REGULAR CHAT có phản hồi phù hợp khi nhận câu hỏi không rõ ràng hoặc nằm ngoài phạm vi hỗ trợ.",
+    "preconditions": [
+      "Chatbot đang ở chế độ REGULAR CHAT và có thể truy cập/hiển thị."
+    ],
+    "testSteps": [
+      {
+        "stepNumber": 1,
+        "action": "Nhập một câu hỏi không liên quan đến hội nghị hoặc khó hiểu vào khung chat, ví dụ: 'What is the weather tomorrow?' hoặc 'Tell me a joke'."
+      },
+      {
+        "stepNumber": 2,
+        "action": "Nhấp vào biểu tượng gửi tin nhắn (mũi tên)."
+      }
+    ],
+    "expectedResult": "Chatbot phản hồi rằng nó không hiểu câu hỏi hoặc câu hỏi nằm ngoài phạm vi hỗ trợ, và có thể đề xuất các chủ đề mà nó có thể giúp (ví dụ: tìm kiếm hội nghị, chi tiết hội nghị...).",
+    "actualResult": "",
+    "status": "",
+    "priority": "Low",
+    "relatedRequirements": [
+      "YC_Chatbot_022_OutOfScope"
+    ],
+    "tester": "",
+    "executionDate": ""
+  }
+]

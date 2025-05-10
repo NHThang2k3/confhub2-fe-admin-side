@@ -1,0 +1,752 @@
+[
+    {
+        "vi": "Afghanistan"
+    },
+    {
+        "vi": "Quần đảo Åland"
+    },
+    {
+        "vi": "Albania"
+    },
+    {
+        "vi": "Algeria"
+    },
+    {
+        "vi": "Samoa thuộc Mỹ"
+    },
+    {
+        "vi": "Andorra"
+    },
+    {
+        "vi": "Angola"
+    },
+    {
+        "vi": "Anguilla"
+    },
+    {
+        "vi": "Nam Cực"
+    },
+    {
+        "vi": "Antigua và Barbuda"
+    },
+    {
+        "vi": "Argentina"
+    },
+    {
+        "vi": "Armenia"
+    },
+    {
+        "vi": "Aruba"
+    },
+    {
+        "vi": "Úc"
+    },
+    {
+        "vi": "Áo"
+    },
+    {
+        "vi": "Azerbaijan"
+    },
+    {
+        "vi": "Bahrain"
+    },
+    {
+        "vi": "Bangladesh"
+    },
+    {
+        "vi": "Barbados"
+    },
+    {
+        "vi": "Belarus"
+    },
+    {
+        "vi": "Bỉ"
+    },
+    {
+        "vi": "Belize"
+    },
+    {
+        "vi": "Benin"
+    },
+    {
+        "vi": "Bermuda"
+    },
+    {
+        "vi": "Bhutan"
+    },
+    {
+        "vi": "Bolivia"
+    },
+    {
+        "vi": "Bonaire, Sint Eustatius và Saba"
+    },
+    {
+        "vi": "Bosnia và Herzegovina"
+    },
+    {
+        "vi": "Botswana"
+    },
+    {
+        "vi": "Đảo Bouvet"
+    },
+    {
+        "vi": "Brazil"
+    },
+    {
+        "vi": "Lãnh thổ Ấn Độ Dương thuộc Anh"
+    },
+    {
+        "vi": "Brunei"
+    },
+    {
+        "vi": "Bulgaria"
+    },
+    {
+        "vi": "Burkina Faso"
+    },
+    {
+        "vi": "Burundi"
+    },
+    {
+        "vi": "Campuchia"
+    },
+    {
+        "vi": "Cameroon"
+    },
+    {
+        "vi": "Canada"
+    },
+    {
+        "vi": "Cape Verde"
+    },
+    {
+        "vi": "Quần đảo Cayman"
+    },
+    {
+        "vi": "Cộng hòa Trung Phi"
+    },
+    {
+        "vi": "Chad"
+    },
+    {
+        "vi": "Chile"
+    },
+    {
+        "vi": "Trung Quốc"
+    },
+    {
+        "vi": "Đảo Giáng Sinh"
+    },
+    {
+        "vi": "Quần đảo Cocos (Keeling)"
+    },
+    {
+        "vi": "Colombia"
+    },
+    {
+        "vi": "Comoros"
+    },
+    {
+        "vi": "Congo"
+    },
+    {
+        "vi": "Quần đảo Cook"
+    },
+    {
+        "vi": "Costa Rica"
+    },
+    {
+        "vi": "Cote D'Ivoire (Bờ Biển Ngà)"
+    },
+    {
+        "vi": "Croatia"
+    },
+    {
+        "vi": "Cuba"
+    },
+    {
+        "vi": "Curaçao"
+    },
+    {
+        "vi": "Síp"
+    },
+    {
+        "vi": "Cộng hòa Séc"
+    },
+    {
+        "vi": "Cộng hòa Dân chủ Congo"
+    },
+    {
+        "vi": "Đan Mạch"
+    },
+    {
+        "vi": "Djibouti"
+    },
+    {
+        "vi": "Dominica"
+    },
+    {
+        "vi": "Cộng hòa Dominica"
+    },
+    {
+        "vi": "Ecuador"
+    },
+    {
+        "vi": "Ai Cập"
+    },
+    {
+        "vi": "El Salvador"
+    },
+    {
+        "vi": "Guinea Xích Đạo"
+    },
+    {
+        "vi": "Eritrea"
+    },
+    {
+        "vi": "Estonia"
+    },
+    {
+        "vi": "Eswatini"
+    },
+    {
+        "vi": "Ethiopia"
+    },
+    {
+        "vi": "Quần đảo Falkland"
+    },
+    {
+        "vi": "Quần đảo Faroe"
+    },
+    {
+        "vi": "Quần đảo Fiji"
+    },
+    {
+        "vi": "Phần Lan"
+    },
+    {
+        "vi": "Pháp"
+    },
+    {
+        "vi": "Guiana thuộc Pháp"
+    },
+    {
+        "vi": "Polynesia thuộc Pháp"
+    },
+    {
+        "vi": "Vùng lãnh thổ phía Nam thuộc Pháp"
+    },
+    {
+        "vi": "Gabon"
+    },
+    {
+        "vi": "Georgia"
+    },
+    {
+        "vi": "Đức"
+    },
+    {
+        "vi": "Ghana"
+    },
+    {
+        "vi": "Gibraltar"
+    },
+    {
+        "vi": "Hy Lạp"
+    },
+    {
+        "vi": "Greenland"
+    },
+    {
+        "vi": "Grenada"
+    },
+    {
+        "vi": "Guadeloupe"
+    },
+    {
+        "vi": "Guam"
+    },
+    {
+        "vi": "Guatemala"
+    },
+    {
+        "vi": "Guernsey và Alderney"
+    },
+    {
+        "vi": "Guinea"
+    },
+    {
+        "vi": "Guinea-Bissau"
+    },
+    {
+        "vi": "Guyana"
+    },
+    {
+        "vi": "Haiti"
+    },
+    {
+        "vi": "Đảo Heard và quần đảo McDonald"
+    },
+    {
+        "vi": "Honduras"
+    },
+    {
+        "vi": "Hồng Kông, ĐẶC"
+    },
+    {
+        "vi": "Hungary"
+    },
+    {
+        "vi": "Iceland"
+    },
+    {
+        "vi": "Ấn Độ"
+    },
+    {
+        "vi": "Indonesia"
+    },
+    {
+        "vi": "Iran"
+    },
+    {
+        "vi": "Iraq"
+    },
+    {
+        "vi": "Ireland"
+    },
+    {
+        "vi": "Israel"
+    },
+    {
+        "vi": "Ý"
+    },
+    {
+        "vi": "Jamaica"
+    },
+    {
+        "vi": "Nhật Bản"
+    },
+    {
+        "vi": "Jersey"
+    },
+    {
+        "vi": "Jordan"
+    },
+    {
+        "vi": "Kazakhstan"
+    },
+    {
+        "vi": "Kenya"
+    },
+    {
+        "vi": "Kiribati"
+    },
+    {
+        "vi": "Kosovo"
+    },
+    {
+        "vi": "Kuwait"
+    },
+    {
+        "vi": "Kyrgyzstan"
+    },
+    {
+        "vi": "Lào"
+    },
+    {
+        "vi": "Latvia"
+    },
+    {
+        "vi": "Lebanon"
+    },
+    {
+        "vi": "Lesotho"
+    },
+    {
+        "vi": "Liberia"
+    },
+    {
+        "vi": "Libya"
+    },
+    {
+        "vi": "Liechtenstein"
+    },
+    {
+        "vi": "Lithuania"
+    },
+    {
+        "vi": "Luxembourg"
+    },
+    {
+        "vi": "Macau, ĐẶC"
+    },
+    {
+        "vi": "Madagascar"
+    },
+    {
+        "vi": "Malawi"
+    },
+    {
+        "vi": "Malaysia"
+    },
+    {
+        "vi": "Maldives"
+    },
+    {
+        "vi": "Mali"
+    },
+    {
+        "vi": "Malta"
+    },
+    {
+        "vi": "Đảo Man"
+    },
+    {
+        "vi": "Quần đảo Marshall"
+    },
+    {
+        "vi": "Martinique"
+    },
+    {
+        "vi": "Mauritania"
+    },
+    {
+        "vi": "Mauritius"
+    },
+    {
+        "vi": "Mayotte"
+    },
+    {
+        "vi": "Mexico"
+    },
+    {
+        "vi": "Micronesia"
+    },
+    {
+        "vi": "Moldova"
+    },
+    {
+        "vi": "Monaco"
+    },
+    {
+        "vi": "Mông Cổ"
+    },
+    {
+        "vi": "Montenegro"
+    },
+    {
+        "vi": "Montserrat"
+    },
+    {
+        "vi": "Maroc"
+    },
+    {
+        "vi": "Mozambique"
+    },
+    {
+        "vi": "Myanmar"
+    },
+    {
+        "vi": "Namibia"
+    },
+    {
+        "vi": "Nauru"
+    },
+    {
+        "vi": "Nepal"
+    },
+    {
+        "vi": "Hà Lan"
+    },
+    {
+        "vi": "New Caledonia"
+    },
+    {
+        "vi": "New Zealand"
+    },
+    {
+        "vi": "Nicaragua"
+    },
+    {
+        "vi": "Niger"
+    },
+    {
+        "vi": "Nigeria"
+    },
+    {
+        "vi": "Niue"
+    },
+    {
+        "vi": "Đảo Norfolk"
+    },
+    {
+        "vi": "Bắc Triều Tiên"
+    },
+    {
+        "vi": "Bắc Macedonia"
+    },
+    {
+        "vi": "Quần đảo Bắc Mariana"
+    },
+    {
+        "vi": "Na Uy"
+    },
+    {
+        "vi": "Oman"
+    },
+    {
+        "vi": "Pakistan"
+    },
+    {
+        "vi": "Palau"
+    },
+    {
+        "vi": "Lãnh thổ Palestine bị chiếm đóng"
+    },
+    {
+        "vi": "Panama"
+    },
+    {
+        "vi": "Papua New Guinea"
+    },
+    {
+        "vi": "Paraguay"
+    },
+    {
+        "vi": "Peru"
+    },
+    {
+        "vi": "Philippines"
+    },
+    {
+        "vi": "Đảo Pitcairn"
+    },
+    {
+        "vi": "Ba Lan"
+    },
+    {
+        "vi": "Bồ Đào Nha"
+    },
+    {
+        "vi": "Puerto Rico"
+    },
+    {
+        "vi": "Qatar"
+    },
+    {
+        "vi": "Réunion"
+    },
+    {
+        "vi": "Romania"
+    },
+    {
+        "vi": "Nga"
+    },
+    {
+        "vi": "Rwanda"
+    },
+    {
+        "vi": "Saint Helena"
+    },
+    {
+        "vi": "Saint Kitts và Nevis"
+    },
+    {
+        "vi": "Saint Lucia"
+    },
+    {
+        "vi": "Saint Pierre và Miquelon"
+    },
+    {
+        "vi": "Saint Vincent và Grenadines"
+    },
+    {
+        "vi": "Saint-Barthélemy"
+    },
+    {
+        "vi": "Saint-Martin (Phần thuộc Pháp)"
+    },
+    {
+        "vi": "Samoa"
+    },
+    {
+        "vi": "San Marino"
+    },
+    {
+        "vi": "São Tomé và Príncipe"
+    },
+    {
+        "vi": "Ả Rập Xê Út"
+    },
+    {
+        "vi": "Senegal"
+    },
+    {
+        "vi": "Serbia"
+    },
+    {
+        "vi": "Seychelles"
+    },
+    {
+        "vi": "Sierra Leone"
+    },
+    {
+        "vi": "Singapore"
+    },
+    {
+        "vi": "Sint Maarten (Phần thuộc Hà Lan)"
+    },
+    {
+        "vi": "Slovakia"
+    },
+    {
+        "vi": "Slovenia"
+    },
+    {
+        "vi": "Quần đảo Solomon"
+    },
+    {
+        "vi": "Somalia"
+    },
+    {
+        "vi": "Nam Phi"
+    },
+    {
+        "vi": "Nam Georgia"
+    },
+    {
+        "vi": "Hàn Quốc"
+    },
+    {
+        "vi": "Nam Sudan"
+    },
+    {
+        "vi": "Tây Ban Nha"
+    },
+    {
+        "vi": "Sri Lanka"
+    },
+    {
+        "vi": "Sudan"
+    },
+    {
+        "vi": "Surivi"
+    },
+    {
+        "vi": "Svalbard và đảo Jan Mayen"
+    },
+    {
+        "vi": "Thụy Điển"
+    },
+    {
+        "vi": "Thụy Sĩ"
+    },
+    {
+        "vi": "Syria"
+    },
+    {
+        "vi": "Đài Loan"
+    },
+    {
+        "vi": "Tajikistan"
+    },
+    {
+        "vi": "Tanzania"
+    },
+    {
+        "vi": "Thái Lan"
+    },
+    {
+        "vi": "Bahamas"
+    },
+    {
+        "vi": "Gambia"
+    },
+    {
+        "vi": "Timor-Leste"
+    },
+    {
+        "vi": "Togo"
+    },
+    {
+        "vi": "Tokelau"
+    },
+    {
+        "vi": "Tonga"
+    },
+    {
+        "vi": "Trinidad và Tobago"
+    },
+    {
+        "vi": "Tunisia"
+    },
+    {
+        "vi": "Thổ Nhĩ Kỳ"
+    },
+    {
+        "vi": "Turkmenistan"
+    },
+    {
+        "vi": "Quần đảo Turks và Caicos"
+    },
+    {
+        "vi": "Tuvalu"
+    },
+    {
+        "vi": "Uganda"
+    },
+    {
+        "vi": "Ukraina"
+    },
+    {
+        "vi": "Các Tiểu vương quốc Ả Rập Thống nhất"
+    },
+    {
+        "vi": "Vương quốc Anh"
+    },
+    {
+        "vi": "Hoa Kỳ"
+    },
+    {
+        "vi": "Các đảo nhỏ xa trung tâm thuộc Mỹ"
+    },
+    {
+        "vi": "Uruguay"
+    },
+    {
+        "vi": "Uzbekistan"
+    },
+    {
+        "vi": "Vanuatu"
+    },
+    {
+        "vi": "Thành Vatican (Tòa Thánh)"
+    },
+    {
+        "vi": "Venezuela"
+    },
+    {
+        "vi": "Việt Nam"
+    },
+    {
+        "vi": "Quần đảo Virgin thuộc Anh"
+    },
+    {
+        "vi": "Quần đảo Virgin thuộc Mỹ"
+    },
+    {
+        "vi": "Wallis và Futuna"
+    },
+    {
+        "vi": "Tây Sahara"
+    },
+    {
+        "vi": "Yemen"
+    },
+    {
+        "vi": "Zambia"
+    },
+    {
+        "vi": "Zimbabwe"
+    }
+]
