@@ -25,9 +25,11 @@ export interface Conference {
   description?: string; // Optional description
   status: ConferenceStatus; // Status for moderation
   comment?: string; // Optional comment for moderation
+  createdAt: Date; // New: Timestamp when the conference was added
 }
 
 // Sample Data for multiple Conferences
+// Using new Date('YYYY-MM-DD') for createdAt for simplicity in sample data
 const initialConferences: Conference[] = [
   {
     id: 'conf1',
@@ -41,11 +43,12 @@ const initialConferences: Conference[] = [
     stateProvince: "Đà Nẵng",
     importantDates: {
       conferenceDates: "2025-05-21 - 2025-05-31",
-      submissionDateRound1: "2025-05-12", // Changed format to YYYY-MM-DD
+      submissionDateRound1: "2025-05-12",
     },
     topics: ["AI", "Math"],
     description: "No description provided",
     status: 'pending',
+    createdAt: new Date('2023-10-26T10:00:00Z'), // Example creation date
   },
   {
     id: 'conf2',
@@ -65,6 +68,7 @@ const initialConferences: Conference[] = [
     description: "A premier event for technology leaders and developers.",
     status: 'approved',
     comment: 'Approved for listing on platform.',
+    createdAt: new Date('2023-10-20T09:30:00Z'), // Example creation date (earlier)
   },
    {
     id: 'conf3',
@@ -78,12 +82,12 @@ const initialConferences: Conference[] = [
     stateProvince: "Berlin",
     importantDates: {
       conferenceDates: "2025-03-20 - 2025-03-22",
-      // submissionDateRound1 is missing for this one
     },
     topics: ["Machine Learning", "Ethics in AI", "Natural Language Processing"],
     description: "Focusing on the latest advancements in AI research and application across Europe.",
     status: 'rejected',
     comment: 'Insufficient details provided in the application.',
+    createdAt: new Date('2023-10-25T14:00:00Z'), // Example creation date
   },
     {
     id: 'conf4',
@@ -103,6 +107,7 @@ const initialConferences: Conference[] = [
     description: "Connecting data scientists and researchers across the Asia Pacific region.",
     status: 'pending',
     comment: 'Initial submission pending review.',
+    createdAt: new Date('2023-10-24T11:45:00Z'), // Example creation date
   },
      {
     id: 'conf5',
@@ -116,12 +121,13 @@ const initialConferences: Conference[] = [
     stateProvince: "Ontario",
     importantDates: {
       conferenceDates: "2024-10-25 - 2024-10-27",
-      submissionDateRound1: "2024-08-20", // Added submission date
+      submissionDateRound1: "2024-08-20",
     },
     topics: ["Cybersecurity", "Network Security", "Cryptography"],
     description: "Annual workshop on cybersecurity threats and defenses.",
     status: 'approved',
     comment: 'Content verified, approved.',
+    createdAt: new Date('2023-10-22T16:10:00Z'), // Example creation date
   },
      {
     id: 'conf6',
@@ -135,16 +141,17 @@ const initialConferences: Conference[] = [
     stateProvince: "Tokyo",
     importantDates: {
       conferenceDates: "2025-01-15 - 2025-01-18",
-      submissionDateRound1: "2024-10-01", // Added submission date
+      submissionDateRound1: "2024-10-01",
     },
     topics: ["Robotics", "Automation", "AI"],
     description: "Leading research and development in robotics.",
     status: 'pending',
+    createdAt: new Date('2023-10-28T08:00:00Z'), // Example creation date (latest)
   },
 ];
 
 // Type for sort options
-type SortKey = 'name' | 'submissionDate' | null; // Added 'submissionDate'
+type SortKey = 'name' | 'submissionDate' | 'createdAt' | null; // Added 'createdAt'
 type SortDirection = 'asc' | 'desc';
 
 const Moderation: React.FC = () => {
@@ -152,8 +159,8 @@ const Moderation: React.FC = () => {
     useState<Conference[]>(initialConferences);
   const [filterStatus, setFilterStatus] = useState<ConferenceStatus | 'all'>('all'); // State for filter
   const [searchTerm, setSearchTerm] = useState(''); // State for search term
-  const [sortKey, setSortKey] = useState<SortKey>(null); // State for sort key
-  const [sortDirection, setSortDirection] = useState<SortDirection>('asc'); // State for sort direction
+  const [sortKey, setSortKey] = useState<SortKey>('createdAt'); // Default sort by createdAt
+  const [sortDirection, setSortDirection] = useState<SortDirection>('desc'); // Default sort descending (newest first)
 
 
   const [showCommentModal, setShowCommentModal] = useState(false); // State to control modal visibility
@@ -164,7 +171,7 @@ const Moderation: React.FC = () => {
 
 
   // Helper để lấy màu sắc dựa trên trạng thái
-  const getStatusColorClass = (status: ConferenceStatus): string => {
+  const getStatusColorClass = useCallback((status: ConferenceStatus): string => {
     switch (status) {
       case 'approved':
         return 'text-green-700 bg-green-100';
@@ -175,10 +182,11 @@ const Moderation: React.FC = () => {
       default:
         return 'text-gray-700 bg-gray-100';
     }
-  };
+  }, []); // No dependencies, so memoize
+
 
   // Handler to open the modal for any status change requiring a comment
-  const handleActionClick = (conferenceId: string, status: ConferenceStatus) => {
+  const handleActionClick = useCallback((conferenceId: string, status: ConferenceStatus) => {
     setConferenceToModerateId(conferenceId);
     setTargetStatus(status);
     // Find the existing comment for this conference to pre-fill the modal
@@ -186,11 +194,11 @@ const Moderation: React.FC = () => {
     setComment(existingConference?.comment || ''); // Use existing comment or empty string
     setCommentError(''); // Clear previous error
     setShowCommentModal(true);
-  };
+  }, [conferences]); // Depends on conferences to find the existing comment
 
 
   // Handler to submit the comment and change status
-  const handleModalSubmit = () => {
+  const handleModalSubmit = useCallback(() => {
     // Comment is now required for all actions handled by the modal
     if (!comment.trim()) {
       setCommentError(`Comment is required for ${targetStatus} status.`);
@@ -213,19 +221,21 @@ const Moderation: React.FC = () => {
     setTargetStatus(null);
     setComment('');
     setCommentError('');
-  };
+  }, [comment, conferenceToModerateId, targetStatus, conferences]); // Depends on these states/props
+
 
   // Handler to cancel the modal
-  const handleModalCancel = () => {
+  const handleModalCancel = useCallback(() => {
     setShowCommentModal(false);
     setConferenceToModerateId(null);
     setTargetStatus(null);
     setComment('');
     setCommentError('');
-  };
+  }, []); // No dependencies
+
 
   // Handler for sorting by name
-  const handleSortByName = () => {
+  const handleSortByName = useCallback(() => {
     if (sortKey === 'name') {
       // If already sorting by name, toggle direction
       setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
@@ -234,19 +244,33 @@ const Moderation: React.FC = () => {
       setSortKey('name');
       setSortDirection('asc');
     }
-  };
+  }, [sortKey, sortDirection]); // Depends on sortKey and sortDirection
+
 
     // Handler for sorting by submission date
-    const handleSortBySubmissionDate = () => {
+    const handleSortBySubmissionDate = useCallback(() => {
         if (sortKey === 'submissionDate') {
             // If already sorting by submission date, toggle direction
             setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
         } else {
             // Start sorting by submission date in ascending order
             setSortKey('submissionDate');
-            setSortDirection('asc');
+            setSortDirection('asc'); // Often asc (earliest) makes sense for submission date
         }
-    };
+    }, [sortKey, sortDirection]); // Depends on sortKey and sortDirection
+
+     // Handler for sorting by creation date
+    const handleSortByCreationDate = useCallback(() => {
+        if (sortKey === 'createdAt') {
+            // If already sorting by creation date, toggle direction
+            setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+        } else {
+            // Start sorting by creation date in descending order (newest first)
+            setSortKey('createdAt');
+            setSortDirection('desc'); // Often desc (newest) makes sense for creation date
+        }
+    }, [sortKey, sortDirection]); // Depends on sortKey and sortDirection
+
 
   // --- Filtering, Searching, and Sorting Logic ---
   const processedConferences = useMemo(() => {
@@ -282,11 +306,13 @@ const Moderation: React.FC = () => {
             const dateB = b.importantDates.submissionDateRound1;
 
             // Handle cases where one or both dates are missing
-            if (!dateA && !dateB) return 0; // Both missing, consider equal
-            if (!dateA) return sortDirection === 'asc' ? 1 : -1; // A missing, B exists. Missing goes last ascending, first descending
-            if (!dateB) return sortDirection === 'asc' ? -1 : 1; // B missing, A exists. Missing goes last ascending, first descending
+            // Missing dates are usually sorted last regardless of direction
+            if (!dateA && !dateB) return 0; // Both missing
+            if (!dateA) return 1; // A is missing, sort A after B
+            if (!dateB) return -1; // B is missing, sort B after A
 
             // Both dates exist, compare as strings (assumes YYYY-MM-DD format)
+            // String comparison works for YYYY-MM-DD dates chronologically
             if (dateA < dateB) {
                 return sortDirection === 'asc' ? -1 : 1;
             }
@@ -294,6 +320,16 @@ const Moderation: React.FC = () => {
                 return sortDirection === 'asc' ? 1 : -1;
             }
             return 0; // Dates are equal
+        } else if (sortKey === 'createdAt') {
+             // Date object comparison
+             const dateA = a.createdAt;
+             const dateB = b.createdAt;
+
+             if (sortDirection === 'asc') {
+                 return dateA.getTime() - dateB.getTime(); // Earlier dates first
+             } else { // desc
+                 return dateB.getTime() - dateA.getTime(); // Later dates first
+             }
         }
         return 0; // Should not happen if sortKey is not null
       });
@@ -316,9 +352,9 @@ const Moderation: React.FC = () => {
         </h2>
 
         {/* Controls: Filter, Search, Sort */}
-        <div className="mb-6 flex flex-col sm:flex-row sm:items-center gap-4">
+        <div className="mb-6 flex flex-col sm:flex-row sm:items-center gap-4 flex-wrap"> {/* Added flex-wrap */}
           {/* Filter Control */}
-          <div className="flex items-center">
+          <div className="flex items-center shrink-0"> {/* Added shrink-0 */}
             <label htmlFor="statusFilter" className="mr-2 text-gray-700 text-sm">Filter by Status:</label>
             <select
               id="statusFilter"
@@ -347,7 +383,7 @@ const Moderation: React.FC = () => {
           </div>
 
            {/* Sort Controls */}
-           <div className="flex items-center gap-2 shrink-0"> {/* Added gap-2 */}
+           <div className="flex items-center gap-2 shrink-0">
              <button
                onClick={handleSortByName}
                className={`rounded px-3 py-1 text-sm transition duration-150 ease-in-out
@@ -369,9 +405,22 @@ const Moderation: React.FC = () => {
              >
                Sort by Submission Date{' '}
                 {sortKey === 'submissionDate' && (
+                 sortDirection === 'asc' ? ' (Earliest First)' : ' (Latest First)'
+               )}
+                {sortKey !== 'submissionDate' && ' (Earliest First)'}
+             </button>
+
+              <button
+               onClick={handleSortByCreationDate}
+                className={`rounded px-3 py-1 text-sm transition duration-150 ease-in-out
+                  ${sortKey === 'createdAt' ? 'bg-blue-500 text-white hover:bg-blue-600' : 'bg-gray-200 text-gray-800 hover:bg-gray-300'}
+               `}
+             >
+               Sort by Added Date{' '}
+                {sortKey === 'createdAt' && (
                  sortDirection === 'asc' ? ' (Oldest First)' : ' (Newest First)'
                )}
-                {sortKey !== 'submissionDate' && ' (Oldest First)'}
+                {sortKey !== 'createdAt' && ' (Newest First)'} {/* Default to Newest First */}
              </button>
            </div>
 
@@ -402,6 +451,9 @@ const Moderation: React.FC = () => {
                     )}
                      <p className='text-sm italic text-gray-600'>
                       {conference.type}
+                    </p>
+                    <p className='text-xs text-gray-500 mt-1'>
+                       Added: {conference.createdAt.toLocaleString()} {/* Display creation date */}
                     </p>
                   </div>
                   <span
