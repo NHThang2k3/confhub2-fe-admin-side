@@ -171,7 +171,7 @@ const useAuthApi = (): AuthApiResult => {
       if (token) {
         console.log("[useAuthApi - Initial Effect] Token found. Verifying with /me endpoint...");
         try {
-          const response = await fetch(`${appConfig.NEXT_PUBLIC_DATABASE_URL}/api/v1/user/me`, {
+          const response = await fetch(`${appConfig.NEXT_PUBLIC_DATABASE_URL}/api/v1/auth/admin/me`, {
             method: 'GET',
             headers: {
               'Authorization': `Bearer ${token}`,
@@ -278,10 +278,10 @@ const useAuthApi = (): AuthApiResult => {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await fetch(`${appConfig.NEXT_PUBLIC_DATABASE_URL}/api/v1/auth/login`, {
+      const response = await fetch(`${appConfig.NEXT_PUBLIC_DATABASE_URL}/api/v1/auth/admin/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...credentials, mode: "user" }),
+        body: JSON.stringify({ ...credentials, mode: "admin" }),
       });
 
       const data = await response.json();
