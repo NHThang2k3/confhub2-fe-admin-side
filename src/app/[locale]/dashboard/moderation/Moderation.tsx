@@ -1,6 +1,6 @@
 // src/components/Moderation.tsx
 
-import React, { useState } from 'react';
+import React, { useState, useMemo, useCallback } from 'react'; // Added useCallback
 
 // Reusing the SubmissionStatus type, as it fits the concept of moderation status
 export type ConferenceStatus = 'pending' | 'approved' | 'rejected';
@@ -18,7 +18,7 @@ export interface Conference {
   stateProvince?: string; // Optional state/province
   importantDates: {
     conferenceDates: string; // e.g., "2025-05-21 - 2025-05-31"
-    submissionDateRound1?: string; // Optional submission date
+    submissionDateRound1?: string; // Optional submission date (YYYY-MM-DD format preferred)
     // Add other date types if needed
   };
   topics: string[]; // Array of topics
@@ -41,7 +41,7 @@ const initialConferences: Conference[] = [
     stateProvince: "Đà Nẵng",
     importantDates: {
       conferenceDates: "2025-05-21 - 2025-05-31",
-      submissionDateRound1: "2025-05-12 - 2025-05-12",
+      submissionDateRound1: "2025-05-12", // Changed format to YYYY-MM-DD
     },
     topics: ["AI", "Math"],
     description: "No description provided",
@@ -70,14 +70,15 @@ const initialConferences: Conference[] = [
     id: 'conf3',
     name: "European AI Symposium",
     acronym: "EAIS2025",
-    link: "https://example.com/gts",
+    link: "https://example.com/eais",
     type: "In-person",
     address: "Berlin, Germany",
     continent: "Europe",
     country: "Germany",
-    stateProvince: "California",
+    stateProvince: "Berlin",
     importantDates: {
       conferenceDates: "2025-03-20 - 2025-03-22",
+      // submissionDateRound1 is missing for this one
     },
     topics: ["Machine Learning", "Ethics in AI", "Natural Language Processing"],
     description: "Focusing on the latest advancements in AI research and application across Europe.",
@@ -90,10 +91,10 @@ const initialConferences: Conference[] = [
     acronym: "APDSC2024",
     link: "https://example.com/apdsc",
     type: "Online",
-    address: "Berlin, Germany",
+    address: "Virtual",
     continent: "Asia",
     country: "Singapore",
-    stateProvince: "California",
+    stateProvince: "",
     importantDates: {
       conferenceDates: "2024-09-01 - 2024-09-03",
       submissionDateRound1: "2024-05-15",
@@ -101,21 +102,68 @@ const initialConferences: Conference[] = [
     topics: ["Data Science", "Big Data", "Analytics"],
     description: "Connecting data scientists and researchers across the Asia Pacific region.",
     status: 'pending',
+    comment: 'Initial submission pending review.',
+  },
+     {
+    id: 'conf5',
+    name: "North American Cybersecurity Workshop",
+    acronym: "NACW2024",
+    link: "https://example.com/nacw",
+    type: "In-person",
+    address: "Toronto, Canada",
+    continent: "North America",
+    country: "Canada",
+    stateProvince: "Ontario",
+    importantDates: {
+      conferenceDates: "2024-10-25 - 2024-10-27",
+      submissionDateRound1: "2024-08-20", // Added submission date
+    },
+    topics: ["Cybersecurity", "Network Security", "Cryptography"],
+    description: "Annual workshop on cybersecurity threats and defenses.",
+    status: 'approved',
+    comment: 'Content verified, approved.',
+  },
+     {
+    id: 'conf6',
+    name: "International Robotics Symposium",
+    acronym: "IRS2025",
+    link: "https://example.com/irs",
+    type: "Hybrid",
+    address: "Tokyo, Japan",
+    continent: "Asia",
+    country: "Japan",
+    stateProvince: "Tokyo",
+    importantDates: {
+      conferenceDates: "2025-01-15 - 2025-01-18",
+      submissionDateRound1: "2024-10-01", // Added submission date
+    },
+    topics: ["Robotics", "Automation", "AI"],
+    description: "Leading research and development in robotics.",
+    status: 'pending',
   },
 ];
+
+// Type for sort options
+type SortKey = 'name' | 'submissionDate' | null; // Added 'submissionDate'
+type SortDirection = 'asc' | 'desc';
 
 const Moderation: React.FC = () => {
   const [conferences, setConferences] =
     useState<Conference[]>(initialConferences);
   const [filterStatus, setFilterStatus] = useState<ConferenceStatus | 'all'>('all'); // State for filter
+  const [searchTerm, setSearchTerm] = useState(''); // State for search term
+  const [sortKey, setSortKey] = useState<SortKey>(null); // State for sort key
+  const [sortDirection, setSortDirection] = useState<SortDirection>('asc'); // State for sort direction
+
+
   const [showCommentModal, setShowCommentModal] = useState(false); // State to control modal visibility
   const [conferenceToModerateId, setConferenceToModerateId] = useState<string | null>(null); // Id of conference being moderated
-  const [targetStatus, setTargetStatus] = useState<ConferenceStatus | null>(null); // Status (approved/rejected) to apply
+  const [targetStatus, setTargetStatus] = useState<ConferenceStatus | null>(null); // Status (approved/rejected/pending) to apply
   const [comment, setComment] = useState(''); // State for the comment input
   const [commentError, setCommentError] = useState(''); // State for comment validation error
 
 
-  // Helper để lấy màu sắc dựa trên trạng thái (reusing the same logic)
+  // Helper để lấy màu sắc dựa trên trạng thái
   const getStatusColorClass = (status: ConferenceStatus): string => {
     switch (status) {
       case 'approved':
@@ -129,30 +177,23 @@ const Moderation: React.FC = () => {
     }
   };
 
-  // Handler to open the modal for approve/reject
-  const handleActionClick = (conferenceId: string, status: 'approved' | 'rejected') => {
+  // Handler to open the modal for any status change requiring a comment
+  const handleActionClick = (conferenceId: string, status: ConferenceStatus) => {
     setConferenceToModerateId(conferenceId);
     setTargetStatus(status);
-    setComment(''); // Clear previous comment
+    // Find the existing comment for this conference to pre-fill the modal
+    const existingConference = conferences.find(conf => conf.id === conferenceId);
+    setComment(existingConference?.comment || ''); // Use existing comment or empty string
     setCommentError(''); // Clear previous error
     setShowCommentModal(true);
-  };
-
-  // Handler for 'Set to Pending' (doesn't require comment)
-  const handleSetPending = (conferenceId: string) => {
-    setConferences(
-      conferences.map(conf =>
-        conf.id === conferenceId ? { ...conf, status: 'pending', comment: undefined } // Clear comment when setting to pending
-        : conf
-      )
-    );
   };
 
 
   // Handler to submit the comment and change status
   const handleModalSubmit = () => {
+    // Comment is now required for all actions handled by the modal
     if (!comment.trim()) {
-      setCommentError('Comment is required.');
+      setCommentError(`Comment is required for ${targetStatus} status.`);
       return;
     }
 
@@ -183,10 +224,83 @@ const Moderation: React.FC = () => {
     setCommentError('');
   };
 
-  // Filter conferences based on filterStatus
-  const filteredConferences = filterStatus === 'all'
-    ? conferences
-    : conferences.filter(conf => conf.status === filterStatus);
+  // Handler for sorting by name
+  const handleSortByName = () => {
+    if (sortKey === 'name') {
+      // If already sorting by name, toggle direction
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      // Start sorting by name in ascending order
+      setSortKey('name');
+      setSortDirection('asc');
+    }
+  };
+
+    // Handler for sorting by submission date
+    const handleSortBySubmissionDate = () => {
+        if (sortKey === 'submissionDate') {
+            // If already sorting by submission date, toggle direction
+            setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+        } else {
+            // Start sorting by submission date in ascending order
+            setSortKey('submissionDate');
+            setSortDirection('asc');
+        }
+    };
+
+  // --- Filtering, Searching, and Sorting Logic ---
+  const processedConferences = useMemo(() => {
+    let result = [...conferences]; // Start with a copy of the original data
+
+    // 1. Filter by status
+    if (filterStatus !== 'all') {
+      result = result.filter(conf => conf.status === filterStatus);
+    }
+
+    // 2. Filter by search term (case-insensitive name search)
+    if (searchTerm) {
+      result = result.filter(conf =>
+        conf.name.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    // 3. Sort
+    if (sortKey) {
+      result.sort((a, b) => {
+        if (sortKey === 'name') {
+          const nameA = a.name.toLowerCase();
+          const nameB = b.name.toLowerCase();
+          if (nameA < nameB) {
+            return sortDirection === 'asc' ? -1 : 1;
+          }
+          if (nameA > nameB) {
+            return sortDirection === 'asc' ? 1 : -1;
+          }
+          return 0; // names are equal
+        } else if (sortKey === 'submissionDate') {
+            const dateA = a.importantDates.submissionDateRound1;
+            const dateB = b.importantDates.submissionDateRound1;
+
+            // Handle cases where one or both dates are missing
+            if (!dateA && !dateB) return 0; // Both missing, consider equal
+            if (!dateA) return sortDirection === 'asc' ? 1 : -1; // A missing, B exists. Missing goes last ascending, first descending
+            if (!dateB) return sortDirection === 'asc' ? -1 : 1; // B missing, A exists. Missing goes last ascending, first descending
+
+            // Both dates exist, compare as strings (assumes YYYY-MM-DD format)
+            if (dateA < dateB) {
+                return sortDirection === 'asc' ? -1 : 1;
+            }
+            if (dateA > dateB) {
+                return sortDirection === 'asc' ? 1 : -1;
+            }
+            return 0; // Dates are equal
+        }
+        return 0; // Should not happen if sortKey is not null
+      });
+    }
+
+    return result;
+  }, [conferences, filterStatus, searchTerm, sortKey, sortDirection]); // Re-run only when these states change
 
 
   return (
@@ -198,33 +312,80 @@ const Moderation: React.FC = () => {
       {/* Conference List Moderation Section */}
       <div className='mx-auto max-w-4xl rounded-lg bg-white p-6 shadow-md'>
         <h2 className='mb-4 text-2xl font-semibold text-gray-700'>
-          Conference List ({conferences.length})
+          Conference List
         </h2>
 
-        {/* Filter Control */}
-        <div className="mb-6">
-          <label htmlFor="statusFilter" className="mr-2 text-gray-700">Filter by Status:</label>
-          <select
-            id="statusFilter"
-            value={filterStatus}
-            onChange={(e) => setFilterStatus(e.target.value as ConferenceStatus | 'all')}
-            className="rounded border border-gray-300 px-3 py-1 text-gray-700"
-          >
-            <option value="all">All ({conferences.length})</option>
-            <option value="pending">Pending ({conferences.filter(c => c.status === 'pending').length})</option>
-            <option value="approved">Approved ({conferences.filter(c => c.status === 'approved').length})</option>
-            <option value="rejected">Rejected ({conferences.filter(c => c.status === 'rejected').length})</option>
-          </select>
+        {/* Controls: Filter, Search, Sort */}
+        <div className="mb-6 flex flex-col sm:flex-row sm:items-center gap-4">
+          {/* Filter Control */}
+          <div className="flex items-center">
+            <label htmlFor="statusFilter" className="mr-2 text-gray-700 text-sm">Filter by Status:</label>
+            <select
+              id="statusFilter"
+              value={filterStatus}
+              onChange={(e) => setFilterStatus(e.target.value as ConferenceStatus | 'all')}
+              className="rounded border border-gray-300 px-3 py-1 text-gray-700 text-sm"
+            >
+              <option value="all">All ({conferences.length})</option>
+              <option value="pending">Pending ({conferences.filter(c => c.status === 'pending').length})</option>
+              <option value="approved">Approved ({conferences.filter(c => c.status === 'approved').length})</option>
+              <option value="rejected">Rejected ({conferences.filter(c => c.status === 'rejected').length})</option>
+            </select>
+          </div>
+
+          {/* Search Control */}
+           <div className="flex items-center flex-grow">
+            <label htmlFor="conferenceSearch" className="mr-2 text-gray-700 text-sm shrink-0">Search by Name:</label>
+            <input
+              id="conferenceSearch"
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Enter conference name..."
+              className="w-full rounded border border-gray-300 px-3 py-1 text-gray-700 text-sm"
+            />
+          </div>
+
+           {/* Sort Controls */}
+           <div className="flex items-center gap-2 shrink-0"> {/* Added gap-2 */}
+             <button
+               onClick={handleSortByName}
+               className={`rounded px-3 py-1 text-sm transition duration-150 ease-in-out
+                  ${sortKey === 'name' ? 'bg-blue-500 text-white hover:bg-blue-600' : 'bg-gray-200 text-gray-800 hover:bg-gray-300'}
+               `}
+             >
+               Sort by Name{' '}
+               {sortKey === 'name' && (
+                 sortDirection === 'asc' ? ' (A-Z)' : ' (Z-A)'
+               )}
+               {sortKey !== 'name' && ' (A-Z)'}
+             </button>
+
+             <button
+               onClick={handleSortBySubmissionDate}
+                className={`rounded px-3 py-1 text-sm transition duration-150 ease-in-out
+                  ${sortKey === 'submissionDate' ? 'bg-blue-500 text-white hover:bg-blue-600' : 'bg-gray-200 text-gray-800 hover:bg-gray-300'}
+               `}
+             >
+               Sort by Submission Date{' '}
+                {sortKey === 'submissionDate' && (
+                 sortDirection === 'asc' ? ' (Oldest First)' : ' (Newest First)'
+               )}
+                {sortKey !== 'submissionDate' && ' (Oldest First)'}
+             </button>
+           </div>
+
         </div>
 
+
         {/* Conference List */}
-        {filteredConferences.length === 0 ? (
+        {processedConferences.length === 0 ? (
           <p className='py-8 text-center text-gray-500'>
-            {filterStatus === 'all' ? 'No conferences found.' : `No "${filterStatus}" conferences found.`}
+            No conferences match the current criteria.
           </p>
         ) : (
           <ul>
-            {filteredConferences.map(conference => (
+            {processedConferences.map(conference => (
               <li
                 key={conference.id}
                 className='border-b border-gray-200 py-6 last:border-b-0'
@@ -234,7 +395,7 @@ const Moderation: React.FC = () => {
                     <h3 className='text-xl font-semibold text-gray-900'>
                       {conference.name} <span className="font-normal text-gray-600">({conference.acronym})</span>
                     </h3>
-                    {conference.link && (
+                    {conference.link && conference.link.trim() !== '' && (
                       <p className='text-sm text-blue-600 hover:underline'>
                           <a href={conference.link} target="_blank" rel="noopener noreferrer">{conference.link}</a>
                       </p>
@@ -252,10 +413,10 @@ const Moderation: React.FC = () => {
                 </div>
 
                  <div className="mb-3 text-sm text-gray-700">
-                    {conference.address && <p><strong>Address:</strong> {conference.address}</p>}
-                    {conference.continent && <p><strong>Continent:</strong> {conference.continent}</p>}
+                    {conference.address && conference.address.trim() !== '' && <p><strong>Address:</strong> {conference.address}</p>}
+                    {conference.continent && conference.continent.trim() !== '' && <p><strong>Continent:</strong> {conference.continent}</p>}
                     <p><strong>Country:</strong> {conference.country}</p>
-                    {conference.stateProvince && <p><strong>State/Province:</strong> {conference.stateProvince}</p>}
+                    {conference.stateProvince && conference.stateProvince.trim() !== '' && <p><strong>State/Province:</strong> {conference.stateProvince}</p>}
                  </div>
 
                  <div className="mb-3 text-sm text-gray-700">
@@ -273,7 +434,7 @@ const Moderation: React.FC = () => {
                   <p><strong>Topics:</strong> {conference.topics.join(', ')}</p>
                 </div>
 
-                 {conference.description && conference.description !== "No description provided" && (
+                 {conference.description && conference.description.trim() !== "" && conference.description !== "No description provided" && (
                     <div className="mb-3 text-sm text-gray-700">
                        <p><strong>Description:</strong> {conference.description}</p>
                     </div>
@@ -281,7 +442,7 @@ const Moderation: React.FC = () => {
 
 
                 {/* Display comment if it exists */}
-                {conference.comment && (
+                {conference.comment && conference.comment.trim() !== '' && (
                     <div className="mb-4 text-sm text-gray-600 italic">
                         <strong>Moderation Comment:</strong> {conference.comment}
                     </div>
@@ -292,7 +453,7 @@ const Moderation: React.FC = () => {
                   {/* Nút Approve */}
                   {conference.status !== 'approved' && (
                     <button
-                      onClick={() => handleActionClick(conference.id, 'approved')} // Use new handler
+                      onClick={() => handleActionClick(conference.id, 'approved')}
                       className='rounded bg-green-500 px-4 py-2 text-sm text-white transition duration-150 ease-in-out hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed'
                       disabled={showCommentModal} // Disable buttons when modal is open
                     >
@@ -303,7 +464,7 @@ const Moderation: React.FC = () => {
                   {/* Nút Reject */}
                   {conference.status !== 'rejected' && (
                     <button
-                      onClick={() => handleActionClick(conference.id, 'rejected')} // Use new handler
+                      onClick={() => handleActionClick(conference.id, 'rejected')}
                       className='rounded bg-red-500 px-4 py-2 text-sm text-white transition duration-150 ease-in-out hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed'
                        disabled={showCommentModal} // Disable buttons when modal is open
                     >
@@ -311,10 +472,10 @@ const Moderation: React.FC = () => {
                     </button>
                   )}
 
-                  {/* Nút Set to Pending (Nếu không ở trạng thái pending) */}
+                  {/* Nút Set to Pending */}
                   {conference.status !== 'pending' && (
                     <button
-                       onClick={() => handleSetPending(conference.id)} // Use dedicated pending handler
+                       onClick={() => handleActionClick(conference.id, 'pending')}
                       className='rounded bg-gray-300 px-4 py-2 text-sm text-gray-800 transition duration-150 ease-in-out hover:bg-gray-400 disabled:opacity-50 disabled:cursor-not-allowed'
                        disabled={showCommentModal} // Disable buttons when modal is open
                     >
@@ -330,10 +491,13 @@ const Moderation: React.FC = () => {
 
       {/* Comment Modal */}
       {showCommentModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
           <div className="relative w-full max-w-md rounded-lg bg-white p-6 shadow-xl">
             <h3 className="mb-4 text-lg font-semibold text-gray-800">
-              {targetStatus === 'approved' ? 'Approve' : 'Reject'} Conference
+              {targetStatus === 'approved' && 'Approve'}
+              {targetStatus === 'rejected' && 'Reject'}
+              {targetStatus === 'pending' && 'Set to Pending'}
+              {' '}Conference
             </h3>
             <p className="mb-4 text-gray-700">Please provide a comment:</p>
             <textarea
@@ -353,9 +517,16 @@ const Moderation: React.FC = () => {
               </button>
               <button
                 onClick={handleModalSubmit}
-                className={`rounded px-4 py-2 text-sm text-white ${targetStatus === 'approved' ? 'bg-green-500 hover:bg-green-600' : 'bg-red-500 hover:bg-red-600'}`}
+                className={`rounded px-4 py-2 text-sm text-white
+                  ${targetStatus === 'approved' ? 'bg-green-500 hover:bg-green-600' :
+                     targetStatus === 'rejected' ? 'bg-red-500 hover:bg-red-600' :
+                     'bg-blue-500 hover:bg-blue-600' // Use blue for pending submit
+                   }
+                `}
               >
-                {targetStatus === 'approved' ? 'Approve' : 'Reject'}
+                 {targetStatus === 'approved' && 'Approve'}
+                 {targetStatus === 'rejected' && 'Reject'}
+                 {targetStatus === 'pending' && 'Set Pending'}
               </button>
             </div>
           </div>
