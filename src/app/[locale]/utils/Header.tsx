@@ -94,7 +94,7 @@ export const Header: FC<Props> = ({ locale }) => {
           />
         )}
 
-        <Button
+        {/* <Button
           className='block lg:hidden'
           onClick={e => {
             e.stopPropagation()
@@ -102,14 +102,14 @@ export const Header: FC<Props> = ({ locale }) => {
           }}
         >
           {isMobileMenuOpen ? <CloseIcon /> : <MenuIcon />}
-        </Button>
+        </Button> */}
 
-        <MobileNavigation
+        {/* <MobileNavigation
           isMobileMenuOpen={isMobileMenuOpen}
-          closeAllMenus={closeAllMenus} // Keep closing all
+          closeAllMenus={closeAllMenus} 
           locale={locale}
           isLogin={isLoggedIn}
-        />
+        /> */}
         <NotificationDropdown
           notifications={displayedNotifications}
           isNotificationOpen={isNotificationOpen}

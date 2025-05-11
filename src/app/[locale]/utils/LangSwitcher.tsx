@@ -120,7 +120,7 @@ const LangSwitcher: React.FC = () => {
               className='h-auto w-[20px]'
               priority={true} // Priority for current flag is fine
             />
-            {capitalize(currentLocale.country)}
+            {capitalize(currentLocale.code)}
           </span>
           <svg
             className={`h-5 w-5 flex-shrink-0 transition-transform ${isOptionsExpanded ? 'rotate-180' : ''}`}
@@ -171,7 +171,7 @@ const LangSwitcher: React.FC = () => {
                     className='h-auto w-[20px]'
                     loading='lazy' // Lazy load flags in the dropdown
                   />
-                  {capitalize(lang.country)}
+                  {capitalize(lang.code)}
                 </a>
               ))}
             </div>
