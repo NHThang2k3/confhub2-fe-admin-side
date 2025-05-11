@@ -1,5 +1,4 @@
 // src/components/RequestAdminTab.tsx
-
 import React, { useState } from 'react'
 // import { UserRequest, UserRequestType, AdminRequestStatus } from '../types'; // Import types
 export type UserRequestType = 'report' | 'contact' // Loại request: Báo cáo hoặc Liên hệ

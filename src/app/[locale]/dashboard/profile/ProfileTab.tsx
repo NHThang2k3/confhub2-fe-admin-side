@@ -5,7 +5,6 @@ import Button from '../../utils/Button'
 import { useTranslations } from 'next-intl'
 import { useUserData } from '@/src/hooks/dashboard/profile/useUserData'
 import { useEditProfile } from '@/src/hooks/dashboard/profile/useEditProfile'
-import { useImageSelection } from '@/src/hooks/dashboard/profile/useImageSelection'
 import ChangePasswordForm from './ChangePasswordForm'
 
 const ProfileTab: React.FC = () => {

@@ -1,61 +1,54 @@
-// app/moderation/page.tsx
-'use client'; // Đây phải là một Client Component vì sử dụng hook
+// src/app/[locale]/dashboard/moderation/page.tsx
+'use client'; // <-- Cần đánh dấu là client component vì sử dụng hooks
 
-import { useEffect } from 'react';
-import { useRouter, usePathname } from 'next/navigation'; // Sử dụng hook từ next/navigation
-import useAuthApi from '@/src/hooks/auth/useAuthApi'; // Import hook useAuthApi
+import React, { useEffect } from 'react';
+import { useRouter } from 'next/navigation'; // Import useRouter
+import useAuthApi from '@/src/hooks/auth/useAuthApi'; // Import hook xác thực của bạn
 import Moderation from './Moderation';
 
-const ModerationPage = () => {
-    // Sử dụng hook để lấy trạng thái đăng nhập và loading
+// Component Page cho route /dashboard/moderation/[locale]
+export default function ModerationPage({ params: { locale } }: { params: { locale: string } }) {
+    // Sử dụng hook xác thực
     const { isLoggedIn, isLoading } = useAuthApi();
     const router = useRouter();
-    const pathname = usePathname(); // Lấy đường dẫn hiện tại
 
+    // Effect để kiểm tra trạng thái xác thực và chuyển hướng
     useEffect(() => {
-        // Chờ cho quá trình kiểm tra xác thực ban đầu hoàn tất
+        // Chỉ thực hiện kiểm tra sau khi hook useAuthApi hoàn tất quá trình tải trạng thái ban đầu
         if (!isLoading) {
-            // Nếu không đăng nhập sau khi kiểm tra xong
+            // Nếu người dùng CHƯA đăng nhập, chuyển hướng đến trang login
             if (!isLoggedIn) {
-                console.log("[ModerationPage] User is not logged in. Redirecting to login.");
-                // Lưu lại đường dẫn hiện tại để chuyển hướng lại sau khi login thành công
-                // Đảm bảo chỉ chạy ở client-side
-                if (typeof window !== 'undefined') {
-                    localStorage.setItem('returnUrl', pathname);
-                }
-                // Chuyển hướng đến trang đăng nhập của bạn (ví dụ: /login)
-                // Thay '/login' bằng đường dẫn thực tế của trang đăng nhập trong ứng dụng của bạn
-                router.push('/login');
+                console.log(`[${locale}/dashboard/moderation/page.tsx] User not logged in. Redirecting to login.`);
+                // Sử dụng router.replace để ngăn người dùng back lại trang này
+                router.replace(`/${locale}/auth/login`);
             } else {
-                 console.log("[ModerationPage] User is logged in.");
-                 // Người dùng đã đăng nhập, không làm gì cả, component Moderation sẽ được render
+                console.log(`[${locale}/dashboard/moderation/page.tsx] User is logged in. Rendering Moderation.`);
+                // Nếu đã đăng nhập, không làm gì cả, component sẽ render nội dung bên dưới
             }
+        } else {
+             console.log(`[${locale}/dashboard/moderation/page.tsx] Checking auth status...`);
         }
-    }, [isLoading, isLoggedIn, router, pathname]); // Dependencies cho useEffect
+    }, [isLoggedIn, isLoading, locale, router]); // Dependencies: chạy lại effect khi các giá trị này thay đổi
 
-    // Render UI dựa trên trạng thái
-    // Nếu đang kiểm tra xác thực, hiển thị loading
+
+    // Ẩn nội dung hoặc hiển thị loading spinner trong lúc chờ kiểm tra xác thực
+    // hoặc nếu người dùng chưa đăng nhập (useEffect sẽ xử lý chuyển hướng)
     if (isLoading) {
         return (
-            <div className="flex justify-center items-center min-h-screen">
-                <p>Checking authentication status...</p>
-                {/* Bạn có thể thêm spinner hoặc hiệu ứng loading khác ở đây */}
+            <div className="flex items-center justify-center w-full min-h-[50vh]">
+               Loading authentication status...
             </div>
         );
     }
 
-    // Nếu không loading và không đăng nhập (state này chỉ thoáng qua trước khi redirect)
+    // Nếu không loading VÀ chưa đăng nhập, useEffect đã kích hoạt redirect rồi.
+    // Render null hoặc một tin nhắn nhỏ trong khi chờ trình duyệt chuyển trang.
     if (!isLoggedIn) {
-        // Hiển thị thông báo hoặc trả về null để tránh flicker
-        return (
-            <div className="flex justify-center items-center min-h-screen text-red-600">
-                <p>You are not authorized to view this page. Redirecting to login...</p>
-            </div>
-        );
+        return null; // Hoặc <div className="flex items-center justify-center w-full min-h-[50vh]">Redirecting to login...</div>;
     }
 
-    // Nếu không loading và đã đăng nhập, hiển thị component Moderation
+    // Nếu không loading VÀ đã đăng nhập, render component Moderation
+    // Component Moderation không cần nhận locale trừ khi có logic i18n phức tạp bên trong nó
+    // (ví dụ: tự load messages file, điều này thường được làm ở layout/root)
     return <Moderation />;
-};
-
-export default ModerationPage;
+}

@@ -1,3 +1,4 @@
+// src/navigation.ts
 'use client'
 import {
   createLocalizedPathnamesNavigation,
@@ -10,6 +11,11 @@ export const localePrefix = 'always'
 export const pathnames = {
   '/': '/',
   '/dashboard': '/dashboard',
+  '/dashboard/moderation': '/dashboard/moderation',
+  '/dashboard/profile': '/dashboard/profile',
+  '/dashboard/notification': '/dashboard/notification',
+  '/dashboard/requestAdminTab': '/dashboard/requestAdminTab',
+  '/dashboard/logAnalysis': '/dashboard/logAnalysis',
   '/auth/login': '/auth/login',
   '/auth/verify-email': '/auth/verify-email',
   '/auth/forgot-password': '/auth/forgot-password',

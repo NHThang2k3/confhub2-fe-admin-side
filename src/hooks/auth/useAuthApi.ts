@@ -1,3 +1,5 @@
+// src/hooks/auth/useAuthApi.ts
+
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation'; // Correct import for App Router
 import { AuthResponse, UserResponse } from '@/src/models/response/user.response'; // Adjust path as needed
