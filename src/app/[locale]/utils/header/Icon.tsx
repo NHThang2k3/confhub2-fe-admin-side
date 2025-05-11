@@ -1,30 +1,19 @@
-// components/Header/components/NotificationIcon.tsx
-import { FC } from 'react'
-import { useLocalStorage } from 'usehooks-ts'
+// src/app/[locale]/utils/header/Icon.tsx
+import { FC, useState, useEffect } from 'react' // Import useState, useEffect
+// import { useLocalStorage } from 'usehooks-ts'; // Có thể không cần thiết nếu chỉ dùng ở đây
 
 interface NotificationIconProps {
   notificationEffect: boolean
   unreadCount: number | string
 }
 
-let user: { avatar?: string | null } | null = null // Khởi tạo là null
-try {
-  const localUser = localStorage.getItem('user')
-  if (localUser) {
-    user = JSON.parse(localUser) // Parse dữ liệu
-  }
-} catch (error) {
-  console.error('Error parsing user from localStorage:', error)
-  // Xử lý lỗi nếu cần, ví dụ: xóa dữ liệu hỏng
-  // localStorage.removeItem('user');
-  user = null // Đảm bảo user là null nếu có lỗi
-}
-
 export const NotificationIcon: FC<NotificationIconProps> = ({
   notificationEffect,
   unreadCount
 }) => (
+  // ... (giữ nguyên code NotificationIcon)
   <div className='relative'>
+    {/* SVG icon */}
     <svg
       xmlns='http://www.w3.org/2000/svg'
       width='24'
@@ -42,6 +31,7 @@ export const NotificationIcon: FC<NotificationIconProps> = ({
       <path d='M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326' />
       <path d='M4 2C2.8 3.7 2 5.7 2 8' />
     </svg>
+    {/* Unread count badges */}
     {typeof unreadCount === 'number' && unreadCount > 0 && (
       <span className='absolute -right-2 -top-1 rounded-full bg-red-500 px-1.5 text-xs text-white'>
         {unreadCount}
@@ -55,7 +45,7 @@ export const NotificationIcon: FC<NotificationIconProps> = ({
   </div>
 )
 
-// Other icon components (No changes needed)
+// Other icon components (MenuIcon, CloseIcon - giữ nguyên)
 export const MenuIcon: FC = () => (
   <svg
     xmlns='http://www.w3.org/2000/svg'
@@ -92,13 +82,41 @@ export const CloseIcon: FC = () => (
   </svg>
 )
 
-export const UserIcon: FC = () => (
-  <img
-    // Kiểm tra xem 'user' và 'user.avatar' có tồn tại không
-    src={user?.avatar ? user.avatar : `/avatar1.jpg`}
-    alt='User avatar' // Nên dùng alt text mô tả rõ hơn nếu có thể
-    width={32}
-    height={32}
-    className='h-8 w-8 rounded-full border-2 border-white'
-  />
-)
+// --- Sửa component UserIcon ---
+export const UserIcon: FC = () => {
+  // Sử dụng state để lưu avatar URL. Khởi tạo bằng ảnh mặc định
+  // để có giá trị trong quá trình SSR.
+  const [avatarSrc, setAvatarSrc] = useState('/avatar1.jpg')
+
+  useEffect(() => {
+    // Code bên trong useEffect chỉ chạy trên client sau khi component mount
+    if (typeof window !== 'undefined') {
+      // Kiểm tra chắc chắn là môi trường trình duyệt
+      try {
+        const localUser = localStorage.getItem('user')
+        if (localUser) {
+          const user = JSON.parse(localUser)
+          // Nếu có user và có avatar, cập nhật state
+          if (user?.avatar) {
+            setAvatarSrc(user.avatar)
+          }
+        }
+      } catch (error) {
+        console.error('Error reading or parsing user from localStorage:', error)
+        // Giữ avatar mặc định nếu có lỗi
+      }
+    }
+  }, []) // Mảng rỗng: effect chỉ chạy MỘT LẦN sau render đầu tiên trên client
+
+  return (
+    <img
+      // Sử dụng giá trị từ state cho src
+      src={avatarSrc}
+      alt='User avatar' // Nên dùng alt text mô tả rõ hơn nếu có thể
+      width={32}
+      height={32}
+      className='h-8 w-8 rounded-full border-2 border-white'
+    />
+  )
+}
+// --- Hết sửa component UserIcon ---

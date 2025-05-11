@@ -3,6 +3,8 @@
 import React from 'react'
 import { ThemeProvider } from '@/src/app/[locale]/utils/ThemeProvider'
 import type { Metadata } from 'next'
+import type { Viewport } from 'next' 
+
 import {
   AbstractIntlMessages,
   NextIntlClientProvider,
@@ -71,8 +73,15 @@ export const metadata: Metadata = {
   keywords:
     'conferences, academic conferences, conference management, research conferences',
   authors: [{ name: 'ConFHub Team' }],
-  viewport: 'width=device-width, initial-scale=1',
   robots: 'index, follow'
+}
+
+export const viewport: Viewport = {
+  // Sử dụng type Viewport
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false
 }
 
 export default function RootLayout({

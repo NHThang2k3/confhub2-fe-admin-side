@@ -16,19 +16,7 @@ const ProfileTab: React.FC = () => {
 
   const { editedData, setEditedData } = useEditProfile(userData) // Pass userData to the hook
 
-  const {
-    showModal: showAvatarModal,
-    setShowModal: setShowAvatarModal,
-    options: avatarOptions,
-    handleImageSelect: handleAvatarSelect
-  } = useImageSelection('avatar', setEditedData)
-
-  const {
-    showModal: showBackgroundModal,
-    setShowModal: setShowBackgroundModal,
-    options: backgroundOptions,
-    handleImageSelect: handleBackgroundSelect
-  } = useImageSelection('background', setEditedData)
+  
 
   const [showChangePasswordForm, setShowChangePasswordForm] = useState(false)
 
@@ -39,13 +27,9 @@ const ProfileTab: React.FC = () => {
     // Chỉ chạy ở client sau khi component đã mount
     if (userData?.dob) {
       try {
-        // Định dạng ngày tháng ở client
         const date = new Date(userData.dob)
-        // Kiểm tra xem date có hợp lệ không trước khi định dạng
         if (!isNaN(date.getTime())) {
-          // Sử dụng một định dạng chuẩn hoặc locale-aware để tránh lỗi hydration nếu có
-          // Ví dụ: 'YYYY-MM-DD' hoặc toLocaleDateString()
-          // toLocaleDateString() là an toàn vì nó chạy sau hydrate
+         
           setFormattedDob(date.toLocaleDateString())
         } else {
           console.error('Invalid date format received for dob:', userData.dob)
