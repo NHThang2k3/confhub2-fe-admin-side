@@ -1,11 +1,12 @@
 // src/components/Moderation/CommentModal.tsx
 
 import React from 'react';
-import { ConferenceStatus } from '@/src/types'; // Import ConferenceStatus
+// Import ConferenceStatus - make sure this is updated in src/types.ts to use uppercase
+import { ConferenceStatus } from '@/src/types';
 
 interface CommentModalProps {
     show: boolean;
-    targetStatus: ConferenceStatus | null;
+    targetStatus: ConferenceStatus | null; // This will be uppercase: 'PENDING', 'APPROVED', 'REJECTED'
     comment: string;
     commentError: string;
     setComment: (comment: string) => void;
@@ -26,22 +27,45 @@ const CommentModal: React.FC<CommentModalProps> = ({
         return null;
     }
 
+    // Determine button text and modal title based on targetStatus (uppercase)
+    let modalTitle = '';
+    let submitButtonText = '';
+    let submitButtonColor = 'bg-blue-500 hover:bg-blue-600'; // Default color
+
+    if (targetStatus === 'APPROVED') {
+        modalTitle = 'Approve Conference';
+        submitButtonText = 'Approve';
+        submitButtonColor = 'bg-green-500 hover:bg-green-600';
+    } else if (targetStatus === 'REJECTED') {
+        modalTitle = 'Reject Conference';
+        submitButtonText = 'Reject';
+        submitButtonColor = 'bg-red-500 hover:bg-red-600';
+    } else if (targetStatus === 'PENDING') {
+        modalTitle = 'Set Conference to Pending';
+        submitButtonText = 'Set Pending';
+        submitButtonColor = 'bg-gray-500 hover:bg-gray-600'; // Or choose a grey/blue color
+    }
+
+
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
             <div className="relative w-full max-w-md rounded-lg bg-white p-6 shadow-xl">
                 <h3 className="mb-4 text-lg font-semibold text-gray-800">
-                    {targetStatus === 'approved' && 'Approve'}
-                    {targetStatus === 'rejected' && 'Reject'}
-                    {targetStatus === 'pending' && 'Set to Pending'}
-                    {' '}Conference
+                   {modalTitle} {/* Use dynamic title */}
                 </h3>
-                <p className="mb-4 text-gray-700">Please provide a comment:</p>
+                {/* Only show "provide comment" text if it's rejected or might require comment */}
+                {/* Adjust this logic based on your moderation flow */}
+                 {targetStatus === 'REJECTED' && <p className="mb-4 text-gray-700">Please provide a reason for rejection:</p>}
+                 {/* Or if comment is required for all status changes */}
+                 {/* <p className="mb-4 text-gray-700">Please provide a comment:</p> */}
+
+
                 <textarea
                     value={comment}
                     onChange={(e) => setComment(e.target.value)}
                     className={`w-full rounded border p-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 ${commentError ? 'border-red-500' : 'border-gray-300'}`}
                     rows={4}
-                    placeholder="Enter comment here..."
+                    placeholder={targetStatus === 'REJECTED' ? "Enter rejection reason here..." : "Enter comment here..."} // Dynamic placeholder
                 ></textarea>
                 {commentError && <p className="text-red-500 text-sm mt-1">{commentError}</p>}
                 <div className="mt-6 flex justify-end gap-3">
@@ -53,16 +77,9 @@ const CommentModal: React.FC<CommentModalProps> = ({
                     </button>
                     <button
                         onClick={onSubmit}
-                        className={`rounded px-4 py-2 text-sm text-white
-                            ${targetStatus === 'approved' ? 'bg-green-500 hover:bg-green-600' :
-                                targetStatus === 'rejected' ? 'bg-red-500 hover:bg-red-600' :
-                                'bg-blue-500 hover:bg-blue-600'
-                            }
-                        `}
+                        className={`rounded px-4 py-2 text-sm text-white ${submitButtonColor}`} 
                     >
-                        {targetStatus === 'approved' && 'Approve'}
-                        {targetStatus === 'rejected' && 'Reject'}
-                        {targetStatus === 'pending' && 'Set Pending'}
+                        {submitButtonText} {/* Use dynamic text */}
                     </button>
                 </div>
             </div>

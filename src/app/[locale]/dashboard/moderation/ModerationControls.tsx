@@ -2,10 +2,11 @@
 
 import React from 'react';
 import DatePicker from 'react-datepicker';
-import 'react-datepicker/dist/react-datepicker.css'; // Styles might be imported globally
-import DateRangeInput from './DateRangeInput'; // Import the custom input
+import 'react-datepicker/dist/react-datepicker.css';
+import DateRangeInput from './DateRangeInput';
 
-import { Conference, ConferenceStatus, SortKey, SortDirection } from '@/src/types'; // Import types
+// Import types - make sure these are updated in src/types.ts
+import { ConferenceStatus, SortKey, SortDirection } from '@/src/types';
 
 interface ModerationControlsProps {
     // Filter Props
@@ -20,16 +21,20 @@ interface ModerationControlsProps {
     handleClearDateFilter: () => void;
 
     // Sort Props
-    sortKey: SortKey;
+    sortKey: SortKey; // This can be 'title', 'createdAt', 'updatedAt'
     sortDirection: SortDirection;
-    handleSortByName: () => void;
+    handleSortByName: () => void; // This handler is for sorting by title
     handleSortByCreationDate: () => void;
+    handleSortByUpdateDate: () => void;
 
-    // Data for counts (optional, can be derived in parent)
+    // Data for counts
     allConferencesCount: number;
     pendingCount: number;
     approvedCount: number;
     rejectedCount: number;
+
+    // Loading state
+    isLoading?: boolean;
 }
 
 const ModerationControls: React.FC<ModerationControlsProps> = ({
@@ -44,13 +49,30 @@ const ModerationControls: React.FC<ModerationControlsProps> = ({
     handleClearDateFilter,
     sortKey,
     sortDirection,
-    handleSortByName,
+    handleSortByName, // Handler for title sort
     handleSortByCreationDate,
+    handleSortByUpdateDate,
     allConferencesCount,
     pendingCount,
     approvedCount,
     rejectedCount,
+    isLoading,
 }) => {
+    const getDateSortLabel = (key: 'createdAt' | 'updatedAt') => {
+        if (sortKey === key) {
+            return sortDirection === 'asc' ? ' (Oldest First)' : ' (Newest First)';
+        }
+        return ' (Newest First)';
+    };
+
+     const getTitleSortLabel = () => {
+         if (sortKey === 'title') {
+              return sortDirection === 'asc' ? ' (A-Z)' : ' (Z-A)';
+         }
+         return ' (A-Z)';
+     };
+
+
     return (
         <div className="mb-6 flex flex-col sm:flex-row sm:items-start sm:flex-wrap gap-4">
             {/* Filter Control */}
@@ -59,32 +81,35 @@ const ModerationControls: React.FC<ModerationControlsProps> = ({
                 <select
                     id="statusFilter"
                     value={filterStatus}
+                    // Value is uppercase, fetch logic converts to lowercase if needed by API filter param
                     onChange={(e) => setFilterStatus(e.target.value as ConferenceStatus | 'all')}
-                    className="rounded border border-gray-300 px-3 py-1 text-gray-700 text-sm"
+                    className="rounded border border-gray-300 px-3 py-1 text-gray-700 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                    disabled={isLoading}
                 >
                     <option value="all">All ({allConferencesCount})</option>
-                    <option value="pending">Pending ({pendingCount})</option>
-                    <option value="approved">Approved ({approvedCount})</option>
-                    <option value="rejected">Rejected ({rejectedCount})</option>
+                    <option value="PENDING">Pending ({pendingCount})</option> {/* Uppercase */}
+                    <option value="APPROVED">Approved ({approvedCount})</option> {/* Uppercase */}
+                    <option value="REJECTED">Rejected ({rejectedCount})</option> {/* Uppercase */}
                 </select>
             </div>
 
-            {/* Search Control */}
+            {/* Search Control - Searching by Title */}
             <div className="flex items-center flex-grow">
-                <label htmlFor="conferenceSearch" className="mr-2 text-gray-700 text-sm shrink-0">Search by Name:</label>
+                <label htmlFor="conferenceSearch" className="mr-2 text-gray-700 text-sm shrink-0">Search by Title:</label>
                 <input
                     id="conferenceSearch"
                     type="text"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    placeholder="Enter conference name..."
-                    className="w-full rounded border border-gray-300 px-3 py-1 text-gray-700 text-sm"
+                    placeholder="Enter conference title..."
+                    className="w-full rounded border border-gray-300 px-3 py-1 text-gray-700 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                    disabled={isLoading}
                 />
             </div>
 
             {/* Date Filter Control */}
             <div className="flex items-center gap-2 shrink-0">
-                <label className="text-gray-700 text-sm shrink-0">Added Date Range:</label>
+                <label className="text-gray-700 text-sm shrink-0">Added Date Range:</label> {/* Filtering on request createdAt */}
                 <DatePicker
                     selected={filterStartDate}
                     onChange={(dates: [Date | null, Date | null]) => {
@@ -97,11 +122,13 @@ const ModerationControls: React.FC<ModerationControlsProps> = ({
                     selectsRange
                     customInput={<DateRangeInput placeholder="Select date range"/>}
                     dateFormat="yyyy/MM/dd"
+                    disabled={isLoading}
                 />
                 {(filterStartDate || filterEndDate) && (
                     <button
                         onClick={handleClearDateFilter}
-                        className="rounded bg-red-500 px-3 py-1 text-sm text-white hover:bg-red-600 shrink-0"
+                        className="rounded bg-red-500 px-3 py-1 text-sm text-white hover:bg-red-600 shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
+                        disabled={isLoading}
                     >
                         Clear Dates
                     </button>
@@ -112,29 +139,36 @@ const ModerationControls: React.FC<ModerationControlsProps> = ({
             <div className="flex items-center gap-2 shrink-0 flex-wrap">
                 <label className="text-gray-700 text-sm shrink-0">Sort by:</label>
                 <button
-                    onClick={handleSortByName}
-                    className={`rounded px-3 py-1 text-sm transition duration-150 ease-in-out
-                        ${sortKey === 'name' ? 'bg-blue-500 text-white hover:bg-blue-600' : 'bg-gray-200 text-gray-800 hover:bg-gray-300'}
+                    onClick={handleSortByName} // Call handler for title sort
+                    className={`rounded px-3 py-1 text-sm transition duration-150 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed
+                        ${sortKey === 'title' ? 'bg-blue-500 text-white hover:bg-blue-600' : 'bg-gray-200 text-gray-800 hover:bg-gray-300'}
                     `}
+                    disabled={isLoading}
                 >
-                    Name{' '}
-                    {sortKey === 'name' && (
-                        sortDirection === 'asc' ? ' (A-Z)' : ' (Z-A)'
-                    )}
-                    {sortKey !== 'name' && ' (A-Z)'}
+                    Title{' '}
+                    {getTitleSortLabel()}
                 </button>
 
                 <button
-                    onClick={handleSortByCreationDate}
-                    className={`rounded px-3 py-1 text-sm transition duration-150 ease-in-out
+                    onClick={handleSortByCreationDate} // Sort by request createdAt
+                    className={`rounded px-3 py-1 text-sm transition duration-150 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed
                         ${sortKey === 'createdAt' ? 'bg-blue-500 text-white hover:bg-blue-600' : 'bg-gray-200 text-gray-800 hover:bg-gray-300'}
                     `}
+                    disabled={isLoading}
                 >
                     Added Date{' '}
-                    {sortKey === 'createdAt' && (
-                        sortDirection === 'asc' ? ' (Oldest First)' : ' (Newest First)'
-                    )}
-                    {sortKey !== 'createdAt' && ' (Newest First)'}
+                    {getDateSortLabel('createdAt')}
+                </button>
+
+                 <button
+                    onClick={handleSortByUpdateDate} // Sort by request updatedAt
+                    className={`rounded px-3 py-1 text-sm transition duration-150 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed
+                        ${sortKey === 'updatedAt' ? 'bg-blue-500 text-white hover:bg-blue-600' : 'bg-gray-200 text-gray-800 hover:bg-gray-300'}
+                    `}
+                    disabled={isLoading}
+                >
+                    Updated Date{' '}
+                    {getDateSortLabel('updatedAt')}
                 </button>
             </div>
         </div>
