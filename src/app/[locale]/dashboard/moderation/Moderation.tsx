@@ -257,6 +257,7 @@ const Moderation: React.FC = () => {
                     'Content-Type': 'application/json',
                     // Add Authorization header if needed (e.g., Bearer token for admin)
                     // 'Authorization': `Bearer ${yourAuthToken}`
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`,
                 },
                 body: JSON.stringify(updateBody),
             });
