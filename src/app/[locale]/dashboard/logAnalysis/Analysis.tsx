@@ -107,7 +107,7 @@ const Analysis: React.FC = () => {
 
 
     return (
-        <div className="w-full p-4 md:p-6 lg:p-8 bg-gradient-to-br from-gray-100 to-blue-50 min-h-screen font-sans space-y-6">
+        <div className="w-full p-4  bg-gradient-to-br from-gray-100 to-blue-50 min-h-screen font-sans space-y-6">
 
             {/* --- Section: Data Crawlers (Collapsible) --- */}
             <div className="bg-white rounded-lg shadow border border-gray-200">

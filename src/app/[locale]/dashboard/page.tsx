@@ -1,11 +1,10 @@
 // src/app/[locale]/dashboard/page.tsx
-'use client'; // Needs useRouter
+'use client'; 
 
 import { useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation'; // Import usePathname
 
-// This page is just for the root /dashboard route.
-// We will redirect to the default tab (e.g., /logAnalysis)
+
 
 export default function DashboardRootPage({ params: { locale } }: { params: { locale: string } }) {
   const router = useRouter();
@@ -13,15 +12,13 @@ export default function DashboardRootPage({ params: { locale } }: { params: { lo
 
   useEffect(() => {
     // Check if the exact path matches the root dashboard path (considering locale)
-    // We check both '/[locale]/dashboard' and '/[locale]/dashboard/'
     const rootPath = `/${locale}/dashboard`;
     if (pathname === rootPath || pathname === `${rootPath}/`) {
       console.log(`[${locale}/dashboard/page.tsx] At dashboard root, redirecting to logAnalysis...`);
       // Redirect to the default tab page
       router.replace(`/${locale}/dashboard/logAnalysis`);
     }
-     // No action needed if already on a sub-route like /logAnalysis, moderation etc.
-     // The layout takes care of rendering sub-routes.
+
   }, [locale, pathname, router]); // Add dependencies
 
   // Render nothing or a small loader while redirecting

@@ -47,8 +47,6 @@ const AuthButtons: FC<Props> = ({
   return (
     <>
       <div className='flex  font-bold'>
-        {/* <ThemeSwitch /> */}
-        {/* <LangSwitcher /> */}
       </div>
       <Link
         lang={locale}

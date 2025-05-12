@@ -200,33 +200,7 @@ const UserDropdown: FC<Props> = ({
             >
               {t('Profile')}
             </Link>
-            {/* <Link
-              href={{
-                pathname: `/dashboard`,
-                query: { tab: 'myconferences' }
-              }}
-              locale={locale}
-              className='block px-2 py-2 text-sm  hover:bg-gray-100  dark:hover:bg-gray-700'
-              onClick={handleLinkClick}
-            >
-              {t('My_Conferences')}
-            </Link> */}
-            {/* <Link
-              href={{ pathname: `/dashboard`, query: { tab: 'followed' } }}
-              locale={locale}
-              className='block px-2 py-2 text-sm  hover:bg-gray-100  dark:hover:bg-gray-700'
-              onClick={handleLinkClick}
-            >
-              {t('Followed')}
-            </Link> */}
-            {/* <Link
-              href={{ pathname: `/dashboard`, query: { tab: 'note' } }}
-              locale={locale}
-              className='block px-2 py-2 text-sm  hover:bg-gray-100  dark:hover:bg-gray-700'
-              onClick={handleLinkClick}
-            >
-              {t('Note')}
-            </Link> */}
+            
             <Link
               href={{
                 pathname: `/dashboard`,
@@ -238,25 +212,7 @@ const UserDropdown: FC<Props> = ({
             >
               {t('Notifications')}
             </Link>
-            {/* <Link
-              href={{
-                pathname: `/dashboard`,
-                query: { tab: 'blacklisted' }
-              }}
-              locale={locale}
-              className='block px-2 py-2 text-sm  hover:bg-gray-100  dark:hover:bg-gray-700'
-              onClick={handleLinkClick}
-            >
-              {t('Blacklisted')}
-            </Link> */}
-            {/* <Link
-              href={{ pathname: `/dashboard`, query: { tab: 'setting' } }}
-              locale={locale}
-              className='block px-2 py-2 text-sm  hover:bg-gray-100  dark:hover:bg-gray-700'
-              onClick={handleLinkClick}
-            >
-              {t('Setting')}
-            </Link> */}
+            
 
             <hr className='my-1 border-gray-200 dark:border-gray-700' />
 
