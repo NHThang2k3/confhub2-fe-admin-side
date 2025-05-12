@@ -1,20 +1,25 @@
 // src/components/RequestAdminTab.tsx
-import React, { useState } from 'react'
-// import { UserRequest, UserRequestType, AdminRequestStatus } from '../types'; // Import types
-export type UserRequestType = 'report' | 'contact' // Loại request: Báo cáo hoặc Liên hệ
+'use client'; // <-- Add directive because of useState
 
-export type AdminRequestStatus = 'new' | 'in-progress' | 'closed' // Trạng thái xử lý của admin
+import React, { useState } from 'react';
+// Import useTranslations
+import { useTranslations } from 'next-intl'; // <-- Add import
+
+// Define types locally or import from a separate file
+export type UserRequestType = 'report' | 'contact';
+export type AdminRequestStatus = 'new' | 'in-progress' | 'closed';
 
 export interface UserRequest {
-  id: string
-  subject: string // Chủ đề
-  type: UserRequestType // Loại request
-  message: string // Nội dung tin nhắn
-  senderName: string // Tên người gửi (hoặc ID người dùng)
-  sentAt: string // Thời gian gửi
-  status: AdminRequestStatus // Trạng thái xử lý của admin
+  id: string;
+  subject: string; // Subject (user-provided, not translated)
+  type: UserRequestType; // Type
+  message: string; // Message (user-provided, not translated)
+  senderName: string; // Sender name (user-provided, not translated)
+  sentAt: string; // Sent timestamp
+  status: AdminRequestStatus; // Status
 }
-// Dữ liệu mẫu cho các Request
+
+// Dữ liệu mẫu cho các Request (content itself is sample, not translated)
 const initialRequests: UserRequest[] = [
   {
     id: 'req1',
@@ -55,12 +60,15 @@ const initialRequests: UserRequest[] = [
     sentAt: '2023-10-26T11:00:00Z',
     status: 'closed'
   }
-]
+];
 
 const RequestAdminTab: React.FC = () => {
-  const [requests, setRequests] = useState<UserRequest[]>(initialRequests)
+  // Call the useTranslations hook
+  const t = useTranslations('RequestAdminTab'); // <-- Added hook call (using a namespace example)
 
-  // Handler để thay đổi trạng thái Request
+  const [requests, setRequests] = useState<UserRequest[]>(initialRequests);
+
+  // Handler to change Request status
   const handleStatusChange = (
     requestId: string,
     newStatus: AdminRequestStatus
@@ -69,36 +77,36 @@ const RequestAdminTab: React.FC = () => {
       requests.map(req =>
         req.id === requestId ? { ...req, status: newStatus } : req
       )
-    )
-  }
+    );
+  };
 
-  // Helper để lấy màu sắc dựa trên trạng thái admin
+  // Helper to get color based on admin status (does not contain strings to translate)
   const getStatusColorClass = (status: AdminRequestStatus): string => {
     switch (status) {
       case 'new':
-        return 'text-yellow-700 bg-yellow-100'
+        return 'text-yellow-700 bg-yellow-100';
       case 'in-progress':
-        return 'text-blue-700 bg-blue-100'
+        return 'text-blue-700 bg-blue-100';
       case 'closed':
-        return 'text-green-700 bg-green-100' // hoặc text-gray-700 bg-gray-100 tùy ý
+        return 'text-green-700 bg-green-100';
       default:
-        return 'text-gray-700 bg-gray-100'
+        return 'text-gray-700 bg-gray-100';
     }
-  }
+  };
 
-  // Helper để lấy màu sắc dựa trên loại request (tùy chọn)
+  // Helper to get color based on request type (does not contain strings to translate)
   const getTypeColorClass = (type: UserRequestType): string => {
     switch (type) {
       case 'report':
-        return 'text-red-700 bg-red-100'
+        return 'text-red-700 bg-red-100';
       case 'contact':
-        return 'text-indigo-700 bg-indigo-100'
+        return 'text-indigo-700 bg-indigo-100';
       default:
-        return 'text-gray-700 bg-gray-100'
+        return 'text-gray-700 bg-gray-100';
     }
-  }
+  };
 
-  // Helper để định dạng ngày/giờ
+  // Helper to format date/time (needs access to t for error message)
   const formatDate = (dateString: string): string => {
     const options: Intl.DateTimeFormatOptions = {
       year: 'numeric',
@@ -106,29 +114,37 @@ const RequestAdminTab: React.FC = () => {
       day: 'numeric',
       hour: '2-digit',
       minute: '2-digit'
-    }
-    // Xử lý lỗi khi dateString không hợp lệ
+    };
     try {
-      return new Date(dateString).toLocaleDateString(undefined, options)
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) {
+         // Translate invalid date string
+        return t('Invalid_Date'); // <-- Use t()
+      }
+      return date.toLocaleDateString(undefined, options);
     } catch (e) {
-      return 'Invalid Date'
+       // Translate error string
+      return t('Invalid_Date'); // <-- Use t()
     }
-  }
+  };
 
   return (
     <div className='min-h-screen w-full bg-gray-100 p-6 font-sans'>
       <h1 className='mb-8 text-center text-3xl font-bold text-gray-800'>
-        Admin Request Management
+         {/* Translate main title */}
+        {t('AdminRequestManagement_Title')} {/* <-- Translated */}
       </h1>
 
       <div className='mx-auto max-w-4xl rounded-lg bg-white p-6 shadow-md'>
         <h2 className='mb-4 text-2xl font-semibold text-gray-700'>
-          Request List ({requests.length})
+           {/* Translate section title with count */}
+          {t('RequestList_SectionTitle', { count: requests.length })} {/* <-- Translated with interpolation */}
         </h2>
 
         {requests.length === 0 ? (
           <p className='py-8 text-center text-gray-500'>
-            No user requests received yet.
+             {/* Translate empty state message */}
+            {t('EmptyState_NoRequests')} {/* <-- Translated */}
           </p>
         ) : (
           <ul>
@@ -140,36 +156,40 @@ const RequestAdminTab: React.FC = () => {
                 <div className='mb-2 flex items-start justify-between'>
                   <div>
                     <h3 className='text-xl font-semibold text-gray-900'>
-                      {request.subject}
+                      {request.subject} {/* User-provided subject */}
                     </h3>
                     <p className='text-sm italic text-gray-600'>
-                      from {request.senderName}
+                       {/* Translate "from" label */}
+                      {t('Label_From')} {request.senderName} {/* <-- Translated label */}
                     </p>
                   </div>
                   <div className='flex flex-shrink-0 flex-col items-end space-y-1'>
-                    {/* Status Badge */}
+                    {/* Status Badge - Translate the status string */}
                     <span
                       className={`rounded-full px-3 py-1 text-xs font-medium ${getStatusColorClass(request.status)}`}
                     >
-                      {request.status.charAt(0).toUpperCase() +
-                        request.status.slice(1)}
+                       {/* Translate status string using t() */}
+                       {/* Assume keys are lowercase like in the data: Status_new, Status_in-progress, Status_closed */}
+                      {t(`Status_${request.status}`)} {/* <-- Translated status */}
                     </span>
-                    {/* Type Badge (Optional) */}
+                    {/* Type Badge (Optional) - Translate the type string */}
                     <span
                       className={`rounded-full px-3 py-1 text-xs font-medium ${getTypeColorClass(request.type)}`}
                     >
-                      {request.type.charAt(0).toUpperCase() +
-                        request.type.slice(1)}
+                        {/* Translate type string using t() */}
+                        {/* Assume keys are lowercase like in the data: Type_report, Type_contact */}
+                      {t(`Type_${request.type}`)} {/* <-- Translated type */}
                     </span>
                   </div>
                 </div>
 
                 <div className='mb-3 text-sm text-gray-500'>
-                  Sent: {formatDate(request.sentAt)}
+                   {/* Translate "Sent" label */}
+                  {t('Label_Sent')}: {formatDate(request.sentAt)} {/* <-- Translated label */}
                 </div>
 
                 <p className='mb-4 text-base text-gray-700'>
-                  {request.message}
+                  {request.message} {/* User-provided message */}
                 </p>
 
                 <div className='flex flex-wrap gap-3'>
@@ -181,7 +201,8 @@ const RequestAdminTab: React.FC = () => {
                       }
                       className='rounded bg-blue-500 px-4 py-2 text-sm text-white transition duration-150 ease-in-out hover:bg-blue-600'
                     >
-                      Mark as In-Progress
+                       {/* Translate button text */}
+                      {t('Button_MarkInProgress')} {/* <-- Translated */}
                     </button>
                   )}
 
@@ -190,7 +211,8 @@ const RequestAdminTab: React.FC = () => {
                       onClick={() => handleStatusChange(request.id, 'closed')}
                       className='rounded bg-green-500 px-4 py-2 text-sm text-white transition duration-150 ease-in-out hover:bg-green-600'
                     >
-                      Mark as Closed
+                       {/* Translate button text */}
+                      {t('Button_MarkClosed')} {/* <-- Translated */}
                     </button>
                   )}
 
@@ -199,7 +221,8 @@ const RequestAdminTab: React.FC = () => {
                       onClick={() => handleStatusChange(request.id, 'new')}
                       className='rounded bg-gray-300 px-4 py-2 text-sm text-gray-800 transition duration-150 ease-in-out hover:bg-gray-400'
                     >
-                      Set to New
+                       {/* Translate button text */}
+                      {t('Button_SetToNew')} {/* <-- Translated */}
                     </button>
                   )}
                 </div>
@@ -209,7 +232,7 @@ const RequestAdminTab: React.FC = () => {
         )}
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default RequestAdminTab
+export default RequestAdminTab;

@@ -1,30 +1,33 @@
 // src/app/[locale]/dashboard/page.tsx
-'use client'; 
+'use client';
 
 import { useEffect } from 'react';
-import { useRouter, usePathname } from 'next/navigation'; // Import usePathname
-
+import { useRouter, usePathname } from 'next/navigation';
+// Import useTranslations
+import { useTranslations } from 'next-intl'; // <-- Add import
 
 
 export default function DashboardRootPage({ params: { locale } }: { params: { locale: string } }) {
   const router = useRouter();
-  const pathname = usePathname(); // Get current pathname
+  const pathname = usePathname();
+  // Call useTranslations hook
+  const t = useTranslations(''); // <-- Add hook call (using the default namespace)
 
   useEffect(() => {
-    // Check if the exact path matches the root dashboard path (considering locale)
     const rootPath = `/${locale}/dashboard`;
+    // Check if the current path is exactly the dashboard root path (with or without trailing slash)
     if (pathname === rootPath || pathname === `${rootPath}/`) {
       console.log(`[${locale}/dashboard/page.tsx] At dashboard root, redirecting to logAnalysis...`);
-      // Redirect to the default tab page
       router.replace(`/${locale}/dashboard/logAnalysis`);
     }
 
-  }, [locale, pathname, router]); // Add dependencies
+  }, [locale, pathname, router]); // Dependencies: locale, pathname, router
 
   // Render nothing or a small loader while redirecting
   return (
      <div className="flex flex-col items-center justify-center w-full">
-        <p>Loading dashboard...</p> {/* Or a spinner */}
+        {/* Translate loading message */}
+        <p>{t('Dashboard_Loading')}</p> {/* <-- Translated */}
      </div>
   );
 }

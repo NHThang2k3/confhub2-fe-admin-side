@@ -1,147 +1,157 @@
 // components/Header/components/UserDropdown.tsx
-import { FC, useState, useEffect, useRef } from 'react'
-import { Link } from '@/src/navigation' // assuming this is next-intl Link
-import { useTranslations } from 'next-intl'
-import { useRouter } from 'next/navigation' // Import useRouter
+'use client'; // <-- Necessary because of useState, useEffect, useRouter, useTranslations
 
-// --- Interface cho cấu trúc dữ liệu người dùng ---
+import { FC, useState, useEffect, useRef } from 'react';
+import { Link } from '@/src/navigation'; // assuming this is next-intl Link
+import { useTranslations } from 'next-intl'; // Keep this import
+import { useRouter } from 'next/navigation'; // Keep import
+
+// --- Interface for user data structure ---
 interface UserData {
-  id: string // Thêm một trường bắt buộc để kiểm tra tính hợp lệ cơ bản
-  firstName: string
-  lastName: string
-  email: string
-  // Thêm các thuộc tính khác nếu bạn cần truy cập chúng
+  id: string; // Add a required field for basic validity check
+  firstName: string;
+  lastName: string;
+  email: string;
+  // Add other properties if you need to access them
 }
-// --- Kết thúc interface ---
+// --- End interface ---
 
 interface Props {
-  isUserDropdownOpen: boolean
-  closeAllMenus: () => void
-  locale: string
-  logout: () => Promise<void>
-  socketRef: React.MutableRefObject<any>
+  isUserDropdownOpen: boolean;
+  closeAllMenus: () => void;
+  locale: string; // Keep locale prop
+  logout: () => Promise<void>; // Assume this handles API logout
+  socketRef: React.MutableRefObject<any>; // Keep socketRef
 }
 
 const UserDropdown: FC<Props> = ({
   isUserDropdownOpen,
   closeAllMenus,
-  locale,
+  locale, // Destructure locale
   logout,
   socketRef
 }) => {
-  const [isClient, setIsClient] = useState(false)
-  const [firstName, setFirstName] = useState<string | null>(null)
-  const [lastName, setLastName] = useState<string | null>(null)
+  const [isClient, setIsClient] = useState(false);
+  const [firstName, setFirstName] = useState<string | null>(null);
+  const [lastName, setLastName] = useState<string | null>(null);
   const [showSessionExpiredMessage, setShowSessionExpiredMessage] =
-    useState(false)
+    useState(false);
 
-  const t = useTranslations('')
-  const router = useRouter()
+  // Call the useTranslations hook (already present)
+  const t = useTranslations(''); // Using the default namespace (or specify one if needed)
 
-  const redirectTimerIdRef = useRef<NodeJS.Timeout | null>(null)
+  const router = useRouter();
+
+  const redirectTimerIdRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
-    setIsClient(true)
-    // --- Đọc chuỗi JSON từ localStorage khi component mount ---
-    // Không cần kiểm tra và hiển thị lỗi ở đây, việc kiểm tra sẽ diễn ra khi click link
+    setIsClient(true);
+    // --- Read user JSON string from localStorage on component mount ---
+    // No need to check and display errors here, checking will happen when clicking links
     try {
-      const storedUserJSON = localStorage.getItem('user')
+      const storedUserJSON = localStorage.getItem('user');
       if (storedUserJSON) {
-        const userData: UserData = JSON.parse(storedUserJSON)
-        if (userData && userData.firstName) {
-          setFirstName(userData.firstName)
-        }
-        if (userData && userData.lastName) {
-          setLastName(userData.lastName)
+        const userData: UserData = JSON.parse(storedUserJSON);
+        // Basic check if parsed data looks like a user object
+        if (userData && typeof userData === 'object' && userData.id) {
+             setFirstName(userData.firstName || null); // Use || null for robustness
+             setLastName(userData.lastName || null);   // Use || null for robustness
+        } else {
+             // Log warning for developers, not user UI
+             console.warn('Invalid user data structure found in localStorage upon mount.');
+             localStorage.removeItem('user'); // Clear invalid data on mount
         }
       }
     } catch (error) {
+      // Log parsing error for developers, not user UI
       console.error(
-        'Lỗi khi parse dữ liệu người dùng từ localStorage lúc mount:',
+        'Error parsing user data from localStorage on mount:',
         error
-      )
-      // Không cần xóa dữ liệu lỗi ở đây vội, sẽ xóa khi click link nếu cần
+      );
+      localStorage.removeItem('user'); // Clear corrupted data on mount
     }
 
-    // Cleanup function để clear timeout khi component unmount
+    // Cleanup function to clear timeout when component unmounts
     return () => {
       if (redirectTimerIdRef.current) {
-        clearTimeout(redirectTimerIdRef.current)
-        redirectTimerIdRef.current = null
+        clearTimeout(redirectTimerIdRef.current);
+        redirectTimerIdRef.current = null;
       }
-    }
-  }, []) // Dependency rỗng đảm bảo chạy 1 lần sau mount ở client
+    };
+  }, []); // Empty dependency array ensures it runs once after mount on client
 
-  // Hàm xử lý sự kiện click cho các link
-  // KHÔNG cần truyền href làm tham số nữa, Link component sẽ tự biết href của nó
+  // Function to handle link click events
   const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
-    const userDataJSON = localStorage.getItem('user')
-    let isValidUser = false
-    let parsedUser: UserData | null = null
+    const userDataJSON = localStorage.getItem('user');
+    let isValidUser = false;
+    let parsedUser: UserData | null = null;
 
     if (userDataJSON) {
       try {
-        parsedUser = JSON.parse(userDataJSON)
-        // Kiểm tra tính hợp lệ cơ bản của dữ liệu user (ví dụ: có trường id không)
+        parsedUser = JSON.parse(userDataJSON);
+        // Basic validity check for user data (e.g., check for 'id' field)
         if (parsedUser && typeof parsedUser === 'object' && parsedUser.id) {
-          isValidUser = true
+          isValidUser = true;
         } else {
+          // Log warning for developers, not user UI
           console.warn(
-            'Dữ liệu người dùng trong localStorage không hợp lệ (thiếu id hoặc định dạng sai).'
-          )
-          // Có thể xóa dữ liệu lỗi ngay nếu muốn, hoặc đợi đến khi chuyển hướng
-          localStorage.removeItem('user')
+            'Invalid user data found in localStorage (missing id or wrong format) on link click.'
+          );
+           // Clear invalid data
+          localStorage.removeItem('user');
         }
       } catch (parseError) {
+        // Log parsing error for developers, not user UI
         console.error(
-          'Lỗi khi parse dữ liệu người dùng từ localStorage:',
+          'Error parsing user data from localStorage on link click:',
           parseError
-        )
-        // Dữ liệu không phải JSON hợp lệ, xóa nó đi
-        localStorage.removeItem('user')
+        );
+        // Data is not valid JSON, clear it
+        localStorage.removeItem('user');
       }
     } else {
-      console.warn('Không tìm thấy dữ liệu người dùng trong localStorage.')
+      // Log warning for developers, not user UI
+      console.warn('No user data found in localStorage on link click.');
     }
 
     if (!isValidUser) {
-      // Dữ liệu user KHÔNG tồn tại hoặc KHÔNG hợp lệ
-      e.preventDefault() // *** NGĂN CHẶN Link điều hướng mặc định ***
+      // User data does NOT exist or is NOT valid
+      e.preventDefault(); // *** PREVENT DEFAULT LINK NAVIGATION ***
 
-      // Chỉ hiển thị thông báo nếu nó chưa hiển thị
+      // Only show the message if it's not already displayed
       if (!showSessionExpiredMessage) {
-        setShowSessionExpiredMessage(true)
+        setShowSessionExpiredMessage(true);
 
-        // Đặt timeout để chuyển hướng sau 3 giây
+        // Set a timeout to redirect after 3 seconds
         const timerId = setTimeout(() => {
-          router.push('/') // Chuyển hướng về trang chủ
-          closeAllMenus() // Đóng dropdown
-          setShowSessionExpiredMessage(false) // Ẩn thông báo
-          redirectTimerIdRef.current = null // Reset ref
-        }, 3000)
-        redirectTimerIdRef.current = timerId // Lưu ID của timeout
+          router.push('/'); // Redirect to homepage using router
+          closeAllMenus(); // Close the dropdown
+          setShowSessionExpiredMessage(false); // Hide the message
+          redirectTimerIdRef.current = null; // Reset ref
+        }, 3000);
+        redirectTimerIdRef.current = timerId; // Store timeout ID in ref
       }
 
-      // Đóng menu ngay lập tức vì chúng ta không điều hướng đến link đích
-      closeAllMenus()
+      // Close the menu immediately since we're not navigating to the link destination
+      closeAllMenus();
     } else {
-      // Dữ liệu user TỒN TẠI và HỢP LỆ
-      // *** KHÔNG gọi e.preventDefault() ***
-      // *** KHÔNG gọi router.push() thủ công ***
-      // Để Link component tự xử lý việc điều hướng đến href của nó.
+      // User data EXISTS and is VALID
+      // *** DO NOT call e.preventDefault() ***
+      // *** DO NOT manually call router.push() ***
+      // Let the Link component handle the navigation to its 'href'.
 
-      // Đóng menu ngay lập tức khi click để chuẩn bị cho việc chuyển trang
-      closeAllMenus()
+      // Close the menu immediately when clicked to prepare for the page transition
+      closeAllMenus();
     }
-  }
+  };
 
   return (
     <>
-      {/* Thông báo hết hạn session - Sử dụng t() để dịch */}
-      {/* Đặt z-index cao hơn cả dropdown (z-50) */}
+      {/* Session expired message - ALREADY uses t() for translation */}
+      {/* Set z-index higher than the dropdown (z-50) */}
       {showSessionExpiredMessage && (
         <div className='fixed left-0 top-0 z-[100] w-full bg-red-600 p-3 text-center text-white shadow-lg'>
-          {t('Session_Expired_Redirect_Home')} {/* Dùng hàm t() */}
+          {t('Session_Expired_Redirect_Home')} {/* <-- Already uses t() */}
         </div>
       )}
 
@@ -152,92 +162,98 @@ const UserDropdown: FC<Props> = ({
           }`}
           aria-labelledby='user-menu-button'
         >
-          {/* Hiển thị lời chào */}
+          {/* Display welcome message */}
           {(firstName || lastName) && (
             <div className='border-b border-gray-200 px-2 py-2 text-sm  '>
-              {t('Hello')}{' '}
+               {/* "Hello" label - ALREADY uses t() for translation */}
+              {t('Hello')}{' '} {/* <-- Already uses t() */}
               <strong className='text-button'>
-                {firstName} {lastName}
+                {firstName} {lastName} {/* First/Last name are user data, not translated */}
               </strong>
             </div>
           )}
 
           <div className='flex flex-col py-1'>
-            {/* Các Link menu - Sử dụng hàm handleLinkClick */}
-            {/* Chỉ cần truyền sự kiện e */}
+            {/* Menu Links - Already use t() for labels */}
+            {/* Just need to ensure correct keys are used in message files */}
             <Link
               href={{ pathname: `/dashboard`, query: { tab: 'analysis' } }}
-              locale={locale}
+              locale={locale} // Pass locale
               className='block px-2 py-2 text-sm  hover:bg-gray-100  dark:hover:bg-gray-700'
-              onClick={handleLinkClick}
+              onClick={handleLinkClick} // Use the click handler
             >
-              {t('Analysis')}
+               {/* Label - ALREADY uses t() for translation */}
+              {t('Analysis')} {/* <-- Already uses t() */}
             </Link>
             <Link
               href={{ pathname: `/dashboard`, query: { tab: 'moderation' } }}
-              locale={locale}
+              locale={locale} // Pass locale
               className='block px-2 py-2 text-sm  hover:bg-gray-100  dark:hover:bg-gray-700'
-              onClick={handleLinkClick}
+              onClick={handleLinkClick} // Use the click handler
             >
-              {t('Moderation')}
+              {/* Label - ALREADY uses t() for translation */}
+              {t('Moderation.Moderation')} {/* <-- Already uses t() */}
             </Link>
             <Link
               href={{
                 pathname: `/dashboard`,
                 query: { tab: 'requestadmintab' }
               }}
-              locale={locale}
+              locale={locale} // Pass locale
               className='block px-2 py-2 text-sm  hover:bg-gray-100  dark:hover:bg-gray-700'
-              onClick={handleLinkClick}
+              onClick={handleLinkClick} // Use the click handler
             >
-              {t('Request_Admin_Tab')}
+               {/* Label - ALREADY uses t() for translation */}
+              {t('Request_Admin_Tab')} {/* <-- Already uses t() */}
             </Link>
             <Link
               href={{ pathname: `/dashboard`, query: { tab: 'profile' } }}
-              locale={locale}
+              locale={locale} // Pass locale
               className='block px-2 py-2 text-sm  hover:bg-gray-100  dark:hover:bg-gray-700'
-              onClick={handleLinkClick}
+              onClick={handleLinkClick} // Use the click handler
             >
-              {t('Profile')}
+               {/* Label - ALREADY uses t() for translation */}
+              {t('Profile')} {/* <-- Already uses t() */}
             </Link>
-            
+
             <Link
               href={{
                 pathname: `/dashboard`,
                 query: { tab: 'notifications' }
               }}
-              locale={locale}
+              locale={locale} // Pass locale
               className='block px-2 py-2 text-sm  hover:bg-gray-100  dark:hover:bg-gray-700'
-              onClick={handleLinkClick}
+              onClick={handleLinkClick} // Use the click handler
             >
-              {t('Notifications')}
+               {/* Label - ALREADY uses t() for translation */}
+              {t('Notifications')} {/* <-- Already uses t() */}
             </Link>
-            
+
 
             <hr className='my-1 border-gray-200 dark:border-gray-700' />
 
-            {/* Logout Button - Không cần kiểm tra localStorage ở đây */}
+            {/* Logout Button - ALREADY uses t() for translation */}
             <button
               onClick={async () => {
-                await logout()
+                await logout();
                 if (socketRef.current) {
-                  socketRef.current.disconnect()
+                  socketRef.current.disconnect();
                 }
-                localStorage.removeItem('user') // Xóa dữ liệu user khi logout
-                setFirstName(null)
-                setLastName(null)
-                closeAllMenus()
-                router.push('/') // Chuyển hướng về trang chủ sau khi logout là hợp lý
+                localStorage.removeItem('user'); // Clear user data on logout
+                setFirstName(null);
+                setLastName(null);
+                closeAllMenus();
+                router.push('/'); // Redirect to homepage after logout
               }}
               className='block w-full px-2 py-2 text-left text-sm text-red-600 hover:bg-gray-100 focus:bg-gray-100 focus:outline-none dark:text-red-500 dark:hover:bg-gray-700 dark:focus:bg-gray-700'
             >
-              {t('Logout')}
+              {t('Logout')} {/* <-- Already uses t() */}
             </button>
           </div>
         </div>
       )}
     </>
-  )
-}
+  );
+};
 
-export default UserDropdown
+export default UserDropdown;

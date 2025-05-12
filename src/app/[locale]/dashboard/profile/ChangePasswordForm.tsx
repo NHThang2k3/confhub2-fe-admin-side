@@ -1,26 +1,29 @@
+// src/app/[locale]/dashboard/profile/ChangePasswordForm.tsx
+
 'use client'
 import React from 'react'
-import Button from '../../utils/Button' // Assuming you have a Button component
+import Button from '../../utils/Button' // Assuming this is your Button component (Path might need adjustment based on actual file structure)
 import { useChangePassword } from '../../../../hooks/dashboard/profile/useChangePassword'
-import { useTranslations } from 'next-intl'
+import { useTranslations } from 'next-intl' // Keep this import
 
 interface ChangePasswordFormProps {
   userId: string
-  onClose: () => void // Callback to close the form
+  onClose: () => void
 }
 
 const ChangePasswordForm: React.FC<ChangePasswordFormProps> = ({
   userId,
   onClose
 }) => {
-  const t = useTranslations('')
+  // Call the useTranslations hook
+  const t = useTranslations('') // Using the default namespace
 
   const {
     currentPassword,
     newPassword,
     confirmNewPassword,
-    error,
-    message,
+    error, // Assuming error is a string or key from the hook
+    message, // Assuming message is a string or key from the hook
     isLoading,
     step,
     handleCurrentPasswordChange,
@@ -28,12 +31,15 @@ const ChangePasswordForm: React.FC<ChangePasswordFormProps> = ({
     handleConfirmNewPasswordChange,
     handleConfirmCurrentPassword,
     handleChangePassword
-  } = useChangePassword(userId, onClose) // Pass userId and onClose
+  } = useChangePassword(userId, onClose) // Pass userId and onClose to the hook
 
   return (
     <div className='fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50'>
       <div className='w-full max-w-md rounded-lg bg-white p-6 shadow-lg'>
-        <h2 className='mb-4 text-lg font-semibold'>{t('Change_Password')}</h2>
+        <h2 className='mb-4 text-lg font-semibold'>
+            {/* Translate Modal Title */}
+            {t('Change_Password_Title')} {/* <-- Translate Title */}
+        </h2>
 
         {/* Step 1: Confirm Current Password */}
         {step === 'confirm' && (
@@ -42,7 +48,8 @@ const ChangePasswordForm: React.FC<ChangePasswordFormProps> = ({
               htmlFor='currentPassword'
               className='block text-sm font-medium'
             >
-              {t('Current_Password')}
+               {/* Translate Label */}
+              {t('Current_Password_Label')} {/* <-- Translate Label */}
             </label>
             <input
               type='password'
@@ -51,8 +58,10 @@ const ChangePasswordForm: React.FC<ChangePasswordFormProps> = ({
               value={currentPassword}
               onChange={handleCurrentPasswordChange}
               className='mt-1 block w-full rounded-md border p-2 focus:border-blue-500 focus:ring-blue-500'
-              aria-label={t('Current_Password')} // Added aria-label for better testing if needed
+               // Translate aria-label
+              aria-label={t('Current_Password_Label')} 
             />
+            {/* Error messages from hook - display directly or translate if they are keys */}
             {error && <p className='mt-2 text-sm text-red-500'>{error}</p>}
             <div className='mt-4 flex justify-end space-x-4'>
               <Button
@@ -61,7 +70,8 @@ const ChangePasswordForm: React.FC<ChangePasswordFormProps> = ({
                 onClick={onClose}
                 disabled={isLoading}
               >
-                {t('Cancel')}
+                 {/* Translate Cancel Button */}
+                {t('Cancel_Button')} {/* <-- Translate Button */}
               </Button>
               <Button
                 variant='primary'
@@ -69,7 +79,8 @@ const ChangePasswordForm: React.FC<ChangePasswordFormProps> = ({
                 disabled={isLoading}
                 className='rounded-md px-6 py-2 focus:outline-none focus:ring-2'
               >
-                {isLoading ? t('Verifying') : t('Confirm')}
+                 {/* Translate Loading Text and Button Text */}
+                {isLoading ? t('Verifying_Button') : t('Confirm_Button')} {/* <-- Translate Loading/Button Text */}
               </Button>
             </div>
           </>
@@ -83,7 +94,8 @@ const ChangePasswordForm: React.FC<ChangePasswordFormProps> = ({
                 htmlFor='newPassword'
                 className='block text-sm font-medium'
               >
-                {t('New_Password')}
+                 {/* Translate Label */}
+                {t('New_Password_Label')} {/* <-- Translate Label */}
               </label>
               <input
                 type='password'
@@ -92,7 +104,8 @@ const ChangePasswordForm: React.FC<ChangePasswordFormProps> = ({
                 value={newPassword}
                 onChange={handleNewPasswordChange}
                 className='mt-1 block w-full rounded-md border p-2 focus:border-blue-500 focus:ring-blue-500'
-                aria-label={t('New_Password')} // Added aria-label for better testing if needed
+                 // Translate aria-label
+                aria-label={t('New_Password_Label')} 
               />
             </div>
             <div className='mt-4'>
@@ -100,7 +113,8 @@ const ChangePasswordForm: React.FC<ChangePasswordFormProps> = ({
                 htmlFor='confirmNewPassword'
                 className='block text-sm font-medium'
               >
-                {t('Confirm_New_Password')}
+                 {/* Translate Label */}
+                {t('Confirm_New_Password_Label')} {/* <-- Translate Label */}
               </label>
               <input
                 type='password'
@@ -109,9 +123,11 @@ const ChangePasswordForm: React.FC<ChangePasswordFormProps> = ({
                 value={confirmNewPassword}
                 onChange={handleConfirmNewPasswordChange}
                 className='mt-1 block w-full rounded-md border p-2 focus:border-blue-500 focus:ring-blue-500'
-                aria-label={t('Confirm_New_Password')} // Added aria-label for better testing if needed
+                 // Translate aria-label
+                aria-label={t('Confirm_New_Password_Label')} 
               />
             </div>
+             {/* Error/Message from hook - display directly or translate if they are keys */}
             {error && <p className='mt-2 text-sm text-red-500'>{error}</p>}
             {message && (
               <p className='mt-2 text-sm text-green-500'>{message}</p>
@@ -123,7 +139,8 @@ const ChangePasswordForm: React.FC<ChangePasswordFormProps> = ({
                 className='rounded-md px-6 py-2 focus:outline-none focus:ring-2'
                 disabled={isLoading}
               >
-                {t('Cancel')}
+                 {/* Translate Cancel Button */}
+                {t('Cancel_Button')} {/* <-- Translate Button */}
               </Button>
               <Button
                 variant='primary'
@@ -131,7 +148,8 @@ const ChangePasswordForm: React.FC<ChangePasswordFormProps> = ({
                 disabled={isLoading}
                 className='rounded-md px-6 py-2 focus:outline-none focus:ring-2'
               >
-                {isLoading ? t('Changing') : t('Change_Password')}
+                 {/* Translate Loading Text and Button Text */}
+                {isLoading ? t('Changing_Button') : t('Change_Password_Button')} {/* <-- Translate Loading/Button Text */}
               </Button>
             </div>
           </>

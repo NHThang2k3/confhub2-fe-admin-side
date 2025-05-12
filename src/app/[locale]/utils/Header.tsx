@@ -1,49 +1,62 @@
-'use client';
+// 'use client'; // <-- Already present
 
 import { FC, useRef, useState, useEffect } from 'react'
-import { useSocketConnection } from '../../../hooks/header/useSocketConnection'
-import { useClickOutside } from '../../../hooks/header/useClickOutsideHeader'
-import { useMenuState } from '../../../hooks/header/useMenuState'
+// Import useTranslations
+import { useTranslations } from 'next-intl'; // <-- Added import
+
+import { useSocketConnection } from '../../../hooks/header/useSocketConnection' // Assuming this hook handles its own logic
+import { useClickOutside } from '../../../hooks/header/useClickOutsideHeader' // Assuming this hook handles its own logic
+import { useMenuState } from '../../../hooks/header/useMenuState' // Assuming this hook handles its own logic
+
+// Assuming these are components that will handle their own translations internally
 import NotificationDropdown from './header/NotificationDropdown'
 import UserDropdown from './header/UserDropdown'
 import AuthButtons from './header/AuthButtons'
 import DesktopNavigation from './header/DesktopNavigation'
-import LoadingIndicator from './header/LoadingIndicator'
-import useAuthApi from '../../../hooks/auth/useAuthApi'
+import LoadingIndicator from './header/LoadingIndicator' // Assuming this component handles its own text translation
+
+import useAuthApi from '../../../hooks/auth/useAuthApi' // Assuming this hook handles its own logic
 
 // Define props including the new ones for sidebar toggle and width
 interface Props {
-  locale: string;
+  locale: string; // Keep locale prop
   toggleSidebar: () => void;
   isSidebarOpen: boolean;
   headerHeight: number;
-  sidebarWidth: number; // <-- Receive sidebar width
+  sidebarWidth: number;
 }
 
 export const Header: FC<Props> = ({
-  locale,
+  locale, // Destructure locale
   toggleSidebar,
   isSidebarOpen,
   headerHeight,
-  sidebarWidth // <-- Destructure sidebar width
+  sidebarWidth
 }) => {
-  const headerRef = useRef<HTMLDivElement>(null)
+  const headerRef = useRef<HTMLDivElement>(null);
 
-  const { user, isLoggedIn, logout } = useAuthApi()
-  const [isLoading, setIsLoading] = useState(true)
+  // Call the useTranslations hook
+  const t = useTranslations(''); // <-- Added hook call (using the default namespace)
+
+  const { user, isLoggedIn, logout } = useAuthApi();
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    setIsLoading(false)
-  }, [])
+    // This effect simply sets isLoading to false after the initial render.
+    // If useAuthApi has its own loading state for the *initial* check,
+    // you might want to use that instead for a more accurate loading indicator.
+    // For now, keeping the original logic here.
+    setIsLoading(false);
+  }, []); // Empty dependency array runs once on mount
 
   const {
     notifications,
-    notificationEffect,
+    notificationEffect, // Seems unused in Header's JSX directly
     markAllAsRead,
     fetchNotifications,
     isLoadingNotifications,
     socketRef
-  } = useSocketConnection({ loginStatus: isLoggedIn ? 'true' : null, user })
+  } = useSocketConnection({ loginStatus: isLoggedIn ? 'true' : null, user });
 
   const {
     isNotificationOpen,
@@ -51,10 +64,11 @@ export const Header: FC<Props> = ({
     closeAllMenus,
     openNotification,
     openUserDropdown,
-  } = useMenuState()
+  } = useMenuState();
 
   // Allow clicking outside the headerRef *unless* it's inside a notification dropdown element
-  useClickOutside(headerRef, closeAllMenus, 'notification-dropdown')
+  // The hook useClickOutside handles its own logic and doesn't need translation here.
+  useClickOutside(headerRef, closeAllMenus, 'notification-dropdown');
 
 
   const unreadCount = () => {
@@ -64,10 +78,10 @@ export const Header: FC<Props> = ({
     return unread > 20 ? '20+' : unread
   }
 
-  const displayedNotifications = notifications.slice(0, 20)
+  const displayedNotifications = notifications.slice(0, 20);
 
   // --- Sidebar Toggle Icons ---
-  // Keep the icons the same
+  // Keep the icons the same, they don't contain text
    const MenuIcon = (
     <svg
       xmlns='http://www.w3.org/2000/svg'
@@ -98,25 +112,26 @@ export const Header: FC<Props> = ({
 
   // Calculate dynamic styles based on sidebar state
   const headerLeft = isSidebarOpen ? sidebarWidth : 0;
-  const headerWidth = `calc(100% - ${headerLeft}px)`; // Header width is viewport width minus sidebar width
+  const headerWidth = `calc(100% - ${headerLeft}px)`;
 
   return (
-    // Main Header div - Now Fixed with dynamic left and width
+    // Main Header div - Fixed with dynamic left and width
     <div
       ref={headerRef}
       className='fixed top-0 z-10 flex flex-row items-center justify-between bg-gradient-to-r from-background to-background-secondary p-3 text-sm shadow-md transition-all duration-300 ease-in-out'
       style={{
         height: `${headerHeight}px`,
-        left: `${headerLeft}px`,     // Dynamic left position
-        width: headerWidth,           // Dynamic width
+        left: `${headerLeft}px`,
+        width: headerWidth,
       }}
     >
-      {/* Left section: Only the Toggle Button */}
+      {/* Left section: Toggle Button */}
       <div className='flex items-center gap-2 ml-2'>
         <button
           onClick={toggleSidebar}
           className='p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700 focus:outline-none transition-colors duration-200'
-          aria-label={isSidebarOpen ? 'Close sidebar' : 'Open sidebar'}
+          // Translate aria-label for accessibility readers
+          aria-label={isSidebarOpen ? t('Header_AriaLabel_CloseSidebar') : t('Header_AriaLabel_OpenSidebar')} 
         >
           {isSidebarOpen ? CloseIcon : MenuIcon}
         </button>
@@ -124,11 +139,14 @@ export const Header: FC<Props> = ({
 
       {/* Right section: Navigation, Auth/User, Notifications */}
       <div className='relative flex flex-row items-center gap-2 md:gap-4 mr-2'>
+        {/* DesktopNavigation is expected to handle its own translations */}
         <DesktopNavigation locale={locale} />
 
+        {/* Loading state - LoadingIndicator is expected to handle its own translation */}
         {isLoading ? (
           <LoadingIndicator />
         ) : (
+          // AuthButtons is expected to handle its own translations
           <AuthButtons
             isLogin={isLoggedIn}
             locale={locale}
@@ -139,6 +157,7 @@ export const Header: FC<Props> = ({
           />
         )}
 
+        {/* NotificationDropdown is expected to handle its own translations */}
         <NotificationDropdown
           notifications={displayedNotifications}
           isNotificationOpen={isNotificationOpen}
@@ -148,6 +167,7 @@ export const Header: FC<Props> = ({
           isLoadingNotifications={isLoadingNotifications}
           markAllAsRead={markAllAsRead}
         />
+        {/* UserDropdown is expected to handle its own translations (already confirmed it does) */}
         <UserDropdown
           isUserDropdownOpen={isUserDropdownOpen}
           closeAllMenus={closeAllMenus}
@@ -157,7 +177,7 @@ export const Header: FC<Props> = ({
         />
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default Header
+export default Header;

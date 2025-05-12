@@ -1,4 +1,5 @@
 // src/components/Moderation/DateRangeInput.tsx
+'use client'; // <-- Add directive
 
 import React, { forwardRef } from 'react';
 
@@ -18,11 +19,11 @@ const DateRangeInput = forwardRef<HTMLInputElement, DateRangeInputProps>(
     value={value}
     onClick={onClick}
     ref={ref}
-    placeholder={placeholder}
+    placeholder={placeholder} // Placeholder prop is already translated by parent
     readOnly // Prevent manual text input
   />
 ));
 
-DateRangeInput.displayName = 'DateRangeInput'; // Add display name for debugging
+DateRangeInput.displayName = 'DateRangeInput';
 
 export default DateRangeInput;

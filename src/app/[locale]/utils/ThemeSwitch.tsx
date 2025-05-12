@@ -1,20 +1,26 @@
-'use client'
-import { capitalize } from '@/lib/utils'
-import { useTranslations } from 'next-intl'
-import { useTheme } from 'next-themes'
-import { useEffect, useRef, useState } from 'react'
-import { useOnClickOutside } from 'usehooks-ts'
+'use client';
+
+import { capitalize } from '@/lib/utils'; // Assuming this utility is locale-aware or generic
+import { useTranslations } from 'next-intl'; // Keep this import
+import { useTheme } from 'next-themes';
+import { useEffect, useRef, useState } from 'react';
+import { useOnClickOutside } from 'usehooks-ts'; // Keep this hook import
 
 export default function ThemeSwitch() {
-  const t = useTranslations('')
-  const [mounted, setMounted] = useState(false)
-  const [isOpen, setIsOpen] = useState(false)
-  const { setTheme, resolvedTheme, themes, theme } = useTheme()
-  const ref = useRef<HTMLDivElement>(null)
+  // Call the useTranslations hook (already present)
+  const t = useTranslations(''); // Using the default namespace
 
-  useEffect(() => setMounted(true), [])
-  useOnClickOutside(ref, () => setIsOpen(false))
+  const [mounted, setMounted] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
+  // Note: 'theme' is the preferred theme, 'resolvedTheme' is the actual current theme
+  const { setTheme, resolvedTheme, themes, theme } = useTheme();
+  const ref = useRef<HTMLDivElement>(null);
 
+  useEffect(() => setMounted(true), []);
+  // useOnClickOutside hook is fine as is, doesn't need translation logic
+  useOnClickOutside(ref, () => setIsOpen(false));
+
+  // Render a disabled button while not mounted (SSR/initial render)
   if (!mounted)
     return (
       <div className='flex items-center justify-center'>
@@ -23,15 +29,29 @@ export default function ThemeSwitch() {
           onClick={() => {}}
           aria-expanded='false'
           disabled // Disable the button when not mounted
+          // Add aria-label for accessibility
+          aria-label={t('Theme_Switch_AriaLabel_Loading')} // <-- Translate aria-label
         >
-          <span className='ml-2'>{t('Theme')}</span>
+           {/* Translate the loading state text */}
+          <span className='ml-2'>{t('Theme')}</span> {/* <-- Already uses t() */}
         </button>
       </div>
-    )
+    );
 
   const toggleDropdown = () => {
-    setIsOpen(!isOpen)
-  }
+    setIsOpen(!isOpen);
+  };
+
+  // Function to get the translated theme name
+  const getTranslatedThemeName = (themeKey: string) => {
+     // Use a specific key pattern like 'ThemeName_system', 'ThemeName_dark', etc.
+     // Fallback to capitalizing the raw key if translation is missing
+     return t(`ThemeName_${themeKey}`, {
+        // Provide default value and try to capitalize if key is not found
+        defaultMessage: capitalize(themeKey),
+     });
+  };
+
 
   return (
     <div ref={ref} className='w-full'>
@@ -40,11 +60,14 @@ export default function ThemeSwitch() {
           className='text-destructive inline-flex w-full items-center justify-between gap-1 rounded px-2 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 md:px-4'
           onClick={toggleDropdown}
           aria-expanded={isOpen}
+           // Add aria-label for accessibility
+          aria-label={t('Theme_Switch_AriaLabel_ToggleDropdown')} // <-- Translate aria-label
         >
-          <span>{t('Theme')}</span>
-          {/* SVG Chevron Down */}
+          {/* Translate the button label */}
+          <span>{t('Theme')}</span> {/* <-- Already uses t() */}
+          {/* SVG Chevron Down icon - does not need translation */}
           <svg
-            className={`h-5 w-5 transition-transform ${isOpen ? 'rotate-180' : ''}`} // Added h-5 w-5 for size control
+            className={`h-5 w-5 transition-transform ${isOpen ? 'rotate-180' : ''}`}
             viewBox='0 0 20 20'
             fill='currentColor'
             aria-hidden='true'
@@ -63,7 +86,7 @@ export default function ThemeSwitch() {
               className=''
               role='menu'
               aria-orientation='vertical'
-              aria-labelledby='options-menu'
+              aria-labelledby='options-menu' // Consider translating this label ID's target if it's a visible element
             >
               {themes.map(themeItem => (
                 <button
@@ -77,8 +100,11 @@ export default function ThemeSwitch() {
                       ? 'bg-selected text-primary hover:bg-selected'
                       : 'text-secondary'
                   }`}
+                   // Add aria-label for each theme option
+                   aria-label={t('Theme_Switch_AriaLabel_SelectTheme', { themeName: getTranslatedThemeName(themeItem) })} // <-- Translate aria-label with translated theme name
                 >
-                  {capitalize(themeItem)}
+                  {/* Translate the theme name */}
+                  {getTranslatedThemeName(themeItem)} {/* <-- Use translated name */}
                 </button>
               ))}
             </div>
@@ -86,5 +112,5 @@ export default function ThemeSwitch() {
         )}
       </div>
     </div>
-  )
+  );
 }

@@ -1,12 +1,14 @@
-'use client';
+// src/app/[locate]/dashboard/layout.tsx
+
+'use client'; // Keep directive
 
 import React, { useState, useEffect } from 'react';
-import { Header } from '@/src/app/[locale]/utils/Header';
-import DashboardSidebar from './DashboardSidebar';
+import { Header } from '@/src/app/[locale]/utils/Header'; // Ensure this Header component handles its own translations
+import DashboardSidebar from './DashboardSidebar'; // Ensure this Sidebar component handles its own translations
 
 export default function DashboardLayout({
   children,
-  params: { locale }
+  params: { locale } // Keep locale prop
 }: {
   children: React.ReactNode;
   params: { locale: string };
@@ -32,20 +34,18 @@ export default function DashboardLayout({
         window.removeEventListener('resize', handleResize);
       };
     }
-  }, []);
+  }, []); // Empty dependency array means this runs once on mount
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
   };
 
-  // Calculate the left offset for the header and main content
-  // This is the space the sidebar *would* occupy
   const contentLeftOffset = isSidebarOpen ? SIDEBAR_WIDTH_PX : 0;
 
   return (
     <div className='relative min-h-screen bg-background'>
 
-      {/* Dashboard Sidebar - Now animated with transform */}
+      {/* Dashboard Sidebar - Receives locale but handles its own translations */}
       <DashboardSidebar
           isSidebarOpen={isSidebarOpen}
           locale={locale}
@@ -53,7 +53,7 @@ export default function DashboardLayout({
           headerHeight={HEADER_HEIGHT_PX}
       />
 
-      {/* Header - Remains Fixed */}
+      {/* Header - Receives locale but should handle its own translations */}
       <Header
           locale={locale}
           toggleSidebar={toggleSidebar}
@@ -62,16 +62,14 @@ export default function DashboardLayout({
           sidebarWidth={SIDEBAR_WIDTH_PX}
       />
 
-      {/* Main Content (children pages) - Positioned below header and right of sidebar */}
-      {/* Uses absolute positioning, tracking sidebar's visual position */}
+      {/* Main Content (children pages) - The children components should handle their own translations */}
       <main
         className='absolute bottom-0 right-0 overflow-y-auto p-4'
         style={{
-           top: `${HEADER_HEIGHT_PX}px`, // Start below the fixed header
-           // Animate the left position to make space for the sidebar sliding in
+           top: `${HEADER_HEIGHT_PX}px`,
            left: `${contentLeftOffset}px`,
-           transition: 'left 300ms ease-in-out', // Animate left change
-           zIndex: 0, // Below header and sidebar
+           transition: 'left 300ms ease-in-out',
+           zIndex: 0,
         }}
       >
         {children}

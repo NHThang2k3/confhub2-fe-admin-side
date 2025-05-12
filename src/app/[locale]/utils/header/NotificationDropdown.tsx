@@ -1,107 +1,112 @@
 // components/Header/header/NotificationDropdown.tsx (NotificationDropdown Component)
+'use client'; // <-- Keep directive
 
-import { FC, useEffect, useCallback, useMemo } from 'react' // Thêm useMemo
-import { Link } from '@/src/navigation'
-import { Notification } from '../../../../models/response/user.response'
-import { useTranslations } from 'next-intl'
-import { timeAgo } from '../../dashboard/timeFormat' // Đảm bảo import đúng
-import ReactMarkdown from 'react-markdown'
-import remarkGfm from 'remark-gfm'
-import rehypeRaw from 'rehype-raw'
-import DOMPurify from 'dompurify'
+import { FC, useEffect, useCallback, useMemo } from 'react';
+import { Link } from '@/src/navigation'; // Ensure this is next-intl Link
+import { Notification } from '../../../../models/response/user.response'; // Import types
+import { useTranslations } from 'next-intl'; // Keep this import
+import { timeAgo } from '../../dashboard/timeFormat'; // Ensure correct import path for the helper
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm'; // Needed for Markdown features
+import rehypeRaw from 'rehype-raw'; // Needed for raw HTML
+import DOMPurify from 'dompurify'; // Needed for sanitization (client-side only)
 
 interface Props {
-  notifications: Notification[]
-  isNotificationOpen: boolean
-  closeAllMenus: () => void
-  locale: string
-  fetchNotifications: () => void
-  isLoadingNotifications: boolean
-  markAllAsRead: () => Promise<void>
+  notifications: Notification[];
+  isNotificationOpen: boolean;
+  closeAllMenus: () => void;
+  locale: string; // Keep locale prop
+  fetchNotifications: () => void;
+  isLoadingNotifications: boolean;
+  markAllAsRead: () => Promise<void>;
 }
 
 const NotificationDropdown: FC<Props> = ({
-  notifications, // Mảng gốc từ props
+  notifications,
   isNotificationOpen,
   closeAllMenus,
-  locale,
+  locale, // Destructure locale
   fetchNotifications,
   isLoadingNotifications,
   markAllAsRead
 }) => {
-  const t = useTranslations('')
-  const language = t('language')
+  // Call the useTranslations hook (already present)
+  const t = useTranslations(''); // Using the default namespace
 
-  // --- BƯỚC 1: SẮP XẾP THÔNG BÁO ---
+  // NOTE: The original code derived 'language' from t('language').
+  // This is likely incorrect. The timeAgo helper should receive the actual locale code ('en', 'vi').
+  // We will remove the language variable and pass 'locale' directly to timeAgo.
+  // const language = t('language'); // Removed this line
+
+  // --- STEP 1: SORT NOTIFICATIONS ---
   const sortedNotifications = useMemo(() => {
-    // Tạo bản sao và sắp xếp theo createdAt giảm dần (mới nhất trước)
+    // Create a copy and sort by createdAt descending (newest first)
     return [...notifications].sort((a, b) => {
-      const timeA = a.createdAt ? new Date(a.createdAt).getTime() : 0
-      const timeB = b.createdAt ? new Date(b.createdAt).getTime() : 0
-      const validTimeA = !isNaN(timeA) ? timeA : 0
-      const validTimeB = !isNaN(timeB) ? timeB : 0
-      return validTimeB - validTimeA // Mới nhất lên đầu
-    })
-  }, [notifications]) // Chỉ sắp xếp lại khi notifications thay đổi
-  // --- KẾT THÚC SẮP XẾP ---
+      const timeA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+      const timeB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+      const validTimeA = !isNaN(timeA) ? timeA : 0;
+      const validTimeB = !isNaN(timeB) ? timeB : 0;
+      return validTimeB - validTimeA; // Newest first
+    });
+  }, [notifications]); // Only resort when notifications array changes
 
   const memoizedFetchNotifications = useCallback(() => {
-    fetchNotifications()
-  }, [fetchNotifications])
+    fetchNotifications();
+  }, [fetchNotifications]); // Dependencies: fetchNotifications
 
   useEffect(() => {
     if (isNotificationOpen) {
-      memoizedFetchNotifications()
+      memoizedFetchNotifications();
     }
-  }, [isNotificationOpen, memoizedFetchNotifications])
+  }, [isNotificationOpen, memoizedFetchNotifications]); // Dependencies: isNotificationOpen, memoizedFetchNotifications
 
-  // Hàm groupNotifications gốc, không thay đổi
+  // Function to group notifications (unchanged logic)
   const groupNotifications = useCallback(
     (notificationsToGroup: Notification[]) => {
-      // Đổi tên param để rõ ràng
-      const now = new Date()
-      const oneDayAgo = now.getTime() - 24 * 60 * 60 * 1000
+      const now = new Date();
+      const oneDayAgo = now.getTime() - 24 * 60 * 60 * 1000;
 
-      // Lọc dựa trên mảng đã được sắp xếp đầu vào
+      // Filter based on the input sorted array
       const newNotificationsGroup = notificationsToGroup.filter(
-        n => new Date(n.createdAt).getTime() >= oneDayAgo
-      )
+        n => n.createdAt && !isNaN(new Date(n.createdAt).getTime()) && new Date(n.createdAt).getTime() >= oneDayAgo
+      );
       const earlierNotificationsGroup = notificationsToGroup.filter(
-        n => new Date(n.createdAt).getTime() < oneDayAgo
-      )
-      // Thứ tự trong các group này sẽ giữ nguyên từ mảng đầu vào đã sắp xếp
+        n => n.createdAt && !isNaN(new Date(n.createdAt).getTime()) && new Date(n.createdAt).getTime() < oneDayAgo
+      );
+      // Order within these groups will be preserved from the input sorted array
       return {
         newNotifications: newNotificationsGroup,
         earlierNotifications: earlierNotificationsGroup
-      }
+      };
     },
-    []
-  ) // Dependencies của useCallback này không thay đổi
+    [] // Dependencies: Empty - logic depends only on built-in Date and numbers
+  );
 
-  // --- BƯỚC 2: SỬ DỤNG DANH SÁCH ĐÃ SẮP XẾP ĐỂ NHÓM ---
-  // Gọi hàm nhóm với `sortedNotifications` thay vì `notifications` gốc
+  // --- STEP 2: USE THE SORTED LIST FOR GROUPING ---
+  // Call the grouping function with `sortedNotifications`
   const { newNotifications, earlierNotifications } =
-    groupNotifications(sortedNotifications)
-  // --- KẾT THÚC SỬ DỤNG SẮP XẾP ---
+    groupNotifications(sortedNotifications);
+  // --- END OF USING SORTED ---
 
-  // Hàm renderNotificationItem gốc, không thay đổi logic bên trong
+  // Function to render a single notification item (unchanged core logic)
   const renderNotificationItem = useCallback(
     (notification: Notification) => {
-      // DOMPurify chỉ chạy ở client
+      // DOMPurify only runs on the client
       const sanitizedMessage =
         typeof window !== 'undefined'
           ? DOMPurify.sanitize(notification.message)
-          : notification.message
+          : notification.message; // Fallback for SSR (though this component is client-only)
 
       return (
+        // Link component handles locale internally when href object is used
         <Link
           href={{
             pathname: `/dashboard`,
             query: { tab: 'notifications', id: notification.id }
           }}
-          lang={locale}
+          // locale={locale} // locale prop is automatically handled by next-intl Link when used with an object href
           key={notification.id}
-          // onClick={closeAllMenus}
+          // onClick={closeAllMenus} // Click handler might interfere with default Link navigation
         >
           <div
             className={`flex items-start border-b border-gray-20 p-4 hover:bg-gray-5 ${notification.seenAt ? '' : 'bg-gray-10'}`}
@@ -109,6 +114,7 @@ const NotificationDropdown: FC<Props> = ({
             <div className='mr-3 flex-shrink-0'>
               <div className='relative flex h-10 w-10 items-center justify-center rounded-full bg-gray-20'>
                 <span className='font-medium '>
+                   {/* Display first letter of type - type itself is not translated here */}
                   {notification.type
                     ? notification.type.charAt(0).toUpperCase()
                     : '?'}
@@ -119,6 +125,7 @@ const NotificationDropdown: FC<Props> = ({
               </div>
             </div>
             <div className='flex-grow'>
+              {/* ReactMarkdown renders user-provided message, not translatable UI text */}
               <ReactMarkdown
                 remarkPlugins={[remarkGfm]}
                 rehypePlugins={[rehypeRaw]}
@@ -162,74 +169,84 @@ const NotificationDropdown: FC<Props> = ({
                   li: ({ node, ...props }) => (
                     <li className='text-sm' {...props} />
                   ),
-                  div: ({ node, ...props }) => (
-                    <div
-                      className={`text-sm ${notification.seenAt ? '' : 'font-bold'}`}
-                      {...props}
-                    />
-                  )
+                   // Assuming div might be used for text wrapping within message
+                   div: ({ node, ...props }) => (
+                     <div
+                       className={`text-sm ${notification.seenAt ? '' : 'font-bold'}`}
+                       {...props}
+                     />
+                   )
                 }}
               >
                 {sanitizedMessage}
               </ReactMarkdown>
+              {/* Display time ago - Pass the actual locale */}
               <span className='text-xs '>
-                {timeAgo(notification.createdAt, language)}
+                {/* NOTE: Ensure the timeAgo helper itself translates strings like "just now", "X minutes ago", "Invalid Date" using the provided locale. */}
+                {timeAgo(notification.createdAt, locale)} {/* <-- Pass actual locale */}
               </span>
             </div>
           </div>
         </Link>
-      )
+      );
     },
-    [closeAllMenus, locale, language, timeAgo] // Dependencies không đổi so với logic gốc (nếu timeAgo và language ổn định)
-  )
+    [/* closeAllMenus, */ locale] // Dependencies: closeAllMenus (if used), locale
+  );
 
-  // Hàm handleMarkAllAsRead gốc, không thay đổi
+  // handleMarkAllAsRead function (unchanged logic)
   const handleMarkAllAsRead = useCallback(
     async (e: React.MouseEvent) => {
-      e.stopPropagation()
-      await markAllAsRead()
-      fetchNotifications() // Giữ lại fetch nếu logic gốc yêu cầu
+      e.stopPropagation(); // Prevent click from bubbling up to close dropdown
+      await markAllAsRead();
+      fetchNotifications(); // Keep fetch if needed after marking
     },
-    [markAllAsRead, fetchNotifications]
-  )
+    [markAllAsRead, fetchNotifications] // Dependencies: markAllAsRead, fetchNotifications
+  );
 
-  // JSX Render gốc, chỉ thay đổi việc sử dụng `sortedNotifications` để kiểm tra length
+
+  // JSX Render (unchanged structure)
   return (
     <div
       className={`absolute right-0 z-50 mr-8 mt-10 w-80 overflow-hidden rounded-lg bg-white-pure shadow-xl transition-all duration-300 ease-in-out md:w-[400px] ${
-        // Giữ nguyên style gốc
         isNotificationOpen
           ? 'visible translate-y-0 opacity-100'
           : 'invisible translate-y-1 opacity-0'
       }`}
       style={{
-        inset: '0px 0px auto auto' // Giữ nguyên style gốc
+        inset: '0px 0px auto auto'
       }}
+      // Stop propagation so clicks inside the dropdown don't close the parent header menu
       onClick={e => e.stopPropagation()}
     >
       <div className='border-b border-gray-20 p-4'>
         <div className='flex items-center justify-between'>
           <h6 className='text-sm font-semibold md:text-lg'>
-            {t('Notifications')}
+             {/* Translate title */}
+            {t('Notifications')} {/* <-- Already uses t() */}
           </h6>
           <button
             className=' text-sm text-button hover:text-blue-800'
             onClick={handleMarkAllAsRead}
           >
-            {t('Mark All As Read')}
+            {/* Translate button text */}
+            {t('Mark All As Read')} {/* <-- Already uses t() */}
           </button>
         </div>
       </div>
 
       <div className='overflow-y-auto' style={{ maxHeight: '25rem' }}>
         {isLoadingNotifications ? (
-          <div className='p-4 text-center text-gray-50'>{t('Loading')}</div>
-        ) : sortedNotifications.length > 0 ? ( // --- BƯỚC 3: KIỂM TRA LENGTH CỦA MẢNG ĐÃ SẮP XẾP ---
+          <div className='p-4 text-center text-gray-50'>
+             {/* Translate loading message */}
+            {t('Loading')} {/* <-- Already uses t() */}
+          </div>
+        ) : sortedNotifications.length > 0 ? (
           <>
             {newNotifications.length > 0 && (
               <>
                 <div className='border-b border-gray-20 px-4 py-2 text-sm font-semibold '>
-                  {t('NEW')}
+                   {/* Translate group header */}
+                  {t('NEW')} {/* <-- Already uses t() */}
                 </div>
                 {newNotifications.map(renderNotificationItem)}
               </>
@@ -237,31 +254,33 @@ const NotificationDropdown: FC<Props> = ({
             {earlierNotifications.length > 0 && (
               <>
                 <div className='border-b border-gray-20 px-4 py-2 text-sm font-semibold '>
-                  {t('EARLIER')}
+                   {/* Translate group header */}
+                  {t('EARLIER')} {/* <-- Already uses t() */}
                 </div>
                 {earlierNotifications.map(renderNotificationItem)}
               </>
             )}
           </>
         ) : (
-          <div className='p-4 text-center '>{t('No_new_notifications')}</div>
+           /* Translate empty state message */
+          <div className='p-4 text-center '>{t('No_new_notifications')}</div> /* <-- Already uses t() */
         )}
       </div>
 
       <div className='border-t border-gray-20 p-4 text-center'>
         <Link
           href={{ pathname: `/dashboard`, query: { tab: 'notifications' } }}
-          lang={locale}
+          locale={locale} // Pass locale to Link component
           onClick={closeAllMenus}
         >
           <div className='block text-sm text-button hover:text-blue-800'>
-            {' '}
-            {t('View_all')}{' '}
+             {/* Translate button text */}
+            {t('View_all')} {/* <-- Already uses t() */}
           </div>
         </Link>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default NotificationDropdown
+export default NotificationDropdown;
