@@ -70,7 +70,7 @@ const Moderation: React.FC = () => {
 
         try {
             // 1. Fetch the list of moderation requests
-            const requestsUrl = new URL(`${API_BASE_URL}/api/v1/admin-conference/requests`);
+            const requestsUrl = new URL(`${API_BASE_URL}/api/v1/admin/conferences/requests`);
 
             // Add query parameters for filtering/sorting requests
             if (filterStatus !== 'all') {
@@ -250,7 +250,7 @@ const Moderation: React.FC = () => {
         }
 
         try {
-            const response = await fetch(`${API_BASE_URL}/api/v1/admin-conference/requests/${conferenceToModerateId}/status`, {
+            const response = await fetch(`${API_BASE_URL}/api/v1/admin/conferences/requests/${conferenceToModerateId}/status`, {
                 method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json',
