@@ -52,7 +52,7 @@ const LoginForm: React.FC<LoginFormProps> = (/* props: LoginFormProps */) => {
               <p className='text-sm '>{t('Sign_in_to_your_account')}</p>
             </div>
 
-            <div className='space-y-4'>
+            {/* <div className='space-y-4'>
               <button
                 type='button'
                 onClick={handleGoogleLogin} // Use the handler from useLoginForm
@@ -79,16 +79,16 @@ const LoginForm: React.FC<LoginFormProps> = (/* props: LoginFormProps */) => {
                 </svg>
                 <span>{t('Continue_with_Google')}</span>
               </button>
-            </div>
+            </div> */}
 
-            <div className='relative'>
+            {/* <div className='relative'>
               <div className='absolute inset-0 flex items-center'>
                 <div className='w-full border-t border-gray-300' />
               </div>
               <div className='relative flex justify-center text-sm'>
                 <span className='bg-white-pure px-2 '>{t('or')}</span>
               </div>
-            </div>
+            </div> */}
 
             <form className='space-y-4' onSubmit={handleSubmit}>
               <div>
