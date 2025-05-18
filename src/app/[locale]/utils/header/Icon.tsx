@@ -84,39 +84,47 @@ export const CloseIcon: FC = () => (
 
 // --- Sửa component UserIcon ---
 export const UserIcon: FC = () => {
-  // Sử dụng state để lưu avatar URL. Khởi tạo bằng ảnh mặc định
-  // để có giá trị trong quá trình SSR.
-  const [avatarSrc, setAvatarSrc] = useState('/avatar1.jpg')
+  // Prepend the basePath to the default avatar URL
+  const [avatarSrc, setAvatarSrc] = useState('/admin/avatar1.jpg'); // <--- CHANGE HERE
 
   useEffect(() => {
-    // Code bên trong useEffect chỉ chạy trên client sau khi component mount
     if (typeof window !== 'undefined') {
-      // Kiểm tra chắc chắn là môi trường trình duyệt
       try {
-        const localUser = localStorage.getItem('user')
+        const localUser = localStorage.getItem('user');
         if (localUser) {
-          const user = JSON.parse(localUser)
-          // Nếu có user và có avatar, cập nhật state
+          const user = JSON.parse(localUser);
           if (user?.avatar) {
-            setAvatarSrc(user.avatar)
+            // IMPORTANT: If user.avatar is ALSO a relative path from the public folder,
+            // it might also need the basePath prepended IF IT'S NOT ALREADY.
+            // e.g., if user.avatar is '/user-uploaded.jpg', it should become '/admin/user-uploaded.jpg'
+            // or be stored/retrieved as a full URL.
+            setAvatarSrc(user.avatar); // If user.avatar is a full URL or already includes basePath, this is fine.
           }
         }
       } catch (error) {
-        console.error('Error reading or parsing user from localStorage:', error)
-        // Giữ avatar mặc định nếu có lỗi
+        console.error('Error reading or parsing user from localStorage:', error);
       }
     }
-  }, []) // Mảng rỗng: effect chỉ chạy MỘT LẦN sau render đầu tiên trên client
+  }, []);
 
   return (
     <img
-      // Sử dụng giá trị từ state cho src
       src={avatarSrc}
-      alt='User avatar' // Nên dùng alt text mô tả rõ hơn nếu có thể
+      alt='User avatar'
       width={32}
       height={32}
       className='h-8 w-8 rounded-full border-2 border-white'
+      onError={(e) => {
+        const target = e.target as HTMLImageElement;
+        // Fallback if the dynamic avatar fails
+        if (target.src !== '/admin/avatar1.jpg') { // <--- CHANGE HERE for fallback
+            target.src = '/admin/avatar1.jpg';
+            target.alt = 'Default user avatar';
+        } else {
+            console.error("Default avatar failed to load:", target.src);
+        }
+      }}
     />
-  )
-}
+  );
+};
 // --- Hết sửa component UserIcon ---

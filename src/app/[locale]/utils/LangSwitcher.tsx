@@ -99,7 +99,7 @@ const LangSwitcher: React.FC = () => {
   const currentLocale = currentOption || options[0] // Default to English
   // --- End of current locale determination ---
 
-  const getFlagUrl = (flagCode: string) => `/country_flags/${flagCode}.svg` // Đảm bảo thư mục này tồn tại trong public/
+  const getFlagUrl = (flagCode: string) => `/admin/country_flags/${flagCode}.svg` // Đảm bảo thư mục này tồn tại trong public/
 
   return (
     <div className='w-full'>
@@ -112,15 +112,15 @@ const LangSwitcher: React.FC = () => {
           id='options-menu'
         >
           <span className='inline-flex items-center gap-2'>
-            {/* <Image
+            <Image
               src={getFlagUrl(currentLocale.flagCode)}
               alt={`${currentLocale.country} flag`}
               width={20}
               height={15}
               className='h-auto w-[20px]'
               priority={true} // Priority for current flag is fine
-            /> */}
-            {capitalize(currentLocale.country)}
+            />
+            {capitalize(currentLocale.code)}
           </span>
           <svg
             className={`h-5 w-5 flex-shrink-0 transition-transform ${isOptionsExpanded ? 'rotate-180' : ''}`}
@@ -163,15 +163,15 @@ const LangSwitcher: React.FC = () => {
                   }`}
                   role='menuitem'
                 >
-                  {/* <Image
+                  <Image
                     src={getFlagUrl(lang.flagCode)}
                     alt={`${lang.country} flag`}
                     width={20}
                     height={15}
                     className='h-auto w-[20px]'
                     loading='lazy' // Lazy load flags in the dropdown
-                  /> */}
-                  {capitalize(lang.country)}
+                  />
+                  {capitalize(lang.code)}
                 </a>
               ))}
             </div>
