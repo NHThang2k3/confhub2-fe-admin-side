@@ -191,5 +191,9 @@
   "Details_about_conference": "Details about conference",
   "Seen_at": "Seen at",
   "Not_yet_seen": "Not yet seen",
-  "NotificationDetail_AriaLabel_Delete": "Delete notification"
+  "NotificationDetail_AriaLabel_Delete": "Delete notification",
+  "Conferences": "Conferences",
+  "Show password": "Show password",
+  "Hide password": "Hide password",
+  "Login": "Login"
 }
