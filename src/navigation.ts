@@ -16,6 +16,7 @@ export const pathnames = {
   '/dashboard/notification': '/dashboard/notification',
   '/dashboard/requestAdminTab': '/dashboard/requestAdminTab',
   '/dashboard/logAnalysis': '/dashboard/logAnalysis',
+  '/dashboard/conferences': '/dashboard/conferences',
   '/auth/login': '/auth/login',
   '/auth/verify-email': '/auth/verify-email',
   '/auth/forgot-password': '/auth/forgot-password',
