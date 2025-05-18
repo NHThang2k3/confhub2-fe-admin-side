@@ -11,8 +11,8 @@ interface Props {
   locale: string
   toggleNotification: () => void
   toggleUserDropdown: () => void
-  notificationEffect: boolean
-  unreadCount: number | string
+  notificationEffect?: boolean
+  unreadCount?: number | string
 }
 
 const AuthButtons: FC<Props> = ({
@@ -31,10 +31,10 @@ const AuthButtons: FC<Props> = ({
     return (
       <>
         <button className='' onClick={toggleNotification}>
-          <NotificationIcon
+          {/* <NotificationIcon
             notificationEffect={notificationEffect}
             unreadCount={unreadCount}
-          />
+          /> */}
         </button>
         <button onClick={toggleUserDropdown}>
           <UserIcon />

@@ -21,7 +21,7 @@ interface Props {
   closeAllMenus: () => void;
   locale: string; // Keep locale prop
   logout: () => Promise<void>; // Assume this handles API logout
-  socketRef: React.MutableRefObject<any>; // Keep socketRef
+  socketRef?: React.MutableRefObject<any>; // Keep socketRef
 }
 
 const UserDropdown: FC<Props> = ({
@@ -236,9 +236,9 @@ const UserDropdown: FC<Props> = ({
             <button
               onClick={async () => {
                 await logout();
-                if (socketRef.current) {
-                  socketRef.current.disconnect();
-                }
+                // if (socketRef.current) {
+                //   socketRef.current.disconnect();
+                // }
                 localStorage.removeItem('user'); // Clear user data on logout
                 setFirstName(null);
                 setLastName(null);

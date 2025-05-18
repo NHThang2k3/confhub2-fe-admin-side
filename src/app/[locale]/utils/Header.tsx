@@ -7,7 +7,7 @@ import { useTranslations } from 'next-intl';
 // Updated AuthContext import - adjust path if necessary
 import { useAuth } from '@/src/contexts/AuthContext'; // Or '../../../contexts/AuthContext' if Header is deep
 
-import { useSocketConnection } from '../../../hooks/header/useSocketConnection';
+// import { useSocketConnection } from '../../../hooks/header/useSocketConnection';
 import { useClickOutside } from '../../../hooks/header/useClickOutsideHeader';
 import { useMenuState } from '../../../hooks/header/useMenuState';
 
@@ -49,14 +49,14 @@ export const Header: FC<Props> = ({
   // The local isLoading state and its useEffect are no longer needed.
   // isInitializing from useAuth() will handle the initial loading display.
 
-  const {
-    notifications,
-    notificationEffect,
-    markAllAsRead,
-    fetchNotifications,
-    isLoadingNotifications,
-    socketRef,
-  } = useSocketConnection({ loginStatus: isLoggedIn ? 'true' : null, user });
+  // const {
+  //   notifications,
+  //   notificationEffect,
+  //   markAllAsRead,
+  //   fetchNotifications,
+  //   isLoadingNotifications,
+  //   socketRef,
+  // } = useSocketConnection({ loginStatus: isLoggedIn ? 'true' : null, user });
 
   const {
     isNotificationOpen,
@@ -68,14 +68,14 @@ export const Header: FC<Props> = ({
 
   useClickOutside(headerRef, closeAllMenus, 'notification-dropdown');
 
-  const unreadCount = () => {
-    const unread = notifications.filter(
-      (n) => n.seenAt === null && n.deletedAt === null
-    ).length;
-    return unread > 20 ? '20+' : unread;
-  };
+  // const unreadCount = () => {
+  //   const unread = notifications.filter(
+  //     (n) => n.seenAt === null && n.deletedAt === null
+  //   ).length;
+  //   return unread > 20 ? '20+' : unread;
+  // };
 
-  const displayedNotifications = notifications.slice(0, 20);
+  // const displayedNotifications = notifications.slice(0, 20);
 
   const MenuIcon = (
     <svg
@@ -155,26 +155,26 @@ export const Header: FC<Props> = ({
             locale={locale}
             toggleNotification={() => openNotification()}
             toggleUserDropdown={() => openUserDropdown()}
-            notificationEffect={notificationEffect} // This was already being passed
-            unreadCount={unreadCount()}
+            // notificationEffect={notificationEffect} // This was already being passed
+            // unreadCount={unreadCount()}
           />
         )}
 
         <NotificationDropdown
-          notifications={displayedNotifications}
+          // notifications={displayedNotifications}
           isNotificationOpen={isNotificationOpen}
           closeAllMenus={closeAllMenus}
           locale={locale}
-          fetchNotifications={fetchNotifications}
-          isLoadingNotifications={isLoadingNotifications}
-          markAllAsRead={markAllAsRead}
+          // fetchNotifications={fetchNotifications}
+          // isLoadingNotifications={isLoadingNotifications}
+          // markAllAsRead={markAllAsRead}
         />
         <UserDropdown
           isUserDropdownOpen={isUserDropdownOpen}
           closeAllMenus={closeAllMenus}
           locale={locale}
           logout={logout} // Pass the logout function from useAuth
-          socketRef={socketRef}
+          // socketRef={socketRef}
         />
       </div>
     </div>

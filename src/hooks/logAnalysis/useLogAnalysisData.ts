@@ -1,25 +1,52 @@
 // src/hooks/logAnalysis/useLogAnalysisData.ts
-'use client'; // Nếu hook này được dùng trong client components
+'use client';
 
-import { useState, useEffect, useCallback } from 'react';
-import { io, Socket } from 'socket.io-client';
-import { LogAnalysisResult } from '../../models/logAnalysis/logAnalysis'; // Điều chỉnh đường dẫn nếu cần
-import { useAuth } from '@/src/contexts/AuthContext'; // <<<< THAY ĐỔI QUAN TRỌNG
-import { fetchLogAnalysisData } from '@/src/app/api/logAnalysis/logAnalysisApi';
+import { useState, useEffect, useCallback, useRef } from 'react'; // Added useRef
+import io, { Socket } from 'socket.io-client';
+import { LogAnalysisResult } from '../../models/logAnalysis/logAnalysis';
+import { useAuth } from '@/src/contexts/AuthContext';
+import { fetchLogAnalysisData as apiFetchLogAnalysisData } from '@/src/app/api/logAnalysis/logAnalysisApi'; // Renamed to avoid conflict
 
-const SOCKET_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3001';
+// --- START: Logic tính toán URL và path cho Socket.IO, adapted from useChatSocketManager ---
+// Use the same environment variable as useChatSocketManager if they share the same backend.
+// If LogAnalysis has a *different* backend socket server, use a different env variable.
+// For this example, we assume it's the same as BACKEND_URL.
+const LOG_ANALYSIS_SERVICE_URL_CONFIG = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3001'; // Default from original code
+
+let logAnalysisSocketIoBaseUrl: string = '';
+let logAnalysisSocketIoPathOption: string | undefined = undefined;
+
+if (typeof window !== 'undefined' && LOG_ANALYSIS_SERVICE_URL_CONFIG) {
+    try {
+        const serviceUrlParsed = new URL(LOG_ANALYSIS_SERVICE_URL_CONFIG);
+        const socketProtocol = serviceUrlParsed.protocol === 'https:' ? 'wss:' : 'ws:';
+        logAnalysisSocketIoBaseUrl = `${socketProtocol}//${serviceUrlParsed.hostname}${serviceUrlParsed.port ? `:${serviceUrlParsed.port}` : ''}`;
+
+        let normalizedServicePath = serviceUrlParsed.pathname.startsWith('/') ? serviceUrlParsed.pathname : '/' + serviceUrlParsed.pathname;
+        if (normalizedServicePath !== '/' && !normalizedServicePath.endsWith('/')) {
+            normalizedServicePath += '/';
+        }
+        logAnalysisSocketIoPathOption = normalizedServicePath + 'socket.io/';
+
+        console.log(`[LogAnalysisSocket Init] Calculated socket base URL: ${logAnalysisSocketIoBaseUrl}`);
+        console.log(`[LogAnalysisSocket Init] Calculated socket path option: ${logAnalysisSocketIoPathOption}`);
+    } catch (e) {
+        console.error("[LogAnalysisSocket Init] Failed to parse log analysis service URL from config:", LOG_ANALYSIS_SERVICE_URL_CONFIG, e);
+        logAnalysisSocketIoBaseUrl = ''; // Invalidate
+    }
+} else if (!LOG_ANALYSIS_SERVICE_URL_CONFIG && typeof window !== 'undefined') {
+    console.warn("[LogAnalysisSocket Init] LOG_ANALYSIS_SERVICE_URL_CONFIG (e.g., NEXT_PUBLIC_BACKEND_URL) is not configured. Socket connection will not be attempted.");
+}
+// --- END: Logic tính toán URL và path cho Socket.IO ---
 
 export const useLogAnalysisData = (
     filterStartTime?: number,
     filterEndTime?: number
 ) => {
-    // <<<< THAY ĐỔI QUAN TRỌNG: Sử dụng useAuth từ Context
-    // isInitializing là trạng thái khởi tạo của AuthProvider
-    // isLoading (đổi tên thành isAuthActionLoading) là khi có action bất đồng bộ từ useAuth (ít dùng ở đây)
     const {
         isLoggedIn,
-        isInitializing: isAuthInitializing, // Đổi tên từ isLoading của useAuthApi cũ
-        getToken // Lấy hàm getToken từ context
+        isInitializing: isAuthInitializing,
+        getToken
     } = useAuth();
 
     const [data, setData] = useState<LogAnalysisResult | null>(null);
@@ -28,164 +55,190 @@ export const useLogAnalysisData = (
     const [isConnected, setIsConnected] = useState<boolean>(false);
     const [fetchError, setFetchError] = useState<string | null>(null);
 
+    const socketInstanceRef = useRef<Socket | null>(null); // Ref to hold the socket instance
+    const isMountedRef = useRef(true); // To prevent state updates on unmounted component
+
+    useEffect(() => {
+        isMountedRef.current = true;
+        return () => {
+            isMountedRef.current = false;
+        };
+    }, []);
+
     const fetchData = useCallback(async (isManualRefresh = false) => {
+        if (!isMountedRef.current) return;
         console.log(`[useLogAnalysisData] Fetching log analysis data. Manual: ${isManualRefresh}, Filters: Start=${filterStartTime}, End=${filterEndTime}`);
         setLoadingData(true);
         setFetchError(null);
 
-        // Lấy token MỖI LẦN fetch để đảm bảo token mới nhất được sử dụng
         const currentToken = getToken();
         if (!currentToken) {
             console.warn("[useLogAnalysisData] Cannot fetch data: Auth token missing.");
-            setFetchError("Authentication required to fetch data.");
-            setLoadingData(false);
+            if (isMountedRef.current) {
+                setFetchError("Authentication required to fetch data.");
+                setLoadingData(false);
+                setData(null); // Clear data if no token
+            }
             return;
         }
 
         try {
-            // fetchLogAnalysisData cần được cập nhật để nhận token và truyền vào header
-            const result = await fetchLogAnalysisData(filterStartTime, filterEndTime);
+            const result = await apiFetchLogAnalysisData(filterStartTime, filterEndTime); // Assuming apiFetchLogAnalysisData handles token internally or you pass it
             console.log("[useLogAnalysisData] Fetch successful, updating data.");
-            setData(result);
+            if (isMountedRef.current) setData(result);
         } catch (err: any) {
             console.error("[useLogAnalysisData] Fetch failed:", err);
-            setFetchError(err.message || 'Failed to fetch log analysis data');
+            if (isMountedRef.current) setFetchError(err.message || 'Failed to fetch log analysis data');
         } finally {
-            setLoadingData(false);
+            if (isMountedRef.current) setLoadingData(false);
         }
-    }, [filterStartTime, filterEndTime, getToken]); // Thêm getToken vào dependencies
+    }, [filterStartTime, filterEndTime, getToken]);
 
-    // Effect cho việc fetch dữ liệu ban đầu và khi filter thay đổi
     useEffect(() => {
-        // Chỉ fetch data nếu quá trình xác thực ban đầu đã hoàn tất VÀ người dùng đã đăng nhập
         if (!isAuthInitializing && isLoggedIn) {
             console.log("[useLogAnalysisData] Auth initialized and user logged in. Proceeding to fetch initial data.");
             fetchData(false);
         } else if (!isAuthInitializing && !isLoggedIn) {
             console.log("[useLogAnalysisData] Auth initialized but user not logged in. Skipping data fetch.");
-            setData(null); // Xóa data cũ nếu người dùng logout
-            setLoadingData(false); // Đảm bảo loading là false
-            setFetchError("Please log in to view log analysis data."); // Set lỗi nếu muốn hiển thị
+            if (isMountedRef.current) {
+                setData(null);
+                setLoadingData(false);
+                // setFetchError("Please log in to view log analysis data."); // Optional: set an error
+            }
         } else {
             console.log("[useLogAnalysisData] Waiting for auth to complete before fetching initial data.");
         }
-    }, [fetchData, isAuthInitializing, isLoggedIn]); // Chạy lại khi fetchData, isAuthInitializing, hoặc isLoggedIn thay đổi
+    }, [fetchData, isAuthInitializing, isLoggedIn]);
 
-    // Effect cho Socket.IO connection
     useEffect(() => {
-        let socketInstance: Socket | null = null;
+        // Cleanup function for the previous socket instance if dependencies change
+        const cleanupPreviousSocket = () => {
+            if (socketInstanceRef.current) {
+                console.log(`[LogAnalysisSocket Effect] Cleaning up previous socket: ${socketInstanceRef.current.id}`);
+                socketInstanceRef.current.off('connect');
+                socketInstanceRef.current.off('disconnect');
+                socketInstanceRef.current.off('connect_error');
+                socketInstanceRef.current.off('log_analysis_update');
+                socketInstanceRef.current.off('auth_error'); // Assuming a custom auth_error event
+                socketInstanceRef.current.disconnect();
+                socketInstanceRef.current = null;
+                if (isMountedRef.current) setIsConnected(false);
+            }
+        };
 
-        if (!SOCKET_URL) {
-            console.error("[useLogAnalysisData] Socket URL is not defined.");
-            setSocketError("Socket URL is not defined.");
+        if (isAuthInitializing) {
+            console.log("[LogAnalysisSocket Effect] Auth is initializing. Disconnecting any existing socket.");
+            cleanupPreviousSocket();
             return;
         }
 
-        if (!isAuthInitializing) {
-            if (isLoggedIn) {
-                const currentToken = getToken();
+        if (!logAnalysisSocketIoBaseUrl) {
+            console.warn("[LogAnalysisSocket Effect] Socket Base URL is not valid for Log Analysis. Skipping connection.");
+            cleanupPreviousSocket();
+            if (isMountedRef.current) setSocketError("Socket service not configured correctly.");
+            return;
+        }
 
-                if (currentToken) {
-                    console.log('[useLogAnalysisData] Auth ready, user logged in. Attempting Socket.IO connection.');
-                    setSocketError(null);
+        if (isLoggedIn) {
+            const currentToken = getToken();
+            if (currentToken) {
+                // If there's an existing socket, disconnect it before creating a new one to ensure fresh connection with latest token/config
+                // This also handles cases where token might change (though getToken is a dependency, so effect re-runs)
+                if (socketInstanceRef.current) {
+                     console.log("[LogAnalysisSocket Effect] Disconnecting existing socket before creating new one (e.g. token change or re-login).");
+                     cleanupPreviousSocket();
+                }
 
-                    socketInstance = io(SOCKET_URL, {
-                        transports: ['websocket'],
-                        reconnectionAttempts: 3,
-                        reconnectionDelay: 2000,
-                        auth: { token: currentToken }
-                    });
+                console.log(`[LogAnalysisSocket Effect] User logged in with token. Attempting Socket.IO connection to ${logAnalysisSocketIoBaseUrl} with path ${logAnalysisSocketIoPathOption}`);
+                if (isMountedRef.current) setSocketError(null);
 
-                    // Gán instance vào một ref để truy cập trong cleanup nếu cần,
-                    // nhưng kiểm tra trực tiếp thường đủ dùng cho trường hợp này.
-                    // const socketRef = { current: socketInstance };
+                const newSocket = io(logAnalysisSocketIoBaseUrl, {
+                    transports: ['websocket', 'polling'],
+                    reconnectionAttempts: 3,
+                    reconnectionDelay: 2000,
+                    auth: { token: currentToken },
+                    ...(logAnalysisSocketIoPathOption && logAnalysisSocketIoPathOption !== '/socket.io/' && { path: logAnalysisSocketIoPathOption }),
+                });
+                socketInstanceRef.current = newSocket;
 
-
-                    socketInstance.on('connect', () => {
-                        console.log('[useLogAnalysisData] Socket.IO Connected:', socketInstance?.id);
+                newSocket.on('connect', () => {
+                    if (isMountedRef.current && socketInstanceRef.current === newSocket) {
+                        console.log('[LogAnalysisSocket] Socket.IO Connected:', newSocket.id);
                         setIsConnected(true);
                         setSocketError(null);
-                    });
+                    }
+                });
 
-                    socketInstance.on('disconnect', (reason) => {
-                        console.log('[useLogAnalysisData] Socket.IO Disconnected:', reason);
+                newSocket.on('disconnect', (reason: Socket.DisconnectReason) => {
+                    if (isMountedRef.current && socketInstanceRef.current === newSocket) {
+                        console.log('[LogAnalysisSocket] Socket.IO Disconnected:', reason);
                         setIsConnected(false);
                         if (reason === 'io server disconnect') {
-                            setSocketError('Real-time server disconnected. Might be auth or server issue.');
-                        } else if (reason !== 'io client disconnect') {
+                            setSocketError('Real-time server disconnected.');
+                        } else if (reason !== 'io client disconnect') { // Don't show error for manual disconnect
                             setSocketError(`Real-time connection lost: ${reason}.`);
                         }
-                    });
+                    }
+                });
 
-                    socketInstance.on('connect_error', (err) => {
-                        console.error('[useLogAnalysisData] Socket.IO Connection Error:', err);
+                newSocket.on('connect_error', (err) => {
+                    if (isMountedRef.current && socketInstanceRef.current === newSocket) {
+                        console.error('[LogAnalysisSocket] Socket.IO Connection Error:', err.message, (err as any).data);
                         setIsConnected(false);
                         const errorData = err as any;
-                        const message = errorData.data?.message || err.message;
-                        if (errorData.data?.code === 'AUTH_FAILED' || message.toLowerCase().includes('authentication')) {
+                        const message = errorData.data?.message || err.message || "Unknown connection error";
+                        if (message.toLowerCase().includes('authentication') || errorData.data?.code === 'AUTH_FAILED') {
                             setSocketError(`Real-time Auth Error: ${message}.`);
-                            // <<<< SỬA LỖI Ở ĐÂY >>>>
-                            if (socketInstance && typeof socketInstance.disconnect === 'function') {
-                                socketInstance.disconnect();
-                            }
+                            // Critical auth error, consider full disconnect without auto-reconnect for this instance
+                            newSocket.disconnect();
                         } else {
                             setSocketError(`Socket Connection Error: ${message}`);
                         }
-                    });
+                    }
+                });
 
-                    socketInstance.on('log_analysis_update', (updatedData: LogAnalysisResult) => {
-                        console.log('[useLogAnalysisData] Received log_analysis_update via Socket.');
-                        setData(updatedData);
-                        setFetchError(null);
-                        setLoadingData(false);
-                    });
-
-                    socketInstance.on('auth_error', (authErrorMsg: { message: string }) => { // Đổi tên biến để tránh nhầm lẫn
-                        console.error('[useLogAnalysisData] Socket.IO Auth Error from server logic:', authErrorMsg.message);
-                        setSocketError(`Authentication Error: ${authErrorMsg.message}.`);
+                // Assuming your server emits 'auth_error' for token issues post-connection
+                newSocket.on('auth_error', (authError: { message: string }) => {
+                    if (isMountedRef.current && socketInstanceRef.current === newSocket) {
+                        console.error('[LogAnalysisSocket] Socket.IO Auth Error from server:', authError.message);
+                        setSocketError(`Authentication Error: ${authError.message}.`);
                         setIsConnected(false);
-                        // <<<< SỬA LỖI Ở ĐÂY >>>>
-                        if (socketInstance && typeof socketInstance.disconnect === 'function') {
-                            socketInstance.disconnect();
-                        }
-                    });
+                        newSocket.disconnect(); // Disconnect on auth error
+                    }
+                });
 
-                } else {
-                    console.warn('[useLogAnalysisData] User logged in, but no token found for Socket.IO.');
+                newSocket.on('log_analysis_update', (updatedData: LogAnalysisResult) => {
+                    if (isMountedRef.current && socketInstanceRef.current === newSocket) {
+                        console.log('[LogAnalysisSocket] Received log_analysis_update via Socket.');
+                        setData(updatedData);
+                        setFetchError(null); // Clear fetch error if socket provides data
+                        setLoadingData(false); // Stop loading if socket provides data
+                    }
+                });
+
+            } else {
+                console.warn('[LogAnalysisSocket Effect] User logged in, but no token found for Socket.IO.');
+                cleanupPreviousSocket();
+                if (isMountedRef.current) {
                     setSocketError('Real-time updates disabled: Auth token missing.');
                     setIsConnected(false);
                 }
-            } else {
-                console.log('[useLogAnalysisData] Auth ready, but user is not logged in. No Socket.IO connection.');
-                setIsConnected(false);
-                // Không cần ngắt socket ở đây vì nó chưa được tạo trong nhánh này.
-                // Nếu nó được tạo từ lần render trước, hàm cleanup sẽ xử lý.
             }
-        } else {
-            console.log('[useLogAnalysisData] Waiting for auth to complete before Socket.IO.');
-            setIsConnected(false);
+        } else { // Not logged in
+            console.log('[LogAnalysisSocket Effect] User is not logged in. Disconnecting any existing socket.');
+            cleanupPreviousSocket();
+            if (isMountedRef.current) {
+                 // Clear any previous socket error if user logs out
+                // setSocketError(null); // Or set a message like "Login to enable real-time updates"
+            }
         }
 
         return () => {
-            // <<<< SỬA LỖI TRONG CLEANUP >>>>
-            // Capture a reference to the socketInstance at the time the effect ran.
-            const currentSocketInstance = socketInstance;
-            if (currentSocketInstance && typeof currentSocketInstance.disconnect === 'function') {
-                console.log(`[useLogAnalysisData - Socket Effect Cleanup] Disconnecting socket. ID: ${currentSocketInstance.id}.`);
-                currentSocketInstance.off('connect');
-                currentSocketInstance.off('disconnect');
-                currentSocketInstance.off('connect_error');
-                currentSocketInstance.off('log_analysis_update');
-                currentSocketInstance.off('auth_error');
-                currentSocketInstance.disconnect();
-            } else {
-                // console.log(`[useLogAnalysisData - Socket Effect Cleanup] No valid socketInstance to disconnect or already disconnected.`);
-            }
+            console.log(`[LogAnalysisSocket Effect Cleanup] Running cleanup. Current Socket ID: ${socketInstanceRef.current?.id}`);
+            cleanupPreviousSocket();
         };
-    }, [isAuthInitializing, isLoggedIn, getToken]); // Dependencies vẫn giữ nguyên
+    }, [isAuthInitializing, isLoggedIn, getToken]); // getToken ensures re-evaluation if token changes
 
-
-    // Quyết định loading tổng thể của hook
     const overallLoading = isAuthInitializing || (!isAuthInitializing && isLoggedIn && loadingData);
     const combinedError = fetchError || socketError;
 
@@ -194,6 +247,6 @@ export const useLogAnalysisData = (
         loading: overallLoading,
         error: combinedError,
         isConnectedToSocket: isConnected,
-        refetchData: () => fetchData(true) // fetchData đã bao gồm logic lấy token
+        refetchData: () => fetchData(true)
     };
 };

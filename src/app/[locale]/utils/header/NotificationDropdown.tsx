@@ -12,13 +12,13 @@ import rehypeRaw from 'rehype-raw'; // Needed for raw HTML
 import DOMPurify from 'dompurify'; // Needed for sanitization (client-side only)
 
 interface Props {
-  notifications: Notification[];
+  notifications?: Notification[];
   isNotificationOpen: boolean;
   closeAllMenus: () => void;
   locale: string; // Keep locale prop
-  fetchNotifications: () => void;
-  isLoadingNotifications: boolean;
-  markAllAsRead: () => Promise<void>;
+  fetchNotifications?: () => void;
+  isLoadingNotifications?: boolean;
+  markAllAsRead?: () => Promise<void>;
 }
 
 const NotificationDropdown: FC<Props> = ({
@@ -38,27 +38,27 @@ const NotificationDropdown: FC<Props> = ({
   // We will remove the language variable and pass 'locale' directly to timeAgo.
   // const language = t('language'); // Removed this line
 
-  // --- STEP 1: SORT NOTIFICATIONS ---
-  const sortedNotifications = useMemo(() => {
-    // Create a copy and sort by createdAt descending (newest first)
-    return [...notifications].sort((a, b) => {
-      const timeA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
-      const timeB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
-      const validTimeA = !isNaN(timeA) ? timeA : 0;
-      const validTimeB = !isNaN(timeB) ? timeB : 0;
-      return validTimeB - validTimeA; // Newest first
-    });
-  }, [notifications]); // Only resort when notifications array changes
+  // // --- STEP 1: SORT NOTIFICATIONS ---
+  // const sortedNotifications = useMemo(() => {
+  //   // Create a copy and sort by createdAt descending (newest first)
+  //   return [...notifications].sort((a, b) => {
+  //     const timeA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+  //     const timeB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+  //     const validTimeA = !isNaN(timeA) ? timeA : 0;
+  //     const validTimeB = !isNaN(timeB) ? timeB : 0;
+  //     return validTimeB - validTimeA; // Newest first
+  //   });
+  // }, [notifications]); // Only resort when notifications array changes
 
-  const memoizedFetchNotifications = useCallback(() => {
-    fetchNotifications();
-  }, [fetchNotifications]); // Dependencies: fetchNotifications
+  // const memoizedFetchNotifications = useCallback(() => {
+  //   fetchNotifications();
+  // }, [fetchNotifications]); // Dependencies: fetchNotifications
 
-  useEffect(() => {
-    if (isNotificationOpen) {
-      memoizedFetchNotifications();
-    }
-  }, [isNotificationOpen, memoizedFetchNotifications]); // Dependencies: isNotificationOpen, memoizedFetchNotifications
+  // useEffect(() => {
+  //   if (isNotificationOpen) {
+  //     memoizedFetchNotifications();
+  //   }
+  // }, [isNotificationOpen, memoizedFetchNotifications]); // Dependencies: isNotificationOpen, memoizedFetchNotifications
 
   // Function to group notifications (unchanged logic)
   const groupNotifications = useCallback(
@@ -82,11 +82,11 @@ const NotificationDropdown: FC<Props> = ({
     [] // Dependencies: Empty - logic depends only on built-in Date and numbers
   );
 
-  // --- STEP 2: USE THE SORTED LIST FOR GROUPING ---
-  // Call the grouping function with `sortedNotifications`
-  const { newNotifications, earlierNotifications } =
-    groupNotifications(sortedNotifications);
-  // --- END OF USING SORTED ---
+  // // --- STEP 2: USE THE SORTED LIST FOR GROUPING ---
+  // // Call the grouping function with `sortedNotifications`
+  // const { newNotifications, earlierNotifications } =
+  //   groupNotifications(sortedNotifications);
+  // // --- END OF USING SORTED ---
 
   // Function to render a single notification item (unchanged core logic)
   const renderNotificationItem = useCallback(
@@ -193,15 +193,15 @@ const NotificationDropdown: FC<Props> = ({
     [/* closeAllMenus, */ locale] // Dependencies: closeAllMenus (if used), locale
   );
 
-  // handleMarkAllAsRead function (unchanged logic)
-  const handleMarkAllAsRead = useCallback(
-    async (e: React.MouseEvent) => {
-      e.stopPropagation(); // Prevent click from bubbling up to close dropdown
-      await markAllAsRead();
-      fetchNotifications(); // Keep fetch if needed after marking
-    },
-    [markAllAsRead, fetchNotifications] // Dependencies: markAllAsRead, fetchNotifications
-  );
+  // // handleMarkAllAsRead function (unchanged logic)
+  // const handleMarkAllAsRead = useCallback(
+  //   async (e: React.MouseEvent) => {
+  //     e.stopPropagation(); // Prevent click from bubbling up to close dropdown
+  //     await markAllAsRead();
+  //     fetchNotifications(); // Keep fetch if needed after marking
+  //   },
+  //   [markAllAsRead, fetchNotifications] // Dependencies: markAllAsRead, fetchNotifications
+  // );
 
 
   // JSX Render (unchanged structure)
@@ -224,29 +224,26 @@ const NotificationDropdown: FC<Props> = ({
              {/* Translate title */}
             {t('Notifications')} {/* <-- Already uses t() */}
           </h6>
-          <button
+          {/* <button
             className=' text-sm text-button hover:text-blue-800'
             onClick={handleMarkAllAsRead}
           >
-            {/* Translate button text */}
-            {t('Mark All As Read')} {/* <-- Already uses t() */}
-          </button>
+            {t('Mark All As Read')} 
+          </button> */}
         </div>
       </div>
 
-      <div className='overflow-y-auto' style={{ maxHeight: '25rem' }}>
+      {/* <div className='overflow-y-auto' style={{ maxHeight: '25rem' }}>
         {isLoadingNotifications ? (
           <div className='p-4 text-center text-gray-50'>
-             {/* Translate loading message */}
-            {t('Loading')} {/* <-- Already uses t() */}
+            {t('Loading')} 
           </div>
         ) : sortedNotifications.length > 0 ? (
           <>
             {newNotifications.length > 0 && (
               <>
                 <div className='border-b border-gray-20 px-4 py-2 text-sm font-semibold '>
-                   {/* Translate group header */}
-                  {t('NEW')} {/* <-- Already uses t() */}
+                  {t('NEW')} 
                 </div>
                 {newNotifications.map(renderNotificationItem)}
               </>
@@ -254,28 +251,25 @@ const NotificationDropdown: FC<Props> = ({
             {earlierNotifications.length > 0 && (
               <>
                 <div className='border-b border-gray-20 px-4 py-2 text-sm font-semibold '>
-                   {/* Translate group header */}
-                  {t('EARLIER')} {/* <-- Already uses t() */}
+                  {t('EARLIER')} 
                 </div>
                 {earlierNotifications.map(renderNotificationItem)}
               </>
             )}
           </>
         ) : (
-           /* Translate empty state message */
-          <div className='p-4 text-center '>{t('No_new_notifications')}</div> /* <-- Already uses t() */
+          <div className='p-4 text-center '>{t('No_new_notifications')}</div>
         )}
-      </div>
+      </div> */}
 
       <div className='border-t border-gray-20 p-4 text-center'>
         <Link
           href={{ pathname: `/dashboard`, query: { tab: 'notifications' } }}
-          locale={locale} // Pass locale to Link component
+          locale={locale} 
           onClick={closeAllMenus}
         >
           <div className='block text-sm text-button hover:text-blue-800'>
-             {/* Translate button text */}
-            {t('View_all')} {/* <-- Already uses t() */}
+            {t('View_all')} 
           </div>
         </Link>
       </div>
