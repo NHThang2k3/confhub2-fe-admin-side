@@ -206,15 +206,14 @@ const UserDropdown: FC<Props> = ({
                {/* Label - ALREADY uses t() for translation */}
               {t('Request_Admin_Tab')} {/* <-- Already uses t() */}
             </Link>
-            <Link
+            {/* <Link
               href={{ pathname: `/dashboard`, query: { tab: 'profile' } }}
               locale={locale} // Pass locale
               className='block px-2 py-2 text-sm  hover:bg-gray-100  dark:hover:bg-gray-700'
               onClick={handleLinkClick} // Use the click handler
             >
-               {/* Label - ALREADY uses t() for translation */}
-              {t('Profile')} {/* <-- Already uses t() */}
-            </Link>
+              {t('Profile')} 
+            </Link> */}
 
             <Link
               href={{
