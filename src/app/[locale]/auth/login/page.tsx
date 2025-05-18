@@ -1,9 +1,10 @@
+// src/app/[locale]/auth/login/page.tsx
 "use client";
 
 import LoginForm from "./LoginForm";
-import React, { useEffect, useState } from 'react'; // Import useState
-import { useRouter } from 'next/navigation';
-import useAuthApi from '@/src/hooks/auth/useAuthApi';
+import React, { useEffect } from 'react';
+import { useRouter } from 'next/navigation'; // Use standard Next.js router for page-level redirects
+import { useAuth } from '@/src/contexts/AuthContext'; // <<<< THAY ĐỔI QUAN TRỌNG
 import { GoogleOAuthProvider } from '@react-oauth/google';
 
 const LoginPage = ({
@@ -11,50 +12,55 @@ const LoginPage = ({
 }: {
   params: { locale: string }
 }) => {
-  const { isLoggedIn, isLoading } = useAuthApi();
+  // <<<< THAY ĐỔI QUAN TRỌNG: Sử dụng useAuth từ Context
+  // isInitializing is true during the first auth check
+  // isLoggedIn will be updated after initialization
+  const { isLoggedIn, isInitializing } = useAuth();
   const router = useRouter();
 
-  // Use state to hold the redirect URI, initialize to null
-  const [redirectUri, setRedirectUri] = useState<string | null>(null);
-
   useEffect(() => {
-    // Redirect logic: only if logged in and loading is complete
-    if (isLoggedIn && !isLoading) {
-      router.push(`/${locale}`);
-      return; // Stop further execution if redirecting
+    // Only redirect if initialization is complete AND user is logged in
+    if (!isInitializing && isLoggedIn) {
+      console.log("[LoginPage] Already logged in, redirecting...");
+      router.push(`/${locale}`); // Redirect to the locale's home page
     }
+  }, [isLoggedIn, isInitializing, router, locale]); // Add all dependencies
 
-    // Calculate redirectUri ONLY on the client side after mounting
-    // The check 'typeof window !== 'undefined'' is a safeguard,
-    // but code inside useEffect generally runs client-side anyway.
-    if (typeof window !== 'undefined') {
-      setRedirectUri(`${window.location.origin}/${locale}/auth/callback`);
-    }
-
-  }, [isLoggedIn, isLoading, locale, router]); // Add locale and router to dependencies
-
-  // Get clientId once
-  const googleClientId = process.env.NEXT_PUBLIC_GG_CLIENT_ID || '';
-
-  // Only render the form and provider when not loading, not logged in,
-  // AND redirectUri has been set (meaning client-side script has run)
-  if (isLoading || isLoggedIn || !redirectUri) {
-    // You might want to render a loading state here
-    // or nothing while waiting for the state/check
+  // Don't render LoginForm if still initializing
+  if (isInitializing) {
     return (
-       <div className="min-h-screen flex items-center justify-center">
-           {isLoading ? 'Loading...' : isLoggedIn ? 'Redirecting...' : 'Initializing...'}
-       </div>
+      <div className="flex h-screen items-center justify-center">
+        <div>Loading authentication status...</div>
+      </div>
     );
   }
 
-  // If not loading, not logged in, and redirectUri is available, render the form
+  // If already logged in (and initialization is complete), useEffect will handle redirect.
+  // This is a fallback display while redirecting.
+  if (isLoggedIn && !isInitializing) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <div>Redirecting...</div>
+      </div>
+    );
+  }
+
+  // The redirectUri for GoogleOAuthProvider for the @react-oauth/google library
+  // is primarily for the popup/implicit flow if handled purely client-side.
+  // Since our `useAuth.googleSignIn` initiates a redirect to our backend,
+  // the backend handles the actual redirect to Google and then back to our `/auth/callback`.
+  // The `GoogleOAuthProvider` is still useful if any child components (like a custom Google button hook)
+  // from `@react-oauth/google` are used that require it.
+
   return (
     <>
-      <GoogleOAuthProvider clientId={googleClientId}>
-        <div className="min-h-screen bg-gradient-to-br from-background to-background-secondary">
-          <LoginForm redirectUri={redirectUri} />
-        </div>
+      <GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GG_CLIENT_ID || ''}>
+        {/* Show login form only if not initializing and not logged in */}
+        {!isInitializing && !isLoggedIn && (
+          <div className="min-h-screen bg-gradient-to-br from-background to-background-secondary">
+            <LoginForm />
+          </div>
+        )}
       </GoogleOAuthProvider>
     </>
   );

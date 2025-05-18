@@ -3,52 +3,55 @@
 
 import React, { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import useAuthApi from '@/src/hooks/auth/useAuthApi';
+// Thay đổi: Import useAuth từ AuthContext
+import { useAuth } from '@/src/contexts/AuthContext';
 import Moderation from './Moderation';
-// Import useTranslations
-import { useTranslations } from 'next-intl'; // <-- Added import
+import { useTranslations } from 'next-intl';
 
 // Component Page for route /dashboard/moderation/[locale]
 export default function ModerationPage({ params: { locale } }: { params: { locale: string } }) {
-    // Call useTranslations hook
-    const t = useTranslations('ModerationPage'); // <-- Added hook call (using a namespace example)
+    const t = useTranslations('ModerationPage');
 
-    // Use the auth hook
-    const { isLoggedIn, isLoading } = useAuthApi();
+    // Thay đổi: Sử dụng useAuth và lấy thêm isInitializing
+    // isLoading từ useAuth thường dành cho các quá trình active (signIn, logout).
+    // isInitializing cho biết AuthProvider đã hoàn tất kiểm tra trạng thái ban đầu hay chưa.
+    const { isLoggedIn, isInitializing, isLoading } = useAuth();
     const router = useRouter();
 
-    // Effect to check authentication status and redirect
     useEffect(() => {
-        if (!isLoading) {
-            if (!isLoggedIn) {
-                console.log(`[${locale}/dashboard/moderation/page.tsx] User not logged in. Redirecting to login.`);
-                router.replace(`/${locale}/auth/login`);
-            } else {
-                console.log(`[${locale}/dashboard/moderation/page.tsx] User is logged in. Rendering Moderation.`);
-            }
-        } else {
-             console.log(`[${locale}/dashboard/moderation/page.tsx] Checking auth status...`);
+        // Chỉ thực hiện hành động sau khi quá trình khởi tạo auth hoàn tất
+        if (isInitializing) {
+            console.log(`[${locale}/dashboard/moderation/page.tsx] AuthContext is initializing...`);
+            return; // Đợi cho đến khi isInitializing là false
         }
-    }, [isLoggedIn, isLoading, locale, router]);
 
-    // Hide content or display loading spinner while waiting for auth check
-    if (isLoading) {
+        // Sau khi khởi tạo xong:
+        if (!isLoggedIn) {
+            console.log(`[${locale}/dashboard/moderation/page.tsx] User not logged in (after init). Redirecting to login.`);
+            router.replace(`/${locale}/auth/login`);
+        } else {
+            console.log(`[${locale}/dashboard/moderation/page.tsx] User is logged in (after init). Rendering Moderation.`);
+        }
+    // Thêm isInitializing vào dependencies array
+    }, [isLoggedIn, isInitializing, locale, router]);
+
+    // Hiển thị spinner Tải TRONG KHI AuthContext đang khởi tạo
+    // HOẶC nếu có một tiến trình xác thực đang diễn ra (ví dụ: logout từ trang này)
+    if (isInitializing || isLoading) {
         return (
             <div className="flex items-center justify-center w-full min-h-[50vh]">
-               {/* Translate loading message */}
-               {t('AuthStatus_Loading')} {/* <-- Translated */}
+               {t('AuthStatus_Loading')}
             </div>
         );
     }
 
-    // If not loading AND not logged in, useEffect triggered redirect.
-    // Render null or a small message while waiting for browser navigation.
+    // Nếu KHÔNG đang khởi tạo VÀ KHÔNG đăng nhập, useEffect đã/sẽ kích hoạt redirect.
+    // Render null hoặc một thông báo nhỏ trong khi chờ điều hướng trình duyệt.
     if (!isLoggedIn) {
-        // Optionally translate redirecting message
         // return <div className="flex items-center justify-center w-full min-h-[50vh]">{t('AuthStatus_Redirecting')}</div>;
         return null;
     }
 
-    // If not loading AND logged in, render Moderation component
-    return <Moderation />; // Moderation component will handle its own translations
+    // Nếu KHÔNG đang khởi tạo VÀ ĐÃ đăng nhập, render Moderation component
+    return <Moderation />; // Moderation component sẽ tự xử lý translations của nó
 }

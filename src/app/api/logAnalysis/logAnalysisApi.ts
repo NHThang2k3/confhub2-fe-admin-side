@@ -8,7 +8,7 @@ export const fetchLogAnalysisData = async (
     filterEndTime?: number   // Milliseconds
 ): Promise<LogAnalysisResult> => {
     // Xây dựng URL với các tham số query nếu chúng tồn tại
-    const url = new URL(`${API_BASE_URL}/api/v1/logs/analysis/latest`);
+    const url = new URL(`${API_BASE_URL}/v1/logs/analysis/latest`);
     if (filterStartTime !== undefined) {
         url.searchParams.append('filterStartTime', filterStartTime.toString());
     }

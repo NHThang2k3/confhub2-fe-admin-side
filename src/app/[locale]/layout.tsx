@@ -3,7 +3,7 @@
 import React from 'react'
 import { ThemeProvider } from '@/src/app/[locale]/utils/ThemeProvider'
 import type { Metadata } from 'next'
-import type { Viewport } from 'next' 
+import type { Viewport } from 'next'
 
 import {
   AbstractIntlMessages,
@@ -15,6 +15,7 @@ import NextTopLoader from 'nextjs-toploader'
 import { ToastContainer } from 'react-toastify' // <--- Import ToastContainer
 import 'react-toastify/dist/ReactToastify.css' // <--- Import CSS cho react-toastify
 import './globals.css'
+import { AuthProvider } from '@/src/contexts/AuthContext'; // Điều chỉnh path nếu cần
 
 // ... (Phần định nghĩa fonts: spaceGrotesk, inter, rubik)
 const spaceGrotesk = localFont({
@@ -107,50 +108,54 @@ export default function RootLayout({
         />
       </head>
       <body>
-        {/* --- ThemeProvider bao bọc mọi thứ để ToastContainer có thể nhận theme --- */}
-        <ThemeProvider
-          enableSystem
-          attribute='class'
-          defaultTheme='light'
-          themes={['light', 'dark']}
-        >
-          {/* --- ToastContainer đặt ở đây --- */}
-          {/* Có thể thêm props để tùy chỉnh, ví dụ: position, autoClose, theme */}
-          <ToastContainer
-            position='top-right' // Vị trí hiển thị (phổ biến)
-            autoClose={3000} // Tự động đóng sau 3 giây
-            hideProgressBar={false}
-            newestOnTop={false}
-            closeOnClick
-            rtl={locale === 'ar' || locale === 'fa'} // Hỗ trợ RTL nếu cần
-            pauseOnFocusLoss
-            draggable
-            pauseOnHover
-            theme='colored' // Sử dụng theme màu ('light', 'dark', 'colored') - 'colored' sẽ có màu theo type (success, error,...)
-          />
+        <AuthProvider>
 
-          {/* --- NextIntlClientProvider --- */}
-          <NextIntlClientProvider
-            locale={locale}
-            messages={messages as AbstractIntlMessages}
+          {/* --- ThemeProvider bao bọc mọi thứ để ToastContainer có thể nhận theme --- */}
+          <ThemeProvider
+            enableSystem
+            attribute='class'
+            defaultTheme='light'
+            themes={['light', 'dark']}
           >
-            {/* --- NextTopLoader --- */}
-            <NextTopLoader
-              initialPosition={0.08}
-              crawlSpeed={200}
-              height={3}
-              crawl={true}
-              easing='ease'
-              speed={200}
-              shadow='0 0 10px #2299DD,0 0 5px #2299DD'
-              color='var(--primary)'
-              showSpinner={false}
+            {/* --- ToastContainer đặt ở đây --- */}
+            {/* Có thể thêm props để tùy chỉnh, ví dụ: position, autoClose, theme */}
+            <ToastContainer
+              position='top-right' // Vị trí hiển thị (phổ biến)
+              autoClose={3000} // Tự động đóng sau 3 giây
+              hideProgressBar={false}
+              newestOnTop={false}
+              closeOnClick
+              rtl={locale === 'ar' || locale === 'fa'} // Hỗ trợ RTL nếu cần
+              pauseOnFocusLoss
+              draggable
+              pauseOnHover
+              theme='colored' // Sử dụng theme màu ('light', 'dark', 'colored') - 'colored' sẽ có màu theo type (success, error,...)
             />
-            {/* --- Nội dung chính của trang --- */}
-            <main className='mx-auto max-w-screen-2xl'>{children}</main>
-          </NextIntlClientProvider>
-        </ThemeProvider>
-      </body>
-    </html>
+
+            {/* --- NextIntlClientProvider --- */}
+            <NextIntlClientProvider
+              locale={locale}
+              messages={messages as AbstractIntlMessages}
+            >
+              {/* --- NextTopLoader --- */}
+              <NextTopLoader
+                initialPosition={0.08}
+                crawlSpeed={200}
+                height={3}
+                crawl={true}
+                easing='ease'
+                speed={200}
+                shadow='0 0 10px #2299DD,0 0 5px #2299DD'
+                color='var(--primary)'
+                showSpinner={false}
+              />
+              {/* --- Nội dung chính của trang --- */}
+              <main className='mx-auto max-w-screen-2xl'>{children}</main>
+            </NextIntlClientProvider>
+          </ThemeProvider>
+        </AuthProvider>
+
+      </body >
+    </html >
   )
 }
