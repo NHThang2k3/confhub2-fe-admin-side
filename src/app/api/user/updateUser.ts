@@ -11,8 +11,8 @@ export const updateUser = async (
     throw new Error('Authentication token is required to update user data.');
   }
 
-  const response = await fetch(`${appConfig.NEXT_PUBLIC_DATABASE_URL}/api/v1/user/${userId}`, {
-    method: 'PUT',
+  const response = await fetch(`${appConfig.NEXT_PUBLIC_DATABASE_URL}/api/v1/user/update`, {
+    method: 'PATCH',
     headers: {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${token}`, // <<<< THÊM AUTHORIZATION HEADER >>>>

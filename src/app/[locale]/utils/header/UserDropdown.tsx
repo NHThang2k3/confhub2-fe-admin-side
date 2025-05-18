@@ -177,7 +177,7 @@ const UserDropdown: FC<Props> = ({
             {/* Menu Links - Already use t() for labels */}
             {/* Just need to ensure correct keys are used in message files */}
             <Link
-              href={{ pathname: `/dashboard`, query: { tab: 'analysis' } }}
+              href={{ pathname: `/dashboard/logAnalysis` }}
               locale={locale} // Pass locale
               className='block px-2 py-2 text-sm  hover:bg-gray-100  dark:hover:bg-gray-700'
               onClick={handleLinkClick} // Use the click handler
@@ -186,7 +186,7 @@ const UserDropdown: FC<Props> = ({
               {t('Analysis')} {/* <-- Already uses t() */}
             </Link>
             <Link
-              href={{ pathname: `/dashboard`, query: { tab: 'moderation' } }}
+              href={{ pathname: `/dashboard/moderation`}}
               locale={locale} // Pass locale
               className='block px-2 py-2 text-sm  hover:bg-gray-100  dark:hover:bg-gray-700'
               onClick={handleLinkClick} // Use the click handler
@@ -195,6 +195,15 @@ const UserDropdown: FC<Props> = ({
               {t('Moderation.Moderation')} {/* <-- Already uses t() */}
             </Link>
             <Link
+              href={{ pathname: `/dashboard/conferences` }}
+              locale={locale} // Pass locale
+              className='block px-2 py-2 text-sm  hover:bg-gray-100  dark:hover:bg-gray-700'
+              onClick={handleLinkClick} // Use the click handler
+            >
+              {/* Label - ALREADY uses t() for translation */}
+              {t('Conferences')} {/* <-- Already uses t() */}
+            </Link>
+            {/* <Link
               href={{
                 pathname: `/dashboard`,
                 query: { tab: 'requestadmintab' }
@@ -203,9 +212,8 @@ const UserDropdown: FC<Props> = ({
               className='block px-2 py-2 text-sm  hover:bg-gray-100  dark:hover:bg-gray-700'
               onClick={handleLinkClick} // Use the click handler
             >
-               {/* Label - ALREADY uses t() for translation */}
-              {t('Request_Admin_Tab')} {/* <-- Already uses t() */}
-            </Link>
+              {t('Request_Admin_Tab')} 
+            </Link> */}
             {/* <Link
               href={{ pathname: `/dashboard`, query: { tab: 'profile' } }}
               locale={locale} // Pass locale
@@ -215,7 +223,7 @@ const UserDropdown: FC<Props> = ({
               {t('Profile')} 
             </Link> */}
 
-            <Link
+            {/* <Link
               href={{
                 pathname: `/dashboard`,
                 query: { tab: 'notifications' }
@@ -224,9 +232,8 @@ const UserDropdown: FC<Props> = ({
               className='block px-2 py-2 text-sm  hover:bg-gray-100  dark:hover:bg-gray-700'
               onClick={handleLinkClick} // Use the click handler
             >
-               {/* Label - ALREADY uses t() for translation */}
-              {t('Notifications')} {/* <-- Already uses t() */}
-            </Link>
+              {t('Notifications')}
+            </Link> */}
 
 
             <hr className='my-1 border-gray-200 dark:border-gray-700' />
