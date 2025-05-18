@@ -648,7 +648,7 @@ export default function ConferencesPage() {
           <span className="font-medium">Dates:</span>
           {organization.dates.map((date, index) => (
             <div key={index} className="mt-1">
-              <strong>{date.type}:</strong> {String(parser.fromString(date.startDate))} - {String(parser.fromString(date.endDate))}
+              <strong>{date.type}:</strong> {String(parser.fromString(date.startDate).toLocaleDateString())} {String(parser.fromString(date.startDate).toLocaleTimeString())} - {String(parser.fromString(date.endDate).toLocaleDateString())} {String(parser.fromString(date.endDate).toLocaleTimeString())}
             </div>
           ))}
         </div>
