@@ -137,8 +137,7 @@ export const ConferenceCrawlUploader: React.FC = () => {
             {' '}
             {/* Wrap each section for spacing */}
             <label className='mb-2 block text-sm font-medium text-gray-700'>
-              Select CSV File (Requires columns: Title, Acronym for crawl,
-              requires main, cfp, imp link if update )
+              Select CSV File (Requires columns: Title, Acronym)
             </label>
             <div className='flex items-center space-x-4'>
               <label

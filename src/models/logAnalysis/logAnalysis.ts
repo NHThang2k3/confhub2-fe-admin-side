@@ -1,4 +1,4 @@
-// src/app/models//logAnalysis/logAnalysis.ts
+// src/types/logAnalysis.types.ts
 
 export interface RequestLogData {
     logs: any[];
@@ -74,6 +74,11 @@ export interface ConferenceAnalysisDetail {
     }>;
     finalResultPreview?: any; // Renamed from finalResult for clarity
     finalResult?: any; // The actual final result object from 'processing_finished_successfully'
+     // QUAN TRỌNG: Backend cần cung cấp requestId cho từng conference nếu chúng có thể khác nhau
+    // Nếu không, chúng ta sẽ lấy từ LogAnalysisResult.filterRequestId hoặc analyzedRequestIds[0]
+    // nếu chỉ có một request được phân tích.
+    requestId?: string; // Sẽ được thêm vào ở frontend nếu backend chưa có
+
 }
 
 export interface PlaywrightAnalysis {
@@ -81,7 +86,7 @@ export interface PlaywrightAnalysis {
     // --- Global Playwright Stats ---
     setupAttempts: number; // Number of times global Playwright initialization was attempted
     setupSuccess: boolean | null; // Final status of global Playwright initialization
-    setupError: boolean | null; // True if global init ever failed
+    setupError: string | null; // True if global init ever failed
     contextErrors: number; // Errors getting browser context
     // --- End Global Playwright Stats ---
 
@@ -228,6 +233,9 @@ export interface LogAnalysisResult {
     status?: 'Completed' | 'Failed' | 'Processing';
     errorMessage?: string;
 
+    filterRequestId?: string; // <<< NEW: The specific requestId used for filtering, if any
+    analyzedRequestIds: string[]; // <<< NEW: List of all requestIds included in this analysis output
+    
     totalLogEntries: number;
     parsedLogEntries: number;
     parseErrors: number;

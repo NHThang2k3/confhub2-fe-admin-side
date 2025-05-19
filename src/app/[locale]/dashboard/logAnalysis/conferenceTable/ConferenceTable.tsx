@@ -1,41 +1,46 @@
 // src/app/[locale]/dashboard/logAnalysis/ConferenceTable.tsx
 import React from 'react';
-// --- IMPORT TYPES TỪ HOOK ---
 import {
     ConferenceTableData,
-    SortableColumn, // <-- Import từ hook
-    SortDirection,  // <-- Import từ hook (nếu đã export)
-    RowSaveStatus   // <-- Import từ hook (nếu đã export)
-} from '../../../../../hooks/crawl/useConferenceTableManager'; // Điều chỉnh đường dẫn nếu cần
-import { ConferenceTableHeader } from './ConferenceTableHeader';
-import { ConferenceTableRow } from './ConferenceTableRow';
+    SortableColumn,
+    SortDirection,
+    RowSaveStatus
+} from '../../../../../hooks/crawl/useConferenceTableManager'; // Adjust path
+import { ConferenceTableHeader } from './ConferenceTableHeader'; // Adjust path
+import { ConferenceTableRow } from './ConferenceTableRow'; // Adjust path
 
 interface ConferenceTableProps {
     data: ConferenceTableData[];
-    selectedConferences: Record<string, boolean>;
-    expandedConference: string | null;
-    sortColumn: SortableColumn | null; // <-- Giờ sử dụng kiểu đã import
-    sortDirection: SortDirection;      // <-- Giờ sử dụng kiểu đã import/định nghĩa
-    rowSaveStatus: Record<string, RowSaveStatus>; // <-- Giờ sử dụng kiểu đã import/định nghĩa
+    selectedRows: Record<string, boolean>; // Thay đổi từ selectedConferences
+    expandedRowUniqueId: string | null;    // Thay đổi từ expandedConference
+    sortColumn: SortableColumn | null;
+    sortDirection: SortDirection;
+    rowSaveStatus: Record<string, RowSaveStatus>;
     rowSaveErrors: Record<string, string>;
-    // Callback giờ sẽ tương thích vì dùng cùng type SortableColumn
     onSort: (column: SortableColumn) => void;
-    onToggleExpand: (title: string) => void;
-    onSelectToggle: (title: string) => void;
+    onToggleExpand: (uniqueRowId: string) => void; // Thay đổi tham số
+    onSelectToggle: (uniqueRowId: string) => void; // Thay đổi tham số
+    filterRequestId?: string | null; // Nhận prop mới
+
 }
 
 export const ConferenceTable: React.FC<ConferenceTableProps> = ({
     data,
-    selectedConferences,
-    expandedConference,
+    selectedRows,
+    expandedRowUniqueId,
     sortColumn,
     sortDirection,
     rowSaveStatus,
     rowSaveErrors,
-    onSort, // Hàm onSort này giờ có kiểu đúng
+    onSort,
     onToggleExpand,
     onSelectToggle,
 }) => {
+    // Logic mới để xác định có nên hiển thị cột Request ID không
+    // Hiển thị nếu có ít nhất một dòng dữ liệu và dòng đầu tiên có requestId khác 'N/A'
+    // HOẶC (tùy chọn) nếu có filterRequestId được set
+    const shouldShowRequestIdColumn = data.length > 0 && data[0]?.requestId !== 'N/A';
+
     return (
         <div className="bg-white shadow-lg rounded-lg overflow-x-auto border border-gray-200">
             <table className="min-w-full divide-y divide-gray-200">
@@ -43,24 +48,35 @@ export const ConferenceTable: React.FC<ConferenceTableProps> = ({
                     sortColumn={sortColumn}
                     sortDirection={sortDirection}
                     onSort={onSort}
+                    // Thêm một prop để biết có đang filter theo requestId không, để ẩn/hiện cột requestId
+                    // Sử dụng logic mới
+                    isFilteredByRequest={shouldShowRequestIdColumn}
                 />
                 <tbody className="bg-white divide-y divide-gray-200">
                     {data.map((confData) => {
-                        const title = confData.title;
+                        // Sử dụng uniqueRowId làm key và để xác định trạng thái
+                        const uniqueId = confData.uniqueRowId;
                         return (
                             <ConferenceTableRow
-                                key={title}
+                                key={uniqueId} // Quan trọng: sử dụng uniqueId làm key
                                 confData={confData}
-                                isSelected={!!selectedConferences[title]}
-                                isExpanded={expandedConference === title}
-                                onSelectToggle={onSelectToggle}
-                                onToggleExpand={onToggleExpand}
-                                // Pass the specific status and error for this row
-                                saveStatus={rowSaveStatus[title] || 'idle'} // Default to 'idle' if not found
-                                saveError={rowSaveErrors[title]}
+                                isSelected={!!selectedRows[uniqueId]}
+                                isExpanded={expandedRowUniqueId === uniqueId}
+                                onSelectToggle={onSelectToggle} // Truyền uniqueId
+                                onToggleExpand={onToggleExpand} // Truyền uniqueId
+                                saveStatus={rowSaveStatus[uniqueId] || 'idle'}
+                                saveError={rowSaveErrors[uniqueId]}
+
                             />
                         );
                     })}
+                    {data.length === 0 && (
+                        <tr>
+                            <td colSpan={14} className="px-6 py-12 text-center text-gray-500"> {/* Điều chỉnh colSpan */}
+                                No conference data matches the current filters.
+                            </td>
+                        </tr>
+                    )}
                 </tbody>
             </table>
         </div>

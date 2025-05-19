@@ -5,16 +5,16 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 
 export const fetchLogAnalysisData = async (
     filterStartTime?: number, // Milliseconds
-    filterEndTime?: number   // Milliseconds
+    filterEndTime?: number,   // Milliseconds
+    requestId?: string // <<< NEW
+
 ): Promise<LogAnalysisResult> => {
     // Xây dựng URL với các tham số query nếu chúng tồn tại
     const url = new URL(`${API_BASE_URL}/api/v1/logs/analysis/latest`);
-    if (filterStartTime !== undefined) {
-        url.searchParams.append('filterStartTime', filterStartTime.toString());
-    }
-    if (filterEndTime !== undefined) {
-        url.searchParams.append('filterEndTime', filterEndTime.toString());
-    }
+    if (filterStartTime !== undefined) { url.searchParams.append('filterStartTime', filterStartTime.toString()); }
+    if (filterEndTime !== undefined) { url.searchParams.append('filterEndTime', filterEndTime.toString()); }
+    if (requestId !== undefined) url.searchParams.append('requestId', requestId); // <<< NEW
+
 
     console.log(`Fetching log analysis data from: ${url.toString()}`); // Log URL để debug
 
@@ -23,9 +23,9 @@ export const fetchLogAnalysisData = async (
     if (!response.ok) {
         let errorData;
         try {
-             errorData = await response.json();
+            errorData = await response.json();
         } catch (e) {
-             errorData = { message: 'Failed to fetch log analysis data and parse error response.' };
+            errorData = { message: 'Failed to fetch log analysis data and parse error response.' };
         }
         // Sử dụng message từ backend nếu có, nếu không thì dùng status code
         throw new Error(errorData?.message || `HTTP error! status: ${response.status}`);
