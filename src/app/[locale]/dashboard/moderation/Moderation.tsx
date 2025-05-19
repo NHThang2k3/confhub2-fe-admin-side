@@ -360,14 +360,14 @@ const Moderation: React.FC = () => {
 
 
     return (
-        <div className='min-h-screen w-full px-4 bg-gray-100 font-sans'>
-            <h1 className='mb-8 text-center text-3xl font-bold p-4 text-gray-800'>
+        <div className='min-h-screen w-full px-4 bg-gray-10 font-sans'>
+            <h1 className='mb-8 text-center text-3xl font-bold p-4 '>
                 {/* Translate page title */}
                 {t('ModerationPage_Title')} {/* <-- Translated */}
             </h1>
 
-            <div className='mx-auto w-full rounded-lg bg-white p-4 shadow-md'>
-                <h2 className='mb-4 text-2xl font-semibold text-gray-700'>
+            <div className='mx-auto w-full rounded-lg bg-white-pure p-4 shadow-md'>
+                <h2 className='mb-4 text-2xl font-semibold '>
                      {/* Translate section title */}
                     {t('ModerationPage_ListSectionTitle')} {/* <-- Translated */}
                 </h2>
@@ -423,14 +423,14 @@ const Moderation: React.FC = () => {
                 )}
                 {/* Message for no results after loading and filtering/searching */}
                  {!loading && !error && processedConferences.length === 0 && conferences.length > 0 && searchTerm && (
-                     <p className='py-8 text-center text-gray-500'>
+                     <p className='py-8 text-center '>
                         {/* Translate no results message */}
                         {t('ModerationPage_NoResultsSearch')} {/* <-- Translated */}
                      </p>
                  )}
                  {/* Message if no data was fetched at all */}
                  {!loading && !error && processedConferences.length === 0 && conferences.length === 0 && !searchTerm && (
-                     <p className='py-8 text-center text-gray-500'>
+                     <p className='py-8 text-center '>
                         {/* Translate no requests message */}
                         {t('ModerationPage_NoRequestsFound')} {/* <-- Translated */}
                      </p>

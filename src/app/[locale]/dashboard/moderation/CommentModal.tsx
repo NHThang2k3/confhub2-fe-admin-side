@@ -64,17 +64,17 @@ const CommentModal: React.FC<CommentModalProps> = ({
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
-            <div className="relative w-full max-w-md rounded-lg bg-white p-6 shadow-xl">
-                <h3 className="mb-4 text-lg font-semibold text-gray-800">
+            <div className="relative w-full max-w-md rounded-lg bg-white-pure p-6 shadow-xl">
+                <h3 className="mb-4 text-lg font-semibold ">
                    {modalTitle} {/* Use translated dynamic title */}
                 </h3>
                 {/* Show prompt text if determined */}
-                 {promptText && <p className="mb-4 text-gray-700">{promptText}</p>} {/* <-- Use translated prompt */}
+                 {promptText && <p className="mb-4 ">{promptText}</p>} {/* <-- Use translated prompt */}
 
                 <textarea
                     value={comment}
                     onChange={(e) => setComment(e.target.value)}
-                    className={`w-full rounded border p-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 ${commentError ? 'border-red-500' : 'border-gray-300'}`}
+                    className={`w-full rounded border p-2  focus:outline-none focus:ring-2 focus:ring-blue-500 ${commentError ? 'border-red-500' : 'border-gray-30'}`}
                     rows={4}
                     placeholder={commentPlaceholder} // Use translated dynamic placeholder
                 ></textarea>
@@ -83,7 +83,7 @@ const CommentModal: React.FC<CommentModalProps> = ({
                 <div className="mt-6 flex justify-end gap-3">
                     <button
                         onClick={onCancel}
-                        className="rounded bg-gray-300 px-4 py-2 text-sm text-gray-800 hover:bg-gray-400"
+                        className="rounded bg-gray-30 px-4 py-2 text-sm  hover:bg-gray-40"
                     >
                         {/* Translate Cancel button */}
                         {t('Button_Cancel')} {/* <-- Translated */}

@@ -15,7 +15,7 @@ const DateRangeInput = forwardRef<HTMLInputElement, DateRangeInputProps>(
 ({ value, onClick, placeholder }, ref) => (
   <input
     type="text"
-    className="rounded border border-gray-300 px-3 py-1 text-gray-700 text-sm w-48 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
+    className="rounded border border-gray-30 px-3 py-1  text-sm w-48 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
     value={value}
     onClick={onClick}
     ref={ref}

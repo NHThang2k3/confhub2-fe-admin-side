@@ -90,12 +90,12 @@ const ModerationControls: React.FC<ModerationControlsProps> = ({
             {/* Filter Control */}
             <div className="flex items-center shrink-0">
                 {/* Translate label */}
-                <label htmlFor="statusFilter" className="mr-2 text-gray-700 text-sm">{t('FilterByStatus_Label')}:</label> {/* <-- Translated */}
+                <label htmlFor="statusFilter" className="mr-2  text-sm">{t('FilterByStatus_Label')}:</label> {/* <-- Translated */}
                 <select
                     id="statusFilter"
                     value={filterStatus}
                     onChange={(e) => setFilterStatus(e.target.value as ConferenceStatus | 'all')}
-                    className="rounded border border-gray-300 px-3 py-1 text-gray-700 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="rounded border border-gray-30 px-3 py-1  text-sm disabled:opacity-50 disabled:cursor-not-allowed"
                     disabled={isLoading}
                 >
                      {/* Translate options with counts */}
@@ -109,7 +109,7 @@ const ModerationControls: React.FC<ModerationControlsProps> = ({
             {/* Search Control - Searching by Title */}
             <div className="flex items-center flex-grow">
                 {/* Translate label */}
-                <label htmlFor="conferenceSearch" className="mr-2 text-gray-700 text-sm shrink-0">{t('SearchByTitle_Label')}:</label> {/* <-- Translated */}
+                <label htmlFor="conferenceSearch" className="mr-2  text-sm shrink-0">{t('SearchByTitle_Label')}:</label> {/* <-- Translated */}
                 <input
                     id="conferenceSearch"
                     type="text"
@@ -117,7 +117,7 @@ const ModerationControls: React.FC<ModerationControlsProps> = ({
                     onChange={(e) => setSearchTerm(e.target.value)}
                     // Translate placeholder
                     placeholder={t('SearchByTitle_Placeholder')} 
-                    className="w-full rounded border border-gray-300 px-3 py-1 text-gray-700 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full rounded border border-gray-30 px-3 py-1  text-sm disabled:opacity-50 disabled:cursor-not-allowed"
                     disabled={isLoading}
                 />
             </div>
@@ -125,7 +125,7 @@ const ModerationControls: React.FC<ModerationControlsProps> = ({
             {/* Date Filter Control */}
             <div className="flex items-center gap-2 shrink-0">
                 {/* Translate label */}
-                <label className="text-gray-700 text-sm shrink-0">{t('AddedDateRange_Label')}:</label> {/* <-- Translated */}
+                <label className=" text-sm shrink-0">{t('AddedDateRange_Label')}:</label> {/* <-- Translated */}
                 <DatePicker
                     selected={filterStartDate}
                     onChange={(dates: [Date | null, Date | null]) => {
@@ -156,11 +156,11 @@ const ModerationControls: React.FC<ModerationControlsProps> = ({
             {/* Sort Controls */}
             <div className="flex items-center gap-2 shrink-0 flex-wrap">
                 {/* Translate label */}
-                <label className="text-gray-700 text-sm shrink-0">{t('SortBy_Label')}:</label> {/* <-- Translated */}
+                <label className=" text-sm shrink-0">{t('SortBy_Label')}:</label> {/* <-- Translated */}
                 <button
                     onClick={handleSortByName}
                     className={`rounded px-3 py-1 text-sm transition duration-150 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed
-                        ${sortKey === 'title' ? 'bg-blue-500 text-white hover:bg-blue-600' : 'bg-gray-200 text-gray-800 hover:bg-gray-300'}
+                        ${sortKey === 'title' ? 'bg-blue-500 text-white hover:bg-blue-600' : 'bg-gray-20  hover:bg-gray-30'}
                     `}
                     disabled={isLoading}
                 >
@@ -171,7 +171,7 @@ const ModerationControls: React.FC<ModerationControlsProps> = ({
                 <button
                     onClick={handleSortByCreationDate}
                     className={`rounded px-3 py-1 text-sm transition duration-150 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed
-                        ${sortKey === 'createdAt' ? 'bg-blue-500 text-white hover:bg-blue-600' : 'bg-gray-200 text-gray-800 hover:bg-gray-300'}
+                        ${sortKey === 'createdAt' ? 'bg-blue-500 text-white hover:bg-blue-600' : 'bg-gray-20  hover:bg-gray-30'}
                     `}
                     disabled={isLoading}
                 >
@@ -182,7 +182,7 @@ const ModerationControls: React.FC<ModerationControlsProps> = ({
                  <button
                     onClick={handleSortByUpdateDate}
                     className={`rounded px-3 py-1 text-sm transition duration-150 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed
-                        ${sortKey === 'updatedAt' ? 'bg-blue-500 text-white hover:bg-blue-600' : 'bg-gray-200 text-gray-800 hover:bg-gray-300'}
+                        ${sortKey === 'updatedAt' ? 'bg-blue-500 text-white hover:bg-blue-600' : 'bg-gray-20  hover:bg-gray-30'}
                     `}
                     disabled={isLoading}
                 >

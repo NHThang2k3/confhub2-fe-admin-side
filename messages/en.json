@@ -195,5 +195,69 @@
   "Conferences": "Conferences",
   "Show password": "Show password",
   "Hide password": "Hide password",
-  "Login": "Login"
+  "Login": "Login",
+  "common": {
+    "loading": "Loading...",
+    "close": "✕",
+    "ellipsis": "..."
+  },
+  "pagination": {
+    "perPage": "{count} per page",
+    "tenPerPage": "10 per page",
+    "twentyPerPage": "20 per page",
+    "fiftyPerPage": "50 per page",
+    "hundredPerPage": "100 per page",
+    "pageInfo": "Page {currentPage} of {totalPages}",
+    "first": "First",
+    "previous": "Previous",
+    "next": "Next",
+    "last": "Last"
+  },
+  "filters": {
+    "title": "Filters",
+    "reset": "Reset Filters",
+    "searchLabel": "Search",
+    "searchPlaceholder": "Search by title or acronym...",
+    "statusLabel": "Status",
+    "allStatuses": "All Statuses",
+    "sourcesLabel": "Sources",
+    "allSources": "All Sources",
+    "researchFieldsLabel": "Research Fields",
+    "allResearchFields": "All Research Fields",
+    "rankLabel": "Rank",
+    "allRanks": "All Ranks",
+    "errorFetchingOptions": "Error fetching filter options:",
+    "errorFetchingRanksForSource": "Error fetching ranks for source:"
+  },
+  "conferencesPage": {
+    "pageTitle": "Conferences Management",
+    "columnHeaders": {
+      "title": "Title",
+      "acronym": "Acronym",
+      "sources": "Sources",
+      "researchFields": "Research Fields",
+      "ranks": "Ranks",
+      "status": "Status",
+      "actions": "Actions"
+    },
+    "viewHistoryButton": "View History",
+    "modal": {
+      "historyTitle": "Conference History - {conferenceTitle}",
+      "organizationDetails": {
+        "yearHeader": "Year {year}",
+        "accessType": "Access Type:",
+        "publisher": "Publisher:",
+        "summary": "Summary:",
+        "callForPaper": "Call for Papers:",
+        "links": "Links:",
+        "mainLink": "Main Link",
+        "cfpLink": "CFP Link",
+        "importantLink": "Important Link",
+        "locations": "Locations:",
+        "topics": "Topics:",
+        "dates": "Dates:"
+      }
+    },
+    "errorFetchingConferences": "Error fetching conferences:"
+  }
 }
