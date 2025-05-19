@@ -3,15 +3,17 @@
 import { useEffect, useState, useMemo, useCallback } from 'react';
 import { AgGridReact } from 'ag-grid-react';
 import parser from 'any-date-parser';
-import { 
-  AllCommunityModule, 
-  ColDef, 
-  GridReadyEvent, 
-  ICellRendererParams, 
-  ModuleRegistry, 
+import {
+  AllCommunityModule,
+  ColDef,
+  GridReadyEvent,
+  ICellRendererParams,
+  ModuleRegistry,
   RowSelectionModule,
 } from 'ag-grid-community';
 import axios from 'axios';
+import { useTranslations } from 'next-intl'; // Đã có sẵn
+
 
 interface Conference {
   id: string;
@@ -89,23 +91,26 @@ ModuleRegistry.registerModules([AllCommunityModule, RowSelectionModule]);
 
 const TagRenderer = ({ value, color }: { value: string; color: string }) => (
   <span className={`px-2 py-1 rounded text-sm ${color}`}>
-    {value}
+    {value} {/* Giá trị này từ data, không phải từ file json */}
   </span>
 );
 
-const PaginationControls = ({ 
-  currentPage, 
-  totalPages, 
-  onPageChange, 
-  pageSize, 
-  onPageSizeChange 
-}: { 
-  currentPage: number; 
-  totalPages: number; 
+const PaginationControls = ({
+  currentPage,
+  totalPages,
+  onPageChange,
+  pageSize,
+  onPageSizeChange
+}: {
+  currentPage: number;
+  totalPages: number;
   onPageChange: (page: number) => void;
   pageSize: number;
   onPageSizeChange: (size: number) => void;
 }) => {
+  const t = useTranslations('pagination'); // Sử dụng namespace 'pagination'
+  const tCommon = useTranslations('common'); // Namespace 'common' cho ellipsis
+
   const pageNumbers = [];
   const maxVisiblePages = 5;
   let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
@@ -127,13 +132,13 @@ const PaginationControls = ({
           onChange={(e) => onPageSizeChange(Number(e.target.value))}
           className="border rounded px-2 py-1"
         >
-          <option value={10}>10 per page</option>
-          <option value={20}>20 per page</option>
-          <option value={50}>50 per page</option>
-          <option value={100}>100 per page</option>
+          <option value={10}>{t('tenPerPage')}</option>
+          <option value={20}>{t('twentyPerPage')}</option>
+          <option value={50}>{t('fiftyPerPage')}</option>
+          <option value={100}>{t('hundredPerPage')}</option>
         </select>
-        <span className="text-sm text-gray-600">
-          Page {currentPage} of {totalPages}
+        <span className="text-sm ">
+          {t('pageInfo', { currentPage, totalPages })}
         </span>
       </div>
       <div className="flex items-center gap-2">
@@ -142,14 +147,14 @@ const PaginationControls = ({
           disabled={currentPage === 1}
           className="px-3 py-1 border rounded disabled:opacity-50"
         >
-          First
+          {t('first')}
         </button>
         <button
           onClick={() => onPageChange(currentPage - 1)}
           disabled={currentPage === 1}
           className="px-3 py-1 border rounded disabled:opacity-50"
         >
-          Previous
+          {t('previous')}
         </button>
         {startPage > 1 && (
           <>
@@ -159,23 +164,22 @@ const PaginationControls = ({
             >
               1
             </button>
-            {startPage > 2 && <span>...</span>}
+            {startPage > 2 && <span>{tCommon('ellipsis')}</span>}
           </>
         )}
         {pageNumbers.map((page) => (
           <button
             key={page}
             onClick={() => onPageChange(page)}
-            className={`px-3 py-1 border rounded ${
-              currentPage === page ? 'bg-blue-500 text-white' : ''
-            }`}
+            className={`px-3 py-1 border rounded ${currentPage === page ? 'bg-blue-500 text-white' : ''
+              }`}
           >
             {page}
           </button>
         ))}
         {endPage < totalPages && (
           <>
-            {endPage < totalPages - 1 && <span>...</span>}
+            {endPage < totalPages - 1 && <span>{tCommon('ellipsis')}</span>}
             <button
               onClick={() => onPageChange(totalPages)}
               className="px-3 py-1 border rounded"
@@ -189,29 +193,32 @@ const PaginationControls = ({
           disabled={currentPage === totalPages}
           className="px-3 py-1 border rounded disabled:opacity-50"
         >
-          Next
+          {t('next')}
         </button>
         <button
           onClick={() => onPageChange(totalPages)}
           disabled={currentPage === totalPages}
           className="px-3 py-1 border rounded disabled:opacity-50"
         >
-          Last
+          {t('last')}
         </button>
       </div>
     </div>
   );
 };
 
-const FilterSection = ({ 
-  filters, 
-  onFilterChange, 
-  onReset 
-}: { 
+const FilterSection = ({
+  filters,
+  onFilterChange,
+  onReset
+}: {
   filters: FilterState;
   onFilterChange: (key: keyof FilterState, value: any) => void;
   onReset: () => void;
 }) => {
+  const t = useTranslations('filters'); // Sử dụng namespace 'filters'
+  const tCommon = useTranslations('common');
+
   const [filterOptions, setFilterOptions] = useState<FilterOptions>({
     status: [],
     sources: [],
@@ -237,36 +244,35 @@ const FilterSection = ({
           ranks: ranksRes.data
         });
       } catch (error) {
-        console.error('Error fetching filter options:', error);
+        console.error(t('errorFetchingOptions'), error); // Sử dụng key từ json
       } finally {
         setLoading(false);
       }
     };
 
     fetchFilterOptions();
-  }, []);
+  }, [t]); // Thêm t vào dependencies của useEffect nếu nó thay đổi (ít khả năng)
 
   const handleSourceChange = async (source: string) => {
-    // If source is selected, fetch its specific ranks
     try {
       const response = await axios.get(
         `${DATA_API_URL}/api/v1/admin/conferences/filter-options/ranks/${source}`
       );
       const sourceRanks = response.data;
-      
-      // Update rank filter with the new source's ranks
       const currentRank = filters.rank ? filters.rank.split(',').filter(Boolean) : [];
       const newRanks = [...new Set([...currentRank, ...sourceRanks])];
       onFilterChange('rank', newRanks.join(','));
     } catch (error) {
-      console.error('Error fetching ranks for source:', error);
+      console.error(t('errorFetchingRanksForSource'), error); // Sử dụng key từ json
     }
   };
 
   if (loading) {
     return (
-      <div className="mb-4 p-4 bg-white rounded-lg shadow-sm">
+      <div className="mb-4 p-4 bg-white-pure rounded-lg shadow-sm">
         <div className="flex items-center justify-center">
+          {/* Có thể thêm text loading ở đây nếu muốn */}
+          {/* <span>{tCommon('loading')}</span> */}
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
         </div>
       </div>
@@ -274,49 +280,49 @@ const FilterSection = ({
   }
 
   return (
-    <div className="mb-4 p-4 bg-white rounded-lg shadow-sm">
+    <div className="mb-4 p-4 bg-white-pure rounded-lg shadow-sm">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-semibold">Filters</h2>
+        <h2 className="text-lg font-semibold">{t('title')}</h2>
         <button
           onClick={onReset}
-          className="px-3 py-1 text-sm text-gray-600 hover:text-gray-800"
+          className="px-3 py-1 text-sm  "
         >
-          Reset Filters
+          {t('reset')}
         </button>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Search
+          <label className="block text-sm font-medium  mb-1">
+            {t('searchLabel')}
           </label>
           <input
             type="text"
             value={filters.search}
             onChange={(e) => onFilterChange('search', e.target.value)}
-            placeholder="Search by title or acronym..."
+            placeholder={t('searchPlaceholder')}
             className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Status
+          <label className="block text-sm font-medium  mb-1">
+            {t('statusLabel')}
           </label>
           <select
             value={filters.status}
             onChange={(e) => onFilterChange('status', e.target.value)}
             className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
-            <option value="">All Statuses</option>
+            <option value="">{t('allStatuses')}</option>
             {filterOptions.status.map((status) => (
               <option key={status} value={status}>
-                {status}
+                {status} {/* Giá trị này từ data, không phải từ file json */}
               </option>
             ))}
           </select>
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Sources
+          <label className="block text-sm font-medium  mb-1">
+            {t('sourcesLabel')}
           </label>
           <select
             value={filters.source}
@@ -328,44 +334,44 @@ const FilterSection = ({
             }}
             className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
-            <option value="">All Sources</option>
+            <option value="">{t('allSources')}</option>
             {filterOptions.sources.map((source) => (
               <option key={source} value={source}>
-                {source}
+                {source} {/* Giá trị này từ data, không phải từ file json */}
               </option>
             ))}
           </select>
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Research Fields
+          <label className="block text-sm font-medium  mb-1">
+            {t('researchFieldsLabel')}
           </label>
           <select
             value={filters.researchFields}
             onChange={(e) => onFilterChange('researchFields', e.target.value)}
             className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
-            <option value="">All Research Fields</option>
+            <option value="">{t('allResearchFields')}</option>
             {filterOptions.researchFields.map((field) => (
               <option key={field} value={field}>
-                {field}
+                {field} {/* Giá trị này từ data, không phải từ file json */}
               </option>
             ))}
           </select>
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Rank
+          <label className="block text-sm font-medium  mb-1">
+            {t('rankLabel')}
           </label>
           <select
             value={filters.rank}
             onChange={(e) => onFilterChange('rank', e.target.value)}
             className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
-            <option value="">All Ranks</option>
+            <option value="">{t('allRanks')}</option>
             {filterOptions.ranks.map((rank) => (
               <option key={rank} value={rank}>
-                {rank}
+                {rank} {/* Giá trị này từ data, không phải từ file json */}
               </option>
             ))}
           </select>
@@ -376,6 +382,9 @@ const FilterSection = ({
 };
 
 export default function ConferencesPage() {
+  const t = useTranslations('conferencesPage'); // Namespace 'conferencesPage'
+  const tCommon = useTranslations('common'); // Namespace 'common'
+
   const [rowData, setRowData] = useState<Conference[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedConference, setSelectedConference] = useState<Conference | null>(null);
@@ -395,103 +404,103 @@ export default function ConferencesPage() {
   });
 
   const columnDefs: ColDef[] = useMemo(() => [
-    { 
-      field: 'title', 
-      headerName: 'Title',
+    {
+      field: 'title',
+      headerName: t('columnHeaders.title'), // Sử dụng key từ json
       flex: 2,
       filter: 'agTextColumnFilter',
       minWidth: 200,
     },
-    { 
-      field: 'acronym', 
-      headerName: 'Acronym',
+    {
+      field: 'acronym',
+      headerName: t('columnHeaders.acronym'), // Sử dụng key từ json
       flex: 1,
       filter: 'agTextColumnFilter',
       minWidth: 120,
     },
-    { 
-      field: 'sources', 
-      headerName: 'Sources',
+    {
+      field: 'sources',
+      headerName: t('columnHeaders.sources'), // Sử dụng key từ json
       flex: 1,
       minWidth: 150,
       cellRenderer: (params: ICellRendererParams) => (
         <div className="flex flex-wrap gap-1">
           {params.value?.map((source: string) => (
-            <TagRenderer 
-              key={source} 
-              value={source} 
-              color="bg-blue-100 text-blue-800" 
+            <TagRenderer
+              key={source}
+              value={source}
+              color="bg-blue-100 text-blue-800"
             />
           ))}
         </div>
       ),
     },
-    { 
-      field: 'researchFields', 
-      headerName: 'Research Fields',
+    {
+      field: 'researchFields',
+      headerName: t('columnHeaders.researchFields'), // Sử dụng key từ json
       flex: 1,
       minWidth: 150,
       cellRenderer: (params: ICellRendererParams) => (
         <div className="flex flex-wrap gap-1">
           {params.value?.map((field: string) => (
-            <TagRenderer 
-              key={field} 
-              value={field} 
-              color="bg-green-100 text-green-800" 
+            <TagRenderer
+              key={field}
+              value={field}
+              color="bg-green-100 text-green-800"
             />
           ))}
         </div>
       ),
     },
-    { 
-      field: 'ranks', 
-      headerName: 'Ranks',
+    {
+      field: 'ranks',
+      headerName: t('columnHeaders.ranks'), // Sử dụng key từ json
       flex: 1,
       minWidth: 120,
       cellRenderer: (params: ICellRendererParams) => (
         <div className="flex flex-wrap gap-1">
           {params.value?.map((rank: string) => (
-            <TagRenderer 
-              key={rank} 
-              value={rank} 
-              color="bg-purple-100 text-purple-800" 
+            <TagRenderer
+              key={rank}
+              value={rank}
+              color="bg-purple-100 text-purple-800"
             />
           ))}
         </div>
       ),
     },
-    { 
-      field: 'status', 
-      headerName: 'Status',
+    {
+      field: 'status',
+      headerName: t('columnHeaders.status'), // Sử dụng key từ json
       flex: 1,
       minWidth: 120,
       cellRenderer: (params: ICellRendererParams) => (
-        <TagRenderer 
-          value={params.value} 
-          color={params.value === 'PUBLISHED' 
-            ? 'bg-green-100 text-green-800' 
+        <TagRenderer
+          value={params.value} // Giá trị này từ data
+          color={params.value === 'PUBLISHED'
+            ? 'bg-green-100 text-green-800'
             : 'bg-yellow-100 text-yellow-800'
-          } 
+          }
         />
       ),
     },
     {
-      headerName: 'Actions',
+      headerName: t('columnHeaders.actions'), // Sử dụng key từ json
       flex: 1,
       minWidth: 120,
       cellRenderer: (params: ICellRendererParams) => (
-        <button 
+        <button
           className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
           onClick={() => {
             setSelectedConference(params.data);
             setIsModalVisible(true);
           }}
         >
-          View History
+          {t('viewHistoryButton')} {/* Sử dụng key từ json */}
         </button>
       ),
     },
-  ], []);
+  ], [t]); // Thêm t vào dependencies
 
   const defaultColDef = useMemo(() => ({
     sortable: true,
@@ -503,34 +512,18 @@ export default function ConferencesPage() {
   const fetchConferences = useCallback(async () => {
     try {
       setLoading(true);
-      
-      // Create params object with only non-empty values
       const params: Record<string, any> = {
         page: pagination.page,
         perPage: pagination.pageSize,
       };
-
-      // Only add filters if they have values
-      if (filters.search) {
-        params.search = filters.search;
-      }
-      if (filters.status) {
-        params.status = filters.status;
-      }
-      if (filters.source) {
-        params.source = filters.source;
-      }
-      if (filters.researchFields) {
-        params.researchFields = filters.researchFields;
-      }
-      if (filters.rank) {
-        params.rank = filters.rank;
-      }
+      if (filters.search) params.search = filters.search;
+      if (filters.status) params.status = filters.status;
+      if (filters.source) params.source = filters.source;
+      if (filters.researchFields) params.researchFields = filters.researchFields;
+      if (filters.rank) params.rank = filters.rank;
 
       const response = await axios.get<PaginationResponse>(
-        `${DATA_API_URL}/api/v1/admin/conferences/get`, {
-          params
-        }
+        `${DATA_API_URL}/api/v1/admin/conferences/get`, { params }
       );
       setRowData(response.data.data);
       setPagination(prev => ({
@@ -539,11 +532,11 @@ export default function ConferencesPage() {
         lastPage: response.data.meta.lastPage
       }));
     } catch (error) {
-      console.error('Error fetching conferences:', error);
+      console.error(t('errorFetchingConferences'), error); // Sử dụng key từ json
     } finally {
       setLoading(false);
     }
-  }, [pagination.page, pagination.pageSize, filters]);
+  }, [pagination.page, pagination.pageSize, filters, t]); // Thêm t
 
   useEffect(() => {
     fetchConferences();
@@ -554,80 +547,60 @@ export default function ConferencesPage() {
   }, []);
 
   const handlePageChange = useCallback((newPage: number) => {
-    setPagination(prev => ({
-      ...prev,
-      page: newPage
-    }));
+    setPagination(prev => ({ ...prev, page: newPage }));
   }, []);
 
   const handlePageSizeChange = useCallback((newPageSize: number) => {
-    setPagination(prev => ({
-      ...prev,
-      page: 1,
-      pageSize: newPageSize
-    }));
+    setPagination(prev => ({ ...prev, page: 1, pageSize: newPageSize }));
   }, []);
 
   const handleFilterChange = useCallback((key: keyof FilterState, value: any) => {
-    setFilters(prev => ({
-      ...prev,
-      [key]: value
-    }));
-    setPagination(prev => ({
-      ...prev,
-      page: 1 // Reset to first page when filter changes
-    }));
+    setFilters(prev => ({ ...prev, [key]: value }));
+    setPagination(prev => ({ ...prev, page: 1 }));
   }, []);
 
   const handleResetFilters = useCallback(() => {
-    setFilters({
-      search: '',
-      status: '',
-      source: '',
-      researchFields: '',
-      rank: ''
-    });
-    setPagination(prev => ({
-      ...prev,
-      page: 1
-    }));
+    setFilters({ search: '', status: '', source: '', researchFields: '', rank: '' });
+    setPagination(prev => ({ ...prev, page: 1 }));
   }, []);
 
   const renderOrganizationHistory = useCallback((organization: Organization) => (
-    <div key={organization.id} className="mb-4 p-4 border rounded-lg bg-white shadow-sm">
-      <h3 className="text-lg font-semibold mb-3">Year {organization.year}</h3>
+    <div key={organization.id} className="mb-4 p-4 border rounded-lg bg-white-pure shadow-sm">
+      <h3 className="text-lg font-semibold mb-3">
+        {t('modal.organizationDetails.yearHeader', { year: organization.year })}
+      </h3>
       <div className="grid grid-cols-1 gap-4">
         <div>
-          <span className="font-medium">Access Type:</span> {organization.accessType}
+          <span className="font-medium">{t('modal.organizationDetails.accessType')}</span> {organization.accessType}
         </div>
         <div>
-          <span className="font-medium">Publisher:</span> {organization.publisher}
+          <span className="font-medium">{t('modal.organizationDetails.publisher')}</span> {organization.publisher}
         </div>
         <div>
-          <span className="font-medium">Summary:</span> {organization.summerize}
+          <span className="font-medium">{t('modal.organizationDetails.summary')}</span> {organization.summerize}
         </div>
         <div>
-          <span className="font-medium">Call for Papers:</span> {organization.callForPaper}
+          <span className="font-medium">{t('modal.organizationDetails.callForPaper')}</span> {organization.callForPaper}
         </div>
         <div>
-          <span className="font-medium">Links:</span>
+          <span className="font-medium">{t('modal.organizationDetails.links')}</span>
           <div className="flex flex-col gap-1 mt-1">
             {organization.link && (
-              <a href={organization.link} target="_blank" rel="noopener noreferrer" 
-                 className="text-blue-500 hover:underline">Main Link</a>
+              <a href={organization.link} target="_blank" rel="noopener noreferrer"
+                className="text-blue-500 hover:underline">{t('modal.organizationDetails.mainLink')}</a>
             )}
             {organization.cfpLink && (
               <a href={organization.cfpLink} target="_blank" rel="noopener noreferrer"
-                 className="text-blue-500 hover:underline">CFP Link</a>
+                className="text-blue-500 hover:underline">{t('modal.organizationDetails.cfpLink')}</a>
             )}
             {organization.impLink && (
               <a href={organization.impLink} target="_blank" rel="noopener noreferrer"
-                 className="text-blue-500 hover:underline">Important Link</a>
+                className="text-blue-500 hover:underline">{t('modal.organizationDetails.importantLink')}</a>
             )}
           </div>
         </div>
         <div>
-          <span className="font-medium">Locations:</span>
+          <span className="font-medium">{t('modal.organizationDetails.locations')}</span>
           {organization.locations.map((location, index) => (
             <div key={index} className="mt-1">
               {location.address}, {location.cityStateProvince}, {location.country}, {location.continent}
@@ -635,17 +608,17 @@ export default function ConferencesPage() {
           ))}
         </div>
         <div>
-          <span className="font-medium">Topics:</span>
+          <span className="font-medium">{t('modal.organizationDetails.topics')}</span>
           <div className="flex flex-wrap gap-1 mt-1">
             {organization.topics.map((topic, index) => (
-              <span key={index} className="px-2 py-1 bg-gray-100 rounded text-sm">
-                {topic}
+              <span key={index} className="px-2 py-1 bg-gray-10 rounded text-sm">
+                {topic} {/* Data */}
               </span>
             ))}
           </div>
         </div>
         <div>
-          <span className="font-medium">Dates:</span>
+          <span className="font-medium">{t('modal.organizationDetails.dates')}</span>
           {organization.dates.map((date, index) => (
             <div key={index} className="mt-1">
               <strong>{date.type}:</strong> {String(parser.fromString(date.startDate))} - {String(parser.fromString(date.endDate))}
@@ -654,12 +627,12 @@ export default function ConferencesPage() {
         </div>
       </div>
     </div>
-  ), []);
+  ), [t]); // Thêm t vào dependencies
 
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-bold mb-6">Conferences Management</h1>
-      
+      <h1 className="text-2xl font-bold mb-6">{t('pageTitle')}</h1>
+
       <FilterSection
         filters={filters}
         onFilterChange={handleFilterChange}
@@ -668,12 +641,12 @@ export default function ConferencesPage() {
 
       <div className="w-full h-[600px]">
         <AgGridReact
-          className='ag-theme-alpine'
+          className='ag-theme-alpine '
           rowData={rowData}
           columnDefs={columnDefs}
           defaultColDef={defaultColDef}
           onGridReady={onGridReady}
-          loading={loading}
+          loading={loading} // AG Grid có `loadingOverlayComponent` riêng nếu bạn muốn tùy chỉnh sâu hơn
           rowModelType="clientSide"
           getRowId={(params) => params.data.id}
           rowSelection="single"
@@ -681,6 +654,11 @@ export default function ConferencesPage() {
           suppressPaginationPanel={true}
         />
       </div>
+
+      {loading && ( /* Hiển thị loading text chung nếu muốn */
+          <div className="text-center py-4">{tCommon('loading')}</div>
+      )}
+
 
       <PaginationControls
         currentPage={pagination.page}
@@ -692,14 +670,16 @@ export default function ConferencesPage() {
 
       {isModalVisible && selectedConference && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-center mb-4 sticky top-0 bg-white pb-4">
-              <h2 className="text-xl font-bold">Conference History - {selectedConference.title}</h2>
-              <button 
+          <div className="bg-white-pure rounded-lg p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-4 sticky top-0 bg-white-pure pb-4">
+              <h2 className="text-xl font-bold">
+                {t('modal.historyTitle', { conferenceTitle: selectedConference.title })}
+              </h2>
+              <button
                 onClick={() => setIsModalVisible(false)}
-                className="text-gray-500 hover:text-gray-700 p-2"
+                className=" p-2"
               >
-                ✕
+                {tCommon('close')} {/* Sử dụng key từ json */}
               </button>
             </div>
             {selectedConference.organizationHistory.map(renderOrganizationHistory)}

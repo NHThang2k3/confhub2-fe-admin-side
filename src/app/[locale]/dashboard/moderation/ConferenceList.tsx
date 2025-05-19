@@ -78,7 +78,7 @@ const ConferenceList: React.FC<ConferenceListProps> = ({
                 return (
                     <li
                         key={conference.id}
-                        className={`border-b border-gray-200 py-0 px-0 last:border-b-0 ${getStatusBgClass(conference.status)}`}
+                        className={`border-b border-gray-20 py-0 px-0 last:border-b-0 ${getStatusBgClass(conference.status)}`}
                     >
                         <div className="p-4">
                              {/* Display details fetch error if it occurred for this item */}
@@ -91,11 +91,11 @@ const ConferenceList: React.FC<ConferenceListProps> = ({
 
                             <div className='mb-3 flex items-start justify-between'>
                                 <div>
-                                    <h3 className='text-xl font-semibold text-gray-900'>
+                                    <h3 className='text-xl font-semibold '>
                                         {/* Translate default title if missing */}
                                         {conference.title || t('Default_UntitledConference')} {/* <-- Translated default */}
                                         {conference.acronym && conference.acronym.trim() !== '' && (
-                                             <span className="font-normal text-gray-600"> ({conference.acronym})</span>
+                                             <span className="font-normal "> ({conference.acronym})</span>
                                         )}
                                     </h3>
 
@@ -108,22 +108,22 @@ const ConferenceList: React.FC<ConferenceListProps> = ({
 
                                      {/* Display access type */}
                                      {mainOrganization?.accessType && (
-                                          <p className='text-sm italic text-gray-600'>
+                                          <p className='text-sm italic '>
                                             {mainOrganization.accessType} {/* Assume accessType itself is a key or handled by backend */}
                                           </p>
                                      )}
 
                                     {/* Display request creation and update dates */}
-                                    <p className='text-xs text-gray-500 mt-1'>
+                                    <p className='text-xs  mt-1'>
                                         {/* Translate labels */}
                                         {t('Requested_Label')}: {formatDateTimeDisplay(conference.createdAt)} {/* <-- Translated label */}
                                     </p>
-                                     <p className='text-xs text-gray-500'>
+                                     <p className='text-xs '>
                                         {/* Translate labels */}
                                         {t('LastUpdated_Label')}: {formatDateTimeDisplay(conference.updatedAt)} {/* <-- Translated label */}
                                     </p>
                                     {/* Optionally display user info with translated label */}
-                                    {/* <p className='text-xs text-gray-500'>{t('UserById_Label')}: {conference.userId}</p> */}
+                                    {/* <p className='text-xs '>{t('UserById_Label')}: {conference.userId}</p> */}
                                 </div>
                                 <span
                                     className={`ml-4 inline-block rounded-full px-3 py-1 text-sm font-medium ${getStatusColorClass(conference.status)}`}
@@ -135,7 +135,7 @@ const ConferenceList: React.FC<ConferenceListProps> = ({
 
                              {/* Display Conference Dates */}
                              {mainConferenceDates && mainConferenceDates.length > 0 && (
-                                 <div className="mb-3 text-sm text-gray-700">
+                                 <div className="mb-3 text-sm ">
                                     <p><strong>{t('ImportantDates_Label')}:</strong></p> {/* <-- Translated label */}
                                      <ul className="list-disc list-inside ml-4">
                                          {mainConferenceDates.map((dateItem, index) => (
@@ -152,35 +152,35 @@ const ConferenceList: React.FC<ConferenceListProps> = ({
 
                             {/* Display Location Details */}
                             {mainLocation && formatLocationDisplay(mainLocation, t) !== t('Common_NA') && (
-                                <div className="mb-3 text-sm text-gray-700">
+                                <div className="mb-3 text-sm ">
                                     <p><strong>{t('Location_Label')}:</strong> {formatLocationDisplay(mainLocation, t)}</p> {/* <-- Translated label, Pass t() to helper */}
                                 </div>
                              )}
 
                              {/* Display Topics */}
                              {mainOrganization?.topics && mainOrganization.topics.length > 0 && (
-                                 <div className="mb-3 text-sm text-gray-700">
+                                 <div className="mb-3 text-sm ">
                                      <p><strong>{t('Topics_Label')}:</strong> {mainOrganization.topics.join(', ')}</p> {/* <-- Translated label */}
                                  </div>
                              )}
 
                             {/* Display Description */}
                             {(mainOrganization?.summary && mainOrganization.summary.trim() !== "") && (
-                                <div className="mb-3 text-sm text-gray-700">
+                                <div className="mb-3 text-sm ">
                                     <p><strong>{t('Summary_Label')}:</strong> {mainOrganization.summary}</p> {/* <-- Translated label */}
                                 </div>
                             )}
 
                             {/* Display User's Original Message */}
                             {conference.message && conference.message.trim() !== '' && (
-                                 <div className="mb-3 text-sm text-gray-700 italic">
+                                 <div className="mb-3 text-sm  italic">
                                      <p><strong>{t('UserMessage_Label')}:</strong> {conference.message}</p> {/* <-- Translated label */}
                                  </div>
                             )}
 
                             {/* Display comment (client-side managed) */}
                             {conference.comment && conference.comment.trim() !== '' && (
-                                <div className="mb-4 text-sm text-gray-600 italic">
+                                <div className="mb-4 text-sm  italic">
                                     <strong>{t('ModerationComment_Label')}:</strong> {conference.comment} {/* <-- Translated label */}
                                 </div>
                             )}
@@ -212,7 +212,7 @@ const ConferenceList: React.FC<ConferenceListProps> = ({
                                 {conference.status !== 'PENDING' && (
                                     <button
                                         onClick={() => onModerateClick(conference.id, 'PENDING')}
-                                        className='rounded bg-gray-300 px-4 py-2 text-sm text-gray-800 transition duration-150 ease-in-out hover:bg-gray-400 disabled:opacity-50 disabled:cursor-not-allowed'
+                                        className='rounded bg-gray-30 px-4 py-2 text-sm  transition duration-150 ease-in-out hover:bg-gray-40 disabled:opacity-50 disabled:cursor-not-allowed'
                                         disabled={showCommentModal}
                                     >
                                         {/* Translate button text */}
