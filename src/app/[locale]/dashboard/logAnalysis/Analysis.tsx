@@ -63,7 +63,7 @@ const Analysis: React.FC = () => {
     // 1. Initial Loading / Error States
     if (loading && !data) {
         return (
-            <div className="w-full p-4 md:p-6 lg:p-8 bg-gradient-to-br from-gray-100 to-blue-50 min-h-screen font-sans">
+            <div className="p-4 md:p-6 lg:p-8 bg-gradient-to-br from-gray-100 to-blue-50 min-h-screen font-sans">
                 <AnalysisHeader
                     loading={true}
                     error={null}
@@ -78,7 +78,7 @@ const Analysis: React.FC = () => {
     }
     if (error && !data) {
         return (
-            <div className="w-full p-4 md:p-6 lg:p-8 bg-gradient-to-br from-gray-100 to-red-50 min-h-screen font-sans">
+            <div className="p-4 md:p-6 lg:p-8 bg-gradient-to-br from-gray-100 to-red-50 min-h-screen font-sans">
                 <AnalysisHeader
                     loading={false}
                     error={error}
@@ -107,7 +107,7 @@ const Analysis: React.FC = () => {
 
 
     return (
-        <div className="w-full p-4  bg-gradient-to-br from-gray-100 to-blue-50 min-h-screen font-sans space-y-6">
+        <div className="p-4 md:p-6 lg:p-8 bg-gradient-to-br from-gray-100 to-blue-50 min-h-screen font-sans space-y-6">
 
             {/* --- Section: Data Crawlers (Collapsible) --- */}
             <div className="bg-white rounded-lg shadow border border-gray-200">
@@ -126,9 +126,9 @@ const Analysis: React.FC = () => {
                             <button onClick={() => setActiveCrawler('conference')} className={`flex items-center py-2 px-4 text-sm font-medium border-b-2 focus:outline-none transition-colors duration-150 ${activeCrawler === 'conference' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}>
                                 <FaTable className="mr-2" /> Crawl Conferences
                             </button>
-                            {/* <button onClick={() => setActiveCrawler('journal')} className={`flex items-center py-2 px-4 text-sm font-medium border-b-2 focus:outline-none transition-colors duration-150 ${activeCrawler === 'journal' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}>
+                            <button onClick={() => setActiveCrawler('journal')} className={`flex items-center py-2 px-4 text-sm font-medium border-b-2 focus:outline-none transition-colors duration-150 ${activeCrawler === 'journal' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}>
                                 <FaBookOpen className="mr-2" /> Crawl Journals
-                            </button> */}
+                            </button>
                         </div>
                         {/* Conditional Uploader */}
                         <div>

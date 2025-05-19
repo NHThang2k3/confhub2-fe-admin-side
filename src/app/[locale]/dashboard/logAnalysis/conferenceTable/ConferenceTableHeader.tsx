@@ -123,6 +123,13 @@ export const ConferenceTableHeader: React.FC<ConferenceTableHeaderProps> = ({
         <th
           scope='col'
           className='w-1/12 px-2 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500'
+          title='Gemini Cfp'
+        >
+          Cfp.
+        </th>
+        <th
+          scope='col'
+          className='w-1/12 px-2 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500'
           title='Gemini Extract'
         >
           Ext.

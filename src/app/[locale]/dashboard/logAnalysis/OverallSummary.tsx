@@ -32,18 +32,18 @@ const OverallSummary: React.FC<OverallSummaryProps> = ({
   // --- CẬP NHẬT overallStatusData ---
   const overallStatusData = useMemo(() => {
     if (!data?.overall) return []
-    const failedOrCrashedTasks = data.overall.failedOrCrashedTasks || 0
-    const totalCompletedTasks = data.overall.completedTasks || 0
+    const failedOrCrashedTasks = data.overall.totalConferencesInput - data.overall.processedConferencesCount || 0
+    const processedConferencesCount = data.overall.processedConferencesCount || 0
     // --- THÊM processingTasks ---
     const processingTasks = data.overall.processingTasks || 0 // Lấy số lượng task đang xử lý
     const successfulExtractions = data.overall.successfulExtractions || 0
 
-    // Phân loại completed tasks dựa trên extraction success
+    // Phân loại processedConferencesCount dựa trên extraction success
     const completedWithExtractionOk = successfulExtractions
     // Các task completed nhưng extraction không thành công hoặc không có
     const completedWithoutExtractionOk = Math.max(
       0,
-      totalCompletedTasks - successfulExtractions
+      processedConferencesCount - successfulExtractions
     )
 
     return [
@@ -72,7 +72,9 @@ const OverallSummary: React.FC<OverallSummaryProps> = ({
     if (!data?.geminiApi) return []
     const determineRetries = data.geminiApi.retriesByType?.['determine'] || 0
     const extractRetries = data.geminiApi.retriesByType?.['extract'] || 0
-    const retries = determineRetries + extractRetries
+    const cfpRetries = data.geminiApi.retriesByType?.['cfp'] || 0
+
+    const retries = determineRetries + extractRetries + cfpRetries
     return [
       { name: 'Successful', value: data.geminiApi.successfulCalls || 0 },
       { name: 'Failed', value: data.geminiApi.failedCalls || 0 },
@@ -82,18 +84,17 @@ const OverallSummary: React.FC<OverallSummaryProps> = ({
   }, [data?.geminiApi])
 
   const totalGeminiCallsWithRetries = useMemo(() => {
-    const apiData = data?.geminiApi
-    if (!apiData) return 0
-    const determineRetries = apiData.retriesByType?.['determine'] || 0
-    const extractRetries = apiData.retriesByType?.['extract'] || 0
-    return (apiData.totalCalls || 0) + determineRetries + extractRetries
-  }, [data?.geminiApi])
+    const apiData = data?.geminiApi;
+    if (!apiData) return 0;
+    // Sử dụng totalCalls (lần gọi ban đầu) + totalRetries (tổng số lần thử lại)
+    return (apiData.totalCalls || 0) + (apiData.totalRetries || 0);
+  }, [data?.geminiApi]);
 
   const cacheStatusData = useMemo(() => {
     if (!data?.geminiApi) return []
     return [
-      { name: 'Cache Hits', value: data.geminiApi.cacheHits || 0 },
-      { name: 'Cache Misses', value: data.geminiApi.cacheMisses || 0 }
+      { name: 'Cache Hits', value: data.geminiApi.cacheContextHits || 0 },
+      { name: 'Cache Misses', value: data.geminiApi.cacheContextMisses || 0 }
     ].filter(item => item.value > 0)
   }, [data?.geminiApi])
 
@@ -192,7 +193,7 @@ const OverallSummary: React.FC<OverallSummaryProps> = ({
       >
         {/* --- KPI Cards --- */}
         {/* CẬP NHẬT: Grid layout thành 5 cột trên màn hình lớn (lg) để chứa card mới */}
-        <div className='mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5'>
+        <div className='mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-6'>
           {/* Card 1: Duration */}
           <div className='flex items-center space-x-3 rounded-lg border border-gray-200 bg-gray-5 p-4 shadow-md transition-shadow duration-300 hover:shadow-lg'>
             <div className='rounded-full bg-blue-100 p-3 text-blue-600'>
@@ -290,6 +291,20 @@ const OverallSummary: React.FC<OverallSummaryProps> = ({
               >
                 {data.validationStats?.totalValidationWarnings ?? 0}
               </p>
+            </div>
+          </div>
+          {/* Card: CSV Output */}
+          <div className='flex items-center space-x-3 rounded-lg border border-gray-200 bg-gray-5 p-4 shadow-md'>
+            <div className={`rounded-full p-3 ${data.fileOutput?.csvFileGenerated === true ? 'bg-teal-100 text-teal-600' : data.fileOutput?.csvFileGenerated === false ? 'bg-red-100 text-red-600' : 'bg-gray-100 text-gray-600'}`}>
+              {/* Icon cho file/CSV */}
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V7a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+            </div>
+            <div>
+              <p className='mb-1 text-sm text-gray-500'>CSV Records Written</p>
+              <p className='text-xl font-semibold text-gray-800'>
+                {data.fileOutput?.csvRecordsSuccessfullyWritten ?? 0} / {data.fileOutput?.csvRecordsAttempted ?? 0}
+              </p>
+              {data.fileOutput?.csvFileGenerated === false && <p className="text-xs text-red-500">CSV Generation Failed</p>}
             </div>
           </div>
           {/* Card 5 (trước là 4): Total Errors */}

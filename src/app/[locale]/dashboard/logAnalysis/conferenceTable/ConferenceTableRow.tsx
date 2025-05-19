@@ -63,15 +63,19 @@ export const ConferenceTableRow: React.FC<ConferenceTableRowProps> = ({
       ? 'bg-amber-100 hover:bg-amber-200'
       : 'bg-amber-50 hover:bg-amber-100' // Màu vàng/cam cho warning
   } else if (isSelected) {
-    rowBgClass = 'bg-blue-50 hover:bg-blue-100' // Màu xanh cho selected (khi không có lỗi/warning)
-  } else {
-    // Màu theo status chỉ khi không có lỗi/warning và không được chọn
-    if (status === 'failed')
-      rowBgClass = 'bg-red-50 hover:bg-red-100' // Vẫn cần nếu status là failed nhưng errorCount = 0?
-    else if (status === 'processing') {
-      rowBgClass = 'bg-blue-50 hover:bg-blue-100'
-      statusPulseClass = 'animate-pulse'
-    } else if (status === 'completed') rowBgClass = 'hover:bg-green-100' // Màu xanh lá cho completed
+    rowBgClass = 'bg-blue-50 hover:bg-blue-100';
+  } else { // Not selected, no errors, no warnings
+    if (status === 'failed') {
+      rowBgClass = 'bg-red-50 hover:bg-red-100';
+    } else if (status === 'processing') {
+      rowBgClass = 'bg-blue-50 hover:bg-blue-100'; // Hoặc một màu processing khác nếu không selected
+      statusPulseClass = 'animate-pulse';
+    } else if (status === 'completed') {
+      rowBgClass = 'bg-white hover:bg-green-50'; // Ví dụ: Nền trắng, hover xanh lá nhạt
+    } else {
+      // Mặc định cho unknown, skipped khi không selected, không lỗi/warning
+      rowBgClass = 'bg-white hover:bg-gray-50';
+    }
   }
 
   // Status Badge Logic
@@ -92,10 +96,12 @@ export const ConferenceTableRow: React.FC<ConferenceTableRowProps> = ({
   }
 
   // Link Icon Logic
-  const linkAttempted = (steps?.link_processing_attempted ?? 0) > 0
-  const linkAllSuccess =
-    steps?.link_processing_success === steps?.link_processing_attempted
-  const linkHasAttemptsButNotAllSuccess = linkAttempted && !linkAllSuccess
+  const linkAttemptedCount = steps?.link_processing_attempted_count ?? 0;
+  const linkSuccessCount = steps?.link_processing_success_count ?? 0;
+
+  const linkAttempted = linkAttemptedCount > 0;
+  const linkAllSuccess = linkAttempted && (linkSuccessCount === linkAttemptedCount);
+  const linkHasAttemptsButNotAllSuccess = linkAttempted && !linkAllSuccess;
 
   // --- CẬP NHẬT colSpan cho expanded row ---
   const colSpan = 13 // Select + Expand + 9 data + Warns + Errors + Saved
@@ -127,7 +133,7 @@ export const ConferenceTableRow: React.FC<ConferenceTableRowProps> = ({
         </td>
 
         <td className='whitespace-nowrap px-4 py-2 text-sm font-medium text-gray-900'>
-          {title.substring(0, 50)}...
+          {title.substring(0, 30)}...
         </td>
         <td className='whitespace-nowrap px-4 py-2 text-sm'>
           {/* Status Badge */}
@@ -165,6 +171,12 @@ export const ConferenceTableRow: React.FC<ConferenceTableRowProps> = ({
           <StatusIcon
             success={steps?.gemini_determine_success}
             attempted={steps?.gemini_determine_attempted}
+          />
+        </td>
+         <td className='whitespace-nowrap px-2 py-2 text-center text-lg'>
+          <StatusIcon
+            success={steps?.gemini_cfp_success}
+            attempted={steps?.gemini_cfp_attempted}
           />
         </td>
         <td className='whitespace-nowrap px-2 py-2 text-center text-lg'>
@@ -276,20 +288,21 @@ export const ConferenceTableRow: React.FC<ConferenceTableRowProps> = ({
                   )}
                 {/* Link Access Failures */}
 
-                {steps.link_processing_failed &&
-                  steps.link_processing_failed.length > 0 && (
+                {steps.link_processing_failed_details && // Kiểm tra sự tồn tại của mảng
+                  steps.link_processing_failed_details.length > 0 && (
                     <div className='mb-4'>
                       <h4 className='mb-1 font-semibold text-yellow-700'>
-                        Link Access Failures (
-                        {steps.link_processing_failed.length}):
+                        Link Access Failures ({steps.link_processing_failed_details.length}):
                       </h4>
                       <ul className='custom-scrollbar max-h-40 list-inside list-disc space-y-1 overflow-y-auto rounded border border-yellow-200 bg-yellow-50 p-2 text-xs text-yellow-600'>
-                        {steps.link_processing_failed.map(
-                          (err: any, index: number) => (
+                        {steps.link_processing_failed_details.map( // Đổi tên biến
+                          (failDetail, index: number) => ( // Đổi tên biến
                             <li key={index} className='break-words'>
-                              {typeof err === 'object'
-                                ? JSON.stringify(err)
-                                : String(err)}
+                              {/* Render failDetail.url, failDetail.error, failDetail.timestamp */}
+                              {failDetail.url && <span className='font-medium'>URL:</span>} {failDetail.url || ''}
+                              {failDetail.url && failDetail.error && ' - '}
+                              {failDetail.error && <span className='font-medium'>Error:</span>} {failDetail.error || ''}
+                              {!failDetail.url && !failDetail.error && (typeof failDetail === 'object' ? JSON.stringify(failDetail) : String(failDetail))}
                             </li>
                           )
                         )}
@@ -323,8 +336,8 @@ export const ConferenceTableRow: React.FC<ConferenceTableRowProps> = ({
                     <li className='flex justify-between border-b border-gray-200 pb-1'>
                       <span>Links Processed:</span>{' '}
                       <span>
-                        <strong>{steps?.link_processing_success ?? 0}</strong> /{' '}
-                        {steps?.link_processing_attempted ?? 0}
+                        <strong>{steps?.link_processing_success_count ?? 0}</strong> /{' '}
+                        {steps?.link_processing_attempted_count ?? 0}
                       </span>
                     </li>
                     <li className='flex justify-between border-b border-gray-200 pb-1'>
@@ -336,6 +349,18 @@ export const ConferenceTableRow: React.FC<ConferenceTableRowProps> = ({
                         {steps?.gemini_determine_cache_used ? '(Cache)' : ''}
                       </span>
                     </li>
+                     {/* CFP (Call For Papers) step detail if available */}
+                    {steps?.gemini_cfp_attempted !== undefined && (
+                        <li className='flex justify-between pt-1 border-t border-gray-200 mt-1'>
+                        <span>Gemini CFP:</span>{' '}
+                        <span>
+                            {steps.gemini_cfp_attempted
+                            ? `Attempted (${steps.gemini_cfp_success ? 'OK' : 'Fail'})`
+                            : 'Skipped'}{' '}
+                            {steps.gemini_cfp_cache_used ? '(Cache)' : ''}
+                        </span>
+                        </li>
+                    )}
                     <li className='flex justify-between'>
                       <span>Gemini Extract:</span>{' '}
                       <span>
