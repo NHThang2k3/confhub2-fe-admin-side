@@ -55,7 +55,7 @@ export const useConferenceCrawl = (): UseConferenceCrawlReturn => {
 
     const [selectedRows, setSelectedRows] = useState<SendToCrawlConference[]>([]); // State cho selected rows
 
-    const uploadFileEndPoint = `${process.env.NEXT_PUBLIC_DATABASE_URL}/api/v1/admin-conference/upload-file-csv`;
+    const uploadFileEndPoint = `${process.env.NEXT_PUBLIC_DATABASE_URL}/api/v1/admin/conferences/upload-file-csv`;
 
     // --- File Handling and Parsing ---
     const handleFileChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {

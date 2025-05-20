@@ -34,7 +34,7 @@ export const saveConferenceToJson = async (acronym: string, title: string | unde
         // Explicitly define expected response structure
         const response = await axios.post<{ success: boolean; message: string }>(
             API_SAVE_ENDPOINT,
-            [{ acronym, title }]
+            [  {...(title as any),  } ]
         );
 
         // Backend explicitly indicated success or failure in the response body
