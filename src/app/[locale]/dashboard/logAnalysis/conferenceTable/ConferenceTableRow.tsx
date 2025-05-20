@@ -1,9 +1,10 @@
 // src/app/[locale]/dashboard/logAnalysis/ConferenceTableRow.tsx
 import React from 'react';
-import { FaChevronDown, FaChevronUp, FaTimesCircle, FaCheckCircle, FaExclamationCircle, FaFingerprint } from 'react-icons/fa';
+import { FaChevronDown, FaChevronUp, FaTimesCircle, FaCheckCircle, FaExclamationCircle } from 'react-icons/fa';
 import { ConferenceTableData, RowSaveStatus } from '../../../../../hooks/crawl/useConferenceTableManager'; // Adjust path
 import { StatusIcon } from '../StatusIcon'; // Adjust path
 import { formatDuration } from '../utils/commonUtils'; // Adjust path
+import { Rocket } from 'lucide-react';
 
 interface ConferenceTableRowProps {
   confData: ConferenceTableData;
@@ -24,7 +25,7 @@ export const ConferenceTableRow: React.FC<ConferenceTableRowProps> = ({
   } = confData;
   const hasErrors = errorCount > 0
   // Row Background Logic (Cập nhật để ưu tiên Error > Warning > Selected > Status)
-  let rowBgClass = 'hover:bg-gray-50' // Default hover // Changed from hover:bg-gray-5 to hover:bg-gray-50
+  let rowBgClass = 'hover:bg-gray-5' // Default hover // Changed from hover:bg-gray-5 to hover:bg-gray-5
   let statusPulseClass = ''
 
   if (hasErrors) {
@@ -47,7 +48,7 @@ export const ConferenceTableRow: React.FC<ConferenceTableRowProps> = ({
       rowBgClass = 'bg-white hover:bg-green-50'; // Ví dụ: Nền trắng, hover xanh lá nhạt
     } else {
       // Mặc định cho unknown, skipped khi không selected, không lỗi/warning
-      rowBgClass = 'bg-white hover:bg-gray-50'; // Changed from hover:bg-gray-5 to hover:bg-gray-50
+      rowBgClass = 'bg-white hover:bg-gray-5'; // Changed from hover:bg-gray-5 to hover:bg-gray-5
     }
   }
 
@@ -99,9 +100,9 @@ export const ConferenceTableRow: React.FC<ConferenceTableRowProps> = ({
           onClick={() => onToggleExpand(uniqueRowId)}
         >
           <div className="flex items-center">
-            {/* {isExpanded 
+            {isExpanded 
               ? <FaChevronUp className='mr-2 text-blue-600 group-hover:text-blue-800 flex-shrink-0' /> 
-              : <FaChevronDown className='mr-2 text-blue-600 group-hover:text-blue-800 flex-shrink-0' />} */}
+              : <FaChevronDown className='mr-2 text-blue-600 group-hover:text-blue-800 flex-shrink-0' />}
             <span className="truncate">
               {acronym}
                {/* <span className="text-gray-500">({title.length > 30 ? title.slice(0,30) + '...' : title})</span> */}
@@ -112,7 +113,7 @@ export const ConferenceTableRow: React.FC<ConferenceTableRowProps> = ({
         {/* CỘT REQUEST ID - Hiển thị có điều kiện */}
         {showRequestIdColumn && (
           <td className='px-3 py-2 text-sm text-gray-500 max-w-[150px] truncate' title={requestId}>
-            <FaFingerprint className='mr-1.5 inline text-purple-400 text-xs' />
+            {/* <Rocket size={16} className='mr-1.5 inline text-purple-400' /> */}
             {requestId}
           </td>
         )}
@@ -137,7 +138,7 @@ export const ConferenceTableRow: React.FC<ConferenceTableRowProps> = ({
           {hasErrors && <FaTimesCircle className='mb-0.5 mr-1 inline text-red-500' title={`Errors: ${errorCount}`} />}
           {errorCount}
         </td>
-        <td className='whitespace-nowrap px-2 py-2 text-center text-lg'>
+        <td className='whitespace-nowrap pl-8 py-2 text-center text-lg'>
           {saveStatus === 'success' && <FaCheckCircle className='text-green-500' title='Saved' />}
           {saveStatus === 'error' && <FaTimesCircle className='text-red-500' title={`Save failed: ${saveError || 'Unknown'}`} />}
         </td>

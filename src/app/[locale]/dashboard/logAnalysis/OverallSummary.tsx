@@ -180,9 +180,9 @@ const OverallSummary: React.FC<OverallSummaryProps> = ({
 
   // --- Tiêu đề động ---
   const summaryTitle = useMemo(() => {
-    if (data?.filterRequestId) {
-      return `Summary for Request ID: ${data.filterRequestId}`;
-    }
+    // if (data?.filterRequestId) {
+    //   return `Summary for Request ID: ${data.filterRequestId}`;
+    // }
     return "Overall Crawl Summary";
     // Nếu bạn vẫn muốn thêm thông tin timeFilter:
     // if (timeFilterOption !== 'latest') {

@@ -52,11 +52,11 @@ const AnalysisHeader: React.FC<AnalysisHeaderProps> = ({
                     {error && !isLoadingInitial && <span className="text-red-600 text-xs flex items-center gap-1" title={error}><FaExclamationTriangle /> Error: {error}</span>}
                 </div>
                 <p className="text-xs text-gray-500 mt-1 truncate" title={getLogFilePathText()}>Log File: <span className="font-mono">{getLogFilePathText()}</span></p>
-                {data?.filterRequestId && (
+                {/* {data?.filterRequestId && (
                     <p className="text-xs text-blue-700 mt-1 font-semibold">
                         Filtered by Request ID: <span className="font-bold">{data.filterRequestId}</span>
                     </p>
-                )}
+                )} */}
             </div>
 
             {!(isLoadingInitial || (error && !data)) && (

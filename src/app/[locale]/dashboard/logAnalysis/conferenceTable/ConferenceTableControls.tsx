@@ -62,7 +62,7 @@ export const ConferenceTableControls: React.FC<
         icon = <FaSpinner className='mr-2 animate-spin' />
         text = 'Saving...'
         disabled = true
-        buttonClass = 'bg-gray-50 text-white cursor-not-allowed'
+        buttonClass = 'bg-gray-5 text-white cursor-not-allowed'
         titleAttr = 'Saving in progress...'
         break
       case 'success':

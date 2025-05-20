@@ -1,5 +1,17 @@
 // src/types/logAnalysis.types.ts
 
+
+export interface RequestTimings {
+    startTime: string | null;
+    endTime: string | null;
+    durationSeconds: number | null;
+    // Tùy chọn: có thể thêm số lượng conference được xử lý trong request này
+    // processedConferencesInRequest?: number;
+    // Hoặc danh sách các key của conference thuộc request này
+    // conferenceKeys?: string[];
+}
+
+
 export interface RequestLogData {
     logs: any[];
     startTime: number | null;
@@ -22,6 +34,8 @@ export interface FilteredData {
 
 /** Thông tin chi tiết về quá trình xử lý một conference cụ thể */
 export interface ConferenceAnalysisDetail {
+
+    requestId: string; // <<< NEW: Để dễ dàng truy cập requestId
     title: string;
     acronym: string;
     status: 'unknown' | 'processing' | 'processed_ok' | 'completed' | 'failed' | 'skipped';
@@ -74,11 +88,6 @@ export interface ConferenceAnalysisDetail {
     }>;
     finalResultPreview?: any; // Renamed from finalResult for clarity
     finalResult?: any; // The actual final result object from 'processing_finished_successfully'
-     // QUAN TRỌNG: Backend cần cung cấp requestId cho từng conference nếu chúng có thể khác nhau
-    // Nếu không, chúng ta sẽ lấy từ LogAnalysisResult.filterRequestId hoặc analyzedRequestIds[0]
-    // nếu chỉ có một request được phân tích.
-    requestId?: string; // Sẽ được thêm vào ở frontend nếu backend chưa có
-
 }
 
 export interface PlaywrightAnalysis {
@@ -236,6 +245,11 @@ export interface LogAnalysisResult {
     filterRequestId?: string; // <<< NEW: The specific requestId used for filtering, if any
     analyzedRequestIds: string[]; // <<< NEW: List of all requestIds included in this analysis output
     
+    // <<< NEW SECTION for per-request timings >>>
+    requests: {
+        [requestId: string]: RequestTimings;
+    };
+
     totalLogEntries: number;
     parsedLogEntries: number;
     parseErrors: number;
@@ -254,7 +268,8 @@ export interface LogAnalysisResult {
     errorsAggregated: { [key: string]: number };
     logProcessingErrors: string[];
 
-    conferenceAnalysis: { // Đổi tên từ conferenceAnalysis sang conferenceAnalysis
-        [combinedKey: string]: ConferenceAnalysisDetail;
+    conferenceAnalysis: {
+        // Key sẽ là: `${requestId}-${acronym}-${title}`
+        [compositeKeyIncludingRequestId: string]: ConferenceAnalysisDetail;
     };
 }

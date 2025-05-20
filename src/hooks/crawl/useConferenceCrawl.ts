@@ -1,3 +1,4 @@
+// src/app/hooks/crawl/useConferencesCrawl.ts
 'use_client'
 import { useState, useCallback } from 'react';
 import axios, { AxiosError } from 'axios';
@@ -18,6 +19,9 @@ function chunkArray<T>(array: T[], size: number): T[][] {
     return chunks;
 }
 
+// ++ ADDED: Define model types
+export type CrawlModelType = 'non-tuned' | 'tuned';
+
 export interface UseConferenceCrawlReturn {
     file: File | null;
     parsedData: Conference[] | null;
@@ -25,6 +29,7 @@ export interface UseConferenceCrawlReturn {
     parseError: string | null;
     enableChunking: boolean;
     chunkSize: number;
+    crawlModel: CrawlModelType; // ++ ADDED
     isCrawling: boolean;
     crawlError: string | null;
     crawlProgress: CrawlProgress;
@@ -34,6 +39,7 @@ export interface UseConferenceCrawlReturn {
     handleFileChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
     setEnableChunking: (enabled: boolean) => void;
     setChunkSize: (size: number) => void;
+    setCrawlModel: (model: CrawlModelType) => void; // ++ ADDED
     startCrawl: () => Promise<void>;
     resetCrawl: () => void;
     onSelectionChanged: (event: any) => void;
@@ -47,6 +53,7 @@ export const useConferenceCrawl = (): UseConferenceCrawlReturn => {
 
     const [enableChunking, setEnableChunking] = useState<boolean>(false);
     const [chunkSize, setChunkSize] = useState<number>(5);
+    const [crawlModel, setCrawlModel] = useState<CrawlModelType>('non-tuned'); // ++ ADDED: Default to non-tuned
 
     const [isCrawling, setIsCrawling] = useState<boolean>(false);
     const [crawlError, setCrawlError] = useState<string | null>(null);
@@ -58,45 +65,34 @@ export const useConferenceCrawl = (): UseConferenceCrawlReturn => {
     const uploadFileEndPoint = `${process.env.NEXT_PUBLIC_DATABASE_URL}/api/v1/admin/conferences/upload-file-csv`;
 
     const handleFileChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
-        // Không gọi resetCrawl ở đây nữa để giữ lại lỗi parse nếu có khi người dùng chọn lại file
         const currentFile = event.target.files?.[0];
 
         if (currentFile) {
-            // Reset các state liên quan đến parse và crawl của file CŨ trước khi xử lý file MỚI
-            setFile(null); // Xoá file cũ ngay
+            setFile(null);
             setParsedData(null);
-            setIsParsing(false); // Đảm bảo reset parsing state
+            setIsParsing(false);
             setParseError(null);
-            // Reset crawl states
             setIsCrawling(false);
             setCrawlError(null);
             setCrawlProgress({ current: 0, total: 0, status: 'idle' });
             setCrawlMessages([]);
-            setSelectedRows([]); // Xóa selection cũ
+            setSelectedRows([]);
 
             if (currentFile.type !== 'text/csv' && !currentFile.name.toLowerCase().endsWith('.csv')) {
                 setParseError("Invalid file type. Please select a CSV file.");
-                // setFile(null); // Đã set ở trên
-                // setParsedData(null); // Đã set ở trên
-                event.target.value = ''; // Reset input để có thể chọn lại cùng file nếu cần
+                event.target.value = '';
                 return;
             }
-            setFile(currentFile); // Set file mới
-            // setParseError(null); // Đã set ở trên
+            setFile(currentFile);
             parseCSV(currentFile);
         } else {
-            // User hủy chọn file, reset mọi thứ liên quan đến file và crawl
             resetCrawl();
         }
-        // Reset input value để có thể chọn lại cùng file (quan trọng nếu người dùng chọn lại file giống hệt)
         event.target.value = '';
-    }, []); // Thêm resetCrawl vào deps nếu nó thay đổi state mà handleFileChange cần biết
+    }, []);
 
     const parseCSV = useCallback((csvFile: File) => {
         setIsParsing(true);
-        // setParsedData(null); // Đã được reset trong handleFileChange
-        // setParseError(null); // Đã được reset trong handleFileChange
-        // setCrawlMessages([]); // Đã được reset trong handleFileChange
         const body = new FormData();
         body.append('file', csvFile);
 
@@ -107,10 +103,9 @@ export const useConferenceCrawl = (): UseConferenceCrawlReturn => {
                 'Accept': 'application/json',
             }
         })
-            .then(async (response) => { // Thêm async để await response.json() trong trường hợp lỗi
+            .then(async (response) => {
                 if (!response.ok) {
-                    // Cố gắng đọc nội dung lỗi từ server nếu có
-                    const errorData = await response.json().catch(() => null); // Tránh lỗi nếu body không phải JSON
+                    const errorData = await response.json().catch(() => null);
                     const errorMsg = errorData?.message || errorData?.error || `Failed to upload file. Status: ${response.status}`;
                     throw new Error(errorMsg);
                 }
@@ -122,7 +117,7 @@ export const useConferenceCrawl = (): UseConferenceCrawlReturn => {
                     setParsedData(data.data);
                     setCrawlMessages(prev => [...prev, `File uploaded successfully. ${data.data.length} records parsed.`]);
                 } else {
-                    setParsedData([]); // Set mảng rỗng nếu data.data không hợp lệ
+                    setParsedData([]);
                     throw new Error("Parsed data is not in the expected format.");
                 }
                 setIsParsing(false);
@@ -130,17 +125,13 @@ export const useConferenceCrawl = (): UseConferenceCrawlReturn => {
             .catch((error) => {
                 console.error("Error uploading or parsing file:", error);
                 setParseError(error.message || "Error uploading or parsing file. Please try again.");
-                setParsedData(null); // Đảm bảo không có data cũ hiển thị khi có lỗi parse
+                setParsedData(null);
                 setIsParsing(false);
             });
     }, [uploadFileEndPoint]);
 
     const onSelectionChanged = useCallback((event: any) => {
-        // console.log("on changed", JSON.stringify(event.api.getSelectedNodes().map((node: any) => ({
-        //     Title: node.data.title,
-        //     Acronym: node.data.acronym
-        // }))));
-        setSelectedRows(event.api.getSelectedNodes().map((node: any) => ({ // Sử dụng event.api.getSelectedNodes() cho AG Grid
+        setSelectedRows(event.api.getSelectedNodes().map((node: any) => ({
             id: node.data.id,
             Title: node.data.title,
             Acronym: node.data.acronym
@@ -148,10 +139,17 @@ export const useConferenceCrawl = (): UseConferenceCrawlReturn => {
     }, [])
 
 
-    const sendApiRequest = useCallback(async (payload: SendToCrawlConference[], description: string): Promise<boolean> => {
-        // Không reset crawlError ở đây, để startCrawl quản lý việc reset lỗi tổng thể
+    // ++ MODIFIED: sendApiRequest to include crawlModel
+    const sendApiRequest = useCallback(async (
+        payload: SendToCrawlConference[],
+        description: string,
+        currentCrawlModel: CrawlModelType // ++ ADDED parameter
+    ): Promise<boolean> => {
         try {
-            const params = { dataSource: 'client' };
+            const params = {
+                dataSource: 'client',
+                model: currentCrawlModel // ++ ADDED: Pass model type as query param
+            };
             const response = await axios.post<ApiCrawlResponse>(API_CONFERENCE_ENDPOINT, payload, {
                 params: params,
                 headers: { 'Content-Type': 'application/json' },
@@ -159,26 +157,24 @@ export const useConferenceCrawl = (): UseConferenceCrawlReturn => {
             });
 
             console.log(`${description} - Response Status:`, response.status);
-            setCrawlMessages(prev => [...prev, `${description}: ${response.data.message} (Runtime: ${response.data.runtime ?? 'N/A'}s)`]);
+            setCrawlMessages(prev => [...prev, `${description} (${currentCrawlModel} model): ${response.data.message} (Runtime: ${response.data.runtime ?? 'N/A'}s)`]);
             return true;
 
         } catch (err) {
             const error = err as AxiosError<ApiCrawlResponse>;
-            console.error(`API Error during ${description}:`, error);
+            console.error(`API Error during ${description} (${currentCrawlModel} model):`, error);
             let errorMessage = `Error sending ${description}: ${error.message}`;
             if (error.response) {
-                console.error('Server Response Status:', error.response.status);
-                console.error('Server Response Data:', error.response.data);
                 errorMessage += ` (Server: ${error.response.status} - ${error.response.data?.message || error.response.data?.error || 'Unknown server error'})`;
             } else if (error.request) {
                 errorMessage += ' (No response received from server)';
             }
 
-            setCrawlError(errorMessage); // Set lỗi cho lần crawl hiện tại
-            setCrawlMessages(prev => [...prev, `FAILED to send ${description}. Details: ${errorMessage}`]);
+            setCrawlError(errorMessage);
+            setCrawlMessages(prev => [...prev, `FAILED to send ${description} (${currentCrawlModel} model). Details: ${errorMessage}`]);
             return false;
         }
-    }, []);
+    }, []); // No dependencies on crawlModel state here, it's passed as an argument
 
 
     const startCrawl = async () => {
@@ -193,8 +189,9 @@ export const useConferenceCrawl = (): UseConferenceCrawlReturn => {
         }
 
         setIsCrawling(true);
-        setCrawlError(null); // Xóa lỗi crawl cũ khi bắt đầu một lần crawl mới
-        setCrawlMessages(prev => [`Starting crawl process... (${enableChunking ? `Chunk size: ${chunkSize}` : 'Sending all'})`]);
+        setCrawlError(null);
+        // ++ MODIFIED: Include crawlModel in log message
+        setCrawlMessages(prev => [`Starting crawl process using ${crawlModel} model... (${enableChunking ? `Chunk size: ${chunkSize}` : 'Sending all'})`]);
         setCrawlProgress({ current: 0, total: 0, status: 'crawling' });
 
         let overallSuccess = true;
@@ -208,41 +205,39 @@ export const useConferenceCrawl = (): UseConferenceCrawlReturn => {
                 const currentChunk = chunks[i];
                 const description = `Chunk ${i + 1}/${totalChunks}`;
                 setCrawlProgress(prev => ({ ...prev, current: i + 1, currentChunkData: currentChunk }));
-                const success = await sendApiRequest(currentChunk, description);
+                // ++ MODIFIED: Pass crawlModel to sendApiRequest
+                const success = await sendApiRequest(currentChunk, description, crawlModel);
 
                 if (!success) {
-                    // crawlError đã được set bởi sendApiRequest
                     setCrawlProgress(prev => ({ ...prev, status: 'stopped' }));
                     overallSuccess = false;
-                    break; // Dừng xử lý các chunk tiếp theo
+                    break;
                 }
             }
 
             if (overallSuccess && totalChunks > 0) {
                 setCrawlProgress(prev => ({ ...prev, status: 'success' }));
-                setCrawlMessages(prev => [...prev, `Successfully processed all ${totalChunks} chunks.`]);
+                setCrawlMessages(prev => [...prev, `Successfully processed all ${totalChunks} chunks with ${crawlModel} model.`]);
             } else if (!overallSuccess) {
-                // Lỗi đã được ghi nhận, status là 'stopped'
-                 setCrawlMessages(prev => [...prev, `Crawl process stopped due to an error in one of the chunks.`]);
+                 setCrawlMessages(prev => [...prev, `Crawl process with ${crawlModel} model stopped due to an error in one of the chunks.`]);
             }
-            // Trường hợp không có chunk nào (selectedRows rỗng nhưng đã qua check ở trên) thì không làm gì thêm.
 
-        } else { // Send All Mode
+        } else {
             setCrawlProgress(prev => ({ ...prev, current: 1, total: 1, status: 'crawling', currentChunkData: selectedRows }));
             const description = "Entire List";
-            const success = await sendApiRequest(selectedRows, description); // SỬ DỤNG sendApiRequest
+            // ++ MODIFIED: Pass crawlModel to sendApiRequest
+            const success = await sendApiRequest(selectedRows, description, crawlModel);
 
             if (success) {
                 setCrawlProgress(prev => ({ ...prev, status: 'success' }));
-                setCrawlMessages(prev => [...prev, `Successfully processed the entire list.`]);
+                setCrawlMessages(prev => [...prev, `Successfully processed the entire list with ${crawlModel} model.`]);
             } else {
-                // crawlError đã được set bởi sendApiRequest
                 setCrawlProgress(prev => ({ ...prev, status: 'error' }));
                 overallSuccess = false;
             }
         }
 
-        setIsCrawling(false); // Đặt isCrawling thành false SAU KHI tất cả hoạt động hoàn tất hoặc có lỗi
+        setIsCrawling(false);
     };
 
     const resetCrawl = useCallback(() => {
@@ -250,14 +245,14 @@ export const useConferenceCrawl = (): UseConferenceCrawlReturn => {
         setParsedData(null);
         setIsParsing(false);
         setParseError(null);
-        // Giữ lại cài đặt chunking của người dùng
-        // setEnableChunking(false);
-        // setChunkSize(5);
+        // setEnableChunking(false); // User preference, keep
+        // setChunkSize(5); // User preference, keep
+        // setCrawlModel('non-tuned'); // User preference, keep
         setIsCrawling(false);
         setCrawlError(null);
         setCrawlProgress({ current: 0, total: 0, status: 'idle' });
         setCrawlMessages([]);
-        setSelectedRows([]); // Quan trọng: reset cả các hàng đã chọn
+        setSelectedRows([]);
         console.log("Crawl state reset.");
     }, []);
 
@@ -269,6 +264,7 @@ export const useConferenceCrawl = (): UseConferenceCrawlReturn => {
         parseError,
         enableChunking,
         chunkSize,
+        crawlModel, // ++ EXPOSED
         isCrawling,
         crawlError,
         crawlProgress,
@@ -278,6 +274,7 @@ export const useConferenceCrawl = (): UseConferenceCrawlReturn => {
         handleFileChange,
         setEnableChunking,
         setChunkSize,
+        setCrawlModel, // ++ EXPOSED
         startCrawl,
         resetCrawl,
         onSelectionChanged

@@ -15,6 +15,41 @@ import ConferenceDetails from './ConferenceDetails';
 
 type CrawlerType = 'conference' | 'journal';
 
+// Hàm tiện ích để định dạng chuỗi ISO date thành dạng DD/MM/YYYY HH:MM:SS
+// THAY ĐỔI Ở ĐÂY: Chấp nhận string | null | undefined cho isoString
+const formatDateTime = (isoString: string | null | undefined): string => {
+    if (!isoString) { // Điều kiện này sẽ bắt cả null và undefined
+        return 'N/A';
+    }
+    try {
+        const date = new Date(isoString);
+        // Kiểm tra xem date có hợp lệ không
+        if (isNaN(date.getTime())) {
+            return 'Invalid Date';
+        }
+        // Lấy phần ngày tháng: DD/MM/YYYY
+        const datePart = date.toLocaleDateString('en-GB', { // en-GB cho DD/MM/YYYY
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric'
+        });
+        // Lấy phần thời gian: HH:MM:SS (24 giờ)
+        const timePart = date.toLocaleTimeString('en-GB', {
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            hour12: false
+        });
+        return `${datePart} ${timePart}`; // Kết hợp lại
+    } catch (e) {
+        // console.error("Error formatting date:", e); // Dùng để debug nếu cần
+        return 'Invalid Date String';
+    }
+};
+
+
+
+
 const Analysis: React.FC = () => {
     const [timeFilterOption, setTimeFilterOption] = useState<string>('latest');
     const [filterStartTime, setFilterStartTime] = useState<number | undefined>(undefined);
@@ -27,9 +62,9 @@ const Analysis: React.FC = () => {
     // Undefined means list view, a string means detail view for that ID.
     const [activeRequestIdFilter, setActiveRequestIdFilter] = useState<string | undefined>(undefined);
 
-    const [isSummaryExpanded, setIsSummaryExpanded] = useState(true);
+    const [isSummaryExpanded, setIsSummaryExpanded] = useState(false);
     const [activeCrawler, setActiveCrawler] = useState<CrawlerType>('conference');
-    const [isCrawlerSectionExpanded, setIsCrawlerSectionExpanded] = useState(true);
+    const [isCrawlerSectionExpanded, setIsCrawlerSectionExpanded] = useState(false);
 
     useEffect(() => {
         const now = Date.now();
@@ -154,11 +189,11 @@ const Analysis: React.FC = () => {
             return `No analysis results found for Request ID: "${activeRequestIdFilter}".`;
         }
         if (isListView && (!data?.analyzedRequestIds || data.analyzedRequestIds.length === 0)) {
-             return `No analysis requests found for the selected time period.`;
+            return `No analysis requests found for the selected time period.`;
         }
         // Fallback for other "no data" scenarios
         if (!loading && !hasOverallDataForDisplay && timeFilterOption !== 'latest') {
-             return `No analysis results found for the selected time period.`;
+            return `No analysis results found for the selected time period.`;
         }
         if (!loading && !hasOverallDataForDisplay) {
             return "No analysis results found. The log might be empty or processing is pending.";
@@ -219,16 +254,46 @@ const Analysis: React.FC = () => {
                         <FaListAlt className="mr-2 text-blue-600" /> Available Log Analysis Requests
                     </h2>
                     {data.analyzedRequestIds && data.analyzedRequestIds.length > 0 ? (
-                        <ul className="space-y-2">
-                            {data.analyzedRequestIds.map((reqId) => (
-                                <li key={reqId}
-                                    onClick={() => handleSelectRequestFromList(reqId)}
-                                    className="p-3 bg-gray-5 hover:bg-blue-100 border border-gray-200 rounded-md cursor-pointer transition-colors duration-150 flex justify-between items-center"
-                                >
-                                    <span className="font-medium text-gray-700">Request ID: {reqId}</span>
-                                    <span className="text-xs text-blue-500 hover:text-blue-700">View Details →</span>
-                                </li>
-                            ))}
+                        <ul className="space-y-3"> {/* Điều chỉnh space-y nếu cần */}
+                            {data.analyzedRequestIds.map((reqId) => {
+                                const requestDetails = data.requests?.[reqId]; // Lấy chi tiết request, sử dụng optional chaining
+
+                                return (
+                                    <li key={reqId}
+                                        onClick={() => handleSelectRequestFromList(reqId)}
+                                        // Cập nhật class để đẹp hơn, ví dụ thêm padding, shadow
+                                        className="p-4 bg-gray-5 hover:bg-blue-100 border border-gray-200 rounded-lg cursor-pointer transition-all duration-150 shadow-sm hover:shadow-md"
+                                    >
+                                        <div className="flex justify-between items-start"> {/* items-start để căn chỉnh nếu text dài */}
+                                            <div className="flex-grow pr-2"> {/* pr-2 để có khoảng cách với nút View Details */}
+                                                <span className="block font-semibold text-gray-800 text-sm">
+                                                    Request ID: {reqId}
+                                                </span>
+                                            </div>
+                                            <span className="ml-auto text-xs text-blue-600 hover:text-blue-800 font-medium whitespace-nowrap">
+                                                View Details →
+                                            </span>
+                                        </div>
+                                        {requestDetails ? (
+                                            <div className="mt-2 text-xs text-gray-700 space-y-0.5"> {/* Hiển thị thông tin thời gian */}
+                                                <p>
+                                                    <span className="font-medium text-gray-500">Start Time:</span> {formatDateTime(requestDetails.startTime)}
+                                                </p>
+                                                <p>
+                                                    <span className="font-medium text-gray-500">End Time:</span> {formatDateTime(requestDetails.endTime)}
+                                                </p>
+                                                <p>
+                                                    <span className="font-medium text-gray-500">Duration:</span> {requestDetails.durationSeconds} seconds
+                                                </p>
+                                            </div>
+                                        ) : (
+                                            <div className="mt-2 text-xs text-gray-400">
+                                                Time details not available for this request.
+                                            </div>
+                                        )}
+                                    </li>
+                                );
+                            })}
                         </ul>
                     ) : ( // No request IDs found in list view
                         <div className="text-center text-gray-500 py-4">
@@ -239,7 +304,6 @@ const Analysis: React.FC = () => {
                     {/* OverallSummary for the list view (all listed requests) */}
                     {hasOverallDataForDisplay && (
                         <div className="mt-6 border-t pt-4">
-                            <h3 className="text-lg font-semibold text-gray-700 mb-2">Overall Summary (All Listed Requests)</h3>
                             <OverallSummary data={data} isExpanded={isSummaryExpanded} onToggle={handleToggleSummary} />
                         </div>
                     )}
@@ -257,8 +321,10 @@ const Analysis: React.FC = () => {
                     </button>
 
                     <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center">
-                        <FaFileAlt className="mr-2 text-green-600" /> Analysis Details for Request ID:
-                        <span className="ml-2 font-mono text-blue-700">{activeRequestIdFilter}</span>
+                        <FaFileAlt className="mr-2 text-green-600" /> Analysis Details
+                        <span className='text-sm text-blue-600 ml-2'>
+                            (Request ID: {activeRequestIdFilter})
+                        </span>
                     </h2>
 
                     {/* OverallSummary for the specific request */}
@@ -291,18 +357,18 @@ const Analysis: React.FC = () => {
                 Essentially, if neither list view nor detail view conditions are met, show a "no data" message.
             */}
             {!loading && data === null && !error && ( // If data is truly null after loading/error states, meaning nothing was fetched or an empty response
-                 <div className="mt-6 text-center text-gray-600 bg-white p-6 rounded-lg shadow-md border border-gray-200 flex flex-col items-center">
+                <div className="mt-6 text-center text-gray-600 bg-white p-6 rounded-lg shadow-md border border-gray-200 flex flex-col items-center">
                     <FaInfoCircle size={24} className="mb-3 text-blue-500" />
                     {getNoDataFoundMessage()}
-                 </div>
+                </div>
             )}
-             {!loading && data !== null && !isListView && !isDetailView && ( // Data exists but doesn't match view criteria (e.g. filter mismatch after socket update)
-                 <div className="mt-6 text-center text-gray-600 bg-white p-6 rounded-lg shadow-md border border-gray-200 flex flex-col items-center">
+            {!loading && data !== null && !isListView && !isDetailView && ( // Data exists but doesn't match view criteria (e.g. filter mismatch after socket update)
+                <div className="mt-6 text-center text-gray-600 bg-white p-6 rounded-lg shadow-md border border-gray-200 flex flex-col items-center">
                     <FaInfoCircle size={24} className="mb-3 text-blue-500" />
                     Analysis data loaded, but current view criteria not met. Try adjusting filters or refreshing.
                     {data.filterRequestId && <p className="text-sm mt-1">Data is for: {data.filterRequestId}</p>}
                     {!data.filterRequestId && <p className="text-sm mt-1">Data is general summary.</p>}
-                 </div>
+                </div>
             )}
 
 
@@ -315,7 +381,7 @@ const Analysis: React.FC = () => {
             )}
             {/* Show specific error related to a failed refresh if data was previously present */}
             {error && data && (
-                 <div className="mt-4 text-red-600 text-sm p-3 bg-red-50 rounded-md border border-red-200">
+                <div className="mt-4 text-red-600 text-sm p-3 bg-red-50 rounded-md border border-red-200">
                     <FaExclamationTriangle className="inline mr-1" /> Error refreshing data: {error}
                 </div>
             )}

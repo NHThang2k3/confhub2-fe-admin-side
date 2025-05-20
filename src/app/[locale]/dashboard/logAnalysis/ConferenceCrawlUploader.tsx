@@ -1,7 +1,7 @@
-import React, { useCallback, useMemo, useState } from 'react'
-// Điều chỉnh đường dẫn
 // src/app/[locale]/dashboard/logAnalysis/ConferenceCrawlUpoader.tsx
-import { useConferenceCrawl } from '@/src/hooks/crawl/useConferenceCrawl'
+
+import React, { useMemo, useState } from 'react'
+import { useConferenceCrawl } from '@/src/hooks/crawl/useConferenceCrawl' 
 import {
   FaFileUpload,
   FaSpinner,
@@ -15,24 +15,23 @@ import {
 } from 'react-icons/fa'
 import { Conference } from '@/src/models/logAnalysis/importConferenceCrawl'
 
-// --- Component con để render bảng (tùy chọn, giúp code gọn hơn) ---
 import {
   AllCommunityModule,
   ModuleRegistry,
   RowSelectionModule
 } from 'ag-grid-community'
 import { AgGridReact } from 'ag-grid-react'
-// Register all Community features
 ModuleRegistry.registerModules([AllCommunityModule, RowSelectionModule])
 
 export const ConferenceCrawlUploader: React.FC = () => {
   const {
     file,
-    parsedData, // Dữ liệu đã parse
+    parsedData,
     isParsing,
     parseError,
     enableChunking,
     chunkSize,
+    crawlModel, // ++ GET from hook
     isCrawling,
     crawlError,
     crawlProgress,
@@ -40,6 +39,7 @@ export const ConferenceCrawlUploader: React.FC = () => {
     handleFileChange,
     setEnableChunking,
     setChunkSize,
+    setCrawlModel, // ++ GET from hook
     startCrawl,
     resetCrawl,
     onSelectionChanged
@@ -51,9 +51,10 @@ export const ConferenceCrawlUploader: React.FC = () => {
     isCrawling ||
     crawlMessages.length > 0 ||
     crawlError ||
-    crawlProgress.status !== 'idle' // Condition to show status section State to manage selected rows
+    crawlProgress.status !== 'idle'
 
   const [colDef, setColDef] = useState([
+    // ... (colDef remains the same)
     {
       field: 'acronym' as keyof Conference,
       headerName: 'Acronym',
@@ -124,18 +125,9 @@ export const ConferenceCrawlUploader: React.FC = () => {
       <h2 className='mb-4 border-b border-gray-300 pb-2 text-xl font-semibold text-gray-700'>
         Crawl Conferences from CSV
       </h2>
-      {/* --- Main Content Area with Columns --- */}
       <div className='flex flex-col md:flex-row md:space-x-6'>
-        {' '}
-        {/* Flex container for columns */}
-        {/* === Left Column === */}
         <div className='flex flex-col space-y-4 md:w-1/2'>
-          {' '}
-          {/* Left column takes half width on md+, stack items vertically */}
-          {/* --- File Upload Section --- */}
           <div>
-            {' '}
-            {/* Wrap each section for spacing */}
             <label className='mb-2 block text-sm font-medium text-gray-700'>
               Select CSV File (Requires columns: Title, Acronym)
             </label>
@@ -167,7 +159,7 @@ export const ConferenceCrawlUploader: React.FC = () => {
                   title={file.name}
                 >
                   {file.name}
-                </span> // Added flex-shrink & min-w-0
+                </span>
               )}
               {isParsing && (
                 <FaSpinner className='animate-spin text-blue-500' />
@@ -187,20 +179,21 @@ export const ConferenceCrawlUploader: React.FC = () => {
             {!hasData &&
               file &&
               !isParsing &&
-              !parseError && ( // Show message if file parsed but no valid data
+              !parseError && (
                 <p className='mt-2 flex items-center text-sm text-yellow-700'>
                   <FaExclamationTriangle className='mr-1' /> Could not find
                   valid conference data (Title, Acronym) in the selected file.
                 </p>
               )}
           </div>
-          {/* --- Configuration Section --- */}
+          
           {hasData && (
             <div className='rounded-md border border-gray-200 bg-gray-5 p-4'>
               <h3 className='text-md mb-3 font-semibold text-gray-700'>
                 Crawl Configuration
               </h3>
-              <div className='flex flex-col space-y-3 sm:flex-row sm:items-center sm:space-x-6 sm:space-y-0'>
+              {/* Chunking Configuration */}
+              <div className='mb-4 flex flex-col space-y-3 sm:flex-row sm:items-center sm:space-x-6 sm:space-y-0'>
                 <div className='flex items-center'>
                   <input
                     id='enable-chunking'
@@ -241,9 +234,54 @@ export const ConferenceCrawlUploader: React.FC = () => {
                   />
                 </div>
               </div>
+
+              {/* ++ ADDED: Model Selection */}
+              <div>
+                <label className='block text-sm font-medium text-gray-700'>
+                  Select Crawl Model:
+                </label>
+                <div className='mt-2 flex flex-col space-y-2 sm:flex-row sm:items-center sm:space-x-4 sm:space-y-0'>
+                  <div className='flex items-center'>
+                    <input
+                      id='model-non-tuned'
+                      name='crawlModel'
+                      type='radio'
+                      value='non-tuned'
+                      checked={crawlModel === 'non-tuned'}
+                      onChange={() => setCrawlModel('non-tuned')}
+                      disabled={isCrawling}
+                      className='h-4 w-4 border-gray-300 text-blue-600 focus:ring-blue-500'
+                    />
+                    <label
+                      htmlFor='model-non-tuned'
+                      className='ml-2 block text-sm text-gray-900'
+                    >
+                      Non-Tuned Model
+                    </label>
+                  </div>
+                  <div className='flex items-center'>
+                    <input
+                      id='model-tuned'
+                      name='crawlModel'
+                      type='radio'
+                      value='tuned'
+                      checked={crawlModel === 'tuned'}
+                      onChange={() => setCrawlModel('tuned')}
+                      disabled={isCrawling}
+                      className='h-4 w-4 border-gray-300 text-blue-600 focus:ring-blue-500'
+                    />
+                    <label
+                      htmlFor='model-tuned'
+                      className='ml-2 block text-sm text-gray-900'
+                    >
+                      Tuned Model
+                    </label>
+                  </div>
+                </div>
+              </div>
             </div>
           )}
-          {/* --- Action Buttons --- */}
+
           <div className='flex items-center space-x-4'>
             <button
               onClick={startCrawl}
@@ -253,9 +291,8 @@ export const ConferenceCrawlUploader: React.FC = () => {
               {isCrawling ? (
                 <FaSpinner className='-ml-1 mr-2 h-5 w-5 animate-spin' />
               ) : (
-                <FaPlay className='-ml-1 mr-2 h-5 w-5' /> // Simplified icon logic
+                <FaPlay className='-ml-1 mr-2 h-5 w-5' />
               )}
-              {/* Simplified button text */}
               {isCrawling
                 ? 'Crawling...'
                 : crawlProgress.status !== 'idle' &&
@@ -267,18 +304,17 @@ export const ConferenceCrawlUploader: React.FC = () => {
               onClick={resetCrawl}
               className='inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-5 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2'
               title='Clear selection and results'
-              disabled={isCrawling} // Disable reset while crawling
+              disabled={isCrawling}
             >
               <FaRedo className='mr-2' /> Reset
             </button>
           </div>
-          {/* --- Progress and Results Section --- */}
-          {showStatusSection && ( // Conditionally render the entire status section
+          
+          {showStatusSection && (
             <div className='rounded-md border border-gray-200 p-4'>
               <h3 className='text-md mb-3 font-semibold text-gray-700'>
                 Crawl Status & Log
               </h3>
-              {/* Progress Bar (for chunking) */}
               {isCrawling && enableChunking && crawlProgress.total > 0 && (
                 <div className='mb-3'>
                   <div className='mb-1 flex justify-between'>
@@ -303,7 +339,6 @@ export const ConferenceCrawlUploader: React.FC = () => {
                   </div>
                 </div>
               )}
-              {/* Crawling indicator for 'Send All' */}
               {isCrawling && !enableChunking && (
                 <p className='mb-3 flex items-center text-sm text-blue-600'>
                   <FaSpinner className='mr-2 animate-spin' /> Sending entire
@@ -311,7 +346,6 @@ export const ConferenceCrawlUploader: React.FC = () => {
                 </p>
               )}
 
-              {/* Error Display */}
               {crawlError && (
                 <div className='mb-3 flex items-start rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700'>
                   <FaExclamationTriangle className='mr-2 mt-0.5 flex-shrink-0' />
@@ -321,7 +355,6 @@ export const ConferenceCrawlUploader: React.FC = () => {
                 </div>
               )}
 
-              {/* Final Status */}
               {!isCrawling && crawlProgress.status === 'success' && (
                 <p className='mb-3 flex items-center text-sm text-green-600'>
                   <FaCheckCircle className='mr-1' /> Crawl process completed
@@ -331,20 +364,19 @@ export const ConferenceCrawlUploader: React.FC = () => {
               {!isCrawling &&
                 (crawlProgress.status === 'error' ||
                   crawlProgress.status === 'stopped') &&
-                !crawlError && ( // Avoid showing double error if crawlError is set
+                !crawlError && ( 
                   <p className='mb-3 flex items-center text-sm text-red-600'>
                     <FaTimesCircle className='mr-1' /> Crawl process failed or
                     was stopped. Check logs for details.
                   </p>
                 )}
 
-              {/* Messages Log */}
               {crawlMessages.length > 0 && (
                 <div className='custom-scrollbar max-h-60 space-y-1 overflow-y-auto rounded border border-gray-100 bg-gray-5 p-3 text-xs text-gray-600'>
                   {crawlMessages.map((msg, index) => (
                     <p
                       key={index}
-                      className={`break-words ${msg.startsWith('FAILED') ? 'font-medium text-red-500' : ''}`}
+                      className={`break-words ${msg.startsWith('FAILED') ? 'font-medium text-red-500' : msg.includes('Successfully processed') ? 'font-medium text-green-700' : ''}`}
                     >
                       {msg}
                     </p>
@@ -353,28 +385,22 @@ export const ConferenceCrawlUploader: React.FC = () => {
               )}
             </div>
           )}
-        </div>{' '}
-        {/* End Left Column */}
-        {/* === Right Column === */}
+        </div>
+        
         <div className='mt-4 flex flex-col space-y-4 md:mt-0 md:w-1/2'>
-          {' '}
-          {/* Right column, half width on md+, add margin top for mobile stacking */}
-          {/* --- Conference Preview Table Section --- */}
           {hasData &&
-            !isParsing && ( // Show preview only if data was parsed successfully
+            !isParsing && (
               <AgGridReact
                 className='ag-theme-alpine'
                 rowData={parsedData}
                 columnDefs={colDef}
                 rowSelection={rowSelection as any}
                 onSelectionChanged={onSelectionChanged}
+                domLayout='autoHeight' // Optional: makes the grid fit its content height
               />
-              // <ConferencePreviewTable data={parsedData} />
             )}
-        </div>{' '}
-        {/* End Right Column */}
-      </div>{' '}
-      {/* End Flex Container */}
+        </div>
+      </div>
     </div>
   )
 }

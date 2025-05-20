@@ -12,10 +12,10 @@ interface ConferenceImportPayload {
 
 // Kiểu dữ liệu kết quả trả về từ hàm này (và có thể từ API)
 export interface SaveConferenceResult {
-    identifier: string; // Có thể là acronym, title, hoặc một ID duy nhất
+    // identifier: string; // Có thể là acronym, title, hoặc một ID duy nhất
     success: boolean;
     message: string;
-    details?: any; // Thông tin chi tiết thêm từ backend nếu có
+    // details?: any; // Thông tin chi tiết thêm từ backend nếu có
 }
 
 /**
@@ -37,18 +37,13 @@ export const saveConferenceToJson = async (
         const errorMsg = `Acronym ('${acronym}') or Title ('${title}') is missing. Cannot save.`;
         console.error("Save Validation Error:", errorMsg);
         return { // Luôn resolve, không reject ở đây để Promise.allSettled dễ xử lý
-            identifier,
+            // identifier,
             success: false,
             message: errorMsg
         };
     }
 
-    const payload: ConferenceImportPayload[] = [{
-        acronym,
-        title,
-        extractedData // Gửi dữ liệu này nếu backend hỗ trợ
-        // Thêm các trường khác vào đây nếu cần
-    }];
+    const payload: ConferenceImportPayload[] = [{ acronym, title }];
 
     console.log(`API Call: Saving ${identifier}`, payload);
 
@@ -83,18 +78,18 @@ export const saveConferenceToJson = async (
             // Nếu API trả về kết quả cho từng item trong mảng (dù chỉ gửi 1)
             const itemResult = response.data.results[0];
             return {
-                identifier: `${itemResult.acronym} - ${itemResult.title}`,
+                // identifier: `${itemResult.acronym} - ${itemResult.title}`,
                 success: itemResult.success,
                 message: itemResult.message || (itemResult.success ? 'Saved successfully (backend).' : 'Save failed (backend logic).'),
-                details: itemResult // Có thể bao gồm ID từ DB
+                // details: itemResult // Có thể bao gồm ID từ DB
             };
         } else {
             // Nếu API trả về trạng thái chung cho request
             return {
-                identifier,
+                // identifier,
                 success: response.data.success,
                 message: response.data.message || (response.data.success ? 'Saved successfully (backend).' : 'Save failed (backend logic).'),
-                details: response.data // Có thể bao gồm ID từ DB hoặc dữ liệu đã lưu
+                // details: response.data // Có thể bao gồm ID từ DB hoặc dữ liệu đã lưu
             };
         }
 
@@ -120,12 +115,12 @@ export const saveConferenceToJson = async (
         } else {
             errorMessage = error.message;
         }
-        
+
         return { // Luôn resolve
-            identifier,
+            // identifier,
             success: false,
             message: errorMessage,
-            details: error.response?.data // Gửi thêm chi tiết lỗi từ backend nếu có
+            // details: error.response?.data // Gửi thêm chi tiết lỗi từ backend nếu có
         };
     }
 };

@@ -7,6 +7,7 @@ import {
   SortableColumn,
   SortDirection
 } from '../../../../../hooks/crawl/useConferenceTableManager'; // Adjust path
+import { Rocket } from 'lucide-react';
 
 interface ConferenceTableHeaderProps {
   sortColumn: SortableColumn | null;
@@ -39,7 +40,7 @@ export const ConferenceTableHeader: React.FC<ConferenceTableHeaderProps> = ({
   );
 
   return (
-    <thead className='bg-gray-100 sticky top-0 z-10'> {/* Made header sticky */}
+    <thead className='bg-gray-100 sticky top-0 z-10'>
       <tr>
         <th scope='col' className='w-[3%] px-3 py-3 text-center text-xs font-medium uppercase tracking-wider text-gray-500'>Sel</th>
         {/* REMOVED Exp COLUMN HERE */}
@@ -49,7 +50,7 @@ export const ConferenceTableHeader: React.FC<ConferenceTableHeaderProps> = ({
         {isFilteredByRequest && (
             <th scope='col' className='min-w-[60px] px-3 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500'>
                 <SortButton column='requestId' title='Request ID'>
-                    <FaFingerprint className='mr-1 inline text-purple-500' /> Request ID
+                    <Rocket size={16} className='mr-1 inline text-purple-500' /> Request ID
                 </SortButton>
             </th>
         )}
@@ -62,17 +63,19 @@ export const ConferenceTableHeader: React.FC<ConferenceTableHeaderProps> = ({
         <th scope='col' className='w-[80px] px-2 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500' title='Gemini Determine'>Det.</th>
         <th scope='col' className='w-[80px] px-2 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500' title='Gemini CFP'>CFP</th>
         <th scope='col' className='w-[80px] px-2 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500' title='Gemini Extract'>Ext.</th>
-        <th scope='col' className='w-[90px] px-3 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500'>
+        <th scope='col' className='w-[90px] px-3 pt-0.5 text-left text-xs font-medium uppercase tracking-wider text-gray-500'>
             <SortButton column='validationWarningCount' title='Validation Warning Count' className='justify-center'>
-                <FaExclamationCircle className='mb-0.5 mr-1 inline text-amber-500' /> Warns
+                <FaExclamationCircle className='mr-1 inline text-amber-500' /> Warns
             </SortButton>
         </th>
-        <th scope='col' className='w-[90px] px-3 py-3 text-center text-xs font-medium uppercase tracking-wider text-gray-500'>
+        <th scope='col' className='w-[90px] px-3 pt-0.5 text-center text-xs font-medium uppercase tracking-wider text-gray-500'>
             <SortButton column='errorCount' title='Error Count' className='justify-center'>
                 <FaTimesCircle className='mb-0.5 mr-1 inline text-red-500' /> Errors
             </SortButton>
         </th>
-        <th scope='col' className='w-[80px] pl-8 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500' title='Save Status'><FaSave /></th>
+        <th scope='col' className='w-[80px] pr-4 pt-0.5 text-right text-xs font-medium uppercase tracking-wider text-gray-500' title='Save Status'>
+          <FaSave className='mr-1 inline'  />Save
+        </th>
       </tr>
     </thead>
   );
