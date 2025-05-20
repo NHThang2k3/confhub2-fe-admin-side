@@ -3,9 +3,9 @@ import { useState, useMemo, useCallback, useEffect } from 'react';
 import {
   ConferenceAnalysisDetail,
   LogAnalysisResult
-} from '@/src/models/logAnalysis/logAnalysis'; // Adjust path
-import { saveConferenceToJson } from '../../app/api/logAnalysis/saveConferences'; // Adjust path
-import { useConferenceCrawl, CrawlModelType } from './useConferenceCrawl'; // Import the crawl hook
+} from '@/src/models/logAnalysis/logAnalysis';
+import { saveConferenceToJson } from '../../app/api/logAnalysis/saveConferences';
+import { useConferenceCrawl, ApiModels } from './useConferenceCrawl'; // Import ApiModels
 import { SendToCrawlConference } from '@/src/models/logAnalysis/importConferenceCrawl';
 
 export type SortableColumn =
@@ -40,6 +40,7 @@ export interface UseConferenceTableManagerProps {
 }
 
 
+
 export const useConferenceTableManager = ({
   logAnalysisResult
 }: UseConferenceTableManagerProps) => {
@@ -56,20 +57,16 @@ export const useConferenceTableManager = ({
   const [rowSaveErrors, setRowSaveErrors] = useState<Record<string, string>>(
     {}
   );
-  const [searchQuery, setSearchQuery] = useState(''); // --- NEW: Search query state ---
+  const [searchQuery, setSearchQuery] = useState('');
 
-  // ++ Instantiate useConferenceCrawl
   const {
-    startCrawlItems, // Hàm này sẽ nhận model làm tham số
-    crawlModel: globalCrawlModel, // Model đang được chọn ở global/CSV crawl context
-    // isCrawling, // Có thể dùng để disable nút "Crawl Again" nếu đang có crawl khác chạy
+    startCrawlItems,
+    // apiModels: globalApiModels, // If you had a global default for the 3 API models
   } = useConferenceCrawl();
 
 
-  // ++ NEW STATE for modal
   const [isCrawlModelModalOpen, setIsCrawlModelModalOpen] = useState(false);
   const [itemsToCrawlWithSelectedModel, setItemsToCrawlWithSelectedModel] = useState<SendToCrawlConference[]>([]);
-
 
   const conferenceDataArray: ConferenceTableData[] = useMemo(() => {
     if (!logAnalysisResult?.conferenceAnalysis) return [];
@@ -112,10 +109,9 @@ export const useConferenceTableManager = ({
     setSelectedRows({});
     setMainSaveStatus('idle');
     setExpandedRow(null);
-    setSearchQuery(''); // --- NEW: Reset search query when data changes ---
+    setSearchQuery('');
   }, [conferenceDataArray]);
 
-  // --- NEW: Filtered data based on search query ---
   const filteredData = useMemo(() => {
     if (!searchQuery.trim()) {
       return conferenceDataArray;
@@ -130,8 +126,8 @@ export const useConferenceTableManager = ({
   }, [conferenceDataArray, searchQuery]);
 
   const sortedData = useMemo(() => {
-    if (!sortColumn) return filteredData; // --- MODIFIED: Use filteredData ---
-    return [...filteredData].sort((a, b) => { // --- MODIFIED: Use filteredData ---
+    if (!sortColumn) return filteredData;
+    return [...filteredData].sort((a, b) => {
       let aValue: any = a[sortColumn];
       let bValue: any = b[sortColumn];
       const handleNull = (val: any) => val === null || val === undefined;
@@ -159,7 +155,7 @@ export const useConferenceTableManager = ({
           return 0;
       }
     });
-  }, [filteredData, sortColumn, sortDirection]); // --- MODIFIED: Depend on filteredData ---
+  }, [filteredData, sortColumn, sortDirection]);
 
   const handleSort = useCallback(
     (column: SortableColumn) => {
@@ -183,14 +179,9 @@ export const useConferenceTableManager = ({
     setSelectedRows(prev => ({ ...prev, [uniqueRowId]: !prev[uniqueRowId] }));
   }, []);
 
-  // Important: Selection handlers should operate on the currently visible (filtered and sorted) data
-  // or on the complete dataset if that's the desired behavior.
-  // Current implementation of handleSelectAll etc. uses `sortedData`, which is now filtered.
-  // This means "Select All" will select all *filtered* items. This is usually the expected behavior.
-
   const handleSelectAll = useCallback(() => {
     const newSelection: Record<string, boolean> = {};
-    sortedData.forEach(conf => { // sortedData is already filtered
+    sortedData.forEach(conf => {
       newSelection[conf.uniqueRowId] = true;
     });
     setSelectedRows(newSelection);
@@ -200,7 +191,7 @@ export const useConferenceTableManager = ({
 
   const handleSelectNoError = useCallback(() => {
     const newSelection: Record<string, boolean> = {};
-    sortedData.forEach(conf => { // sortedData is already filtered
+    sortedData.forEach(conf => { 
       if (conf.errorCount === 0) newSelection[conf.uniqueRowId] = true;
     });
     setSelectedRows(newSelection);
@@ -208,7 +199,7 @@ export const useConferenceTableManager = ({
 
   const handleSelectError = useCallback(() => {
     const newSelection: Record<string, boolean> = {};
-    sortedData.forEach(conf => { // sortedData is already filtered
+    sortedData.forEach(conf => {
       if (conf.errorCount > 0) newSelection[conf.uniqueRowId] = true;
     });
     setSelectedRows(newSelection);
@@ -216,7 +207,7 @@ export const useConferenceTableManager = ({
 
   const handleSelectWarning = useCallback(() => {
     const newSelection: Record<string, boolean> = {};
-    sortedData.forEach(conf => { // sortedData is already filtered
+    sortedData.forEach(conf => {
       if (conf.hasValidationWarnings) newSelection[conf.uniqueRowId] = true;
     });
     setSelectedRows(newSelection);
@@ -224,7 +215,7 @@ export const useConferenceTableManager = ({
 
   const handleSelectNoWarning = useCallback(() => {
     const newSelection: Record<string, boolean> = {};
-    sortedData.forEach(conf => { // sortedData is already filtered
+    sortedData.forEach(conf => {
       if (!conf.hasValidationWarnings) newSelection[conf.uniqueRowId] = true;
     });
     setSelectedRows(newSelection);
@@ -236,15 +227,13 @@ export const useConferenceTableManager = ({
 
   const isSelectedWithProblem = useMemo(() => {
     if (selectedRowIds.length === 0) return false;
-    // Check against the original conferenceDataArray or filteredData based on your needs for this logic.
-    // Here, we check against the master list (conferenceDataArray) to find the selected items' original data.
     const selectedOriginalData = conferenceDataArray.filter(
       conf => selectedRows[conf.uniqueRowId]
     );
     return selectedOriginalData.some(
       conf => conf.errorCount > 0 || conf.hasValidationWarnings
     );
-  }, [selectedRowIds, selectedRows, conferenceDataArray]); // Use conferenceDataArray for truth
+  }, [selectedRowIds, selectedRows, conferenceDataArray]);
 
   const isSaveEnabled = useMemo(() => {
     return (
@@ -260,7 +249,6 @@ export const useConferenceTableManager = ({
     }
   }, [mainSaveStatus]);
 
-
   const handleBulkSave = async () => {
     if (!isSaveEnabled) return;
     setMainSaveStatus('saving');
@@ -273,7 +261,6 @@ export const useConferenceTableManager = ({
     setRowSaveStatus(nextRowStatus);
     setRowSaveErrors(nextRowErrors);
 
-    // Items to save should be from the master list, identified by selectedRowIds
     const itemsToSave = conferenceDataArray.filter(
       conf => selectedRows[conf.uniqueRowId]
     );
@@ -322,40 +309,42 @@ export const useConferenceTableManager = ({
     }
   };
 
-  const handleCrawlAgainClick = useCallback(() => { // Đổi tên hàm để rõ ràng hơn là click
+
+  const handleCrawlAgainClick = useCallback(() => {
     if (selectedRowIds.length === 0) {
       alert("No items selected to re-crawl.");
       return;
     }
-
     const itemsToReCrawl: SendToCrawlConference[] = conferenceDataArray
       .filter(conf => selectedRows[conf.uniqueRowId])
       .map(conf => ({
         Title: conf.title,
         Acronym: conf.acronym,
-        originalRequestId: conf.requestId // Quan trọng!
+        originalRequestId: conf.requestId
       }));
 
     if (itemsToReCrawl.length > 0) {
       setItemsToCrawlWithSelectedModel(itemsToReCrawl);
-      setIsCrawlModelModalOpen(true); // Mở modal
+      setIsCrawlModelModalOpen(true);
     }
   }, [selectedRowIds, conferenceDataArray, selectedRows]);
 
-  const handleConfirmCrawlWithModel = useCallback(async (selectedModel: CrawlModelType) => {
+  // Updated to accept ApiModels
+  const handleConfirmCrawlWithModels = useCallback(async (selectedModels: ApiModels) => {
     if (itemsToCrawlWithSelectedModel.length > 0) {
-      console.log(`Triggering crawl again for ${itemsToCrawlWithSelectedModel.length} item(s) using ${selectedModel} model:`, itemsToCrawlWithSelectedModel);
-      await startCrawlItems(itemsToCrawlWithSelectedModel, selectedModel); // Truyền model đã chọn
-      // Reset state sau khi crawl (tùy chọn)
+      const modelDesc = `DL:${selectedModels.determineLinks}, EI:${selectedModels.extractInfo}, EC:${selectedModels.ExtractCfp}`;
+      console.log(`Triggering crawl again for ${itemsToCrawlWithSelectedModel.length} item(s) using models ${modelDesc}:`, itemsToCrawlWithSelectedModel);
+      await startCrawlItems(itemsToCrawlWithSelectedModel, selectedModels);
+      // Resetting state after crawl is optional and depends on desired UX
       // setItemsToCrawlWithSelectedModel([]);
-      // handleDeselectAll(); // Có thể bỏ chọn các item đã crawl
+      // handleDeselectAll(); 
     }
-    setIsCrawlModelModalOpen(false); // Đóng modal
+    setIsCrawlModelModalOpen(false);
   }, [itemsToCrawlWithSelectedModel, startCrawlItems /*, handleDeselectAll */]);
 
 
   return {
-    sortedData, // This is now filtered and sorted
+    sortedData,
     sortColumn,
     sortDirection,
     handleSort,
@@ -375,13 +364,13 @@ export const useConferenceTableManager = ({
     handleBulkSave,
     rowSaveStatus,
     rowSaveErrors,
-    handleCrawlAgainClick, // ++ EXPOSE NEW HANDLER
-    searchQuery, // --- NEW: Expose search query ---
+    handleCrawlAgainClick,
+    searchQuery,
     setSearchQuery,
-    isCrawlModelModalOpen, // ++ EXPOSE MODAL STATE
-    setIsCrawlModelModalOpen, // ++ EXPOSE MODAL SETTER
-    handleConfirmCrawlWithModel, // ++ EXPOSE CONFIRM HANDLER
-    itemsToCrawlCount: itemsToCrawlWithSelectedModel.length, // ++ EXPOSE COUNT FOR MODAL
-    globalCrawlModelForModal: globalCrawlModel, // ++ EXPOSE GLOBAL MODEL FOR MODAL DEFAULT
+    isCrawlModelModalOpen,
+    setIsCrawlModelModalOpen,
+    handleConfirmCrawlWithModels, // Renamed for clarity
+    itemsToCrawlCount: itemsToCrawlWithSelectedModel.length,
+    // globalCrawlModelForModal is removed as model selection is now more complex
   };
 };

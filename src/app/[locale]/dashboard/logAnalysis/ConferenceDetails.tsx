@@ -1,12 +1,12 @@
 // src/components/ConferenceDetails.tsx
 import React, { useState } from 'react';
 import { FaChevronUp, FaChevronDown } from 'react-icons/fa';
-import { LogAnalysisResult } from '@/src/models/logAnalysis/logAnalysis'; // Adjust path
-import { useConferenceTableManager } from '@/src/hooks/crawl/useConferenceTableManager'; // Adjust path
-import { ConferenceTableControls } from './conferenceTable/ConferenceTableControls'; // Adjust path
-import { ConferenceTable } from './conferenceTable/ConferenceTable'; // Adjust path
-import { useConferenceCrawl } from '@/src/hooks/crawl/useConferenceCrawl'; // Nếu cần truy cập isCrawling từ đây
-import CrawlModelSelectModal from './conferenceTable/CrawlModelSelectModal';
+import { LogAnalysisResult } from '@/src/models/logAnalysis/logAnalysis';
+import { useConferenceTableManager } from '@/src/hooks/crawl/useConferenceTableManager';
+import { ConferenceTableControls } from './conferenceTable/ConferenceTableControls';
+import { ConferenceTable } from './conferenceTable/ConferenceTable';
+import { useConferenceCrawl } from '@/src/hooks/crawl/useConferenceCrawl'; // Correct path
+import CrawlModelSelectModal from './conferenceTable/CrawlModelSelectModal'; // Correct path if moved
 
 interface ConferenceDetailsProps {
   logAnalysisResult: LogAnalysisResult | null | undefined;
@@ -16,7 +16,9 @@ const ConferenceDetails: React.FC<ConferenceDetailsProps> = ({
   logAnalysisResult
 }) => {
   const [isExpanded, setIsExpanded] = useState(true);
-  const { isCrawling: isGlobalCrawling } = useConferenceCrawl(); // Nếu muốn disable nút khi global crawl chạy
+  // isGlobalCrawling might come from a higher context or the specific useConferenceCrawl instance
+  // if you instantiate it here or pass it down. For now, assuming it's from the tableManager's useConferenceCrawl
+  const { isCrawling: isGlobalCrawling } = useConferenceCrawl(); // Get global crawling status
 
   const handleToggleExpand = () => {
     setIsExpanded(prev => !prev);
@@ -27,7 +29,7 @@ const ConferenceDetails: React.FC<ConferenceDetailsProps> = ({
   const rowSaveErrorsCount = Object.keys(tableManager.rowSaveErrors).length;
 
   return (
-    <> {/* ++ Wrap with Fragment để chứa Modal */}
+    <>
       <section className='bg-white shadow-xl rounded-lg p-4 md:p-6 border border-gray-200 mt-6 hover:bg-gray-5'>
         <div
           className='flex flex-wrap items-center justify-between mb-4 pb-2 border-b border-gray-300 gap-4 cursor-pointer'
@@ -65,9 +67,8 @@ const ConferenceDetails: React.FC<ConferenceDetailsProps> = ({
                   mainSaveStatus={tableManager.mainSaveStatus}
                   rowSaveErrorsCount={rowSaveErrorsCount}
                   onSave={tableManager.handleBulkSave}
-                  onCrawl={tableManager.handleCrawlAgainClick} // ++ SỬA TÊN PROP
-                  isCrawling={isGlobalCrawling} // ++ PROP MỚI NẾU CÓ
-
+                  onCrawl={tableManager.handleCrawlAgainClick}
+                  isCrawling={isGlobalCrawling} // Pass global crawling status to disable button if needed
                   onSelectAll={tableManager.handleSelectAll}
                   onSelectNoError={tableManager.handleSelectNoError}
                   onSelectError={tableManager.handleSelectError}
@@ -89,9 +90,8 @@ const ConferenceDetails: React.FC<ConferenceDetailsProps> = ({
                   mainSaveStatus={tableManager.mainSaveStatus}
                   rowSaveErrorsCount={rowSaveErrorsCount}
                   onSave={tableManager.handleBulkSave}
-                  onCrawl={tableManager.handleCrawlAgainClick} // ++ SỬA TÊN PROP
-                  isCrawling={isGlobalCrawling} // ++ PROP MỚI NẾU CÓ
-
+                  onCrawl={tableManager.handleCrawlAgainClick}
+                  isCrawling={isGlobalCrawling}
                   onSelectAll={tableManager.handleSelectAll}
                   onSelectNoError={tableManager.handleSelectNoError}
                   onSelectError={tableManager.handleSelectError}
@@ -119,13 +119,12 @@ const ConferenceDetails: React.FC<ConferenceDetailsProps> = ({
         )}
       </section>
 
-      {/* ++ RENDER MODAL */}
       <CrawlModelSelectModal
         isOpen={tableManager.isCrawlModelModalOpen}
         onClose={() => tableManager.setIsCrawlModelModalOpen(false)}
-        onConfirm={tableManager.handleConfirmCrawlWithModel}
-        currentGlobalModel={tableManager.globalCrawlModelForModal}
+        onConfirm={tableManager.handleConfirmCrawlWithModels} // Use the renamed handler
         itemCount={tableManager.itemsToCrawlCount}
+        // initialApiModels can be passed here if needed
       />
     </>
   );

@@ -1,27 +1,26 @@
-// src/app/[locale]/dashboard/logAnalysis/ConferenceCrawlUpoader.tsx
-
-import React, { useMemo, useState } from 'react'
-import { useConferenceCrawl } from '@/src/hooks/crawl/useConferenceCrawl' 
+// src/app/[locale]/dashboard/logAnalysis/ConferenceCrawlUploader.tsx
+import React, { useMemo, useState } from 'react';
+import { useConferenceCrawl, ApiName, CrawlModelType } from '@/src/hooks/crawl/useConferenceCrawl';
 import {
-  FaFileUpload,
-  FaSpinner,
-  FaPlay,
-  FaStop,
-  FaCheckCircle,
-  FaTimesCircle,
-  FaExclamationTriangle,
-  FaRedo,
-  FaTable
-} from 'react-icons/fa'
-import { Conference } from '@/src/models/logAnalysis/importConferenceCrawl'
-
+  FaFileUpload, FaSpinner, FaPlay, FaRedo, FaCheckCircle, FaTimesCircle, FaExclamationTriangle
+} from 'react-icons/fa';
+import { Conference } from '@/src/models/logAnalysis/importConferenceCrawl';
 import {
   AllCommunityModule,
   ModuleRegistry,
-  RowSelectionModule
-} from 'ag-grid-community'
-import { AgGridReact } from 'ag-grid-react'
-ModuleRegistry.registerModules([AllCommunityModule, RowSelectionModule])
+  RowSelectionModule,
+  GridOptions, // << Import GridOptions
+  ColDef // Import ColDef nếu bạn muốn định nghĩa kiểu cho cột (tùy chọn nhưng tốt)
+} from 'ag-grid-community';
+import { AgGridReact } from 'ag-grid-react';
+
+ModuleRegistry.registerModules([AllCommunityModule, RowSelectionModule]);
+
+const apiStepsForUploader: { name: ApiName, displayName: string }[] = [
+    { name: "determineLinks", displayName: "Determine Links Model" },
+    { name: "extractInfo", displayName: "Extract Information Model" },
+    { name: "extractCfp", displayName: "Extract CFP Model" },
+];
 
 export const ConferenceCrawlUploader: React.FC = () => {
   const {
@@ -31,7 +30,7 @@ export const ConferenceCrawlUploader: React.FC = () => {
     parseError,
     enableChunking,
     chunkSize,
-    crawlModel, // ++ GET from hook
+    apiModels,
     isCrawling,
     crawlError,
     crawlProgress,
@@ -39,86 +38,87 @@ export const ConferenceCrawlUploader: React.FC = () => {
     handleFileChange,
     setEnableChunking,
     setChunkSize,
-    setCrawlModel, // ++ GET from hook
-    startCrawl,
+    setApiModel,
+    startCrawlFromCsv,
     resetCrawl,
-    onSelectionChanged
-  } = useConferenceCrawl()
+    onCsvSelectionChanged, // Đảm bảo tên này khớp với tên prop của AgGridReact
+    selectedCsvRows
+  } = useConferenceCrawl();
 
-  const hasData = parsedData && parsedData.length > 0
-  const canStartCrawl = hasData && !isCrawling
+  const hasData = parsedData && parsedData.length > 0;
+  const canStartCrawl = hasData && !isCrawling && selectedCsvRows.length > 0;
   const showStatusSection =
     isCrawling ||
     crawlMessages.length > 0 ||
     crawlError ||
-    crawlProgress.status !== 'idle'
+    crawlProgress.status !== 'idle';
 
-  const [colDef, setColDef] = useState([
-    // ... (colDef remains the same)
+  // Giữ nguyên colDef như code gốc của bạn
+  const [colDefs] = useState<ColDef<Conference>[]>([ // Thêm kiểu ColDef<Conference> cho an toàn
     {
-      field: 'acronym' as keyof Conference,
+      field: 'acronym', // Không cần 'as keyof Conference' nữa
       headerName: 'Acronym',
       sortable: true,
-      filter: true
+      filter: true,
+      checkboxSelection: true, // Để chọn từng dòng
+      headerCheckboxSelection: true, // Để chọn tất cả
+      width: 180,
     },
     {
-      field: 'title' as keyof Conference,
+      field: 'title',
       headerName: 'Title',
       sortable: true,
-      filter: true
+      filter: true,
+      flex: 1,
     },
     {
-      field: 'sources' as keyof Conference,
+      field: 'sources',
       headerName: 'Sources',
       sortable: true,
-      filter: true
+      filter: true,
+      width: 150,
     },
     {
-      field: 'ranks' as keyof Conference,
+      field: 'ranks',
       headerName: 'Ranks',
       sortable: true,
-      filter: true
+      filter: true,
+      width: 120,
     },
     {
-      field: 'researchFields' as keyof Conference,
+      field: 'researchFields',
       headerName: 'Research Fields',
       sortable: true,
-      filter: true
+      filter: true,
+      width: 200,
     },
     {
-      field: 'status' as keyof Conference,
+      field: 'status',
       headerName: 'Status',
       sortable: true,
-      filter: true
+      filter: true,
+      width: 120,
     },
     {
-      field: 'updatedAt' as keyof Conference,
+      field: 'updatedAt',
       headerName: 'Updated At',
       sortable: true,
       filter: true,
-      valueFormatter: (params: any) => {
-        const date = new Date(params.value)
-        return date.toLocaleDateString('en-US', {
-          year: 'numeric',
-          month: '2-digit',
-          day: '2-digit',
-          hour: '2-digit',
-          minute: '2-digit',
-          second: '2-digit'
-        })
-      }
+      width: 200,
+      valueFormatter: (params: any) => params.value ? new Date(params.value).toLocaleString() : ''
     }
-  ])
+  ]);
 
-  const rowSelection = useMemo(() => {
+  // SỬA LỖI TYPE Ở ĐÂY
+  // Khai báo kiểu cho gridOptions
+  const gridOptions = useMemo<GridOptions<Conference>>(() => {
     return {
-      mode: 'multiRow',
-      checkBox: true,
-      headerCheckBox: true,
-      enableClickSelection: true,
-      selectAll: 'filtered'
-    }
-  }, [])
+      rowSelection: 'multiple', // Bây giờ TypeScript biết đây là kiểu "multiple" hợp lệ
+      suppressRowClickSelection: true, // Giữ nguyên: chỉ chọn bằng checkbox
+      // onSelectionChanged: onCsvSelectionChanged, // Prop này nên được đặt trực tiếp trên AgGridReact
+      // Các grid options khác nếu có
+    };
+  }, []); // Bỏ onCsvSelectionChanged khỏi dependencies nếu nó là callback ổn định từ hook
 
   return (
     <div className='mx-auto rounded-lg border border-gray-200 bg-white p-4 shadow-lg md:p-6'>
@@ -127,13 +127,14 @@ export const ConferenceCrawlUploader: React.FC = () => {
       </h2>
       <div className='flex flex-col md:flex-row md:space-x-6'>
         <div className='flex flex-col space-y-4 md:w-1/2'>
+          {/* Phần upload file và cấu hình */}
           <div>
             <label className='mb-2 block text-sm font-medium text-gray-700'>
               Select CSV File (Requires columns: Title, Acronym)
             </label>
             <div className='flex items-center space-x-4'>
               <label
-                className={`relative inline-flex cursor-pointer items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-5 ${isParsing || isCrawling ? 'cursor-not-allowed opacity-50' : ''}`}
+                className={`relative inline-flex cursor-pointer items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 ${isParsing || isCrawling ? 'cursor-not-allowed opacity-50' : ''}`}
               >
                 <FaFileUpload
                   className={`mr-2 ${isParsing ? 'animate-spin' : ''}`}
@@ -173,7 +174,7 @@ export const ConferenceCrawlUploader: React.FC = () => {
             {hasData && !isParsing && (
               <p className='mt-2 flex items-center text-sm text-green-600'>
                 <FaCheckCircle className='mr-1' /> Parsed {parsedData.length}{' '}
-                conferences. Ready to crawl.
+                conferences. Select rows from the table below to crawl.
               </p>
             )}
             {!hasData &&
@@ -186,14 +187,12 @@ export const ConferenceCrawlUploader: React.FC = () => {
                 </p>
               )}
           </div>
-          
+
           {hasData && (
-            <div className='rounded-md border border-gray-200 bg-gray-5 p-4'>
-              <h3 className='text-md mb-3 font-semibold text-gray-700'>
-                Crawl Configuration
-              </h3>
+            <div className='rounded-md border border-gray-200 bg-gray-50 p-4 space-y-4'>
+              <h3 className='text-md font-semibold text-gray-700'>Crawl Configuration</h3>
               {/* Chunking Configuration */}
-              <div className='mb-4 flex flex-col space-y-3 sm:flex-row sm:items-center sm:space-x-6 sm:space-y-0'>
+              <div className='flex flex-col space-y-3 sm:flex-row sm:items-center sm:space-x-6 sm:space-y-0'>
                 <div className='flex items-center'>
                   <input
                     id='enable-chunking'
@@ -235,56 +234,46 @@ export const ConferenceCrawlUploader: React.FC = () => {
                 </div>
               </div>
 
-              {/* ++ ADDED: Model Selection */}
-              <div>
-                <label className='block text-sm font-medium text-gray-700'>
-                  Select Crawl Model:
-                </label>
-                <div className='mt-2 flex flex-col space-y-2 sm:flex-row sm:items-center sm:space-x-4 sm:space-y-0'>
-                  <div className='flex items-center'>
-                    <input
-                      id='model-non-tuned'
-                      name='crawlModel'
-                      type='radio'
-                      value='non-tuned'
-                      checked={crawlModel === 'non-tuned'}
-                      onChange={() => setCrawlModel('non-tuned')}
-                      disabled={isCrawling}
-                      className='h-4 w-4 border-gray-300 text-blue-600 focus:ring-blue-500'
-                    />
-                    <label
-                      htmlFor='model-non-tuned'
-                      className='ml-2 block text-sm text-gray-900'
-                    >
-                      Non-Tuned Model
-                    </label>
+              {/* API Model Selection */}
+              <div className="space-y-3 pt-3">
+                <p className="text-sm font-medium text-gray-700">Select Model for Each API Step <span className="text-red-500">*</span>:</p>
+                {apiStepsForUploader.map(step => (
+                  <div key={step.name}>
+                    <label className='block text-xs font-medium text-gray-600 mb-1'>{step.displayName}:</label>
+                    <div className='flex space-x-4'>
+                      {(['non-tuned', 'tuned'] as CrawlModelType[]).map(modelValue => (
+                        <div key={modelValue} className='flex items-center'>
+                          <input
+                            id={`model-${step.name}-${modelValue}`}
+                            name={`model-${step.name}`}
+                            type='radio'
+                            value={modelValue}
+                            checked={apiModels[step.name] === modelValue}
+                            onChange={() => setApiModel(step.name, modelValue)}
+                            disabled={isCrawling}
+                            className='h-4 w-4 border-gray-300 text-blue-600 focus:ring-blue-500'
+                          />
+                          <label
+                            htmlFor={`model-${step.name}-${modelValue}`}
+                            className='ml-2 block text-sm text-gray-900 capitalize'
+                          >
+                            {modelValue.replace('-', ' ')}
+                          </label>
+                        </div>
+                      ))}
+                    </div>
+                     {apiModels[step.name] === null && !isCrawling && (
+                         <p className="text-xs text-red-500 mt-1">Please select a model for {step.displayName.replace(' Model', '')}.</p>
+                    )}
                   </div>
-                  <div className='flex items-center'>
-                    <input
-                      id='model-tuned'
-                      name='crawlModel'
-                      type='radio'
-                      value='tuned'
-                      checked={crawlModel === 'tuned'}
-                      onChange={() => setCrawlModel('tuned')}
-                      disabled={isCrawling}
-                      className='h-4 w-4 border-gray-300 text-blue-600 focus:ring-blue-500'
-                    />
-                    <label
-                      htmlFor='model-tuned'
-                      className='ml-2 block text-sm text-gray-900'
-                    >
-                      Tuned Model
-                    </label>
-                  </div>
-                </div>
+                ))}
               </div>
             </div>
           )}
 
-          <div className='flex items-center space-x-4'>
+          <div className='flex items-center space-x-4 pt-2'>
             <button
-              onClick={startCrawl}
+              onClick={startCrawlFromCsv}
               disabled={!canStartCrawl}
               className={`inline-flex items-center rounded-md border border-transparent px-4 py-2 text-sm font-medium text-white shadow-sm ${canStartCrawl ? 'bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2' : 'cursor-not-allowed bg-gray-400'}`}
             >
@@ -298,24 +287,24 @@ export const ConferenceCrawlUploader: React.FC = () => {
                 : crawlProgress.status !== 'idle' &&
                     crawlProgress.status !== 'crawling'
                   ? 'Start Crawl Again'
-                  : 'Start Crawl'}
+                  : 'Start Crawl Selected'}
             </button>
             <button
               onClick={resetCrawl}
               className='inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-5 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2'
-              title='Clear selection and results'
+              title='Clear selection, results, and configurations'
               disabled={isCrawling}
             >
-              <FaRedo className='mr-2' /> Reset
+              <FaRedo className='mr-2' /> Reset All
             </button>
           </div>
-          
+
           {showStatusSection && (
-            <div className='rounded-md border border-gray-200 p-4'>
+            <div className='mt-4 rounded-md border border-gray-200 p-4'>
               <h3 className='text-md mb-3 font-semibold text-gray-700'>
                 Crawl Status & Log
               </h3>
-              {isCrawling && enableChunking && crawlProgress.total > 0 && (
+              {isCrawling && enableChunking && crawlProgress.total > 1 && (
                 <div className='mb-3'>
                   <div className='mb-1 flex justify-between'>
                     <span className='text-sm font-medium text-blue-700'>
@@ -339,10 +328,9 @@ export const ConferenceCrawlUploader: React.FC = () => {
                   </div>
                 </div>
               )}
-              {isCrawling && !enableChunking && (
+              {isCrawling && (!enableChunking || crawlProgress.total <= 1) && (
                 <p className='mb-3 flex items-center text-sm text-blue-600'>
-                  <FaSpinner className='mr-2 animate-spin' /> Sending entire
-                  list...
+                  <FaSpinner className='mr-2 animate-spin' /> Processing items...
                 </p>
               )}
 
@@ -364,7 +352,7 @@ export const ConferenceCrawlUploader: React.FC = () => {
               {!isCrawling &&
                 (crawlProgress.status === 'error' ||
                   crawlProgress.status === 'stopped') &&
-                !crawlError && ( 
+                !crawlError && (
                   <p className='mb-3 flex items-center text-sm text-red-600'>
                     <FaTimesCircle className='mr-1' /> Crawl process failed or
                     was stopped. Check logs for details.
@@ -372,7 +360,7 @@ export const ConferenceCrawlUploader: React.FC = () => {
                 )}
 
               {crawlMessages.length > 0 && (
-                <div className='custom-scrollbar max-h-60 space-y-1 overflow-y-auto rounded border border-gray-100 bg-gray-5 p-3 text-xs text-gray-600'>
+                <div className='custom-scrollbar max-h-60 space-y-1 overflow-y-auto rounded border border-gray-100 bg-gray-50 p-3 text-xs text-gray-600'>
                   {crawlMessages.map((msg, index) => (
                     <p
                       key={index}
@@ -386,23 +374,23 @@ export const ConferenceCrawlUploader: React.FC = () => {
             </div>
           )}
         </div>
-        
-        <div className='mt-4 flex flex-col space-y-4 md:mt-0 md:w-1/2'>
-          {hasData &&
-            !isParsing && (
-              <AgGridReact
-                className='ag-theme-alpine'
-                rowData={parsedData}
-                columnDefs={colDef}
-                rowSelection={rowSelection as any}
-                onSelectionChanged={onSelectionChanged}
-                domLayout='autoHeight' // Optional: makes the grid fit its content height
-              />
+
+        <div className={`mt-4 md:mt-0 md:w-1/2 ${!hasData ? 'hidden' : 'flex flex-col'}`}>
+            {hasData && !isParsing && (
+              <div className="ag-theme-alpine" style={{ height: 'calc(100vh - 380px)', minHeight: '300px', width: '100%' }}>
+                <AgGridReact
+                    rowData={parsedData}
+                    columnDefs={colDefs}
+                    gridOptions={gridOptions} // Dùng lại gridOptions đã được định nghĩa kiểu
+                    onSelectionChanged={onCsvSelectionChanged} // Prop này gọi hàm từ hook
+                    domLayout='normal'
+                />
+              </div>
             )}
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default ConferenceCrawlUploader
+export default ConferenceCrawlUploader;

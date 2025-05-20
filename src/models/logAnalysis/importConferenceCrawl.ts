@@ -7,7 +7,9 @@ export interface Conference {
     acronym: string;
     ranks: string[];
     researchFields: string[];
-    status: string ; // Assuming possible statuses
+    status: string; // Assuming possible statuses
+    updatedAt?: string | number | Date; // Thêm updatedAt ở đây, kiểu có thể là string (ISO date), number (timestamp), hoặc Date
+
 }
 
 export interface ApiCrawlResponse {
