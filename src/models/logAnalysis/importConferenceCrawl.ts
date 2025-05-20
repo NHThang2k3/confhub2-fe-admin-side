@@ -25,7 +25,8 @@ export interface CrawlProgress {
 }
 
 export interface SendToCrawlConference {
-    id : string;
-    Title : string;
-    Acronym : string;
+    id?: string | number; // Existing: from CSV parsing or table row ID
+    Title: string;
+    Acronym: string;
+    originalRequestId?: string; // ADDED: To carry the original request ID for re-crawls
 }
