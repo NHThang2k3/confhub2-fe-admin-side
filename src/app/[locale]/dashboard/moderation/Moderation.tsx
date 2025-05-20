@@ -1,20 +1,15 @@
 // src/components/Moderation/Moderation.tsx
-'use client'; // <-- Already marked as client component
+'use client';
 
 import React, { useState, useMemo, useCallback, useEffect } from 'react';
-
-// Import types
 import {
     Conference, ConferenceStatus, SortKey, SortDirection,
     ApiConferenceRequest, FullConferenceDetailsResponse, OrganizationStrings
 } from '@/src/types';
-
-// Import child components
 import ModerationControls from './ModerationControls';
 import ConferenceList from './ConferenceList';
 import CommentModal from './CommentModal';
-// Import useTranslations
-import { useTranslations } from 'next-intl'; // <-- Added import
+import { useTranslations } from 'next-intl';
 
 // Helper function to format Date to YYYY-MM-DD
 const formatDateToYYYYMMDD = (date: Date | null): string | undefined => {
@@ -30,22 +25,21 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_DATABASE_URL;
 
 
 const Moderation: React.FC = () => {
-    // Call useTranslations hook
-    const t = useTranslations('Moderation'); // <-- Added hook call (using a namespace example)
+    const t = useTranslations('Moderation');
 
-    const [conferences, setConferences] = useState<Conference[]>([]);
+    // Store all conferences fetched based on date/sort criteria (not filtered by status at API level)
+    const [allFetchedConferences, setAllFetchedConferences] = useState<Conference[]>([]);
     const [loading, setLoading] = useState(true);
-    // Initialize error with potential translation
     const [error, setError] = useState<string | null>(null);
 
-    // Filtering States
+    // filterStatus is now for client-side filtering of allFetchedConferences
     const [filterStatus, setFilterStatus] = useState<ConferenceStatus | 'all'>('all');
     const [searchTerm, setSearchTerm] = useState('');
     const [filterStartDate, setFilterStartDate] = useState<Date | null>(null);
     const [filterEndDate, setFilterEndDate] = useState<Date | null>(null);
 
     // Sorting States
-    const [sortKey, setSortKey] = useState<SortKey>('createdAt');
+    const [sortKey, setSortKey] = useState<SortKey>('createdAt'); // 'createdAt', 'updatedAt' for API sort; 'title' for client sort
     const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
 
     // Modal States
@@ -57,10 +51,11 @@ const Moderation: React.FC = () => {
 
 
     // --- Fetch Data from API ---
+    // This function now fetches conferences based on date range and sorting,
+    // but NOT by status from the API. Status filtering will happen client-side.
     const fetchConferences = useCallback(async () => {
         if (!API_BASE_URL) {
-             // Translate backend URL error
-             setError(t('Error_BackendUrlNotConfigured')); // <-- Translated
+             setError(t('Error_BackendUrlNotConfigured'));
              setLoading(false);
              return;
         }
@@ -69,13 +64,12 @@ const Moderation: React.FC = () => {
         setError(null);
 
         try {
-            // 1. Fetch the list of moderation requests
             const requestsUrl = new URL(`${API_BASE_URL}/api/v1/admin/conferences/requests`);
 
             // Add query parameters for filtering/sorting requests
-            if (filterStatus !== 'all') {
-                requestsUrl.searchParams.append('status', filterStatus.toLowerCase());
-            }
+            // DO NOT filter by status here; we fetch all statuses matching other criteria.
+            // The 'status' parameter is removed from the API call.
+
             const formattedStartDate = formatDateToYYYYMMDD(filterStartDate);
             if (formattedStartDate) {
                 requestsUrl.searchParams.append('startDate', formattedStartDate);
@@ -84,39 +78,37 @@ const Moderation: React.FC = () => {
             if (formattedEndDate) {
                  requestsUrl.searchParams.append('endDate', formattedEndDate);
             }
+            // API handles sorting by 'createdAt' or 'updatedAt'
             if (sortKey === 'createdAt' || sortKey === 'updatedAt') {
                  requestsUrl.searchParams.append('sortBy', sortKey);
                  requestsUrl.searchParams.append('sortOrder', sortDirection);
             }
 
-            console.log("Fetching requests from:", requestsUrl.toString());
+            console.log("Fetching all conferences (matching date/sort criteria) from:", requestsUrl.toString());
 
             const requestsResponse = await fetch(requestsUrl.toString());
 
             if (!requestsResponse.ok) {
                 const errorDetail = await requestsResponse.text();
-                 // Translate fetch error
                  throw new Error(t('Error_FailedToFetchRequests', {
                      status: requestsResponse.status,
-                     body: errorDetail.substring(0, 100) + (errorDetail.length > 100 ? '...' : '') // Prevent excessively long error messages
-                 })); // <-- Translated
+                     body: errorDetail.substring(0, 100) + (errorDetail.length > 100 ? '...' : '')
+                 }));
             }
 
             const requestsData: ApiConferenceRequest[] = await requestsResponse.json();
 
             if (!requestsData || requestsData.length === 0) {
-                 setConferences([]);
+                 setAllFetchedConferences([]); // Update state for all fetched conferences
                  setLoading(false);
                  return;
             }
 
-            // 2. Fetch full conference details for each request
             const conferenceDetailsPromises = requestsData.map(async (request) => {
                  const conferenceId = request.conferenceId;
                 if (!conferenceId) {
                      console.warn(`Request ${request.id} is missing conferenceId. Skipping details fetch.`);
-                     // Translate missing ID error
-                     return { request, details: null, error: t('Error_MissingConferenceId') }; // <-- Translated
+                     return { request, details: null, error: t('Error_MissingConferenceId') };
                 }
                 const detailsUrl = `${API_BASE_URL}/api/v1/conference/${conferenceId}`;
 
@@ -125,25 +117,23 @@ const Moderation: React.FC = () => {
                     if (!detailsResponse.ok) {
                         const errorDetail = await detailsResponse.text();
                          console.error(`Failed to fetch details for conference ${conferenceId}: status ${detailsResponse.status}, body: ${errorDetail}`);
-                         // Translate failed details error
-                        return { request, details: null, error: t('Error_FailedToLoadDetailsStatus', { status: detailsResponse.status }) }; // <-- Translated
+                        return { request, details: null, error: t('Error_FailedToLoadDetailsStatus', { status: detailsResponse.status }) };
                     }
                     const detailsData: FullConferenceDetailsResponse = await detailsResponse.json();
                     return { request, details: detailsData, error: null };
                 } catch (err: any) {
                     console.error(`Error fetching details for conference ${conferenceId}:`, err);
-                     // Translate network/other details error
-                    return { request, details: null, error: t('Error_LoadingDetailsNetwork', { message: err.message }) }; // <-- Translated
+                    return { request, details: null, error: t('Error_LoadingDetailsNetwork', { message: err.message }) };
                 }
             });
 
             const results = await Promise.all(conferenceDetailsPromises);
 
-            // 3. Combine data and map to our Conference type
             const combinedConferences: Conference[] = results
                 .map(item => {
-                const request = item!.request;
-                const details = item!.details;
+                if (!item) return null; // Should not happen if all promises resolve
+                const request = item.request;
+                const details = item.details;
 
                 const mappedOrganizations = details?.organizations?.map((org: OrganizationStrings) => ({
                     ...org,
@@ -162,36 +152,33 @@ const Moderation: React.FC = () => {
                     userId: request.userId,
                     adminId: request.adminId,
                     status: request.status,
-                    message: request.message,
+                    message: request.message, // This is likely the user's original message or admin's last message
                     createdAt: new Date(request.createdAt),
                     updatedAt: new Date(request.updatedAt),
 
-                    title: details?.title || request.conference?.title || t('Moderation_DefaultTitle'), // <-- Translate Default Title
+                    title: details?.title || request.conference?.title || t('Moderation_DefaultTitle'),
                     acronym: details?.acronym || request.conference?.acronym || null,
-                    creatorId: details?.creatorId || t('Moderation_DefaultCreatorId'), // <-- Translate Default CreatorId
+                    creatorId: details?.creatorId || t('Moderation_DefaultCreatorId'),
                     organizations: mappedOrganizations,
                     ranks: details?.ranks || null,
                     feedbacks: details?.feedbacks || null,
                     followBy: details?.followBy || null,
-
-                    detailsFetchError: item!.error, // Store error if details fetch failed
-
-                    comment: '',
+                    detailsFetchError: item.error,
+                    comment: '', // This field on Conference type might be for UI-only temporary storage if needed
                 } as Conference;
-            });
+            }).filter(Boolean) as Conference[]; // Filter out any nulls
 
-            setConferences(combinedConferences);
+            setAllFetchedConferences(combinedConferences); // Update state for all fetched conferences
 
         } catch (err: any) {
             console.error("Failed during data fetching:", err);
-             // Translate generic fetch error
-            setError(t('Error_FailedToLoadDataGeneric', { message: err.message })); // <-- Translated
-             setConferences([]);
+            setError(t('Error_FailedToLoadDataGeneric', { message: err.message }));
+            setAllFetchedConferences([]); // Update state for all fetched conferences
         } finally {
             setLoading(false);
         }
-        // Added t as a dependency as it's used inside useCallback
-    }, [filterStatus, filterStartDate, filterEndDate, sortKey, sortDirection, t]); // <-- Added t
+      // Dependencies: only those that should trigger a full API re-fetch of allFetchedConferences
+    }, [filterStartDate, filterEndDate, sortKey, sortDirection, t]);
 
 
     useEffect(() => {
@@ -217,19 +204,11 @@ const Moderation: React.FC = () => {
     }, []);
 
 
-    // Handler to submit the comment and change status
     const handleModalSubmit = useCallback(async () => {
-         // Translate comment requirement error based on status
          if (!comment.trim() && targetStatus === 'REJECTED') {
-              setCommentError(t('Error_CommentRequiredForStatus', { status: targetStatus })); // <-- Translated
+              setCommentError(t('Error_CommentRequiredForStatus', { status: targetStatus }));
               return;
          }
-         // If comment is required for ALL statuses
-         // if (!comment.trim()) {
-         //      setCommentError(t('Error_CommentRequired')); // <-- Translated
-         //      return;
-         // }
-
 
         if (!conferenceToModerateId || !targetStatus) {
              console.warn("Moderation submit called without valid ID or target status.");
@@ -243,8 +222,7 @@ const Moderation: React.FC = () => {
         };
 
         if (!API_BASE_URL) {
-             // Translate backend URL error
-             setError(t('Error_BackendUrlNotConfigured')); // <-- Translated
+             setError(t('Error_BackendUrlNotConfigured'));
              handleModalCancel();
              return;
         }
@@ -260,21 +238,24 @@ const Moderation: React.FC = () => {
             });
 
             if (!response.ok) {
-                let errorMsg = `${t('Error_FailedToUpdateStatus')}: ${response.status}`; // <-- Translate base error message
+                let errorMsg = `${t('Error_FailedToUpdateStatus')}: ${response.status}`;
                 try {
                     const errorJson = await response.json();
                     errorMsg += ` - ${errorJson.message || JSON.stringify(errorJson)}`;
                 } catch (e) { /* ignore json parse error */ }
                  console.error("API update failed:", errorMsg);
-                 // Translate specific update error message
-                 setError(t('Error_UpdateFailedDetails', { details: errorMsg })); // <-- Translated
-                 handleModalCancel();
+                 setError(t('Error_UpdateFailedDetails', { details: errorMsg }));
+                 // Do not close modal on API error, let user see the issue or retry.
+                 // Or, if you want to close, call handleModalCancel();
                  return;
             }
 
             console.log(`Successfully updated request ${conferenceToModerateId} to ${targetStatus}`);
+            // After successful update, re-fetch all conferences.
+            // This will update allFetchedConferences, which in turn updates counts and processedConferences.
             fetchConferences();
 
+            // Close modal and reset modal state
             setShowCommentModal(false);
             setConferenceToModerateId(null);
             setTargetStatus(null);
@@ -283,57 +264,62 @@ const Moderation: React.FC = () => {
 
         } catch (err: any) {
             console.error("Network error during API update:", err);
-            // Translate network error during update
-            setError(t('Error_NetworkErrorUpdatingStatus', { message: err.message })); // <-- Translated
-            handleModalCancel();
-        } finally {
-             // setIsSubmitting(false);
+            setError(t('Error_NetworkErrorUpdatingStatus', { message: err.message }));
+            handleModalCancel(); // Close modal on network error
         }
-        // Added t as a dependency as it's used inside useCallback
-    }, [comment, conferenceToModerateId, targetStatus, fetchConferences, handleModalCancel, t]); // <-- Added t
+    }, [comment, conferenceToModerateId, targetStatus, fetchConferences, handleModalCancel, t]);
 
 
-    // Handler for sorting by title (Client-side sort)
+    // Handler for sorting by title (Client-side sort on processedConferences)
     const handleSortByTitle = useCallback(() => {
         if (sortKey === 'title') {
-            setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+            setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc');
         } else {
             setSortKey('title');
             setSortDirection('asc');
         }
-    }, [sortKey, sortDirection]);
+    }, [sortKey]); // sortDirection removed as it's set directly
 
 
-    // Handler for sorting by creation/update date (Primarily server-side sort)
+    // Handler for sorting by creation/update date (Server-side sort via fetchConferences)
     const handleSortByDate = useCallback((key: 'createdAt' | 'updatedAt') => {
         if (sortKey === key) {
-            setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+            setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc');
         } else {
             setSortKey(key);
             setSortDirection('desc');
         }
-    }, [sortKey, sortDirection]);
+        // Changing sortKey to 'createdAt' or 'updatedAt' (or sortDirection if key is already date)
+        // will trigger fetchConferences via its useEffect dependency because
+        // fetchConferences depends on sortKey and sortDirection.
+    }, [sortKey]); // sortDirection removed
 
 
-    // Handler to clear date filters
     const handleClearDateFilter = useCallback(() => {
         setFilterStartDate(null);
         setFilterEndDate(null);
+        // This will trigger fetchConferences due to filterStartDate/filterEndDate changing.
     }, []);
 
 
-    // --- Client-side Filtering and Sorting ---
+    // --- Client-side Filtering and Sorting for Display ---
     const processedConferences = useMemo(() => {
-        let result = [...conferences];
+        let result = [...allFetchedConferences];
 
-        // 1. Filter by search term (case-insensitive title search)
+        // 1. Filter by status (selected tab) - client-side
+        if (filterStatus !== 'all') {
+            result = result.filter(conf => conf.status === filterStatus);
+        }
+
+        // 2. Filter by search term (case-insensitive title search) - client-side
         if (searchTerm) {
             result = result.filter(conf =>
                 conf.title?.toLowerCase().includes(searchTerm.toLowerCase())
             );
         }
 
-        // 2. Sort by title if sortKey is 'title'
+        // 3. Sort by title if sortKey is 'title' (client-side)
+        //    Date sorting ('createdAt', 'updatedAt') is handled by the API when fetching allFetchedConferences.
         if (sortKey === 'title') {
              result.sort((a, b) => {
                  const titleA = a.title?.toLowerCase() || '';
@@ -347,97 +333,86 @@ const Moderation: React.FC = () => {
                  return 0;
              });
         }
+        // If allFetchedConferences is already sorted by date from API, no further date sort needed here.
 
         return result;
-    }, [conferences, searchTerm, sortKey, sortDirection]);
+    }, [allFetchedConferences, filterStatus, searchTerm, sortKey, sortDirection]);
 
 
-    // Calculate counts for filter options (based on total fetched data)
-     const allConferencesCount = conferences.length;
-     const pendingCount = conferences.filter(c => c.status === 'PENDING').length;
-     const approvedCount = conferences.filter(c => c.status === 'APPROVED').length;
-     const rejectedCount = conferences.filter(c => c.status === 'REJECTED').length;
+    // Calculate counts for filter options (based on *all* fetched data matching date/API-sort criteria)
+     const allConferencesCount = allFetchedConferences.length;
+     const pendingCount = allFetchedConferences.filter(c => c.status === 'PENDING').length;
+     const approvedCount = allFetchedConferences.filter(c => c.status === 'APPROVED').length;
+     const rejectedCount = allFetchedConferences.filter(c => c.status === 'REJECTED').length;
 
 
     return (
         <div className='min-h-screen w-full px-4 bg-gray-10 font-sans'>
             <h1 className='mb-8 text-center text-3xl font-bold p-4 '>
-                {/* Translate page title */}
-                {t('ModerationPage_Title')} {/* <-- Translated */}
+                {t('ModerationPage_Title')}
             </h1>
 
             <div className='mx-auto w-full rounded-lg bg-white-pure p-4 shadow-md'>
                 <h2 className='mb-4 text-2xl font-semibold '>
-                     {/* Translate section title */}
-                    {t('ModerationPage_ListSectionTitle')} {/* <-- Translated */}
+                    {t('ModerationPage_ListSectionTitle')}
                 </h2>
 
                 <ModerationControls
                     filterStatus={filterStatus}
-                    setFilterStatus={setFilterStatus}
+                    setFilterStatus={setFilterStatus} // This now only triggers client-side re-filter via processedConferences
                     searchTerm={searchTerm}
-                    setSearchTerm={setSearchTerm}
+                    setSearchTerm={setSearchTerm} // This also only triggers client-side re-filter
                     filterStartDate={filterStartDate}
-                    setFilterStartDate={setFilterStartDate}
+                    setFilterStartDate={setFilterStartDate} // Triggers API fetch via fetchConferences
                     filterEndDate={filterEndDate}
-                    setFilterEndDate={setFilterEndDate}
-                    handleClearDateFilter={handleClearDateFilter}
+                    setFilterEndDate={setFilterEndDate} // Triggers API fetch
+                    handleClearDateFilter={handleClearDateFilter} // Triggers API fetch
                     sortKey={sortKey}
                     sortDirection={sortDirection}
-                    handleSortByName={handleSortByTitle}
-                    handleSortByCreationDate={() => handleSortByDate('createdAt')}
-                    handleSortByUpdateDate={() => handleSortByDate('updatedAt')}
-                    allConferencesCount={allConferencesCount}
-                    pendingCount={pendingCount}
-                    approvedCount={approvedCount}
-                    rejectedCount={rejectedCount}
+                    handleSortByName={handleSortByTitle} // Client-side sort, updates sortKey/Direction for processedConferences
+                    handleSortByCreationDate={() => handleSortByDate('createdAt')} // Triggers API fetch
+                    handleSortByUpdateDate={() => handleSortByDate('updatedAt')} // Triggers API fetch
+                    allConferencesCount={allConferencesCount} // Now correctly reflects all (matching date/API-sort)
+                    pendingCount={pendingCount} // Correct
+                    approvedCount={approvedCount} // Correct
+                    rejectedCount={rejectedCount} // Correct
                     isLoading={loading}
-                    // Pass t down to ModerationControls
-                    // Alternative: Make ModerationControls a client component and call useTranslations there (Recommended)
                 />
 
-                 {/* Loading and Error Indicators */}
                  {loading && (
                     <div className="text-center text-blue-600 py-4">
-                        {/* Translate loading messages */}
-                        {conferences.length === 0 ? t('ModerationPage_LoadingInitial') : t('ModerationPage_UpdatingList')} {/* <-- Translated */}
+                        {allFetchedConferences.length === 0 ? t('ModerationPage_LoadingInitial') : t('ModerationPage_UpdatingList')}
                     </div>
                 )}
                 {error && (
                     <div className="text-center text-red-600 py-4">
-                        {/* Translate generic error label */}
-                        {t('Error_Generic')}: {error} {/* <-- Translated */}
+                        {t('Error_Generic')}: {error}
                     </div>
                 )}
 
-
-                {/* Conference List */}
-                {(!loading || conferences.length > 0) && !error && (
+                {/* Display list if not loading OR if there's already data (even while updating) AND no error */}
+                {(!loading || allFetchedConferences.length > 0) && !error && (
                     <ConferenceList
-                        conferences={processedConferences}
+                        conferences={processedConferences} // Display the client-side filtered/sorted list
                         onModerateClick={handleActionClick}
                         showCommentModal={showCommentModal}
-                        // Pass t down to ConferenceList if needed there (e.g., for buttons or status labels)
-                        // t={t} // <-- Example
                     />
                 )}
-                {/* Message for no results after loading and filtering/searching */}
-                 {!loading && !error && processedConferences.length === 0 && conferences.length > 0 && searchTerm && (
+
+                {/* Message if data exists from API, but current client-side filters (status or search) yield no results */}
+                {!loading && !error && allFetchedConferences.length > 0 && processedConferences.length === 0 && (
                      <p className='py-8 text-center '>
-                        {/* Translate no results message */}
-                        {t('ModerationPage_NoResultsSearch')} {/* <-- Translated */}
+                        {t('ModerationPage_NoResultsSearch')}
                      </p>
                  )}
-                 {/* Message if no data was fetched at all */}
-                 {!loading && !error && processedConferences.length === 0 && conferences.length === 0 && !searchTerm && (
+                 {/* Message if no data was fetched from API at all (matching current date/sort criteria) */}
+                 {!loading && !error && allFetchedConferences.length === 0 && (
                      <p className='py-8 text-center '>
-                        {/* Translate no requests message */}
-                        {t('ModerationPage_NoRequestsFound')} {/* <-- Translated */}
+                        {t('ModerationPage_NoRequestsFound')}
                      </p>
                  )}
             </div>
 
-            {/* Comment Modal */}
              <CommentModal
                 show={showCommentModal}
                 targetStatus={targetStatus}
@@ -446,7 +421,6 @@ const Moderation: React.FC = () => {
                 setComment={setComment}
                 onSubmit={handleModalSubmit}
                 onCancel={handleModalCancel}
-                // Pass t down to CommentModal
              />
         </div>
     );
