@@ -39,6 +39,7 @@ export interface ConferenceAnalysisDetail {
 
     batchRequestId: string; // ID của request hiện tại (re-crawl request)
     originalRequestId?: string; // <<< THÊM MỚI: ID của request gốc nếu conference này là một phần của re-crawl    title: string;
+    title: string;
     acronym: string;
     status: 'unknown' | 'processing' | 'processed_ok' | 'completed' | 'failed' | 'skipped';
     startTime: string | null;
@@ -103,7 +104,7 @@ export interface PlaywrightAnalysis {
 
     // --- HTML Saving Stats (Aggregated across all conferences) ---
     htmlSaveAttempts: number; // Total conferences for which HTML saving was attempted ('process_save_start')
-    successfulSaves: number; // Total conferences where HTML saving was successfully initiated ('process_save_delegation_initiated')
+    successfulSaveInitiations: number; // Total conferences where HTML saving was successfully initiated ('process_save_delegation_initiated')
     failedSaves: number; // Total conferences where HTML saving initiation failed
     skippedSaves: number; // Total conferences where HTML saving was skipped ('process_save_skipped_no_links')
     // --- End HTML Saving Stats ---
