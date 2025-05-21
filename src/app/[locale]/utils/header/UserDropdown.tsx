@@ -124,7 +124,11 @@ const UserDropdown: FC<Props> = ({
 
         // Set a timeout to redirect after 3 seconds
         const timerId = setTimeout(() => {
-          router.push('/'); // Redirect to homepage using router
+          // Redirect to homepage using router - This redirect still goes via '/',
+          // which might pick up default locale or cookie.
+          // Consider changing this to redirect to `/${locale}/auth/login` as well
+          // if you want consistency, but fix the logout button first.
+          router.push('/');
           closeAllMenus(); // Close the dropdown
           setShowSessionExpiredMessage(false); // Hide the message
           redirectTimerIdRef.current = null; // Reset ref
@@ -212,7 +216,7 @@ const UserDropdown: FC<Props> = ({
               className='block px-2 py-2 text-sm  hover:bg-gray-100  dark:hover:bg-gray-700'
               onClick={handleLinkClick} // Use the click handler
             >
-              {t('Request_Admin_Tab')} 
+              {t('Request_Admin_Tab')}
             </Link> */}
             {/* <Link
               href={{ pathname: `/dashboard`, query: { tab: 'profile' } }}
@@ -220,7 +224,7 @@ const UserDropdown: FC<Props> = ({
               className='block px-2 py-2 text-sm  hover:bg-gray-100  dark:hover:bg-gray-700'
               onClick={handleLinkClick} // Use the click handler
             >
-              {t('Profile')} 
+              {t('Profile')}
             </Link> */}
 
             {/* <Link
@@ -249,7 +253,12 @@ const UserDropdown: FC<Props> = ({
                 setFirstName(null);
                 setLastName(null);
                 closeAllMenus();
-                router.push('/'); // Redirect to homepage after logout
+
+            // or configured fallbacks when loading the login page.
+             document.cookie = 'NEXT_LOCALE=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+              // ------------------------------------
+
+                router.push(`/${locale}/auth/login`); // Redirect to login page with the current locale
               }}
               className='block w-full px-2 py-2 text-left text-sm text-red-600 hover:bg-gray-100 focus:bg-gray-100 focus:outline-none dark:text-red-500 dark:hover:bg-gray-700 dark:focus:bg-gray-700'
             >
