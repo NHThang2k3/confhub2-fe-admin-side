@@ -256,7 +256,10 @@
         "locations": "Địa điểm:",
         "topics": "Chủ đề:",
         "dates": "Ngày:"
-      }
+      },
+      "editButton": "Chỉnh sửa",
+      "deleteButton": "Xóa",
+      "deleteConfirmation": "Bạn có chắc chắn muốn xóa lịch sử này không?"
     },
     "errorFetchingConferences": "Lỗi khi lấy danh sách hội nghị:"
   }

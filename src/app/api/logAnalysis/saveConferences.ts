@@ -32,7 +32,7 @@ export const saveConferenceToJson = async (
     extractedData?: any
 ): Promise<SaveConferenceResult> => {
     const identifier = `${acronym} - ${title}`; // Hoặc chỉ acronym nếu nó đủ duy nhất
-
+    console.log(`identifier`, extractedData)
     if (!acronym || !title) {
         const errorMsg = `Acronym ('${acronym}') or Title ('${title}') is missing. Cannot save.`;
         console.error("Save Validation Error:", errorMsg);
@@ -43,10 +43,10 @@ export const saveConferenceToJson = async (
         };
     }
 
-    const payload: ConferenceImportPayload[] = [{ acronym, title }];
+    const payload: ConferenceImportPayload[] = [{ ...extractedData }];
 
     console.log(`API Call: Saving ${identifier}`, payload);
-
+``
     try {
         // Giả sử API trả về một object có cấu trúc tương tự SaveConferenceResult hoặc một mảng các kết quả
         // Hoặc một cấu trúc đơn giản hơn như { success: boolean; message: string; data?: any }

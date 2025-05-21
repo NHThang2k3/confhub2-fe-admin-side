@@ -1,6 +1,6 @@
 'use client'; // Component này chạy ở client
 
-import { useEffect, useState, useMemo, useCallback } from 'react';
+import { useEffect, useState, useMemo, useCallback, useRef, memo } from 'react';
 import { AgGridReact } from 'ag-grid-react';
 import parser from 'any-date-parser';
 import {
@@ -13,6 +13,8 @@ import {
 } from 'ag-grid-community';
 import axios from 'axios';
 import { useTranslations } from 'next-intl';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 // --- Interfaces (Giữ lại các interface này trong file Conferences.tsx) ---
 interface Conference {
@@ -42,6 +44,7 @@ interface Organization {
   locations: Location[];
   topics: string[];
   dates: ConferenceDate[];
+  updatedAt: string;
 }
 
 interface Location {
@@ -55,6 +58,7 @@ interface ConferenceDate {
   type: string;
   startDate: string;
   endDate: string;
+  name: string;
 }
 
 interface PaginationMeta {
@@ -84,6 +88,21 @@ interface FilterOptions {
   sources: string[];
   researchFields: string[];
   ranks: string[];
+}
+
+interface UpdateHistoryFormData {
+  year: number;
+  accessType: string;
+  isAvailable: boolean;
+  publisher: string;
+  summerize: string;
+  callForPaper: string;
+  link: string;
+  cfpLink: string;
+  impLink: string;
+  locations: Location[];
+  topics: string[];
+  dates: ConferenceDate[];
 }
 // --- End Interfaces ---
 
@@ -383,13 +402,13 @@ const FilterSection = ({
 };
 // --- End Helper Components ---
 
-
 // --- Main Conferences Component ---
 // Thay đổi: Đây là component chính, nhận locale nếu cần cho các logic khác,
 // nhưng useTranslations tự lấy locale từ context
 export default function Conferences({ locale }: { locale: string }) {
   const t = useTranslations('conferencesPage');
   const tCommon = useTranslations('common');
+  const router = useRouter();
 
   const [rowData, setRowData] = useState<Conference[]>([]);
   const [loading, setLoading] = useState(true);
@@ -572,9 +591,40 @@ export default function Conferences({ locale }: { locale: string }) {
 
   const renderOrganizationHistory = useCallback((organization: Organization) => (
     <div key={organization.id} className="mb-4 p-4 border rounded-lg bg-white-pure shadow-sm">
-      <h3 className="text-lg font-semibold mb-3">
-        {t('modal.organizationDetails.yearHeader', { year: organization.year })}
-      </h3>
+      <div className="flex justify-between items-center mb-3">
+        <div>
+          <h3 className="text-lg font-semibold">
+            {t('modal.organizationDetails.yearHeader', { year: organization.year })}
+          </h3>
+          <p className="text-sm text-gray-500">
+            {t('modal.organizationDetails.lastUpdated')}: {new Date(organization.updatedAt).toLocaleDateString()} {new Date(organization.updatedAt).toLocaleTimeString()}
+          </p>
+        </div>
+        <div className="flex gap-2">
+          <Link
+            href={`/en/dashboard/conferences/edit/${organization.id}`}
+            className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
+          >
+            {t('modal.editButton')}
+          </Link>
+          <button
+            onClick={async () => {
+              if (window.confirm(t('modal.deleteConfirmation'))) {
+                try {
+                  await axios.delete(`${DATA_API_URL}/api/v1/admin/conferences/history/${organization.id}`);
+                  await fetchConferences();
+                  setIsModalVisible(false);
+                } catch (error) {
+                  console.error('Error deleting organization history:', error);
+                }
+              }
+            }}
+            className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
+          >
+            {t('modal.deleteButton')}
+          </button>
+        </div>
+      </div>
       <div className="grid grid-cols-1 gap-4">
         <div>
           <span className="font-medium">{t('modal.organizationDetails.accessType')}</span> {organization.accessType}
@@ -627,14 +677,13 @@ export default function Conferences({ locale }: { locale: string }) {
           <span className="font-medium">{t('modal.organizationDetails.dates')}</span>
           {organization.dates.map((date, index) => (
             <div key={index} className="mt-1">
-              <strong>{date.type}:</strong> {String(parser.fromString(date.startDate))} - {String(parser.fromString(date.endDate))}
+              <strong>{date.type}:</strong> {date.name && <span className="text-gray-600">({date.name})</span>} {new Date(date.startDate).toLocaleDateString()} {new Date(date.startDate).toLocaleTimeString()} - {new Date(date.endDate).toLocaleDateString()} {new Date(date.endDate).toLocaleTimeString()}
             </div>
           ))}
         </div>
       </div>
     </div>
-  ), [t]);
-
+  ), [t, router]);
 
   return (
     <div className="p-6">

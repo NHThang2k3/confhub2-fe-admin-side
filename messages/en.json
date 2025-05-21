@@ -230,7 +230,7 @@
     "errorFetchingRanksForSource": "Error fetching ranks for source:"
   },
   "conferencesPage": {
-    "pageTitle": "Conferences Management",
+    "pageTitle": "Conference Management",
     "columnHeaders": {
       "title": "Title",
       "acronym": "Acronym",
@@ -256,7 +256,10 @@
         "locations": "Locations:",
         "topics": "Topics:",
         "dates": "Dates:"
-      }
+      },
+      "editButton": "Edit",
+      "deleteButton": "Delete",
+      "deleteConfirmation": "Are you sure you want to delete this history?"
     },
     "errorFetchingConferences": "Error fetching conferences:"
   }
