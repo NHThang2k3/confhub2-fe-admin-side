@@ -106,6 +106,27 @@ export const ConferenceCrawlUploader: React.FC = () => {
       filter: true,
       width: 200,
       valueFormatter: (params: any) => params.value ? new Date(params.value).toLocaleString() : ''
+    },
+    {
+      field: 'link',
+      headerName: 'Link',
+      sortable: true,
+      filter: true,
+      width: 200,
+    },
+    {
+      field: 'impLink',
+      headerName: 'Imp Link',
+      sortable: true,
+      filter: true,
+      width: 200,
+    },
+    {
+      field: 'cfpLink',
+      headerName: 'Cfp Link',
+      sortable: true,
+      filter: true,
+      width: 200,
     }
   ]);
 

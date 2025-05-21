@@ -1,12 +1,13 @@
 'use client'
-import { capitalize } from '@/lib/utils'
+import { capitalize } from '@/lib/utils' // Đảm bảo đường dẫn này đúng
 import {
   usePathname,
   useSearchParams
-} from 'next/navigation' // Sử dụng từ next/navigation
+  // useSelectedLayoutSegments // Không cần thiết trong logic hiện tại
+} from 'next/navigation'
 import React, { useState, useRef, useEffect } from 'react'
 import Image from 'next/image'
-import { Link } from '@/src/navigation' // Đảm bảo đây là Link từ next-intl
+import { Link } from '@/src/navigation'
 
 interface Option {
   country: string
@@ -15,78 +16,64 @@ interface Option {
 }
 
 const LangSwitcher: React.FC = () => {
-  // pathname từ usePathname() của next/navigation sẽ là path sau basePath.
-  // Ví dụ: nếu URL là http://localhost:1314/admin/en/dashboard
-  // thì pathname sẽ là /en/dashboard
-  // Nếu URL là http://localhost:1314/admin/dashboard (ngôn ngữ mặc định không có prefix)
-  // thì pathname sẽ là /dashboard
   const pathname = usePathname()
   const searchParams = useSearchParams()
 
   const [isOptionsExpanded, setIsOptionsExpanded] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
 
+  // --- Options array ---
   const options: Option[] = [
     { country: 'English', code: 'en', flagCode: 'gb' },
     { country: 'Tiếng Việt', code: 'vi', flagCode: 'vn' },
-    { country: '中文', code: 'zh', flagCode: 'cn' }
+    { country: '中文', code: 'zh', flagCode: 'cn' },
   ]
+  // --- End of options ---
 
-  // Hàm này sẽ trả về đường dẫn hiện tại nhưng đã loại bỏ tiền tố ngôn ngữ (nếu có).
-  // Ví dụ:
-  // - từ /en/dashboard -> /dashboard
-  // - từ /vi/profile -> /profile
-  // - từ /dashboard (ngôn ngữ mặc định) -> /dashboard
-  // - từ /en -> /
-  // - từ / -> /
-  const getPathWithoutLocalePrefix = (): string => {
-    const currentLocaleOption = options.find(
+  // --- Updated getLocalizedUrl (FIXED LOGIC) ---
+  const getLocalizedUrl = (locale: string): string => {
+    const currentLocaleCode = options.find(
       option =>
-        pathname.startsWith(`/${option.code}/`) || // e.g. /en/some/path
-        pathname === `/${option.code}`             // e.g. /en
-    );
-    const currentLocaleCode = currentLocaleOption?.code;
+        pathname.startsWith(`/${option.code}/`) ||
+        pathname === `/${option.code}`
+    )?.code
 
-    let pathSegmentForHref = pathname;
+    let pathWithoutLocale = pathname // Start with the full path
 
     if (currentLocaleCode) {
-      // Case 1: Path is /<locale>/something...
-      if (pathname.startsWith(`/${currentLocaleCode}/`)) {
-        // Lấy phần sau /<locale>/, ví dụ "dashboard/moderation"
-        pathSegmentForHref = pathname.substring(`/${currentLocaleCode}/`.length);
-        // Đảm bảo nó bắt đầu bằng dấu '/', ví dụ "/dashboard/moderation"
-        if (!pathSegmentForHref.startsWith('/')) {
-          pathSegmentForHref = '/' + pathSegmentForHref;
+      // If current path is exactly the locale code (e.g., /en)
+      if (pathname === `/${currentLocaleCode}`) {
+        pathWithoutLocale = '/' // Reset to root before adding new locale
+      }
+      // If current path starts with the locale code and a slash (e.g., /en/about)
+      else if (pathname.startsWith(`/${currentLocaleCode}/`)) {
+        // Get the part after the locale (e.g., /about)
+        pathWithoutLocale = pathname.substring(`/${currentLocaleCode}`.length)
+        // Ensure it starts with a slash if it's not empty
+        if (pathWithoutLocale && !pathWithoutLocale.startsWith('/')) {
+          pathWithoutLocale = '/' + pathWithoutLocale
+        } else if (!pathWithoutLocale) {
+          // If stripping locale results in empty string (e.g. from '/en/'), treat as root
+          pathWithoutLocale = '/'
         }
-        // Nếu sau khi cắt chỉ còn chuỗi rỗng (ví dụ từ "/en/" thành "") thì nó phải là "/"
-        if (pathSegmentForHref === '/') pathSegmentForHref = '/';
-
-
       }
-      // Case 2: Path is just /<locale>
-      else if (pathname === `/${currentLocaleCode}`) {
-        pathSegmentForHref = '/';
-      }
-      // else: pathname không có prefix locale này, không làm gì cả, giữ nguyên pathSegmentForHref
+      // else: Path didn't match /<locale>/ or /<locale>, keep pathWithoutLocale as is
     }
-    // else: pathname không có prefix locale nào (ví dụ, ngôn ngữ mặc định), giữ nguyên pathSegmentForHref
+    // else: No known locale prefix found in pathname, pathWithoutLocale remains the original pathname.
 
-    // Đảm bảo kết quả luôn là một đường dẫn hợp lệ bắt đầu bằng /
-    // hoặc chỉ là / nếu nó là trang gốc.
-    // Điều này chủ yếu để xử lý trường hợp pathSegmentForHref là "" sau khi substring.
-    if (pathSegmentForHref === '' || !pathSegmentForHref.startsWith('/')) {
-        // Nếu pathSegmentForHref là rỗng (ví dụ từ /en/ thành rỗng), nó phải là /
-        // Nếu nó không bắt đầu bằng / (ví dụ 'dashboard'), thêm / vào đầu.
-        pathSegmentForHref = '/' + (pathSegmentForHref || '');
-        // Dọn dẹp nếu có // (ví dụ nếu pathSegmentForHref ban đầu là rỗng)
-        if (pathSegmentForHref === '//') pathSegmentForHref = '/';
-    }
+    // *** THE FIX for trailing slash ***
+    // If the path segment to append (after removing potential old locale)
+    // is just the root '/', treat it as an empty string.
+    // This prevents '/de/' when switching from '/en' or '/'.
+    const finalPathSegment = pathWithoutLocale === '/' ? '' : pathWithoutLocale
 
+    // Construct the new path: /<new_locale><remaining_path_or_empty>
+    const finalPath = `/${locale}${finalPathSegment}`
 
-    const queryString = searchParams.toString();
-    return queryString ? `${pathSegmentForHref}?${queryString}` : pathSegmentForHref;
-  };
-
+    const queryString = searchParams.toString()
+    return queryString ? `${finalPath}?${queryString}` : finalPath
+  }
+  // --- End of updated getLocalizedUrl ---
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -105,17 +92,13 @@ const LangSwitcher: React.FC = () => {
     }
   }, [isOptionsExpanded])
 
+  // --- Determine current locale ---
   const firstPathSegment = pathname.split('/')[1]
   const currentOption = options.find(option => option.code === firstPathSegment)
-  const currentLocale = currentOption || options.find(opt => opt.code === 'en') || options[0]
+  const currentLocale = currentOption || options[0] // Default to English
+  // --- End of current locale determination ---
 
-
-  // Giả sử file flags của bạn nằm trong `public/country_flags/`
-  // Next.js sẽ tự động thêm basePath `/admin` khi phục vụ các file từ `public`
-  // const getFlagUrl = (flagCode: string) => `/country_flags/${flagCode}.svg`;
-  // Nếu file thực sự nằm trong `public/admin/country_flags/`, thì bạn có thể giữ:
-  const getFlagUrl = (flagCode: string) => `/admin/country_flags/${flagCode}.svg`;
-  // Nhưng cách trên (không có /admin trong path) thường được ưu tiên hơn.
+  const getFlagUrl = (flagCode: string) => `/country_flags/${flagCode}.svg` // Đảm bảo thư mục này tồn tại trong public/
 
   return (
     <div className='w-full'>
@@ -134,9 +117,9 @@ const LangSwitcher: React.FC = () => {
               width={20}
               height={15}
               className='h-auto w-[20px]'
-              priority={true}
+              priority={true} // Priority for current flag is fine
             />
-            {capitalize(currentLocale.code)}
+            {capitalize(currentLocale.country)}
           </span>
           <svg
             className={`h-5 w-5 flex-shrink-0 transition-transform ${isOptionsExpanded ? 'rotate-180' : ''}`}
@@ -154,6 +137,8 @@ const LangSwitcher: React.FC = () => {
 
         {isOptionsExpanded && (
           <div className='absolute right-0 z-50 mt-2 w-full min-w-max origin-top-right rounded-md bg-dropdown shadow-lg'>
+            {' '}
+            {/* Điều chỉnh style nếu cần */}
             <div
               className='py-1'
               role='menu'
@@ -161,19 +146,17 @@ const LangSwitcher: React.FC = () => {
               aria-labelledby='options-menu'
             >
               {options.map(lang => (
-                <Link
+                <a
                   key={lang.code}
-                  // href sẽ là path không có tiền tố ngôn ngữ, ví dụ: /dashboard/moderation hoặc /
-                  href={getPathWithoutLocalePrefix()}
-                  // locale prop sẽ cho next-intl biết cần thêm tiền tố ngôn ngữ nào
-                  locale={lang.code}
-                  onClick={() => {
-                    setIsOptionsExpanded(false)
+                  href={getLocalizedUrl(lang.code)}
+                  lang={lang.code}
+                  onClick={e => {
+                    setIsOptionsExpanded(false) // Close dropdown on click
                   }}
                   className={`flex w-full items-center gap-2 whitespace-nowrap px-2 py-2 text-left text-sm hover:bg-dropdownHover md:px-4 ${
-                    currentLocale.code === lang.code
-                      ? 'bg-selected text-primary hover:bg-selected'
-                      : 'text-secondary'
+                    currentLocale.code === lang.code // Compare with determined currentLocale
+                      ? 'bg-selected text-primary hover:bg-selected' // Điều chỉnh style nếu cần
+                      : 'text-secondary' // Điều chỉnh style nếu cần
                   }`}
                   role='menuitem'
                 >
@@ -183,10 +166,10 @@ const LangSwitcher: React.FC = () => {
                     width={20}
                     height={15}
                     className='h-auto w-[20px]'
-                    loading='lazy'
+                    loading='lazy' // Lazy load flags in the dropdown
                   />
-                  {capitalize(lang.code)}
-                </Link>
+                  {capitalize(lang.country)}
+                </a>
               ))}
             </div>
           </div>
