@@ -73,7 +73,7 @@ const CrawlModelSelectModal: React.FC<CrawlModelSelectModalProps> = ({
 
         <div className="space-y-4 mb-6">
           {apiSteps.map(step => (
-            <div key={step.name} className="p-3 border rounded-md bg-gray-50">
+            <div key={step.name} className="p-3 border rounded-md bg-gray-5">
               <p className="text-md font-medium text-gray-800">{step.displayName}:</p>
               <p className="text-xs text-gray-500 mb-2">{step.description}</p>
               <div className="flex space-x-4">
@@ -116,7 +116,7 @@ const CrawlModelSelectModal: React.FC<CrawlModelSelectModalProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+            className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-5 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
           >
             Cancel
           </button>

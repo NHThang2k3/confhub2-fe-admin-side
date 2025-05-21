@@ -5,12 +5,12 @@ export interface RequestTimings {
     startTime: string | null;
     endTime: string | null;
     durationSeconds: number | null;
+    status?: 'Completed' | 'Failed' | 'Processing' | 'PartiallyCompleted' | 'Unknown'; // <<< THÊM MỚI
     // Tùy chọn: có thể thêm số lượng conference được xử lý trong request này
     // processedConferencesInRequest?: number;
     // Hoặc danh sách các key của conference thuộc request này
     // conferenceKeys?: string[];
 }
-
 
 export interface RequestLogData {
     logs: any[];
@@ -35,7 +35,7 @@ export interface FilteredData {
 /** Thông tin chi tiết về quá trình xử lý một conference cụ thể */
 export interface ConferenceAnalysisDetail {
 
-    requestId: string; // <<< NEW: Để dễ dàng truy cập requestId
+    batchRequestId: string; // <<< NEW: Để dễ dàng truy cập batchRequestId
     title: string;
     acronym: string;
     status: 'unknown' | 'processing' | 'processed_ok' | 'completed' | 'failed' | 'skipped';
@@ -239,15 +239,14 @@ export interface ValidationStats {
 export interface LogAnalysisResult {
     analysisTimestamp: string;
     logFilePath: string;
-    status?: 'Completed' | 'Failed' | 'Processing';
+    status?: 'Completed' | 'Failed' | 'Processing'; // Trạng thái tổng thể của việc phân tích
     errorMessage?: string;
 
-    filterRequestId?: string; // <<< NEW: The specific requestId used for filtering, if any
-    analyzedRequestIds: string[]; // <<< NEW: List of all requestIds included in this analysis output
+    filterRequestId?: string; // <<< NEW: The specific batchRequestId used for filtering, if any
+    analyzedRequestIds: string[]; // <<< NEW: List of all batchRequestIds included in this analysis output
     
-    // <<< NEW SECTION for per-request timings >>>
-    requests: {
-        [requestId: string]: RequestTimings;
+    requests: { // Object chứa thông tin của từng request
+        [batchRequestId: string]: RequestTimings; // RequestTimings giờ đã bao gồm status
     };
 
     totalLogEntries: number;
@@ -269,7 +268,7 @@ export interface LogAnalysisResult {
     logProcessingErrors: string[];
 
     conferenceAnalysis: {
-        // Key sẽ là: `${requestId}-${acronym}-${title}`
-        [compositeKeyIncludingRequestId: string]: ConferenceAnalysisDetail;
+        // Key sẽ là: `${batchRequestId}-${acronym}-${title}`
+        [compositeKeyIncludingBatchRequestId: string]: ConferenceAnalysisDetail;
     };
 }

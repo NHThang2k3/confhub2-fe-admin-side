@@ -76,7 +76,7 @@ export const useConferenceTableManager = ({
 
     return Object.entries(conferenceAnalysis).map(([confKey, data]) => {
       const entryRequestId =
-        data.requestId ||
+        data.batchRequestId ||
         filterRequestId ||
         (analyzedRequestIds?.length === 1 ? analyzedRequestIds[0] : 'N/A');
       const uniqueRowId = `${confKey}_${entryRequestId}`;
@@ -332,7 +332,7 @@ export const useConferenceTableManager = ({
   // Updated to accept ApiModels
   const handleConfirmCrawlWithModels = useCallback(async (selectedModels: ApiModels) => {
     if (itemsToCrawlWithSelectedModel.length > 0) {
-      const modelDesc = `DL:${selectedModels.determineLinks}, EI:${selectedModels.extractInfo}, EC:${selectedModels.ExtractCfp}`;
+      const modelDesc = `DL:${selectedModels.determineLinks}, EI:${selectedModels.extractInfo}, EC:${selectedModels.extractCfp}`;
       console.log(`Triggering crawl again for ${itemsToCrawlWithSelectedModel.length} item(s) using models ${modelDesc}:`, itemsToCrawlWithSelectedModel);
       await startCrawlItems(itemsToCrawlWithSelectedModel, selectedModels);
       // Resetting state after crawl is optional and depends on desired UX
