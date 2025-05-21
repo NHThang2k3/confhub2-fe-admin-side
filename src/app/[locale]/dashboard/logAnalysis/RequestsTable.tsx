@@ -1,7 +1,7 @@
 import React from 'react';
 import { FaExternalLinkAlt } from 'react-icons/fa';
 import { RequestTimings } from '@/src/models/logAnalysis/logAnalysis';
-
+import { FaLink } from 'react-icons/fa';
 
 interface RequestsTableProps {
     requestIds: string[];
@@ -31,6 +31,9 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
                             Request ID
                         </th>
                         <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Original Request ID
+                        </th>
+                        <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             Start Time
                         </th>
                         <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -54,6 +57,21 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
                             <tr key={reqId} className="hover:bg-gray-5 transition-colors duration-150">
                                 <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900 break-all">
                                     {reqId}
+                                </td>
+                                <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600 break-all">
+                                    {details?.originalRequestId ? (
+                                        <button
+                                            onClick={() => onSelectRequest(details.originalRequestId!)} // Thêm ! để khẳng định originalRequestId tồn tại trong ngữ cảnh này
+                                            className="text-indigo-600 hover:text-indigo-900 hover:underline focus:outline-none flex items-center"
+                                            title={`View details for original request: ${details.originalRequestId}`}
+                                            aria-label={`View details for original request ID ${details.originalRequestId}`}
+                                        >
+                                            <FaLink className="mr-1.5 h-3 w-3 text-indigo-500" />
+                                            {details.originalRequestId}
+                                        </button>
+                                    ) : (
+                                        <span className="text-gray-400">-</span>
+                                    )}
                                 </td>
                                 <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">
                                     {details ? formatDateTime(details.startTime) : 'N/A'}
