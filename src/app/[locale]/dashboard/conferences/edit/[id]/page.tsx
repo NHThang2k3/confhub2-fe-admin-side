@@ -120,8 +120,7 @@ export default function EditConferenceHistory({ params }: { params: { id: string
           ...data,
         }
       );
-      router.refresh();
-      router.push('/dashboard/conferences');
+      router.refresh()
     } catch (error) {
       console.error('Error updating conference history:', error);
     } finally {
