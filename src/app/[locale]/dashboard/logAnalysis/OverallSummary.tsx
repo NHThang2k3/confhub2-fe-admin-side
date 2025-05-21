@@ -1,11 +1,11 @@
 // src/app/[locale]/dashboard/logAnalysis/OverallSummary.tsx
 import React, { useMemo } from 'react';
-import { LogAnalysisResult, GoogleSearchHealthData } from '../../../../models/logAnalysis/logAnalysis'; // Adjust path
-import { transformRecordForBarChart, BarChartData } from './utils/chartUtils'; // Adjust path
+import { LogAnalysisResult, GoogleSearchHealthData, ValidationStats } from '../../../../models/logAnalysis/logAnalysis'; // Adjust path
+import { transformRecordToBarChart, BarChartData, transformObjectToPieChartData, PieChartItem } from './utils/chartUtils'; // Sửa tên hàm transformRecordForBarChart
 
-import SummaryHeaderComponent from './overallSummary/SummaryHeader'; // Renamed to avoid conflict
+import SummaryHeaderComponent from './overallSummary/SummaryHeader';
 import NoDataMessage from './overallSummary/NoDataMessage';
-import CollapsibleContent from './overallSummary/CollapsibleContent'; // Assume this will be updated
+import CollapsibleContent from './overallSummary/CollapsibleContent';
 
 interface OverallSummaryProps {
   data: LogAnalysisResult;
@@ -13,45 +13,53 @@ interface OverallSummaryProps {
   onToggle: () => void;
 }
 
-// Interface for additional Google Search health metrics
-
-
-
 const OverallSummary: React.FC<OverallSummaryProps> = ({
   data,
   isExpanded,
   onToggle
 }) => {
   const gSearchData = data?.googleSearch;
-  const geminiApiData = data?.geminiApi; // Cache for convenience
+  const geminiApiData = data?.geminiApi;
+  const validationStats = data?.validationStats; // Lấy validationStats
 
-  const overallStatusData = useMemo(() => {
+  // --- General Status ---
+  const overallStatusData = useMemo<PieChartItem[]>(() => {
     if (!data?.overall) return [];
-    const completedOk = data.overall.completedTasks || 0;
-    const failed = data.overall.failedOrCrashedTasks || 0;
-    const processing = data.overall.processingTasks || 0;
-    const skipped = data.overall.skippedTasks || 0;
+    const { completedTasks = 0, failedOrCrashedTasks = 0, processingTasks = 0, skippedTasks = 0 } = data.overall;
     return [
-      { name: 'Completed', value: completedOk },
-      { name: 'Processing', value: processing },
-      { name: 'Failed/Crashed', value: failed },
-      { name: 'Skipped', value: skipped }
+      { name: 'Completed', value: completedTasks },
+      { name: 'Processing', value: processingTasks },
+      { name: 'Failed/Crashed', value: failedOrCrashedTasks },
+      { name: 'Skipped', value: skippedTasks }
     ].filter(item => item.value > 0);
   }, [data?.overall]);
 
-
-  const searchStatusData = useMemo(() => {
-    if (!gSearchData) return [];
+  const playwrightLinkData = useMemo<PieChartItem[]>(() => {
+    if (!data?.playwright?.linkProcessing) return [];
+    const { successfulAccess = 0, failedAccess = 0, redirects = 0 } = data.playwright.linkProcessing;
     return [
-      { name: 'Successful', value: gSearchData.successfulSearches || 0 },
-      { name: 'Failed', value: gSearchData.failedSearches || 0 },
-      { name: 'Skipped', value: gSearchData.skippedSearches || 0 },
-      // SỬA ĐỔI: Sử dụng quotaErrorsEncountered
-      { name: 'Quota Errors Encountered', value: gSearchData.quotaErrorsEncountered || 0 }
+      { name: 'Successful Access', value: successfulAccess },
+      { name: 'Failed Access', value: failedAccess },
+      { name: 'Redirects', value: redirects }
+    ].filter(item => item.value > 0);
+  }, [data?.playwright?.linkProcessing]);
+
+  // --- Google Search Data ---
+  const searchStatusData = useMemo<PieChartItem[]>(() => {
+    if (!gSearchData) return [];
+    const { successfulSearches = 0, failedSearches = 0, skippedSearches = 0, quotaErrorsEncountered = 0 } = gSearchData;
+    return [
+      { name: 'Successful', value: successfulSearches },
+      { name: 'Failed', value: failedSearches },
+      { name: 'Skipped', value: skippedSearches },
+      { name: 'Quota Errors', value: quotaErrorsEncountered }
     ].filter(item => item.value > 0);
   }, [gSearchData]);
 
-  // BỔ SUNG: Dữ liệu về sức khỏe API Key của Google Search
+  const apiKeyUsageData = useMemo<BarChartData>(() => {
+    return transformRecordToBarChart(gSearchData?.keyUsage, 0, false);
+  }, [gSearchData?.keyUsage]);
+
   const googleSearchHealthData = useMemo<GoogleSearchHealthData | null>(() => {
     if (!gSearchData) return null;
     return {
@@ -63,171 +71,133 @@ const OverallSummary: React.FC<OverallSummaryProps> = ({
     };
   }, [gSearchData]);
 
-  // --- Dữ liệu cho Gemini API ---
-  const geminiApiStatusData = useMemo(() => { // Đổi tên từ apiStatusData để rõ ràng hơn
+  const googleSearchErrorsData = useMemo<BarChartData>(() => {
+    return transformRecordToBarChart(gSearchData?.errorsByType, 5, true);
+  }, [gSearchData?.errorsByType]);
+
+  const googleSearchAttemptIssuesData = useMemo<BarChartData>(() => {
+    return transformRecordToBarChart(gSearchData?.attemptIssueDetails, 5, true);
+  }, [gSearchData?.attemptIssueDetails]);
+
+  // --- Gemini API Data ---
+  const geminiApiStatusData = useMemo<PieChartItem[]>(() => {
     if (!geminiApiData) return [];
-    // Sử dụng successfulCalls và failedCalls đã có, đã bao gồm logic fallback
+    const { successfulCalls = 0, failedCalls = 0, blockedBySafety = 0, totalRetries = 0 } = geminiApiData;
     return [
-      { name: 'Successful Calls', value: geminiApiData.successfulCalls || 0 },
-      { name: 'Failed Calls', value: geminiApiData.failedCalls || 0 },
-      { name: 'Safety Blocks (Final)', value: geminiApiData.blockedBySafety || 0 },
-      ...((geminiApiData.totalRetries || 0) > 0 ? [{ name: 'Total Retries', value: geminiApiData.totalRetries }] : [])
+      { name: 'Successful Calls', value: successfulCalls },
+      { name: 'Failed Calls', value: failedCalls },
+      { name: 'Safety Blocks', value: blockedBySafety },
+      ...(totalRetries > 0 ? [{ name: 'Total Retries', value: totalRetries }] : [])
     ].filter(item => item.value > 0);
   }, [geminiApiData]);
 
   const totalGeminiCallsWithRetries = useMemo(() => {
     if (!geminiApiData) return 0;
-    // totalCalls đã bao gồm các cuộc gọi ban đầu (primary/fallback)
-    // totalRetries là tổng số lần retry
     return (geminiApiData.totalCalls || 0) + (geminiApiData.totalRetries || 0);
   }, [geminiApiData]);
 
-  // Dữ liệu cho biểu đồ Gemini Model Usage (chi tiết theo apiType và crawlModel)
   const geminiModelUsageDetailedData = useMemo<BarChartData>(() => {
     if (!geminiApiData?.modelUsageByApiType) return { labels: [], values: [] };
     const combined: Record<string, number> = {};
     Object.entries(geminiApiData.modelUsageByApiType).forEach(([apiType, models]) => {
       Object.entries(models).forEach(([modelIdentifier, stats]) => {
-        const key = `${apiType}: ${modelIdentifier}`;
+        const key = `${apiType}: ${modelIdentifier.replace(/models\//, '')}`; // Rút gọn tên model
         combined[key] = (combined[key] || 0) + (stats.calls || 0) + (stats.retries || 0);
       });
     });
-    return transformRecordForBarChart(combined, 0, true); // Sắp xếp theo value giảm dần
+    return transformRecordToBarChart(combined, 0, true);
   }, [geminiApiData?.modelUsageByApiType]);
 
-
-  // Dữ liệu cho tỷ lệ thành công của Fallback
-  const geminiFallbackSuccessRateData = useMemo(() => {
+  const geminiFallbackSuccessRateData = useMemo<PieChartItem[]>(() => {
     if (!geminiApiData?.fallbackLogic) return [];
     const { attemptsWithFallbackModel = 0, successWithFallbackModel = 0 } = geminiApiData.fallbackLogic;
     if (attemptsWithFallbackModel === 0) return [];
     return [
       { name: 'Fallback Success', value: successWithFallbackModel },
       { name: 'Fallback Failure', value: attemptsWithFallbackModel - successWithFallbackModel }
-    ].filter(item => item.value >= 0); // >=0 để hiển thị cả khi 0
+    ].filter(item => item.value >= 0);
   }, [geminiApiData?.fallbackLogic]);
 
-  // Dữ liệu cho lỗi cấu hình Gemini
   const geminiConfigErrorsData = useMemo<BarChartData>(() => {
     if (!geminiApiData?.configErrors && !geminiApiData?.fewShotPreparation?.failures) return { labels: [], values: [] };
     const errors: Record<string, number> = {};
-    if (geminiApiData?.configErrors?.modelListMissing > 0) {
-      errors['Model List Missing'] = geminiApiData.configErrors.modelListMissing;
+    if (geminiApiData?.configErrors?.modelListMissing ?? 0 > 0) {
+      errors['Model List Missing'] = geminiApiData.configErrors!.modelListMissing;
     }
-    if (geminiApiData?.fewShotPreparation?.failures?.oddPartsCount > 0) {
-      errors['Few-Shot Odd Parts'] = geminiApiData.fewShotPreparation.failures.oddPartsCount;
+    if (geminiApiData?.fewShotPreparation?.failures?.oddPartsCount ?? 0 > 0) {
+      errors['Few-Shot Odd Parts'] = geminiApiData.fewShotPreparation!.failures!.oddPartsCount;
     }
-    if (geminiApiData?.fewShotPreparation?.failures?.processingError > 0) {
-      errors['Few-Shot Processing Error'] = geminiApiData.fewShotPreparation.failures.processingError;
+    if (geminiApiData?.fewShotPreparation?.failures?.processingError ?? 0 > 0) {
+      errors['Few-Shot Proc. Error'] = geminiApiData.fewShotPreparation!.failures!.processingError;
     }
-    // Thêm các lỗi config khác nếu có
-    return transformRecordForBarChart(errors, 0, true);
+    return transformRecordToBarChart(errors, 0, true);
   }, [geminiApiData?.configErrors, geminiApiData?.fewShotPreparation?.failures]);
 
-
-  // Dữ liệu cho Gemini Cache - chi tiết hơn
-  const geminiCacheDetailedData = useMemo(() => {
+  const geminiCacheDetailedData = useMemo<PieChartItem[]>(() => {
     if (!geminiApiData) return [];
     return [
       { name: 'Context Hits', value: geminiApiData.cacheContextHits || 0 },
-      { name: 'Context Creation Success', value: geminiApiData.cacheContextCreationSuccess || 0 },
-      { name: 'Context Creation Failed', value: geminiApiData.cacheContextCreationFailed || 0 },
-      { name: 'Context Invalidations', value: geminiApiData.cacheContextInvalidations || 0 },
-      // { name: 'Context Retrieval Failures', value: geminiApiData.cacheContextRetrievalFailures || 0 }, // Có thể gộp vào creation failed hoặc hiển thị riêng
+      { name: 'Creation Success', value: geminiApiData.cacheContextCreationSuccess || 0 },
+      { name: 'Creation Failed', value: geminiApiData.cacheContextCreationFailed || 0 },
+      { name: 'Invalidations', value: geminiApiData.cacheContextInvalidations || 0 },
     ].filter(item => item.value > 0);
   }, [geminiApiData]);
 
   const topGeminiErrorsData = useMemo<BarChartData>(() => {
-    // Lọc ra các lỗi chỉ thuộc về Gemini từ errorsByType
-    if (!geminiApiData?.errorsByType) return { labels: [], values: [] };
-    // Bạn có thể có một danh sách các prefix hoặc keyword để xác định lỗi Gemini
-    // Hoặc nếu errorsByType trong geminiApi CHỈ chứa lỗi Gemini thì dùng trực tiếp
-    return transformRecordForBarChart(geminiApiData.errorsByType, 5, true); // Top 5 lỗi Gemini
+    return transformRecordToBarChart(geminiApiData?.errorsByType, 5, true);
   }, [geminiApiData?.errorsByType]);
 
+  // --- Validation & Normalization Data ---
+  const warningsByFieldData = useMemo<BarChartData>(() => {
+    return transformRecordToBarChart(validationStats?.warningsByField, 0, true);
+  }, [validationStats?.warningsByField]);
 
-  const cacheStatusData = useMemo(() => {
-    if (!data?.geminiApi) return [];
-    return [
-      { name: 'Cache Hits', value: data.geminiApi.cacheContextHits || 0 },
-      { name: 'Cache Misses', value: data.geminiApi.cacheContextMisses || 0 }
-    ].filter(item => item.value > 0);
-  }, [data?.geminiApi]);
+  const warningsBySeverityData = useMemo<PieChartItem[]>(() => { // << MỚI
+    if (!validationStats?.warningsBySeverity) return [];
+    return transformObjectToPieChartData(validationStats.warningsBySeverity);
+  }, [validationStats?.warningsBySeverity]);
 
-  const playwrightLinkData = useMemo(() => {
-    if (!data?.playwright?.linkProcessing) return [];
-    return [
-      { name: 'Successful Access', value: data.playwright.linkProcessing.successfulAccess || 0 },
-      { name: 'Failed Access', value: data.playwright.linkProcessing.failedAccess || 0 },
-      { name: 'Redirects', value: data.playwright.linkProcessing.redirects || 0 }
-    ].filter(item => item.value > 0);
-  }, [data?.playwright?.linkProcessing]);
+  const topWarningMessagesData = useMemo<BarChartData>(() => { // << MỚI
+    return transformRecordToBarChart(validationStats?.warningsByInsightMessage, 5, true); // Top 5 messages
+  }, [validationStats?.warningsByInsightMessage]);
 
-  const callsByModelWithRetriesData = useMemo<BarChartData>(() => {
-    const { callsByModel = {}, retriesByModel = {} } = data?.geminiApi ?? {};
-    const combined: Record<string, number> = {};
-    const allKeys = new Set([...Object.keys(callsByModel), ...Object.keys(retriesByModel)]);
-    allKeys.forEach(model => {
-      combined[model] = (callsByModel[model] || 0) + (retriesByModel[model] || 0);
-    });
-    return transformRecordForBarChart(combined, 0, false);
-  }, [data?.geminiApi]);
+  const normalizationsByFieldData = useMemo<BarChartData>(() => { // << MỚI
+    return transformRecordToBarChart(validationStats?.normalizationsByField, 0, true);
+  }, [validationStats?.normalizationsByField]);
 
-  const apiKeyUsageData = useMemo<BarChartData>(() => {
-    // Giữ nguyên, đã đúng
-    return transformRecordForBarChart(gSearchData?.keyUsage, 0, false);
-  }, [gSearchData?.keyUsage]);
-
-  // BỔ SUNG: Dữ liệu chi tiết lỗi Google Search
-  const googleSearchErrorsData = useMemo<BarChartData>(() => {
-    return transformRecordForBarChart(gSearchData?.errorsByType, 5, true); // Top 5 lỗi
-  }, [gSearchData?.errorsByType]);
-
-  // BỔ SUNG: Dữ liệu chi tiết các vấn đề trong attempt của Google Search
-  const googleSearchAttemptIssuesData = useMemo<BarChartData>(() => {
-    return transformRecordForBarChart(gSearchData?.attemptIssueDetails, 5, true); // Top 5 vấn đề
-  }, [gSearchData?.attemptIssueDetails]);
+  const normalizationsByReasonData = useMemo<PieChartItem[]>(() => { // << MỚI
+     if (!validationStats?.normalizationsByReason) return [];
+     return transformObjectToPieChartData(validationStats.normalizationsByReason);
+  }, [validationStats?.normalizationsByReason]);
 
 
-  const callsByTypeWithRetriesData = useMemo<BarChartData>(() => {
-    const { callsByType = {}, retriesByType = {} } = data?.geminiApi ?? {};
-    const combined: Record<string, number> = {};
-    const allKeys = new Set([...Object.keys(callsByType), ...Object.keys(retriesByType)]);
-    allKeys.forEach(type => {
-      combined[type] = (callsByType[type] || 0) + (retriesByType[type] || 0);
-    });
-    return transformRecordForBarChart(combined, 0, false);
-  }, [data?.geminiApi]);
-
+  // --- Aggregated Errors ---
   const topErrorsData = useMemo<BarChartData>(() => {
-    // Giữ nguyên, là lỗi tổng hợp
-    return transformRecordForBarChart(data?.errorsAggregated, 10, true);
+    return transformRecordToBarChart(data?.errorsAggregated, 10, true);
   }, [data?.errorsAggregated]);
 
-  const warningsByFieldData = useMemo<BarChartData>(() => {
-    return transformRecordForBarChart(data?.validationStats?.warningsByField, 0, true);
-  }, [data?.validationStats?.warningsByField]);
-
+  // --- Summary Title & Data Check ---
   const summaryTitle = useMemo(() => {
-    return "Overall Crawl Summary";
+    return data?.filterRequestId
+      ? `Summary for Request: ${data.filterRequestId}`
+      : "Overall Crawl Summary";
   }, [data?.filterRequestId]);
 
   const hasMeaningfulData = useMemo(() => {
     return (data?.overall && (
       (data.overall.processedConferencesCount || 0) > 0 ||
       (data.overall.totalConferencesInput || 0) > 0
-    )) || (data.errorLogCount || 0) > 0;
-  }, [data?.overall, data?.errorLogCount]);
+    )) || (data.errorLogCount || 0) > 0 || (validationStats?.totalValidationWarnings || 0) > 0; // Thêm kiểm tra warning
+  }, [data?.overall, data?.errorLogCount, validationStats]);
 
   if (!hasMeaningfulData && !isExpanded) {
     return null;
   }
 
-
   return (
     <section className='mb-8 rounded-lg border border-gray-100 bg-white shadow'>
       <SummaryHeaderComponent title={summaryTitle} isExpanded={isExpanded} onToggle={onToggle} />
-      
+
       {isExpanded && !hasMeaningfulData && (
         <NoDataMessage filterRequestId={data.filterRequestId} />
       )}
@@ -236,26 +206,30 @@ const OverallSummary: React.FC<OverallSummaryProps> = ({
         <CollapsibleContent
           isExpanded={isExpanded}
           data={data}
-          // --- Props giữ nguyên ---
+          // General
           overallStatusData={overallStatusData}
-          // --- Props Google Search (đã cập nhật tên biến) ---
+          playwrightLinkData={playwrightLinkData}
+          topErrorsData={topErrorsData}
+          // Google Search
           searchStatusData={searchStatusData}
           apiKeyUsageData={apiKeyUsageData}
           googleSearchHealthData={googleSearchHealthData}
           googleSearchErrorsData={googleSearchErrorsData}
           googleSearchAttemptIssuesData={googleSearchAttemptIssuesData}
-          // --- Props MỚI cho Gemini API ---
-          geminiApiStatusData={geminiApiStatusData} // Sửa tên
+          // Gemini API
+          geminiApiStatusData={geminiApiStatusData}
           totalGeminiCallsWithRetries={totalGeminiCallsWithRetries}
           geminiModelUsageDetailedData={geminiModelUsageDetailedData}
           geminiFallbackSuccessRateData={geminiFallbackSuccessRateData}
           geminiConfigErrorsData={geminiConfigErrorsData}
-          geminiCacheDetailedData={geminiCacheDetailedData} // Thay thế cacheStatusData cũ
-          topGeminiErrorsData={topGeminiErrorsData} // Lỗi chi tiết của Gemini
-          // --- Props chung khác ---
-          playwrightLinkData={playwrightLinkData}
+          geminiCacheDetailedData={geminiCacheDetailedData}
+          topGeminiErrorsData={topGeminiErrorsData}
+          // Validation & Normalization << THÊM MỚI
           warningsByFieldData={warningsByFieldData}
-          topErrorsData={topErrorsData} // Lỗi tổng hợp từ tất cả các nguồn
+          warningsBySeverityData={warningsBySeverityData}
+          topWarningMessagesData={topWarningMessagesData}
+          normalizationsByFieldData={normalizationsByFieldData}
+          normalizationsByReasonData={normalizationsByReasonData}
         />
       )}
     </section>

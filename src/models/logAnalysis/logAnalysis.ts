@@ -1,10 +1,26 @@
 // src/types/logAnalysis.types.ts
 
+export interface GoogleSearchHealthData {
+  rotationsSuccess: number;
+  rotationsFailed: number;
+  allKeysExhaustedOnGetNextKey: number;
+  maxUsageLimitsReachedTotal: number;
+  successfulSearchesWithNoItems: number;
+}
+
 export interface RequestTimings {
     startTime: string | null;
     endTime: string | null;
     durationSeconds: number | null;
-    status?: 'Completed' | 'Failed' | 'Processing' | 'PartiallyCompleted' | 'Unknown';
+    status?:
+    | 'Completed'
+    | 'Failed'
+    | 'Processing'
+    | 'CompletedWithErrors' // << THÊM MỚI: Cho request có lỗi nhưng không hoàn toàn thất bại
+    | 'PartiallyCompleted'  // << THÊM MỚI: Cho request hoàn thành một phần, không lỗi
+    | 'Skipped'             // << THÊM MỚI: Cho request mà tất cả task con đều skipped
+    | 'NoData'              // << THÊM MỚI: Cho request không có log hoặc task
+    | 'Unknown';
     originalRequestId?: string;
     // Tùy chọn:
     // processedConferencesInRequest?: number;
@@ -22,13 +38,30 @@ export interface ReadLogResult {
     totalEntries: number;
     parsedEntries: number;
     parseErrors: number;
-    logProcessingErrors: string[]; // Mảng các thông báo lỗi trong quá trình xử lý log
+    logProcessingErrors: string[];
 }
 
 export interface FilteredData {
     filteredRequests: Map<string, RequestLogData>; // Key là batchRequestId
     analysisStartMillis: number | null;
     analysisEndMillis: number | null;
+}
+
+
+export interface DataQualityInsight {
+    timestamp: string;    // ISO string
+    field: string;        // Trường bị ảnh hưởng
+    originalValue?: any;  // Giá trị gốc trước khi thay đổi/warning
+    currentValue: any;    // Giá trị hiện tại (sau khi normalized, hoặc giá trị gây warning)
+    insightType: 'ValidationWarning' | 'NormalizationApplied' | 'DataCorrection'; // Loại insight
+    severity?: 'Low' | 'Medium' | 'High'; // Mức độ nghiêm trọng (chủ yếu cho Warning)
+    message: string;      // Mô tả chi tiết
+    details?: {
+        actionTaken?: string;  // Ví dụ: "KeptAsIs", "NormalizedToDefault"
+        normalizedTo?: any;    // Giá trị sau khi normalize (nếu insightType là NormalizationApplied)
+        ruleViolated?: string; // Ví dụ: "YEAR_REGEX", "VALID_CONTINENTS"
+        // Có thể thêm các chi tiết khác nếu cần
+    }
 }
 
 /** Thông tin chi tiết về quá trình xử lý một conference cụ thể */
@@ -73,39 +106,44 @@ export interface ConferenceAnalysisDetail {
         gemini_cfp_success?: boolean | null;
         gemini_cfp_cache_used?: boolean | null;
     };
-    errors: Array<{ timestamp: string; message: string; details?: any }>; // ISO string for timestamp
-    validationIssues?: Array<{
-        field: string;
-        value: any;
-        action: string;
-        normalizedTo?: any;
-        timestamp: string; // ISO string
+    errors: Array<{
+        timestamp: string;
+        message: string;
+        details?: any;
+        errorCode?: string; // Giữ nguyên
+        sourceService?: string; // << BỔ SUNG: Service nào gây ra lỗi (nếu có)
+        errorType?: 'DataParsing' | 'Network' | 'APIQuota' | 'Logic' | 'FileSystem' | 'Unknown'; // << BỔ SUNG: Phân loại lỗi
     }>;
-    finalResultPreview?: any;
-    finalResult?: any;
+
+    dataQualityInsights?: DataQualityInsight[]; // Sử dụng DataQualityInsight[] ở đây
+
+
+    // Bỏ `validationIssues` riêng lẻ, đã được gộp vào `dataQualityInsights`
+
+    finalResultPreview?: any; // Giữ nguyên
+    finalResult?: any;        // Giữ nguyên
 }
 
 export interface PlaywrightAnalysis {
+    // ... (giữ nguyên)
     setupAttempts: number;
     setupSuccess: boolean | null;
-    setupError: boolean | string | null; // Có thể là string chứa thông báo lỗi
+    setupError: boolean | string | null;
     contextErrors: number;
-
     htmlSaveAttempts: number;
     successfulSaveInitiations: number;
     failedSaves: number;
     skippedSaves: number;
-
     linkProcessing: {
         totalLinksAttempted: number;
         successfulAccess: number;
         failedAccess: number;
         redirects: number;
     };
-
     otherFailures: number;
     errorsByType: { [normalizedErrorKey: string]: number };
 }
+
 
 // Interface GeminiApiAnalysis đã được cập nhật chi tiết
 export interface GeminiApiAnalysis {
@@ -196,18 +234,22 @@ export interface GeminiApiAnalysis {
     // --- Cache Specifics ---
     cacheContextHits: number;
     cacheContextAttempts: number; // getOrCreate
-    cacheContextMisses: number;
     cacheContextCreationSuccess: number;
+    cacheContextMisses: number;
     cacheContextCreationFailed: number;
     cacheContextInvalidations: number;
     cacheContextRetrievalFailures: number;
+    cacheMapLoadAttempts: number;
     cacheMapLoadFailures: number;
     cacheMapLoadSuccess?: boolean | null; // Có thể là null nếu chưa có event load
+    cacheMapWriteAttempts: number;
+    cacheManagerCreateFailures: number;
     cacheMapWriteSuccessCount: number;
     cacheMapWriteFailures: number;
     // cacheManagerCreateFailures đã được tính trong serviceInitialization.failures hoặc apiCallSetupFailures
 
     // --- Config Errors ---
+    serviceInitializationFailures: number;
     configErrors: {
         modelListMissing: number;
         // Lỗi từ fewShotPreparation.failures cũng có thể được coi là config error
@@ -215,37 +257,32 @@ export interface GeminiApiAnalysis {
 }
 
 
+
 export interface GoogleSearchAnalysis {
+    // ... (giữ nguyên)
     totalRequests: number;
     successfulSearches: number;
     failedSearches: number;
     skippedSearches: number;
-    quotaErrors: number; // Có thể deprecated, dùng quotaErrorsEncountered
+    quotaErrors: number;
     keyUsage: { [apiKey: string]: number };
     errorsByType: { [normalizedErrorKey: string]: number };
-    attemptIssues: number; // Tổng các lỗi "attempt_issue"
-    attemptIssueDetails: Record<string, number>; // Chi tiết các loại "attempt_issue"
-    quotaErrorsEncountered: number; // Tổng số lần gặp lỗi quota
+    attemptIssues: number;
+    attemptIssueDetails: Record<string, number>;
+    quotaErrorsEncountered: number;
     malformedResultItems: number;
     successfulSearchesWithNoItems: number;
-    apiKeyLimitsReached: number; // Số lần tất cả API keys đều hết hạn ngạch (chung)
-    keySpecificLimitsReached: Record<string, number>; // Số lần từng API key cụ thể hết hạn ngạch
+    apiKeyLimitsReached: number;
+    keySpecificLimitsReached: Record<string, number>;
     apiKeysProvidedCount: number;
-    allKeysExhaustedEvents_GetNextKey: number; // Số lần event "all_keys_exhausted" khi gọi getNextKey
-    allKeysExhaustedEvents_StatusCheck: number; // Số lần event "all_keys_exhausted" khi kiểm tra trạng thái
+    allKeysExhaustedEvents_GetNextKey: number;
+    allKeysExhaustedEvents_StatusCheck: number;
     apiKeyRotationsSuccess: number;
     apiKeyRotationsFailed: number;
 }
 
-export interface GoogleSearchHealthData {
-  rotationsSuccess: number;
-  rotationsFailed: number;
-  allKeysExhaustedOnGetNextKey: number;
-  maxUsageLimitsReachedTotal: number;
-  successfulSearchesWithNoItems: number;
-}
-
 export interface BatchProcessingAnalysis {
+    // ... (giữ nguyên)
     totalBatchesAttempted: number;
     successfulBatches: number;
     failedBatches: number;
@@ -260,6 +297,7 @@ export interface BatchProcessingAnalysis {
 }
 
 export interface FileOutputAnalysis {
+    // ... (giữ nguyên, nhưng có thể thêm `csvOtherErrors` nếu bạn dùng nó trong logic)
     jsonlRecordsSuccessfullyWritten: number;
     jsonlWriteErrors: number;
     csvFileGenerated: boolean | null;
@@ -268,6 +306,7 @@ export interface FileOutputAnalysis {
     csvWriteErrors: number;
     csvOrphanedSuccessRecords: number;
     csvPipelineFailures: number;
+    csvOtherErrors?: number; // << THÊM MỚI (tùy chọn, nếu bạn sử dụng)
 }
 
 export interface OverallAnalysis {
@@ -275,40 +314,61 @@ export interface OverallAnalysis {
     endTime: string | null;   // ISO string
     durationSeconds: number | null;
     totalConferencesInput: number;
-    processedConferencesCount: number; // Số conference có ít nhất một log entry liên quan đến xử lý (không chỉ là input)
-    completedTasks: number; // Số conference có status 'completed'
-    failedOrCrashedTasks: number; // Số conference có status 'failed'
-    processingTasks: number; // Số conference có status 'processing' (có thể chưa kết thúc)
-    skippedTasks?: number; // Số conference có status 'skipped'
-    successfulExtractions: number; // Số conference mà bước gemini_extract_success là true
+    processedConferencesCount: number;
+    completedTasks: number;
+    failedOrCrashedTasks: number;
+    processingTasks: number;
+    skippedTasks: number; // << Đảm bảo có, vì 'skipped' là một status của conference
+    successfulExtractions: number;
 }
 
 export interface ValidationStats {
+    // Các trường cho Validation Warnings
     totalValidationWarnings: number;
     warningsByField: { [fieldName: string]: number };
+    warningsBySeverity: { // << BỔ SUNG: Đếm warning theo mức độ nghiêm trọng
+        Low: number;
+        Medium: number;
+        High: number;
+    };
+    warningsByInsightMessage: { [message: string]: number }; // << BỔ SUNG: Đếm các loại warning cụ thể
+
+    // Các trường cho Normalizations
     totalNormalizationsApplied: number;
     normalizationsByField: { [fieldName: string]: number };
+    normalizationsByReason: { [reasonMessage: string]: number }; // << BỔ SUNG: Đếm normalization theo lý do (ví dụ: "empty_value")
+
+    // Có thể thêm các trường cho DataCorrections nếu có
+    totalDataCorrections?: number;
+    correctionsByField?: { [fieldName: string]: number };
 }
 
 /** Cấu trúc kết quả phân tích log tổng thể và chi tiết theo conference */
 export interface LogAnalysisResult {
     analysisTimestamp: string; // ISO string
     logFilePath: string;
-    status?: 'Completed' | 'Failed' | 'Processing';
+    status?:
+    | 'Completed'
+    | 'Failed'
+    | 'Processing'
+    | 'CompletedWithErrors' // << THÊM MỚI: Cho trạng thái tổng thể của việc phân tích
+    | 'PartiallyCompleted'  // << THÊM MỚI: Cho trạng thái tổng thể của việc phân tích
+    | 'NoRequestsAnalyzed'  // << THÊM MỚI: Nếu không có request nào được phân tích
+    | 'Unknown';
     errorMessage?: string;
 
     filterRequestId?: string;
     analyzedRequestIds: string[];
 
     requests: {
-        [batchRequestId: string]: RequestTimings;
+        [batchRequestId: string]: RequestTimings; // Sử dụng RequestTimings đã được cập nhật
     };
 
     totalLogEntries: number;
     parsedLogEntries: number;
     parseErrors: number;
-    errorLogCount: number; // Tổng số log entry có level 'error'
-    fatalLogCount: number; // Tổng số log entry có level 'fatal'
+    errorLogCount: number;
+    fatalLogCount: number;
 
     googleSearch: GoogleSearchAnalysis;
     playwright: PlaywrightAnalysis;
@@ -319,8 +379,8 @@ export interface LogAnalysisResult {
 
     overall: OverallAnalysis;
 
-    errorsAggregated: { [normalizedErrorKey: string]: number }; // Tổng hợp tất cả các lỗi từ các module
-    logProcessingErrors: string[]; // Mảng các thông báo lỗi trong quá trình phân tích log (không phải lỗi từ app)
+    errorsAggregated: { [normalizedErrorKey: string]: number };
+    logProcessingErrors: string[];
 
     conferenceAnalysis: {
         [compositeKeyIncludingBatchRequestId: string]: ConferenceAnalysisDetail;
@@ -429,10 +489,14 @@ export const getInitialGeminiApiAnalysis = (): GeminiApiAnalysis => ({
     cacheContextCreationFailed: 0,
     cacheContextInvalidations: 0,
     cacheContextRetrievalFailures: 0,
+    cacheMapLoadAttempts: 0,
     cacheMapLoadFailures: 0,
+    cacheMapWriteAttempts: 0,
     cacheMapLoadSuccess: null,
+    cacheManagerCreateFailures: 0,
     cacheMapWriteSuccessCount: 0,
     cacheMapWriteFailures: 0,
+    serviceInitializationFailures: 0,
     configErrors: {
         modelListMissing: 0,
     },
@@ -464,11 +528,45 @@ export const getInitialFileOutputAnalysis = (): FileOutputAnalysis => ({
 });
 
 export const getInitialValidationStats = (): ValidationStats => ({
+    // Validation Warnings
     totalValidationWarnings: 0,
     warningsByField: {},
+    warningsBySeverity: { // Khởi tạo các mức độ nghiêm trọng
+        Low: 0,
+        Medium: 0,
+        High: 0,
+    },
+    warningsByInsightMessage: {},
+
+    // Normalizations
     totalNormalizationsApplied: 0,
     normalizationsByField: {},
+    normalizationsByReason: {},
+
+    // Data Corrections (khởi tạo nếu bạn quyết định sử dụng chúng)
+    // totalDataCorrections: 0, // Bỏ comment nếu dùng
+    // correctionsByField: {},    // Bỏ comment nếu dùng
 });
+export interface ValidationStats {
+    // Các trường cho Validation Warnings
+    totalValidationWarnings: number;
+    warningsByField: { [fieldName: string]: number };
+    warningsBySeverity: { // << BỔ SUNG: Đếm warning theo mức độ nghiêm trọng
+        Low: number;
+        Medium: number;
+        High: number;
+    };
+    warningsByInsightMessage: { [message: string]: number }; // << BỔ SUNG: Đếm các loại warning cụ thể
+
+    // Các trường cho Normalizations
+    totalNormalizationsApplied: number;
+    normalizationsByField: { [fieldName: string]: number };
+    normalizationsByReason: { [reasonMessage: string]: number }; // << BỔ SUNG: Đếm normalization theo lý do (ví dụ: "empty_value")
+
+    // Có thể thêm các trường cho DataCorrections nếu có
+    totalDataCorrections?: number;
+    correctionsByField?: { [fieldName: string]: number };
+}
 
 // Hàm khởi tạo cho toàn bộ LogAnalysisResult
 export const getInitialLogAnalysisResult = (logFilePath: string = "N/A"): LogAnalysisResult => ({

@@ -1,10 +1,11 @@
 // src/app/[locale]/dashboard/logAnalysis/ConferenceTableRow.tsx
 import React from 'react';
-import { FaChevronDown, FaChevronUp, FaTimesCircle, FaCheckCircle, FaExclamationCircle } from 'react-icons/fa';
+import { FaChevronDown, FaChevronUp, FaTimesCircle, FaCheckCircle, FaExclamationTriangle, FaInfoCircle, FaWrench } from 'react-icons/fa'; // Thêm FaInfoCircle, FaWrench
 import { ConferenceTableData, RowSaveStatus } from '../../../../../hooks/crawl/useConferenceTableManager'; // Adjust path
 import { StatusIcon } from '../StatusIcon'; // Adjust path
 import { formatDuration } from '../utils/commonUtils'; // Adjust path
-import { Rocket } from 'lucide-react';
+import { DataQualityInsight } from '@/src/models/logAnalysis/logAnalysis'; // << IMPORT
+
 
 interface ConferenceTableRowProps {
   confData: ConferenceTableData;
@@ -16,43 +17,59 @@ interface ConferenceTableRowProps {
   saveError?: string;
 }
 
+// Helper để lấy class màu cho insight severity
+const getSeverityClass = (severity?: 'Low' | 'Medium' | 'High'): string => {
+  switch (severity) {
+    case 'High': return 'text-red-600 bg-red-100 border-red-300';
+    case 'Medium': return 'text-amber-600 bg-amber-100 border-amber-300';
+    case 'Low': return 'text-blue-600 bg-blue-100 border-blue-300';
+    default: return 'text-gray-600 bg-gray-100 border-gray-300';
+  }
+};
+
+// Helper để lấy icon cho insight type
+const getInsightIcon = (type: DataQualityInsight['insightType']) => {
+  switch (type) {
+    case 'ValidationWarning': return <FaExclamationTriangle className="mr-1.5 inline-block" />;
+    case 'NormalizationApplied': return <FaWrench className="mr-1.5 inline-block text-sky-600" />; // Icon cho normalization
+    case 'DataCorrection': return <FaInfoCircle className="mr-1.5 inline-block text-purple-600" />; // Icon cho correction
+    default: return <FaInfoCircle className="mr-1.5 inline-block" />;
+  }
+};
+
+
 export const ConferenceTableRow: React.FC<ConferenceTableRowProps> = ({
   confData, isSelected, isExpanded, onSelectToggle, onToggleExpand, saveStatus, saveError
 }) => {
   const {
     uniqueRowId, title, acronym, status, durationSeconds, steps, errors, finalResult,
-    errorCount, validationWarningCount, hasValidationWarnings, validationWarnings, requestId // Lấy requestId
+    errorCount,
+    // validationWarningCount, hasValidationWarnings, validationWarnings, // << Bỏ
+    dataQualityInsights, dataQualityInsightCount, hasSignificantDataQualityIssues, // << SỬ DỤNG
+    requestId
   } = confData;
-  const hasErrors = errorCount > 0
-  // Row Background Logic (Cập nhật để ưu tiên Error > Warning > Selected > Status)
-  let rowBgClass = 'hover:bg-gray-5' // Default hover // Changed from hover:bg-gray-5 to hover:bg-gray-5
-  let statusPulseClass = ''
+
+  const hasErrors = errorCount > 0;
+
+  let rowBgClass = 'hover:bg-gray-50'; // Default hover
+  let statusPulseClass = '';
 
   if (hasErrors) {
-    rowBgClass = isSelected
-      ? 'bg-red-100 hover:bg-red-200'
-      : 'bg-red-50 hover:bg-red-100' // Ưu tiên màu đỏ cho lỗi
-  } else if (hasValidationWarnings) {
-    rowBgClass = isSelected
-      ? 'bg-amber-100 hover:bg-amber-200'
-      : 'bg-amber-50 hover:bg-amber-100' // Màu vàng/cam cho warning
+    rowBgClass = isSelected ? 'bg-red-100 hover:bg-red-200' : 'bg-red-50 hover:bg-red-100';
+  } else if (hasSignificantDataQualityIssues) { // << SỬ DỤNG hasSignificantDataQualityIssues
+    rowBgClass = isSelected ? 'bg-amber-100 hover:bg-amber-200' : 'bg-amber-50 hover:bg-amber-100';
   } else if (isSelected) {
     rowBgClass = 'bg-blue-50 hover:bg-blue-100';
-  } else { // Not selected, no errors, no warnings
-    if (status === 'failed') {
-      rowBgClass = 'bg-red-50 hover:bg-red-100';
-    } else if (status === 'processing') {
-      rowBgClass = 'bg-blue-50 hover:bg-blue-100'; // Hoặc một màu processing khác nếu không selected
+  } else {
+    if (status === 'failed') rowBgClass = 'bg-red-50 hover:bg-red-100';
+    else if (status === 'processing') {
+      rowBgClass = 'bg-blue-50 hover:bg-blue-100';
       statusPulseClass = 'animate-pulse';
-    } else if (status === 'completed') {
-      rowBgClass = 'bg-white hover:bg-green-50'; // Ví dụ: Nền trắng, hover xanh lá nhạt
-    } else {
-      // Mặc định cho unknown, skipped khi không selected, không lỗi/warning
-      rowBgClass = 'bg-white hover:bg-gray-5'; // Changed from hover:bg-gray-5 to hover:bg-gray-5
-    }
+    } else if (status === 'completed') rowBgClass = 'bg-white hover:bg-green-50';
+    else rowBgClass = 'bg-white hover:bg-gray-50';
   }
 
-  // Status Badge Logic
+  // ... (statusBadgeClass, linkIconLogic, showRequestIdColumn, colSpanBase, colSpan giữ nguyên)
   let statusBadgeClass = 'bg-gray-100 text-gray-800'
   switch (status) {
     case 'completed':
@@ -69,18 +86,13 @@ export const ConferenceTableRow: React.FC<ConferenceTableRowProps> = ({
       break
   }
 
-  // Link Icon Logic
   const linkAttemptedCount = steps?.link_processing_attempted_count ?? 0;
   const linkSuccessCount = steps?.link_processing_success_count ?? 0;
-
   const linkAttempted = linkAttemptedCount > 0;
   const linkAllSuccess = linkAttempted && (linkSuccessCount === linkAttemptedCount);
   const linkHasAttemptsButNotAllSuccess = linkAttempted && !linkAllSuccess;
-
   const showRequestIdColumn = confData.requestId !== 'N/A';
-
-  // UPDATED colSpanBase: Select + Title + Status + Duration + 6 Steps Icons + Warns + Errors + Saved = 12
-  const colSpanBase = 13; 
+  const colSpanBase = 13;
   const colSpan = showRequestIdColumn ? colSpanBase + 1 : colSpanBase;
 
 
@@ -92,20 +104,20 @@ export const ConferenceTableRow: React.FC<ConferenceTableRowProps> = ({
             checked={isSelected} onChange={() => onSelectToggle(uniqueRowId)} aria-label={`Select ${title}`} />
         </td>
         {/* REMOVED Expand TD HERE */}
-        
+
         {/* MODIFIED Title TD to include expand functionality */}
-        <td 
-          className='px-3 py-2 text-sm font-medium text-gray-900 max-w-[20px] cursor-pointer group' 
+        <td
+          className='px-3 py-2 text-sm font-medium text-gray-900 max-w-[20px] cursor-pointer group'
           title={`${title} (Click to ${isExpanded ? 'collapse' : 'expand'})`}
           onClick={() => onToggleExpand(uniqueRowId)}
         >
           <div className="flex items-center">
-            {isExpanded 
-              ? <FaChevronUp className='mr-2 text-blue-600 group-hover:text-blue-800 flex-shrink-0' /> 
+            {isExpanded
+              ? <FaChevronUp className='mr-2 text-blue-600 group-hover:text-blue-800 flex-shrink-0' />
               : <FaChevronDown className='mr-2 text-blue-600 group-hover:text-blue-800 flex-shrink-0' />}
             <span className="truncate">
               {acronym}
-               {/* <span className="text-gray-500">({title.length > 30 ? title.slice(0,30) + '...' : title})</span> */}
+              {/* <span className="text-gray-500">({title.length > 30 ? title.slice(0,30) + '...' : title})</span> */}
             </span>
           </div>
         </td>
@@ -130,22 +142,32 @@ export const ConferenceTableRow: React.FC<ConferenceTableRowProps> = ({
         <td className='whitespace-nowrap px-2 py-2 text-center text-lg'><StatusIcon success={steps?.gemini_determine_success} attempted={steps?.gemini_determine_attempted} /></td>
         <td className='whitespace-nowrap px-2 py-2 text-center text-lg'><StatusIcon success={steps?.gemini_cfp_success} attempted={steps?.gemini_cfp_attempted} /></td>
         <td className='whitespace-nowrap px-2 py-2 text-center text-lg'><StatusIcon success={steps?.gemini_extract_success} attempted={steps?.gemini_extract_attempted} /></td>
-        <td className={`whitespace-nowrap px-3 py-2 text-center text-sm font-medium ${hasValidationWarnings ? 'text-amber-600' : 'text-gray-500'}`}>
-          {hasValidationWarnings && <FaExclamationCircle className='mb-0.5 mr-1 inline text-amber-500' title={`Warnings: ${validationWarningCount}`} />}
-          {validationWarningCount}
+        {/* THAY ĐỔI CỘT WARNS -> DATA QUALITY INSIGHTS */}
+        <td className={`whitespace-nowrap px-3 py-2 text-center text-sm font-medium ${hasSignificantDataQualityIssues ? 'text-amber-600' : 'text-gray-500'}`}>
+          {dataQualityInsightCount > 0 && (
+            <FaInfoCircle // Hoặc một icon chung hơn cho "data issues"
+              className={`mb-0.5 mr-1 inline ${hasSignificantDataQualityIssues ? 'text-amber-500' : 'text-sky-500'}`}
+              title={`Data Quality Insights: ${dataQualityInsightCount}`}
+            />
+          )}
+          {dataQualityInsightCount}
         </td>
+
+        {/* Cột Errors giữ nguyên */}
         <td className={`whitespace-nowrap px-3 py-2 text-center text-sm font-medium ${hasErrors ? 'text-red-600' : 'text-green-600'}`}>
           {hasErrors && <FaTimesCircle className='mb-0.5 mr-1 inline text-red-500' title={`Errors: ${errorCount}`} />}
           {errorCount}
         </td>
-        <td className='whitespace-nowrap pl-8 py-2 text-center text-lg'>
+        <td className='whitespace-nowrap pl-3 pr-3 py-2 text-center text-lg'> {/* Adjusted padding */}
           {saveStatus === 'success' && <FaCheckCircle className='text-green-500' title='Saved' />}
           {saveStatus === 'error' && <FaTimesCircle className='text-red-500' title={`Save failed: ${saveError || 'Unknown'}`} />}
         </td>
       </tr>
+
+      {/* PHẦN MỞ RỘNG (EXPANDED VIEW) */}
       {isExpanded && (
         <tr className='bg-slate-50 hover:bg-slate-100'>
-          <td colSpan={colSpan} className='px-4 py-3 text-sm text-gray-700 md:px-6 md:py-4'> {/* Use calculated colSpan */}
+          <td colSpan={colSpan} className='px-4 py-3 text-sm text-gray-700 md:px-6 md:py-4'>
             <div className='grid grid-cols-1 gap-x-6 gap-y-4 md:grid-cols-2'>
               <div>
                 <h4 className='mb-1.5 font-semibold text-gray-800'>Extracted Data Preview:</h4>
@@ -153,38 +175,57 @@ export const ConferenceTableRow: React.FC<ConferenceTableRowProps> = ({
                   {finalResult ? JSON.stringify(finalResult, null, 2) : 'No preview available.'}
                 </pre>
               </div>
-              <div className="space-y-3">
+              <div className="space-y-4"> {/* Tăng space-y một chút */}
+                {/* Errors section giữ nguyên */}
                 {hasErrors && errors && errors.length > 0 && (
                   <div>
                     <h4 className='mb-1 font-semibold text-red-700'>Errors ({errorCount}):</h4>
                     <ul className='custom-scrollbar max-h-32 list-inside list-disc space-y-1 overflow-y-auto rounded border border-red-200 bg-red-50 p-2 text-xs text-red-600 shadow-inner'>
-                      {errors.map((err, index) => (<li key={index} className='break-words'>{typeof err === 'object' ? JSON.stringify(err) : String(err)}</li>))}
+                      {errors.map((err, index) => (
+                        <li key={`err-${index}`} className='break-words'>
+                          {err.sourceService && <span className="font-semibold text-red-800">[{err.sourceService}]</span>} {err.message}
+                          {err.errorCode && <span className="text-xs text-red-500 ml-1">({err.errorCode})</span>}
+                          {err.details && <pre className="mt-1 text-xs bg-red-100 p-1 rounded overflow-auto">{JSON.stringify(err.details, null, 2)}</pre>}
+                        </li>
+                      ))}
                     </ul>
                   </div>
                 )}
-                {/* --- HIỂN THỊ VALIDATION WARNINGS (Nếu có) --- */}
-                {hasValidationWarnings &&
-                  validationWarnings &&
-                  validationWarnings.length > 0 && (
-                    <div className='mb-4'>
-                      <h4 className='mb-1 font-semibold text-amber-700'>
-                        Validation Warnings ({validationWarningCount}):
-                      </h4>
-                      <ul className='custom-scrollbar max-h-40 list-inside list-disc space-y-1 overflow-y-auto rounded border border-amber-200 bg-amber-50 p-2 text-xs text-amber-700'>
-                        {validationWarnings.map((warn, index) => (
-                          <li key={index} className='break-words'>
-                            <span className='font-medium'>{warn.field}:</span>{' '}
-                            {String(warn.value)}{' '}
-                            <span className='text-gray-500'>
-                              ({warn.action})
-                            </span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-                {/* Link Access Failures */}
 
+                {/* --- HIỂN THỊ DATA QUALITY INSIGHTS (Thay thế validationWarnings) --- */}
+                {dataQualityInsights && dataQualityInsights.length > 0 && (
+                  <div className='mb-4'>
+                    <h4 className='mb-1.5 font-semibold text-slate-700'>
+                      Data Quality Insights ({dataQualityInsightCount}):
+                    </h4>
+                    <ul className='custom-scrollbar max-h-60 list-none space-y-2 overflow-y-auto rounded border border-slate-200 bg-white p-2.5 text-xs shadow-inner'>
+                      {dataQualityInsights.map((insight, index) => (
+                        <li key={`insight-${index}`} className={`p-2 border rounded-md ${getSeverityClass(insight.severity)}`}>
+                          <div className="font-semibold mb-0.5">
+                            {getInsightIcon(insight.insightType)}
+                            Field: <span className="font-bold">{insight.field}</span> - <span className="italic">{insight.insightType.replace(/([A-Z])/g, ' $1').trim()}</span>
+                            {insight.severity && ` (Severity: ${insight.severity})`}
+                          </div>
+                          <div className="ml-5 text-slate-800">{insight.message}</div>
+                          {insight.originalValue !== undefined && (
+                            <div className="ml-5 text-xs mt-0.5">
+                              <span className="text-gray-500">Original:</span> <code className="bg-gray-200 px-1 rounded">{String(insight.originalValue) || '""'}</code>
+                            </div>
+                          )}
+                          {insight.insightType !== 'ValidationWarning' || insight.details?.normalizedTo !== undefined || insight.details?.actionTaken === 'NormalizedToDefault' ? (
+                            <div className="ml-5 text-xs mt-0.5">
+                              <span className="text-gray-500">Current:</span> <code className="bg-gray-200 px-1 rounded">{String(insight.currentValue)}</code>
+                            </div>
+                          ) : null}
+                          {insight.details?.actionTaken && <div className="ml-5 text-xs mt-0.5"><span className="text-gray-500">Action:</span> {insight.details.actionTaken}</div>}
+                          {insight.details?.ruleViolated && <div className="ml-5 text-xs mt-0.5"><span className="text-gray-500">Rule:</span> {insight.details.ruleViolated}</div>}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {/* Link Access Failures */}
                 {steps.link_processing_failed_details && // Kiểm tra sự tồn tại của mảng
                   steps.link_processing_failed_details.length > 0 && (
                     <div className='mb-4'>
@@ -206,6 +247,8 @@ export const ConferenceTableRow: React.FC<ConferenceTableRowProps> = ({
                       </ul>
                     </div>
                   )}
+
+
                 <div>
                   <h4 className='mb-1.5 font-semibold text-gray-800'>Step Details:</h4>
                   <ul className='list-none space-y-1 text-xs'>
