@@ -9,6 +9,9 @@ export interface Conference {
     researchFields: string[];
     status: string; // Assuming possible statuses
     updatedAt?: string | number | Date; // Thêm updatedAt ở đây, kiểu có thể là string (ISO date), number (timestamp), hoặc Date
+    link?: string;
+    impLink?: string;
+    cfpLink?: string;
 
 }
 
