@@ -1,20 +1,32 @@
-// --- Helper Functions cho Biểu đồ (Giữ nguyên hoặc cải tiến nhẹ) ---
+// src/app/[locale]/dashboard/logAnalysis/utils/chartUtils.ts
+// (Or wherever your chartUtils.ts is located)
+
+import { EChartsOption } from 'echarts'; // Make sure this import is correct
+
+// --- BarChartData type (already present) ---
 export type BarChartData = { labels: string[]; values: number[] };
 
 
-
 // Helper function to create Pie chart options (Doughnut)
-export const getPieChartOption = (title: string, data: Array<{ name: string; value: number }>, colors?: string[]) => {
+export const getPieChartOption = (
+    chartTitle: string, // Renamed from 'title'
+    data: Array<{ name: string; value: number }>,
+    colors?: string[],
+    subtext?: string // Thêm tham số subtext
+
+): EChartsOption => { // Explicitly type the return value
     return {
         title: {
-            text: title,
+            text: chartTitle,
             left: 'center',
             top: 10,
             textStyle: {
                 fontSize: 16,
-                fontWeight: 'normal',
-                color: '#333' // Màu chữ tiêu đề
-            }
+                fontWeight: 'normal' as const, // Use 'as const' for literal type
+                color: '#333'
+            },
+            subtext: subtext, // Sử dụng subtext ở đây
+            subtextStyle: { fontSize: 12, color: '#666' } // Điều chỉnh style
         },
         tooltip: {
             trigger: 'item',
@@ -22,38 +34,38 @@ export const getPieChartOption = (title: string, data: Array<{ name: string; val
         },
         legend: {
             orient: 'vertical',
-            left: 10, // Tăng khoảng cách từ lề trái
+            left: 10,
             top: 'middle',
-            itemGap: 8, // Khoảng cách giữa các mục legend
+            itemGap: 8,
             data: data.map(item => item.name),
             textStyle: {
-                fontSize: 12 // Kích thước chữ legend nhỏ hơn
+                fontSize: 12 // This is a number, which is good
             }
         },
         series: [
             {
-                name: title,
+                name: chartTitle,
                 type: 'pie',
-                radius: ['50%', '75%'], // Điều chỉnh độ dày doughnut
-                center: ['65%', '55%'], // Điều chỉnh vị trí để không bị che bởi legend
+                radius: ['50%', '75%'],
+                center: ['65%', '55%'],
                 avoidLabelOverlap: true,
                 itemStyle: {
-                    borderRadius: 8, // Bo tròn mạnh hơn
+                    borderRadius: 8,
                     borderColor: '#fff',
                     borderWidth: 2
                 },
                 label: {
-                    show: false, // Vẫn ẩn label trên slice
+                    show: false,
                     position: 'center'
                 },
                 emphasis: {
                     label: {
                         show: true,
-                        fontSize: '18',
-                        fontWeight: 'bold',
-                        formatter: '{b}\n{c} ({d}%)' // Hiển thị cả tên và giá trị khi hover
+                        fontSize: 18, // Changed from '18' (string) to 18 (number)
+                        fontWeight: 'bold' as const, // 'bold' is also a valid ZRFontWeight
+                        formatter: '{b}\n{c} ({d}%)'
                     },
-                    itemStyle: { // Hiệu ứng khi hover
+                    itemStyle: {
                         shadowBlur: 10,
                         shadowOffsetX: 0,
                         shadowColor: 'rgba(0, 0, 0, 0.5)'
@@ -63,7 +75,6 @@ export const getPieChartOption = (title: string, data: Array<{ name: string; val
                     show: false
                 },
                 data: data,
-                // Sử dụng màu được truyền vào hoặc màu mặc định
                 color: colors || ['#5470c6', '#ee6666', '#fccb67', '#91cc75', '#73c0de', '#3ba272', '#fc8452', '#9a60b4', '#ea7ccc']
             }
         ]
@@ -71,15 +82,21 @@ export const getPieChartOption = (title: string, data: Array<{ name: string; val
 };
 
 // Helper function to create Bar chart options
-export const getBarChartOption = (title: string, xAxisData: string[], seriesData: number[], seriesName: string, color?: string) => {
+export const getBarChartOption = (
+    chartTitle: string, // Renamed from 'title'
+    xAxisData: string[],
+    seriesData: number[],
+    seriesName: string,
+    color?: string
+): EChartsOption => { // Explicitly type the return value
     return {
         title: {
-            text: title,
+            text: chartTitle,
             left: 'center',
             top: 10,
             textStyle: {
                 fontSize: 16,
-                fontWeight: 'normal',
+                fontWeight: 'normal' as const, // Use 'as const' for literal type
                 color: '#333'
             }
         },
@@ -104,13 +121,13 @@ export const getBarChartOption = (title: string, xAxisData: string[], seriesData
                 },
                 axisLabel: {
                     interval: 0,
-                    rotate: 30, // Xoay label nếu cần
-                    fontSize: 11, // Giảm kích thước font trục X
+                    rotate: 30,
+                    fontSize: 11,
                     color: '#555'
                 },
                 axisLine: {
                     lineStyle: {
-                        color: '#ccc' // Màu trục X
+                        color: '#ccc'
                     }
                 }
             }
@@ -122,7 +139,7 @@ export const getBarChartOption = (title: string, xAxisData: string[], seriesData
                     fontSize: 11,
                     color: '#555'
                 },
-                splitLine: { // Đường lưới ngang mờ hơn
+                splitLine: {
                     lineStyle: {
                         type: 'dashed',
                         color: '#eee'
@@ -137,12 +154,12 @@ export const getBarChartOption = (title: string, xAxisData: string[], seriesData
                 barWidth: '60%',
                 data: seriesData,
                 itemStyle: {
-                    color: color || '#5470c6', // Màu cột
-                    borderRadius: [4, 4, 0, 0] // Bo tròn góc trên của cột
+                    color: color || '#5470c6',
+                    borderRadius: [4, 4, 0, 0]
                 },
-                emphasis: { // Hiệu ứng hover cột
+                emphasis: {
                     itemStyle: {
-                        color: '#3b5aa0' // Màu đậm hơn khi hover
+                        color: '#3b5aa0'
                     }
                 }
             }
@@ -150,7 +167,7 @@ export const getBarChartOption = (title: string, xAxisData: string[], seriesData
     };
 };
 
-// Helper to transform object record to arrays for Bar chart
+// transformRecordForBarChart (remains the same)
 export const transformRecordForBarChart = (
     record: Record<string, number> | undefined,
     limit: number = 10,
@@ -161,9 +178,9 @@ export const transformRecordForBarChart = (
     let entries = Object.entries(record);
 
     if (sortByValue) {
-        entries.sort(([, a], [, b]) => b - a); // Sort descending by value
+        entries.sort(([, a], [, b]) => b - a);
     } else {
-        entries.sort(([a], [b]) => a.localeCompare(b)); // Sort ascending by key/label
+        entries.sort(([a], [b]) => a.localeCompare(b));
     }
 
     if (limit > 0 && entries.length > limit) {
