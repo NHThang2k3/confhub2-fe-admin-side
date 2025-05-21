@@ -3,7 +3,7 @@ import { useState, useMemo, useCallback, useEffect } from 'react';
 import {
   ConferenceAnalysisDetail,
   LogAnalysisResult,
-  DataQualityInsight // << IMPORT THÊM
+  DataQualityInsight
 } from '@/src/models/logAnalysis/logAnalysis';
 import { saveConferenceToJson } from '../../app/api/logAnalysis/saveConferences';
 import { useConferenceCrawl, ApiModels } from './useConferenceCrawl';
@@ -15,23 +15,22 @@ export type SortableColumn =
   | 'status'
   | 'durationSeconds'
   | 'errorCount'
-  // | 'validationWarningCount' // << THAY ĐỔI
-  | 'dataQualityInsightCount' // << THAY ĐỔI
+  | 'dataQualityInsightCount' // Đã thay đổi
   | 'requestId';
 export type SortDirection = 'asc' | 'desc';
 export type MainSavingStatus = 'idle' | 'saving' | 'success' | 'error';
 export type RowSaveStatus = 'idle' | 'success' | 'error';
 
 
-export interface ConferenceTableData extends Omit<ConferenceAnalysisDetail, 'dataQualityInsights'> { // Omit dataQualityInsights gốc để ghi đè kiểu
+export interface ConferenceTableData extends Omit<ConferenceAnalysisDetail, 'dataQualityInsights'> {
   uniqueRowId: string;
   title: string;
   acronym: string;
   requestId: string;
   errorCount: number;
-  dataQualityInsights?: DataQualityInsight[]; // Kiểu này giống hệt trong ConferenceAnalysisDetail
-  dataQualityInsightCount: number;
-  hasSignificantDataQualityIssues: boolean;
+  dataQualityInsights?: DataQualityInsight[]; // Giữ nguyên, vì nó là một phần của ConferenceAnalysisDetail
+  dataQualityInsightCount: number; // Thêm trường này để dễ dàng sắp xếp và lọc
+  hasSignificantDataQualityIssues: boolean; // Thêm trường này để dễ dàng lọc theo cảnh báo/lỗi
 }
 
 export interface UseConferenceTableManagerProps {
@@ -69,40 +68,47 @@ export const useConferenceTableManager = ({
     const { conferenceAnalysis, filterRequestId, analyzedRequestIds } =
       logAnalysisResult;
 
-    return Object.entries(conferenceAnalysis).map(([confKey, data]) => { // data ở đây là ConferenceAnalysisDetail
+    return Object.entries(conferenceAnalysis).map(([confKey, data]) => {
       const entryRequestId =
         data.batchRequestId ||
         filterRequestId ||
         (analyzedRequestIds?.length === 1 ? analyzedRequestIds[0] : 'N/A');
       const uniqueRowId = `${confKey}_${entryRequestId}`;
 
-      const insightsArray = data.dataQualityInsights || []; // data.dataQualityInsights có thể là undefined
+      const insightsArray = data.dataQualityInsights || [];
       const insightCount = insightsArray.length;
+      // Kiểm tra xem có cảnh báo nghiêm trọng (High/Medium ValidationWarning) hay không
       const hasSignificantIssues = insightsArray.some(
         insight => insight.insightType === 'ValidationWarning' && (insight.severity === 'High' || insight.severity === 'Medium')
       );
 
-      // SỬA LỖI Ở ĐÂY: Không cần destructure validationIssues vì nó không còn tồn tại trên kiểu ConferenceAnalysisDetail
-      // Chỉ cần spread data trực tiếp.
       return {
-        ...data, // data ở đây là ConferenceAnalysisDetail đã được cập nhật
+        ...data,
         uniqueRowId,
         title: data.title || confKey.split(' - ')[1] || confKey,
         acronym: data.acronym || confKey.split(' - ')[0] || '',
         requestId: entryRequestId,
         errorCount: data.errors?.length || 0,
-        dataQualityInsights: insightsArray, // Gán lại mảng đã xử lý (hoặc mảng rỗng)
+        dataQualityInsights: insightsArray,
         dataQualityInsightCount: insightCount,
         hasSignificantDataQualityIssues: hasSignificantIssues,
       };
     });
   }, [logAnalysisResult]);
 
+  useEffect(() => {
+    // Reset selection and status when logAnalysisResult changes
+    setSelectedRows({});
+    setMainSaveStatus('idle');
+    setRowSaveStatus({});
+    setRowSaveErrors({});
+    setExpandedRow(null); // Collapse any expanded rows
+    setSearchQuery(''); // Clear search query
+    // Do not reset sort column/direction unless explicitly desired by design
+  }, [logAnalysisResult]);
 
-  // ... (useEffect để reset state giữ nguyên)
 
   const filteredData = useMemo(() => {
-    // ... (logic filter giữ nguyên)
     if (!searchQuery.trim()) {
       return conferenceDataArray;
     }
@@ -137,8 +143,7 @@ export const useConferenceTableManager = ({
           return 0;
         case 'durationSeconds':
         case 'errorCount':
-        // case 'validationWarningCount': // << THAY ĐỔI
-        case 'dataQualityInsightCount': // << THAY ĐỔI
+        case 'dataQualityInsightCount': // Đã thay đổi
           aValue = Number(aValue);
           bValue = Number(bValue);
           return sortDirection === 'asc' ? aValue - bValue : bValue - aValue;
@@ -148,7 +153,6 @@ export const useConferenceTableManager = ({
     });
   }, [filteredData, sortColumn, sortDirection]);
 
-  // ... (handleSort, selectedRowIds, handleRowSelectToggle, handleSelectAll, handleDeselectAll, handleSelectNoError, handleSelectError giữ nguyên)
   const handleSort = useCallback(
     (column: SortableColumn) => {
       if (sortColumn === column) {
@@ -197,25 +201,29 @@ export const useConferenceTableManager = ({
     setSelectedRows(newSelection);
   }, [sortedData]);
 
-
-  // THAY ĐỔI LOGIC SELECT WARNING
+  // THAY ĐỔI: Select Conferences With Warnings (significant data quality issues)
   const handleSelectWarning = useCallback(() => {
     const newSelection: Record<string, boolean> = {};
     sortedData.forEach(conf => {
-      // if (conf.hasValidationWarnings) newSelection[conf.uniqueRowId] = true; // << THAY ĐỔI
-      if (conf.hasSignificantDataQualityIssues) newSelection[conf.uniqueRowId] = true;
+      if (conf.hasSignificantDataQualityIssues) {
+        newSelection[conf.uniqueRowId] = true;
+      }
     });
     setSelectedRows(newSelection);
   }, [sortedData]);
 
-  const handleSelectNoWarning = useCallback(() => {
+  // THAY ĐỔI LỚN: Select Conferences Without Warnings OR Errors
+  // Đổi tên từ `handleSelectNoWarning` thành `handleSelectWithoutWarningsOrErrors`
+  const handleSelectWithoutWarningsOrErrors = useCallback(() => {
     const newSelection: Record<string, boolean> = {};
     sortedData.forEach(conf => {
-      // if (!conf.hasValidationWarnings) newSelection[conf.uniqueRowId] = true; // << THAY ĐỔI
-      if (!conf.hasSignificantDataQualityIssues) newSelection[conf.uniqueRowId] = true;
+      if (conf.errorCount === 0 && !conf.hasSignificantDataQualityIssues) {
+        newSelection[conf.uniqueRowId] = true;
+      }
     });
     setSelectedRows(newSelection);
   }, [sortedData]);
+
 
   const toggleExpand = useCallback((uniqueRowId: string) => {
     setExpandedRow(prev => (prev === uniqueRowId ? null : uniqueRowId));
@@ -227,12 +235,10 @@ export const useConferenceTableManager = ({
       conf => selectedRows[conf.uniqueRowId]
     );
     return selectedOriginalData.some(
-      // conf => conf.errorCount > 0 || conf.hasValidationWarnings // << THAY ĐỔI
       conf => conf.errorCount > 0 || conf.hasSignificantDataQualityIssues
     );
   }, [selectedRowIds, selectedRows, conferenceDataArray]);
 
-  // ... (isSaveEnabled, useEffect cho mainSaveStatus, handleBulkSave, handleCrawlAgainClick, handleConfirmCrawlWithModels giữ nguyên)
   const isSaveEnabled = useMemo(() => {
     return (
       selectedRowIds.length > 0 &&
@@ -349,7 +355,7 @@ export const useConferenceTableManager = ({
     handleSelectNoError,
     handleSelectError,
     handleSelectWarning, // Giữ nguyên tên, logic bên trong thay đổi
-    handleSelectNoWarning, // Giữ nguyên tên, logic bên trong thay đổi
+    onSelectWithoutWarningsOrErrors: handleSelectWithoutWarningsOrErrors, // Đã đổi tên và gán lại hàm
     handleDeselectAll,
     expandedRow,
     toggleExpand,

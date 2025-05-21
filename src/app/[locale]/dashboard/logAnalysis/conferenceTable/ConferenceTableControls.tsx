@@ -11,7 +11,7 @@ import {
   FaTimesCircle,
   FaMinusCircle,
   FaExclamationCircle,
-  FaSearch // --- NEW: Import Search Icon ---
+  FaSearch
 } from 'react-icons/fa'
 
 type MainSavingStatus = 'idle' | 'saving' | 'success' | 'error'
@@ -22,16 +22,16 @@ interface ConferenceTableControlsProps {
   mainSaveStatus: MainSavingStatus
   rowSaveErrorsCount: number
   onSave: () => void
-  onCrawl: () => void; // Prop này không đổi tên, nhưng hàm nó gọi sẽ khác
+  onCrawl: () => void;
   onSelectAll: () => void
   onSelectNoError: () => void
   onSelectError: () => void
-  onSelectNoWarning: () => void
+  onSelectWithoutWarningsOrErrors: () => void; // <--- Đổi tên prop ở đây
   onSelectWarning: () => void
   onDeselectAll: () => void
-  searchTerm: string // --- NEW: Current search term ---
-  onSearchChange: (term: string) => void // --- NEW: Handler for search term change ---
-  isCrawling?: boolean; // ++ PROP MỚI (TÙY CHỌN)
+  searchTerm: string
+  onSearchChange: (term: string) => void
+  isCrawling?: boolean;
 }
 
 
@@ -43,16 +43,16 @@ export const ConferenceTableControls: React.FC<
   mainSaveStatus,
   rowSaveErrorsCount,
   onSave,
-  onCrawl, // Hàm này giờ sẽ mở modal
+  onCrawl,
   onSelectAll,
   onSelectNoError,
   onSelectError,
-  onSelectNoWarning,
+  onSelectWithoutWarningsOrErrors, // <--- Nhận prop đã đổi tên
   onSelectWarning,
   onDeselectAll,
-  searchTerm, // --- NEW ---
-  onSearchChange, // --- NEW ---
-  isCrawling, // ++ NHẬN PROP MỚI (TÙY CHỌN)
+  searchTerm,
+  onSearchChange,
+  isCrawling,
 
 }) => {
     const renderMainSaveButton = () => {
@@ -109,13 +109,13 @@ export const ConferenceTableControls: React.FC<
       )
     }
 
-    const isCrawlDisabled = selectedCount === 0 || mainSaveStatus === 'saving' || isCrawling; // ++ CẬP NHẬT ĐIỀU KIỆN DISABLE
+    const isCrawlDisabled = selectedCount === 0 || mainSaveStatus === 'saving' || isCrawling;
 
 
     return (
       <>
         <div className='mb-4 flex flex-col gap-4 md:flex-row md:items-center md:justify-between'>
-          {/* --- NEW: Search Input --- */}
+          {/* Search Input */}
           <div className='relative flex-grow md:max-w-sm lg:max-w-md'>
             <div className='pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3'>
               <FaSearch className='h-4 w-4 text-gray-400' aria-hidden='true' />
@@ -156,8 +156,8 @@ export const ConferenceTableControls: React.FC<
                 <FaTimesCircle />
               </button>
               <button
-                onClick={onSelectNoWarning}
-                title='Select Conferences Without Warnings'
+                onClick={onSelectWithoutWarningsOrErrors} // <--- Gọi prop đã đổi tên
+                title='Select Conferences Without Warnings or Errors'
                 className='rounded p-1 text-blue-600 hover:bg-gray-100 hover:text-blue-700'
               >
                 <FaCheckCircle />
@@ -181,15 +181,15 @@ export const ConferenceTableControls: React.FC<
             {renderMainSaveButton()}
             <button
               type='button'
-              onClick={onCrawl} // Gọi hàm mở modal
-              disabled={isCrawlDisabled} // ++ SỬ DỤNG isCrawlDisabled
+              onClick={onCrawl}
+              disabled={isCrawlDisabled}
               className={`inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm transition duration-150 ease-in-out hover:bg-gray-5 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 ${isCrawlDisabled ? 'cursor-not-allowed opacity-60' : ''}`}
               title={
                 isCrawling
                   ? 'Another crawl operation is in progress...'
                   : selectedCount === 0
                     ? 'Select conferences to crawl again'
-                    : `Crawl selected (${selectedCount}) conferences again` // Bỏ (Mock)
+                    : `Crawl selected (${selectedCount}) conferences again`
               }
             >
               <FaRedo className='mr-2' /> Crawl Again
