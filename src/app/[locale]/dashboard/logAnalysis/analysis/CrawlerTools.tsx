@@ -1,6 +1,6 @@
 import React from 'react';
 import { FaTable, FaBookOpen, FaChevronUp, FaChevronDown } from 'react-icons/fa';
-import { CrawlerType } from './Analysis'; // Assuming CrawlerType is exported from Analysis.tsx
+import { CrawlerType } from '../Analysis'; // Assuming CrawlerType is exported from Analysis.tsx
 
 interface CrawlerToolsProps {
     isExpanded: boolean;

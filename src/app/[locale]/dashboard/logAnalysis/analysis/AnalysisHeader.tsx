@@ -1,7 +1,7 @@
 // src/app/[locale]/logAnalysis/AnalysisHeader.tsx
 import React from 'react';
 import { FaFilter, FaSyncAlt, FaExclamationTriangle, FaSearch, FaTimes } from 'react-icons/fa'; // Add FaTimes
-import { LogAnalysisResult } from '../../../../models/logAnalysis/logAnalysis'; // Adjust path
+import { LogAnalysisResult } from '../../../../../models/logAnalysis/logAnalysis'; // Adjust path
 
 interface AnalysisHeaderProps {
     loading: boolean;

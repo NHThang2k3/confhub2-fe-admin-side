@@ -3,10 +3,10 @@ import React, { useState } from 'react';
 import { FaChevronUp, FaChevronDown } from 'react-icons/fa';
 import { LogAnalysisResult } from '@/src/models/logAnalysis/logAnalysis';
 import { useConferenceTableManager } from '@/src/hooks/crawl/useConferenceTableManager';
-import { ConferenceTableControls } from './conferenceTable/ConferenceTableControls';
-import { ConferenceTable } from './conferenceTable/ConferenceTable';
+import { ConferenceTableControls } from '../conferenceTable/ConferenceTableControls';
+import { ConferenceTable } from '../conferenceTable/ConferenceTable';
 import { useConferenceCrawl } from '@/src/hooks/crawl/useConferenceCrawl'; // Correct path
-import CrawlModelSelectModal from './conferenceTable/CrawlModelSelectModal'; // Correct path if moved
+import CrawlModelSelectModal from '../conferenceTable/CrawlModelSelectModal'; // Correct path if moved
 
 interface ConferenceDetailsProps {
   logAnalysisResult: LogAnalysisResult | null | undefined;

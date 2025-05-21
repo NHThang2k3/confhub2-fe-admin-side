@@ -1,24 +1,23 @@
+// src/app/[locale]/dashboard/logAnalysis/Analysis.tsx
 import React, { useState, useEffect, useCallback } from 'react';
 import { useLogAnalysisData } from '../../../../hooks/logAnalysis/useLogAnalysisData';
 import {
-    FaExclamationTriangle, FaSyncAlt, FaChevronUp, FaChevronDown,
-    FaInfoCircle, FaArrowLeft, FaFileAlt, FaListAlt
+    FaExclamationTriangle, FaSyncAlt
 } from 'react-icons/fa';
-import { LogAnalysisResult, RequestTimings } from '@/src/models/logAnalysis/logAnalysis';
 
 import ConferenceCrawlUploader from './ConferenceCrawlUploader';
 import JournalCrawlUploader from './JournalCrawlUploader';
-import AnalysisHeader from './AnalysisHeader';
+import AnalysisHeader from './analysis/AnalysisHeader';
 import OverallSummary from './OverallSummary';
-import ConferenceDetails from './ConferenceDetails';
+import ConferenceDetails from './analysis/ConferenceDetails';
 
 // New Child Components
-import CrawlerTools from './CrawlerTools';
-import LogRequestsList from './LogRequestsList';
-import RequestDetailView from './RequestDetailView';
-import LoadingScreen from './LoadingScreen';
-import ErrorScreen from './ErrorScreen';
-import NoDataDisplay from './NoDataDisplay';
+import CrawlerTools from './analysis/CrawlerTools';
+import LogRequestsList from './analysis/LogRequestsList';
+import RequestDetailView from './analysis/RequestDetailView';
+import LoadingScreen from './analysis/LoadingScreen';
+import ErrorScreen from './analysis/ErrorScreen';
+import NoDataDisplay from './analysis/NoDataDisplay';
 
 export type CrawlerType = 'conference' | 'journal';
 

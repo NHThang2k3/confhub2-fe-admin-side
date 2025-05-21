@@ -1,93 +1,96 @@
 // src/app/[locale]/dashboard/logAnalysis/overallSummary/CollapsibleContent.tsx
-
 import React from 'react';
 import KpiSection from './KpiSection';
 import ChartsSection from './ChartsSection';
 import LogProcessingErrorsDisplay from './LogProcessingErrorsDisplay';
-import { BarChartData } from '../utils/chartUtils'; // Adjust path
-import { LogAnalysisResult } from '@/src/models/logAnalysis/logAnalysis';
+import { BarChartData } from '../utils/chartUtils';
+import { LogAnalysisResult, GoogleSearchHealthData } from '@/src/models/logAnalysis/logAnalysis'; // Import GoogleSearchHealthData
 
 interface PieChartItem { name: string; value: number; }
-
-// Đảm bảo interface này được định nghĩa hoặc import
-export interface GoogleSearchHealthData {
-  rotationsSuccess: number;
-  rotationsFailed: number;
-  allKeysExhaustedOnGetNextKey: number;
-  maxUsageLimitsReachedTotal: number;
-  successfulSearchesWithNoItems: number;
-}
 
 interface CollapsibleContentProps {
   isExpanded: boolean;
   data: LogAnalysisResult;
-  totalGeminiCallsWithRetries: number;
-  // Chart data props
-  overallStatusData: PieChartItem[];
-  searchStatusData: PieChartItem[]; // Sẽ được cập nhật
-  apiStatusData: PieChartItem[];
-  cacheStatusData: PieChartItem[];
-  playwrightLinkData: PieChartItem[];
-  callsByModelWithRetriesData: BarChartData;
-  warningsByFieldData: BarChartData;
-  apiKeyUsageData: BarChartData;
-  callsByTypeWithRetriesData: BarChartData;
-  topErrorsData: BarChartData;
   
-  // --- Props MỚI cho Google Search chi tiết ---
+  // --- General Props ---
+  overallStatusData: PieChartItem[];
+  playwrightLinkData: PieChartItem[];
+  warningsByFieldData: BarChartData;
+  topErrorsData: BarChartData; // Lỗi tổng hợp
+
+  // --- Google Search Props ---
+  searchStatusData: PieChartItem[];
+  apiKeyUsageData: BarChartData;
   googleSearchHealthData: GoogleSearchHealthData | null;
   googleSearchErrorsData: BarChartData;
   googleSearchAttemptIssuesData: BarChartData;
+
+  // --- Gemini API Props ---
+  geminiApiStatusData: PieChartItem[]; // Status chung của Gemini
+  totalGeminiCallsWithRetries: number;
+  geminiModelUsageDetailedData: BarChartData; // Chi tiết model usage
+  geminiFallbackSuccessRateData: PieChartItem[]; // Tỷ lệ fallback
+  geminiConfigErrorsData: BarChartData; // Lỗi config Gemini
+  geminiCacheDetailedData: PieChartItem[]; // Chi tiết cache Gemini
+  topGeminiErrorsData: BarChartData; // Top lỗi của Gemini
 }
 
 const CollapsibleContent: React.FC<CollapsibleContentProps> = ({
   isExpanded,
   data,
-  totalGeminiCallsWithRetries,
+  // General
   overallStatusData,
-  searchStatusData,
-  apiStatusData,
-  cacheStatusData,
   playwrightLinkData,
-  callsByModelWithRetriesData,
   warningsByFieldData,
-  apiKeyUsageData,
-  callsByTypeWithRetriesData,
   topErrorsData,
-  // --- Destructure props MỚI ---
+  // Google Search
+  searchStatusData,
+  apiKeyUsageData,
   googleSearchHealthData,
   googleSearchErrorsData,
   googleSearchAttemptIssuesData,
+  // Gemini API
+  geminiApiStatusData,
+  totalGeminiCallsWithRetries,
+  geminiModelUsageDetailedData,
+  geminiFallbackSuccessRateData,
+  geminiConfigErrorsData,
+  geminiCacheDetailedData,
+  topGeminiErrorsData,
 }) => {
   return (
     <div
       id='overall-summary-content-area'
       className={`overflow-hidden transition-all duration-500 ease-in-out ${
-        isExpanded ? 'max-h-[5000px] p-4 opacity-100 visible' : 'max-h-0 p-0 opacity-0 invisible'
+        isExpanded ? 'max-h-[7000px] p-4 opacity-100 visible' : 'max-h-0 p-0 opacity-0 invisible' // Tăng max-h nếu cần
       }`}
     >
       <KpiSection 
         data={data} 
-        totalGeminiCallsWithRetries={totalGeminiCallsWithRetries}
-        // --- Truyền GoogleSearchHealthData vào KpiSection ---
         googleSearchHealthData={googleSearchHealthData}
+        // --- Props MỚI cho Gemini KPIs ---
+        geminiApiData={data.geminiApi} // Truyền toàn bộ geminiApi data để KpiSection tự lấy
+        totalGeminiCallsWithRetries={totalGeminiCallsWithRetries}
       />
       <ChartsSection
+        // General
         overallStatusData={overallStatusData}
-        searchStatusData={searchStatusData} // Pie chart chính
-        apiStatusData={apiStatusData}
-        cacheStatusData={cacheStatusData}
         playwrightLinkData={playwrightLinkData}
-        callsByModelWithRetriesData={callsByModelWithRetriesData}
         warningsByFieldData={warningsByFieldData}
-        apiKeyUsageData={apiKeyUsageData} // Bar chart sử dụng key
-        callsByTypeWithRetriesData={callsByTypeWithRetriesData}
-        topErrorsData={topErrorsData}
-        // --- Truyền BarChartData mới vào ChartsSection ---
+        topErrorsData={topErrorsData} // Lỗi tổng hợp
+        // Google Search
+        searchStatusData={searchStatusData}
+        apiKeyUsageData={apiKeyUsageData}
+        googleSearchHealthData={googleSearchHealthData}
         googleSearchErrorsData={googleSearchErrorsData}
         googleSearchAttemptIssuesData={googleSearchAttemptIssuesData}
-                googleSearchHealthData={googleSearchHealthData} // << TRUYỀN XUỐNG ĐÂY
-
+        // Gemini API
+        geminiApiStatusData={geminiApiStatusData}
+        geminiModelUsageDetailedData={geminiModelUsageDetailedData}
+        geminiFallbackSuccessRateData={geminiFallbackSuccessRateData}
+        geminiConfigErrorsData={geminiConfigErrorsData}
+        geminiCacheDetailedData={geminiCacheDetailedData}
+        topGeminiErrorsData={topGeminiErrorsData}
       />
       <LogProcessingErrorsDisplay
         logProcessingErrors={data.logProcessingErrors}

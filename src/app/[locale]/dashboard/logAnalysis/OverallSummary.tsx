@@ -1,6 +1,6 @@
 // src/app/[locale]/dashboard/logAnalysis/OverallSummary.tsx
 import React, { useMemo } from 'react';
-import { LogAnalysisResult, GoogleSearchAnalysis } from '../../../../models/logAnalysis/logAnalysis'; // Adjust path
+import { LogAnalysisResult, GoogleSearchHealthData } from '../../../../models/logAnalysis/logAnalysis'; // Adjust path
 import { transformRecordForBarChart, BarChartData } from './utils/chartUtils'; // Adjust path
 
 import SummaryHeaderComponent from './overallSummary/SummaryHeader'; // Renamed to avoid conflict
@@ -14,23 +14,18 @@ interface OverallSummaryProps {
 }
 
 // Interface for additional Google Search health metrics
-interface GoogleSearchHealthData {
-  rotationsSuccess: number;
-  rotationsFailed: number;
-  allKeysExhaustedOnGetNextKey: number;
-  maxUsageLimitsReachedTotal: number;
-  successfulSearchesWithNoItems: number;
-}
+
+
 
 const OverallSummary: React.FC<OverallSummaryProps> = ({
   data,
   isExpanded,
   onToggle
 }) => {
-  const gSearchData = data?.googleSearch; // Cache for convenience
+  const gSearchData = data?.googleSearch;
+  const geminiApiData = data?.geminiApi; // Cache for convenience
 
   const overallStatusData = useMemo(() => {
-    // ... (giữ nguyên)
     if (!data?.overall) return [];
     const completedOk = data.overall.completedTasks || 0;
     const failed = data.overall.failedOrCrashedTasks || 0;
@@ -68,31 +63,90 @@ const OverallSummary: React.FC<OverallSummaryProps> = ({
     };
   }, [gSearchData]);
 
-  const apiStatusData = useMemo(() => {
-    // ... (giữ nguyên)
-    if (!data?.geminiApi) return [];
-    const determineRetries = data.geminiApi.retriesByType?.['determine'] || 0;
-    const extractRetries = data.geminiApi.retriesByType?.['extract'] || 0;
-    const cfpRetries = data.geminiApi.retriesByType?.['cfp'] || 0;
-    const retries = determineRetries + extractRetries + cfpRetries;
+  // --- Dữ liệu cho Gemini API ---
+  const geminiApiStatusData = useMemo(() => { // Đổi tên từ apiStatusData để rõ ràng hơn
+    if (!geminiApiData) return [];
+    // Sử dụng successfulCalls và failedCalls đã có, đã bao gồm logic fallback
     return [
-      { name: 'Successful', value: data.geminiApi.successfulCalls || 0 },
-      { name: 'Failed', value: data.geminiApi.failedCalls || 0 },
-      { name: 'Blocked', value: data.geminiApi.blockedBySafety || 0 },
-      ...(retries > 0 ? [{ name: 'Retries', value: retries }] : [])
+      { name: 'Successful Calls', value: geminiApiData.successfulCalls || 0 },
+      { name: 'Failed Calls', value: geminiApiData.failedCalls || 0 },
+      { name: 'Safety Blocks (Final)', value: geminiApiData.blockedBySafety || 0 },
+      ...((geminiApiData.totalRetries || 0) > 0 ? [{ name: 'Total Retries', value: geminiApiData.totalRetries }] : [])
     ].filter(item => item.value > 0);
-  }, [data?.geminiApi]);
-
+  }, [geminiApiData]);
 
   const totalGeminiCallsWithRetries = useMemo(() => {
-    // ... (giữ nguyên)
-    const apiData = data?.geminiApi;
-    if (!apiData) return 0;
-    return (apiData.totalCalls || 0) + (apiData.totalRetries || 0);
-  }, [data?.geminiApi]);
+    if (!geminiApiData) return 0;
+    // totalCalls đã bao gồm các cuộc gọi ban đầu (primary/fallback)
+    // totalRetries là tổng số lần retry
+    return (geminiApiData.totalCalls || 0) + (geminiApiData.totalRetries || 0);
+  }, [geminiApiData]);
+
+  // Dữ liệu cho biểu đồ Gemini Model Usage (chi tiết theo apiType và crawlModel)
+  const geminiModelUsageDetailedData = useMemo<BarChartData>(() => {
+    if (!geminiApiData?.modelUsageByApiType) return { labels: [], values: [] };
+    const combined: Record<string, number> = {};
+    Object.entries(geminiApiData.modelUsageByApiType).forEach(([apiType, models]) => {
+      Object.entries(models).forEach(([modelIdentifier, stats]) => {
+        const key = `${apiType}: ${modelIdentifier}`;
+        combined[key] = (combined[key] || 0) + (stats.calls || 0) + (stats.retries || 0);
+      });
+    });
+    return transformRecordForBarChart(combined, 0, true); // Sắp xếp theo value giảm dần
+  }, [geminiApiData?.modelUsageByApiType]);
+
+
+  // Dữ liệu cho tỷ lệ thành công của Fallback
+  const geminiFallbackSuccessRateData = useMemo(() => {
+    if (!geminiApiData?.fallbackLogic) return [];
+    const { attemptsWithFallbackModel = 0, successWithFallbackModel = 0 } = geminiApiData.fallbackLogic;
+    if (attemptsWithFallbackModel === 0) return [];
+    return [
+      { name: 'Fallback Success', value: successWithFallbackModel },
+      { name: 'Fallback Failure', value: attemptsWithFallbackModel - successWithFallbackModel }
+    ].filter(item => item.value >= 0); // >=0 để hiển thị cả khi 0
+  }, [geminiApiData?.fallbackLogic]);
+
+  // Dữ liệu cho lỗi cấu hình Gemini
+  const geminiConfigErrorsData = useMemo<BarChartData>(() => {
+    if (!geminiApiData?.configErrors && !geminiApiData?.fewShotPreparation?.failures) return { labels: [], values: [] };
+    const errors: Record<string, number> = {};
+    if (geminiApiData?.configErrors?.modelListMissing > 0) {
+      errors['Model List Missing'] = geminiApiData.configErrors.modelListMissing;
+    }
+    if (geminiApiData?.fewShotPreparation?.failures?.oddPartsCount > 0) {
+      errors['Few-Shot Odd Parts'] = geminiApiData.fewShotPreparation.failures.oddPartsCount;
+    }
+    if (geminiApiData?.fewShotPreparation?.failures?.processingError > 0) {
+      errors['Few-Shot Processing Error'] = geminiApiData.fewShotPreparation.failures.processingError;
+    }
+    // Thêm các lỗi config khác nếu có
+    return transformRecordForBarChart(errors, 0, true);
+  }, [geminiApiData?.configErrors, geminiApiData?.fewShotPreparation?.failures]);
+
+
+  // Dữ liệu cho Gemini Cache - chi tiết hơn
+  const geminiCacheDetailedData = useMemo(() => {
+    if (!geminiApiData) return [];
+    return [
+      { name: 'Context Hits', value: geminiApiData.cacheContextHits || 0 },
+      { name: 'Context Creation Success', value: geminiApiData.cacheContextCreationSuccess || 0 },
+      { name: 'Context Creation Failed', value: geminiApiData.cacheContextCreationFailed || 0 },
+      { name: 'Context Invalidations', value: geminiApiData.cacheContextInvalidations || 0 },
+      // { name: 'Context Retrieval Failures', value: geminiApiData.cacheContextRetrievalFailures || 0 }, // Có thể gộp vào creation failed hoặc hiển thị riêng
+    ].filter(item => item.value > 0);
+  }, [geminiApiData]);
+
+  const topGeminiErrorsData = useMemo<BarChartData>(() => {
+    // Lọc ra các lỗi chỉ thuộc về Gemini từ errorsByType
+    if (!geminiApiData?.errorsByType) return { labels: [], values: [] };
+    // Bạn có thể có một danh sách các prefix hoặc keyword để xác định lỗi Gemini
+    // Hoặc nếu errorsByType trong geminiApi CHỈ chứa lỗi Gemini thì dùng trực tiếp
+    return transformRecordForBarChart(geminiApiData.errorsByType, 5, true); // Top 5 lỗi Gemini
+  }, [geminiApiData?.errorsByType]);
+
 
   const cacheStatusData = useMemo(() => {
-    // ... (giữ nguyên)
     if (!data?.geminiApi) return [];
     return [
       { name: 'Cache Hits', value: data.geminiApi.cacheContextHits || 0 },
@@ -101,7 +155,6 @@ const OverallSummary: React.FC<OverallSummaryProps> = ({
   }, [data?.geminiApi]);
 
   const playwrightLinkData = useMemo(() => {
-    // ... (giữ nguyên)
     if (!data?.playwright?.linkProcessing) return [];
     return [
       { name: 'Successful Access', value: data.playwright.linkProcessing.successfulAccess || 0 },
@@ -111,7 +164,6 @@ const OverallSummary: React.FC<OverallSummaryProps> = ({
   }, [data?.playwright?.linkProcessing]);
 
   const callsByModelWithRetriesData = useMemo<BarChartData>(() => {
-    // ... (giữ nguyên)
     const { callsByModel = {}, retriesByModel = {} } = data?.geminiApi ?? {};
     const combined: Record<string, number> = {};
     const allKeys = new Set([...Object.keys(callsByModel), ...Object.keys(retriesByModel)]);
@@ -138,7 +190,6 @@ const OverallSummary: React.FC<OverallSummaryProps> = ({
 
 
   const callsByTypeWithRetriesData = useMemo<BarChartData>(() => {
-    // ... (giữ nguyên)
     const { callsByType = {}, retriesByType = {} } = data?.geminiApi ?? {};
     const combined: Record<string, number> = {};
     const allKeys = new Set([...Object.keys(callsByType), ...Object.keys(retriesByType)]);
@@ -154,26 +205,24 @@ const OverallSummary: React.FC<OverallSummaryProps> = ({
   }, [data?.errorsAggregated]);
 
   const warningsByFieldData = useMemo<BarChartData>(() => {
-    // ... (giữ nguyên)
     return transformRecordForBarChart(data?.validationStats?.warningsByField, 0, true);
   }, [data?.validationStats?.warningsByField]);
 
   const summaryTitle = useMemo(() => {
-    // ... (giữ nguyên)
     return "Overall Crawl Summary";
   }, [data?.filterRequestId]);
 
   const hasMeaningfulData = useMemo(() => {
-    // ... (giữ nguyên)
     return (data?.overall && (
-        (data.overall.processedConferencesCount || 0) > 0 ||
-        (data.overall.totalConferencesInput || 0) > 0
-      )) || (data.errorLogCount || 0) > 0;
+      (data.overall.processedConferencesCount || 0) > 0 ||
+      (data.overall.totalConferencesInput || 0) > 0
+    )) || (data.errorLogCount || 0) > 0;
   }, [data?.overall, data?.errorLogCount]);
 
   if (!hasMeaningfulData && !isExpanded) {
     return null;
   }
+
 
   return (
     <section className='mb-8 rounded-lg border border-gray-100 bg-white shadow'>
@@ -186,24 +235,27 @@ const OverallSummary: React.FC<OverallSummaryProps> = ({
       {hasMeaningfulData && (
         <CollapsibleContent
           isExpanded={isExpanded}
-          data={data} // Truyền toàn bộ data gốc nếu CollapsibleContent cần các phần khác
+          data={data}
           // --- Props giữ nguyên ---
-          totalGeminiCallsWithRetries={totalGeminiCallsWithRetries}
           overallStatusData={overallStatusData}
-          apiStatusData={apiStatusData}
-          cacheStatusData={cacheStatusData}
-          playwrightLinkData={playwrightLinkData}
-          callsByModelWithRetriesData={callsByModelWithRetriesData}
-          warningsByFieldData={warningsByFieldData}
-          callsByTypeWithRetriesData={callsByTypeWithRetriesData}
-          topErrorsData={topErrorsData}
-          // --- Props liên quan đến Google Search ---
-          searchStatusData={searchStatusData} // Đã cập nhật
-          apiKeyUsageData={apiKeyUsageData} // Giữ nguyên
-          // --- Props MỚI cho Google Search ---
+          // --- Props Google Search (đã cập nhật tên biến) ---
+          searchStatusData={searchStatusData}
+          apiKeyUsageData={apiKeyUsageData}
           googleSearchHealthData={googleSearchHealthData}
           googleSearchErrorsData={googleSearchErrorsData}
           googleSearchAttemptIssuesData={googleSearchAttemptIssuesData}
+          // --- Props MỚI cho Gemini API ---
+          geminiApiStatusData={geminiApiStatusData} // Sửa tên
+          totalGeminiCallsWithRetries={totalGeminiCallsWithRetries}
+          geminiModelUsageDetailedData={geminiModelUsageDetailedData}
+          geminiFallbackSuccessRateData={geminiFallbackSuccessRateData}
+          geminiConfigErrorsData={geminiConfigErrorsData}
+          geminiCacheDetailedData={geminiCacheDetailedData} // Thay thế cacheStatusData cũ
+          topGeminiErrorsData={topGeminiErrorsData} // Lỗi chi tiết của Gemini
+          // --- Props chung khác ---
+          playwrightLinkData={playwrightLinkData}
+          warningsByFieldData={warningsByFieldData}
+          topErrorsData={topErrorsData} // Lỗi tổng hợp từ tất cả các nguồn
         />
       )}
     </section>
