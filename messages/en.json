@@ -259,7 +259,35 @@
       },
       "editButton": "Edit",
       "deleteButton": "Delete",
-      "deleteConfirmation": "Are you sure you want to delete this history?"
+      "deleteConfirmation": "Are you sure you want to delete this history?",
+      "editForm": {
+        "title": "Edit Conference History",
+        "cancel": "Cancel",
+        "save": "Save",
+        "saving": "Saving...",
+        "year": "Year",
+        "accessType": "Access Type",
+        "publisher": "Publisher",
+        "summary": "Summary",
+        "callForPaper": "Call for Papers",
+        "mainLink": "Main Link",
+        "cfpLink": "CFP Link",
+        "importantLink": "Important Link",
+        "locations": "Locations",
+        "addLocation": "Add Location",
+        "remove": "Remove",
+        "address": "Address",
+        "cityStateProvince": "City/State/Province",
+        "country": "Country",
+        "continent": "Continent",
+        "topics": "Topics",
+        "addTopic": "Add Topic",
+        "topicPlaceholder": "Enter topic",
+        "dates": "Dates",
+        "addDate": "Add Date",
+        "dateType": "Date Type",
+        "dateName": "Date Name"
+      }
     },
     "errorFetchingConferences": "Error fetching conferences:"
   }

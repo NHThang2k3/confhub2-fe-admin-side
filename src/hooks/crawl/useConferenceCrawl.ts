@@ -143,12 +143,12 @@ export const useConferenceCrawl = (): UseConferenceCrawlReturn => {
             });
     }, [uploadFileEndPoint]);
 
-    const onCsvSelectionChanged = useCallback((event: any) => {
+    const onCsvSelectionChanged =(event: any) => {
         setSelectedCsvRows(event.api.getSelectedNodes().map((node: any) => ({
             Title: node.data.title,
             Acronym: node.data.acronym,
         } as SendToCrawlConference)));
-    }, []);
+    }
 
     const setApiModel = useCallback((apiName: ApiName, model: CrawlModelType) => {
         setApiModels(prev => ({ ...prev, [apiName]: model }));

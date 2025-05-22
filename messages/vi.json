@@ -259,7 +259,35 @@
       },
       "editButton": "Chỉnh sửa",
       "deleteButton": "Xóa",
-      "deleteConfirmation": "Bạn có chắc chắn muốn xóa lịch sử này không?"
+      "deleteConfirmation": "Bạn có chắc chắn muốn xóa lịch sử này không?",
+      "editForm": {
+        "title": "Chỉnh sửa lịch sử hội nghị",
+        "cancel": "Hủy",
+        "save": "Lưu",
+        "saving": "Đang lưu...",
+        "year": "Năm",
+        "accessType": "Loại truy cập",
+        "publisher": "Nhà xuất bản",
+        "summary": "Tóm tắt",
+        "callForPaper": "Lời kêu gọi bài viết",
+        "mainLink": "Liên kết chính",
+        "cfpLink": "Liên kết CFP",
+        "importantLink": "Liên kết quan trọng",
+        "locations": "Địa điểm",
+        "addLocation": "Thêm địa điểm",
+        "remove": "Xóa",
+        "address": "Địa chỉ",
+        "cityStateProvince": "Thành phố/Tỉnh/Thành phố",
+        "country": "Quốc gia",
+        "continent": "Châu lục",
+        "topics": "Chủ đề",
+        "addTopic": "Thêm chủ đề",
+        "topicPlaceholder": "Nhập chủ đề",
+        "dates": "Ngày tháng",
+        "addDate": "Thêm ngày",
+        "dateType": "Loại ngày",
+        "dateName": "Tên ngày"
+      }
     },
     "errorFetchingConferences": "Lỗi khi lấy danh sách hội nghị:"
   }

@@ -27,7 +27,29 @@
         "dates": "Dates",
         "addDate": "Add Date",
         "dateType": "Date Type",
-        "dateName": "Date Name"
+        "dateName": "Date Name",
+        "startDate": "Start Date",
+        "endDate": "End Date",
+        "pagination": {
+          "pageSize": "Page Size",
+          "page": "Page",
+          "of": "of",
+          "first": "First",
+          "previous": "Previous",
+          "next": "Next",
+          "last": "Last",
+          "noRows": "No rows to show",
+          "loading": "Loading...",
+          "rowsPerPage": "Rows per page",
+          "pageSizeSelectorLabel": "Rows per page"
+        },
+        "table": {
+          "selectAll": "Select All",
+          "deselectAll": "Deselect All",
+          "selectedRows": "Selected Rows",
+          "noData": "No data available",
+          "loading": "Loading data..."
+        }
       }
     }
   }

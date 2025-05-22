@@ -16,6 +16,8 @@ import { ToastContainer } from 'react-toastify' // <--- Import ToastContainer
 import 'react-toastify/dist/ReactToastify.css' // <--- Import CSS cho react-toastify
 import './globals.css'
 import { AuthProvider } from '@/src/contexts/AuthContext'; // Điều chỉnh path nếu cần
+import { Toaster } from 'react-hot-toast'
+import ClientLayout from './ClientLayout'
 
 // ... (Phần định nghĩa fonts: spaceGrotesk, inter, rubik)
 const spaceGrotesk = localFont({
@@ -85,19 +87,30 @@ export const viewport: Viewport = {
   userScalable: false
 }
 
-export default function RootLayout({
+export function generateStaticParams() {
+  return [{ locale: 'en' }, { locale: 'vi' }];
+}
+
+export default async function RootLayout({
   children,
   params: { locale }
 }: {
   children: React.ReactNode
   params: { locale: string }
 }) {
-  const messages = useMessages()
+  let messages: AbstractIntlMessages
+  try {
+    messages = (await import(`../../../messages/${locale}.json`)).default
+  } catch (error) {
+    console.error(`Failed to load messages for locale: ${locale}`, error)
+    messages = (await import(`../../../messages/en.json`)).default
+  }
+  
   return (
     <html
       lang={locale}
-      dir={locale === 'ar' || locale == 'fa' ? 'rtl' : 'ltr'}
-      className={`${spaceGrotesk.variable} ${rubik.variable} scroll-smooth scrollbar scrollbar-track-background scrollbar-thumb-background-secondary  `}
+      dir={locale === 'ar' || locale === 'fa' ? 'rtl' : 'ltr'}
+      className={`${spaceGrotesk.variable} ${rubik.variable} scroll-smooth scrollbar scrollbar-track-background scrollbar-thumb-background-secondary`}
       suppressHydrationWarning
     >
       <head>
@@ -109,8 +122,6 @@ export default function RootLayout({
       </head>
       <body>
         <AuthProvider>
-
-          {/* --- ThemeProvider bao bọc mọi thứ để ToastContainer có thể nhận theme --- */}
           <ThemeProvider
             enableSystem
             attribute='class'
@@ -135,27 +146,26 @@ export default function RootLayout({
             {/* --- NextIntlClientProvider --- */}
             <NextIntlClientProvider
               locale={locale}
-              messages={messages as AbstractIntlMessages}
+              messages={messages}
             >
-              {/* --- NextTopLoader --- */}
-              <NextTopLoader
-                initialPosition={0.08}
-                crawlSpeed={200}
-                height={3}
-                crawl={true}
-                easing='ease'
-                speed={200}
-                shadow='0 0 10px #2299DD,0 0 5px #2299DD'
-                color='var(--primary)'
-                showSpinner={false}
-              />
-              {/* --- Nội dung chính của trang --- */}
-              <main className='mx-auto max-w-screen-2xl'>{children}</main>
+              <ClientLayout locale={locale}>
+                <NextTopLoader
+                  initialPosition={0.08}
+                  crawlSpeed={200}
+                  height={3}
+                  crawl={true}
+                  easing='ease'
+                  speed={200}
+                  shadow='0 0 10px #2299DD,0 0 5px #2299DD'
+                  color='var(--primary)'
+                  showSpinner={false}
+                />
+                <main className='mx-auto max-w-screen-2xl'>{children}</main>
+              </ClientLayout>
             </NextIntlClientProvider>
           </ThemeProvider>
         </AuthProvider>
-
-      </body >
-    </html >
+      </body>
+    </html>
   )
 }

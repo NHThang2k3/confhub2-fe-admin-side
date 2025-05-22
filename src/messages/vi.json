@@ -27,7 +27,29 @@
         "dates": "Ngày tháng",
         "addDate": "Thêm ngày",
         "dateType": "Loại ngày",
-        "dateName": "Tên ngày"
+        "dateName": "Tên ngày",
+        "startDate": "Ngày bắt đầu",
+        "endDate": "Ngày kết thúc",
+        "pagination": {
+          "pageSize": "Kích thước trang",
+          "page": "Trang",
+          "of": "trên",
+          "first": "Đầu tiên",
+          "previous": "Trước",
+          "next": "Tiếp",
+          "last": "Cuối cùng",
+          "noRows": "Không có dữ liệu",
+          "loading": "Đang tải...",
+          "rowsPerPage": "Số hàng mỗi trang",
+          "pageSizeSelectorLabel": "Số hàng mỗi trang"
+        },
+        "table": {
+          "selectAll": "Chọn tất cả",
+          "deselectAll": "Bỏ chọn tất cả",
+          "selectedRows": "Hàng đã chọn",
+          "noData": "Không có dữ liệu",
+          "loading": "Đang tải dữ liệu..."
+        }
       }
     }
   }
