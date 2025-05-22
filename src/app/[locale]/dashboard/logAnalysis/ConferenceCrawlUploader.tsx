@@ -29,7 +29,7 @@ export const ConferenceCrawlUploader: React.FC = () => {
     isParsing,
     parseError,
     enableChunking,
-    chunkSize,
+    chunkSize, // Giá trị này đã được giới hạn bởi hook
     apiModels,
     isCrawling,
     crawlError,
@@ -37,11 +37,11 @@ export const ConferenceCrawlUploader: React.FC = () => {
     crawlMessages,
     handleFileChange,
     setEnableChunking,
-    setChunkSize,
+    setChunkSize, // Hook's setter
     setApiModel,
     startCrawlFromCsv,
     resetCrawl,
-    onCsvSelectionChanged, // Đảm bảo tên này khớp với tên prop của AgGridReact
+    onCsvSelectionChanged,
     selectedCsvRows
   } = useConferenceCrawl();
 
@@ -233,20 +233,21 @@ export const ConferenceCrawlUploader: React.FC = () => {
                 <div
                   className={`flex items-center ${!enableChunking ? 'opacity-50' : ''}`}
                 >
-                  <label
+                   <label
                     htmlFor='chunk-size'
                     className='mr-2 block text-sm font-medium text-gray-700'
                   >
-                    Chunk Size:
+                    Chunk Size (Max 50): {/* Thêm gợi ý Max 50 */}
                   </label>
-                  <input
+                   <input
                     id='chunk-size'
                     type='number'
                     min='1'
+                    max='50' // Thêm max attribute cho UX tốt hơn
                     className='w-20 rounded-md border border-gray-300 p-1 shadow-sm focus:border-blue-500 focus:ring-blue-500 disabled:bg-gray-100 sm:text-sm'
-                    value={chunkSize}
+                    value={chunkSize} // chunkSize từ hook đã được giới hạn
                     onChange={e =>
-                      setChunkSize(
+                      setChunkSize( // Gọi hàm setter từ hook
                         Math.max(1, parseInt(e.target.value, 10) || 1)
                       )
                     }

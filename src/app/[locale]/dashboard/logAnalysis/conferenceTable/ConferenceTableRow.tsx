@@ -46,7 +46,7 @@ export const ConferenceTableRow: React.FC<ConferenceTableRowProps> = ({
 
   const hasErrors = errorCount > 0;
 
-  let rowBgClass = 'hover:bg-gray-50';
+  let rowBgClass = 'hover:bg-gray-5';
   let statusPulseClass = '';
 
   if (hasErrors) {
@@ -61,7 +61,7 @@ export const ConferenceTableRow: React.FC<ConferenceTableRowProps> = ({
       rowBgClass = 'bg-blue-50 hover:bg-blue-100';
       statusPulseClass = 'animate-pulse';
     } else if (status === 'completed') rowBgClass = 'bg-white hover:bg-green-50';
-    else rowBgClass = 'bg-white hover:bg-gray-50';
+    else rowBgClass = 'bg-white hover:bg-gray-5';
   }
 
   let statusBadgeClass = 'bg-gray-100 text-gray-800'

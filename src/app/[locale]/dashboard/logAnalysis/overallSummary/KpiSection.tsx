@@ -1,15 +1,15 @@
 // src/app/[locale]/dashboard/logAnalysis/overallSummary/KpiSection.tsx
 import React from 'react';
 import {
-    FaExclamationTriangle, FaClipboardCheck, FaKey, FaSyncAlt, FaBan,
-    FaSearch, FaGoogle, FaBrain, FaCodeBranch, FaArchive, FaTools, FaCogs, FaBroom // << THÊM FaBroom
+  FaExclamationTriangle, FaClipboardCheck, FaKey, FaSyncAlt, FaBan,
+  FaSearch, FaGoogle, FaBrain, FaCodeBranch, FaArchive, FaTools, FaCogs, FaBroom // << THÊM FaBroom
 } from 'react-icons/fa';
 import KpiCard from './KpiCard';
 import {
-    LogAnalysisResult,
-    GoogleSearchHealthData,
-    GeminiApiAnalysis,
-    ValidationStats // << IMPORT ValidationStats
+  LogAnalysisResult,
+  GoogleSearchHealthData,
+  GeminiApiAnalysis,
+  ValidationStats // << IMPORT ValidationStats
 } from '@/src/models/logAnalysis/logAnalysis';
 import { formatDuration } from '../utils/commonUtils';
 
@@ -28,28 +28,35 @@ interface KpiSectionProps {
 }
 
 const KpiSection: React.FC<KpiSectionProps> = ({
-    data,
-    googleSearchHealthData,
-    geminiApiData,
-    totalGeminiCallsWithRetries,
-    validationStats // << Thêm vào props
+  data,
+  googleSearchHealthData,
+  geminiApiData,
+  totalGeminiCallsWithRetries,
+  validationStats // << Thêm vào props
 }) => {
   const overall = data.overall;
-  // const validationStats = data.validationStats; // Lấy từ props thay vì data trực tiếp
   const fileOutput = data.fileOutput;
   const gSearchHealth = googleSearchHealthData;
   const gSearchStats = data.googleSearch;
 
   const geminiInit = geminiApiData?.serviceInitialization;
   const geminiFallback = geminiApiData?.fallbackLogic;
-  // const geminiFewShot = geminiApiData?.fewShotPreparation; // Không dùng trực tiếp ở đây nữa
   const geminiConfig = geminiApiData?.configErrors;
 
   const geminiInitFailures = geminiInit?.failures || 0;
   const geminiFallbackPrimaryFails = geminiFallback?.primaryModelFailuresLeadingToFallback || 0;
 
-  // totalGeminiConfigErrors sẽ được tính từ geminiConfigErrorsData trong OverallSummary
-  // và có thể truyền vào đây nếu cần hiển thị KPI riêng cho config errors
+  const totalTasks = overall?.processedConferencesCount || 0;
+  const failedTasks = overall?.failedOrCrashedTasks || 0;
+
+  let failedTasksDisplay = `${failedTasks}`; // Mặc định chỉ hiển thị số lượng
+  if (totalTasks > 0) {
+    const failedTasksPercentage = (failedTasks / totalTasks) * 100;
+    failedTasksDisplay = `${failedTasks} (${failedTasksPercentage.toFixed(2)}%)`;
+  } else if (failedTasks > 0) { // Nếu có failed tasks nhưng không có total tasks (trường hợp hiếm)
+    failedTasksDisplay = `${failedTasks}`;
+  }
+  // --- KẾT THÚC PHẦN THÊM VÀO ---
 
   return (
     <div className="space-y-6">
@@ -74,15 +81,16 @@ const KpiSection: React.FC<KpiSectionProps> = ({
           value={overall?.processedConferencesCount ?? 0}
           valueDenominator={data.filterRequestId ? undefined : (overall?.totalConferencesInput ?? undefined)}
         />
-         <KpiCard
+        <KpiCard
           icon={
             <KpiIcon bgColor="bg-red-100" textColor="text-red-600">
-                <FaExclamationTriangle className='h-5 w-5' />
+              <FaExclamationTriangle className='h-5 w-5' />
             </KpiIcon>
           }
           label="Failed Tasks"
-          value={overall?.failedOrCrashedTasks || 0}
+          value={failedTasksDisplay} // Sử dụng chuỗi đã được định dạng
           valueColor={(overall?.failedOrCrashedTasks || 0) > 0 ? "text-red-600" : undefined}
+        // Bỏ subText và subTextColor ở đây
         />
         <KpiCard
           icon={
@@ -116,16 +124,16 @@ const KpiSection: React.FC<KpiSectionProps> = ({
               value={geminiFallback?.attemptsWithFallbackModel || 0}
               subText={geminiFallbackPrimaryFails > 0 ? `${geminiFallbackPrimaryFails} Primary Fails` : undefined}
             />
-             <KpiCard
+            <KpiCard
               icon={<KpiIcon bgColor="bg-pink-100" textColor="text-pink-600"><FaBan className='h-5 w-5' /></KpiIcon>}
               label="Safety Blocks"
               value={geminiApiData.blockedBySafety || 0}
               valueColor={(geminiApiData.blockedBySafety || 0) > 0 ? "text-pink-600" : undefined}
             />
             <KpiCard
-                icon={<KpiIcon bgColor="bg-lime-100" textColor="text-lime-600"><FaArchive className='h-5 w-5' /></KpiIcon>}
-                label="Total Tokens Used"
-                value={geminiApiData.totalTokens !== undefined ? (geminiApiData.totalTokens / 1000).toFixed(1) + 'k' : '0k'}
+              icon={<KpiIcon bgColor="bg-lime-100" textColor="text-lime-600"><FaArchive className='h-5 w-5' /></KpiIcon>}
+              label="Total Tokens Used"
+              value={geminiApiData.totalTokens !== undefined ? (geminiApiData.totalTokens / 1000).toFixed(1) + 'k' : '0k'}
             />
           </div>
         </div>
@@ -145,38 +153,38 @@ const KpiSection: React.FC<KpiSectionProps> = ({
               value={gSearchStats?.totalRequests ?? 0}
             />
             <KpiCard
-                icon={<KpiIcon
-                        bgColor={(gSearchStats?.quotaErrorsEncountered || 0) > 0 ? "bg-red-100" : "bg-gray-100"}
-                        textColor={(gSearchStats?.quotaErrorsEncountered || 0) > 0 ? "text-red-600" : "text-gray-500"}>
-                        <FaBan className='h-5 w-5' />
-                      </KpiIcon>}
-                label="GS Quota Errors"
-                value={gSearchStats?.quotaErrorsEncountered || 0}
-                valueColor={(gSearchStats?.quotaErrorsEncountered || 0) > 0 ? "text-red-600" : undefined}
+              icon={<KpiIcon
+                bgColor={(gSearchStats?.quotaErrorsEncountered || 0) > 0 ? "bg-red-100" : "bg-gray-100"}
+                textColor={(gSearchStats?.quotaErrorsEncountered || 0) > 0 ? "text-red-600" : "text-gray-500"}>
+                <FaBan className='h-5 w-5' />
+              </KpiIcon>}
+              label="GS Quota Errors"
+              value={gSearchStats?.quotaErrorsEncountered || 0}
+              valueColor={(gSearchStats?.quotaErrorsEncountered || 0) > 0 ? "text-red-600" : undefined}
             />
-             {gSearchHealth && (
+            {gSearchHealth && (
               <>
                 <KpiCard
-                    icon={<KpiIcon
-                            bgColor={gSearchHealth.rotationsSuccess > 0 ? "bg-sky-100" : "bg-gray-100"}
-                            textColor={gSearchHealth.rotationsSuccess > 0 ? "text-sky-600" : "text-gray-500"}>
-                            <FaSyncAlt className='h-5 w-5' />
-                          </KpiIcon>}
-                    label="GS Key Rotations"
-                    value={gSearchHealth.rotationsSuccess}
-                    valueDenominator={gSearchHealth.rotationsSuccess + gSearchHealth.rotationsFailed}
-                    subText={gSearchHealth.rotationsFailed > 0 ? `${gSearchHealth.rotationsFailed} Failed` : undefined}
-                    subTextColor={gSearchHealth.rotationsFailed > 0 ? "text-xs text-red-500" : undefined}
+                  icon={<KpiIcon
+                    bgColor={gSearchHealth.rotationsSuccess > 0 ? "bg-sky-100" : "bg-gray-100"}
+                    textColor={gSearchHealth.rotationsSuccess > 0 ? "text-sky-600" : "text-gray-500"}>
+                    <FaSyncAlt className='h-5 w-5' />
+                  </KpiIcon>}
+                  label="GS Key Rotations"
+                  value={gSearchHealth.rotationsSuccess}
+                  valueDenominator={gSearchHealth.rotationsSuccess + gSearchHealth.rotationsFailed}
+                  subText={gSearchHealth.rotationsFailed > 0 ? `${gSearchHealth.rotationsFailed} Failed` : undefined}
+                  subTextColor={gSearchHealth.rotationsFailed > 0 ? "text-xs text-red-500" : undefined}
                 />
                 <KpiCard
-                    icon={<KpiIcon
-                            bgColor={gSearchHealth.allKeysExhaustedOnGetNextKey > 0 ? "bg-orange-100" : "bg-gray-100"}
-                            textColor={gSearchHealth.allKeysExhaustedOnGetNextKey > 0 ? "text-orange-600" : "text-gray-500"}>
-                            <FaBan className='h-5 w-5' />
-                          </KpiIcon>}
-                    label="GS All Keys Exhausted"
-                    value={gSearchHealth.allKeysExhaustedOnGetNextKey}
-                    valueColor={gSearchHealth.allKeysExhaustedOnGetNextKey > 0 ? "text-orange-600" : undefined}
+                  icon={<KpiIcon
+                    bgColor={gSearchHealth.allKeysExhaustedOnGetNextKey > 0 ? "bg-orange-100" : "bg-gray-100"}
+                    textColor={gSearchHealth.allKeysExhaustedOnGetNextKey > 0 ? "text-orange-600" : "text-gray-500"}>
+                    <FaBan className='h-5 w-5' />
+                  </KpiIcon>}
+                  label="GS All Keys Exhausted"
+                  value={gSearchHealth.allKeysExhaustedOnGetNextKey}
+                  valueColor={gSearchHealth.allKeysExhaustedOnGetNextKey > 0 ? "text-orange-600" : undefined}
                 />
               </>
             )}
@@ -191,10 +199,10 @@ const KpiSection: React.FC<KpiSectionProps> = ({
         <div className='grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'> {/* Điều chỉnh grid */}
           <KpiCard
             icon={<KpiIcon
-                    bgColor={fileOutput?.csvFileGenerated === true ? 'bg-emerald-100' : fileOutput?.csvFileGenerated === false ? 'bg-red-100' : 'bg-gray-100'}
-                    textColor={fileOutput?.csvFileGenerated === true ? 'text-emerald-600' : fileOutput?.csvFileGenerated === false ? 'text-red-600' : 'text-gray-500'}>
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V7a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
-                  </KpiIcon>}
+              bgColor={fileOutput?.csvFileGenerated === true ? 'bg-emerald-100' : fileOutput?.csvFileGenerated === false ? 'bg-red-100' : 'bg-gray-100'}
+              textColor={fileOutput?.csvFileGenerated === true ? 'text-emerald-600' : fileOutput?.csvFileGenerated === false ? 'text-red-600' : 'text-gray-500'}>
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V7a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+            </KpiIcon>}
             label="CSV Records Written"
             value={fileOutput?.csvRecordsSuccessfullyWritten ?? 0}
             valueDenominator={fileOutput?.csvRecordsAttempted ?? undefined} // Chỉ hiển thị nếu > 0
@@ -205,20 +213,20 @@ const KpiSection: React.FC<KpiSectionProps> = ({
             <>
               <KpiCard
                 icon={<KpiIcon
-                        bgColor={(validationStats.totalValidationWarnings || 0) > 0 ? 'bg-amber-100' : 'bg-gray-100'}
-                        textColor={(validationStats.totalValidationWarnings || 0) > 0 ? 'text-amber-600' : 'text-gray-500'}>
-                        <FaExclamationTriangle className='h-5 w-5' />
-                      </KpiIcon>}
+                  bgColor={(validationStats.totalValidationWarnings || 0) > 0 ? 'bg-amber-100' : 'bg-gray-100'}
+                  textColor={(validationStats.totalValidationWarnings || 0) > 0 ? 'text-amber-600' : 'text-gray-500'}>
+                  <FaExclamationTriangle className='h-5 w-5' />
+                </KpiIcon>}
                 label="Validation Warnings"
                 value={validationStats.totalValidationWarnings}
                 valueColor={(validationStats.totalValidationWarnings || 0) > 0 ? 'text-amber-600' : undefined}
               />
               <KpiCard
                 icon={<KpiIcon
-                        bgColor={(validationStats.warningsBySeverity?.High || 0) > 0 ? 'bg-red-100' : 'bg-gray-100'}
-                        textColor={(validationStats.warningsBySeverity?.High || 0) > 0 ? 'text-red-600' : 'text-gray-500'}>
-                        <FaExclamationTriangle className='h-5 w-5' />
-                      </KpiIcon>}
+                  bgColor={(validationStats.warningsBySeverity?.High || 0) > 0 ? 'bg-red-100' : 'bg-gray-100'}
+                  textColor={(validationStats.warningsBySeverity?.High || 0) > 0 ? 'text-red-600' : 'text-gray-500'}>
+                  <FaExclamationTriangle className='h-5 w-5' />
+                </KpiIcon>}
                 label="High Sev. Warnings"
                 value={validationStats.warningsBySeverity?.High || 0}
                 valueColor={(validationStats.warningsBySeverity?.High || 0) > 0 ? "text-red-600" : undefined}

@@ -6,9 +6,10 @@ import { Conference, ApiCrawlResponse, CrawlProgress, SendToCrawlConference } fr
 import { appConfig } from '@/src/middleware';
 
 const API_CONFERENCE_ENDPOINT = `${appConfig.NEXT_PUBLIC_BACKEND_URL}/api/v1/crawl-conferences`;
+const MAX_ITEMS_PER_CRAWL_REQUEST = 50; // Giới hạn tối đa cho mỗi request API
 
 function chunkArray<T>(array: T[], size: number): T[][] {
-    if (size <= 0) return [array];
+    if (size <= 0) return [array]; // Tránh size âm hoặc 0
     const chunks: T[][] = [];
     for (let i = 0; i < array.length; i += size) {
         chunks.push(array.slice(i, i + size));
@@ -26,7 +27,7 @@ export interface ApiModels {
 }
 
 const initialApiModels: ApiModels = {
-    determineLinks: null, // Hoặc 'non-tuned' nếu muốn có giá trị mặc định sẵn
+    determineLinks: null,
     extractInfo: null,
     extractCfp: null,
 };
@@ -37,8 +38,8 @@ export interface UseConferenceCrawlReturn {
     isParsing: boolean;
     parseError: string | null;
     enableChunking: boolean;
-    chunkSize: number;
-    apiModels: ApiModels; // Models cho từng API
+    chunkSize: number; // Sẽ được giới hạn bởi MAX_ITEMS_PER_CRAWL_REQUEST
+    apiModels: ApiModels;
     isCrawling: boolean;
     crawlError: string | null;
     crawlProgress: CrawlProgress;
@@ -47,8 +48,8 @@ export interface UseConferenceCrawlReturn {
     setSelectedCsvRows: React.Dispatch<React.SetStateAction<SendToCrawlConference[]>>;
     handleFileChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
     setEnableChunking: (enabled: boolean) => void;
-    setChunkSize: (size: number) => void;
-    setApiModel: (apiName: ApiName, model: CrawlModelType) => void; // Set model cho từng API
+    setChunkSize: (size: number) => void; // Hàm này sẽ đảm bảo size <= MAX_ITEMS_PER_CRAWL_REQUEST
+    setApiModel: (apiName: ApiName, model: CrawlModelType) => void;
     startCrawlFromCsv: () => Promise<void>;
     startCrawlItems: (items: SendToCrawlConference[], modelsToUse: ApiModels) => Promise<void>;
     resetCrawl: () => void;
@@ -62,7 +63,8 @@ export const useConferenceCrawl = (): UseConferenceCrawlReturn => {
     const [parseError, setParseError] = useState<string | null>(null);
 
     const [enableChunking, setEnableChunking] = useState<boolean>(false);
-    const [chunkSize, setChunkSize] = useState<number>(5);
+    // chunkSize do người dùng cấu hình, sẽ được kẹp giữa 1 và MAX_ITEMS_PER_CRAWL_REQUEST
+    const [chunkSize, setChunkSizeState] = useState<number>(MAX_ITEMS_PER_CRAWL_REQUEST); // Mặc định là 50 (hoặc một giá trị nhỏ hơn nếu muốn)
     const [apiModels, setApiModels] = useState<ApiModels>(initialApiModels);
 
     const [isCrawling, setIsCrawling] = useState<boolean>(false);
@@ -94,18 +96,15 @@ export const useConferenceCrawl = (): UseConferenceCrawlReturn => {
             setFile(currentFile);
             parseCSV(currentFile);
         } else {
-            resetCrawlStateOnly();
+            // Giữ nguyên logic resetCrawlStateOnly của bạn nếu cần
+            setIsCrawling(false);
+            setCrawlError(null);
+            setCrawlProgress({ current: 0, total: 0, status: 'idle' });
+            // Giữ lại một số message quan trọng nếu muốn
+            setCrawlMessages(prev => prev.filter(msg => !msg.startsWith("Starting crawl") && !msg.startsWith("Successfully processed") && !msg.startsWith("FAILED to send")));
         }
-        event.target.value = '';
-    }, []); // Dependencies for resetCrawlStateOnly if it changes internal state used by handleFileChange
-
-    const resetCrawlStateOnly = useCallback(() => { // Helper to reset only crawl-related state
-        setIsCrawling(false);
-        setCrawlError(null);
-        setCrawlProgress({ current: 0, total: 0, status: 'idle' });
-        setCrawlMessages(prev => prev.filter(msg => !msg.startsWith("Starting crawl") && !msg.startsWith("Successfully processed") && !msg.startsWith("FAILED to send") )); // Keep some messages like parse success
-    }, []);
-
+        event.target.value = ''; // Cho phép chọn lại cùng file
+    }, []); // Thêm dependencies nếu có
 
     const parseCSV = useCallback((csvFile: File) => {
         setIsParsing(true);
@@ -118,30 +117,30 @@ export const useConferenceCrawl = (): UseConferenceCrawlReturn => {
             body: body,
             headers: { 'Accept': 'application/json' }
         })
-        .then(async (response) => {
-            if (!response.ok) {
-                const errorData = await response.json().catch(() => ({ message: `Server error: ${response.status}` }));
-                const errorMsg = errorData?.message || errorData?.error || `Failed to upload file. Status: ${response.status}`;
-                throw new Error(errorMsg);
-            }
-            return response.json();
-        })
-        .then((data) => {
-            if (data.data && Array.isArray(data.data)) {
-                setParsedData(data.data);
-                setCrawlMessages(prev => [`File uploaded and parsed successfully. ${data.data.length} records found.`]);
-            } else {
-                setParsedData([]);
-                throw new Error("Parsed data is not in the expected format or is empty.");
-            }
-            setIsParsing(false);
-        })
-        .catch((error) => {
-            console.error("Error uploading or parsing CSV file:", error);
-            setParseError(error.message || "Error uploading or parsing file.");
-            setParsedData(null);
-            setIsParsing(false);
-        });
+            .then(async (response) => {
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({ message: `Server error: ${response.status}` }));
+                    const errorMsg = errorData?.message || errorData?.error || `Failed to upload file. Status: ${response.status}`;
+                    throw new Error(errorMsg);
+                }
+                return response.json();
+            })
+            .then((data) => {
+                if (data.data && Array.isArray(data.data)) {
+                    setParsedData(data.data);
+                    setCrawlMessages(prev => [`File uploaded and parsed successfully. ${data.data.length} records found.`]);
+                } else {
+                    setParsedData([]);
+                    throw new Error("Parsed data is not in the expected format or is empty.");
+                }
+                setIsParsing(false);
+            })
+            .catch((error) => {
+                console.error("Error uploading or parsing CSV file:", error);
+                setParseError(error.message || "Error uploading or parsing file.");
+                setParsedData(null);
+                setIsParsing(false);
+            });
     }, [uploadFileEndPoint]);
 
     const onCsvSelectionChanged = useCallback((event: any) => {
@@ -155,13 +154,19 @@ export const useConferenceCrawl = (): UseConferenceCrawlReturn => {
         setApiModels(prev => ({ ...prev, [apiName]: model }));
     }, []);
 
+    // Điều chỉnh setChunkSize để giới hạn giá trị
+    const setChunkSize = useCallback((size: number) => {
+        const newSize = Math.max(1, Math.min(size, MAX_ITEMS_PER_CRAWL_REQUEST));
+        setChunkSizeState(newSize);
+    }, []);
+
+
     const sendApiRequest = useCallback(async (
         payload: SendToCrawlConference[],
         description: string,
         modelsForRequest: ApiModels
     ): Promise<boolean> => {
         try {
-            // Assuming backend expects models for each step like this
             const params = {
                 dataSource: 'client',
                 models: modelsForRequest
@@ -169,9 +174,9 @@ export const useConferenceCrawl = (): UseConferenceCrawlReturn => {
             const response = await axios.post<ApiCrawlResponse>(API_CONFERENCE_ENDPOINT, payload, {
                 params: params,
                 headers: { 'Content-Type': 'application/json' },
-                timeout: 600000
+                timeout: 7200000 // 10 minutes
             });
-            const modelDesc = `(Models: DL-${modelsForRequest.determineLinks?.[0]}, EI-${modelsForRequest.extractInfo?.[0]}, EC-${modelsForRequest.extractCfp?.[0]})`; // Short description
+            const modelDesc = `(Models: DL-${modelsForRequest.determineLinks?.[0]}, EI-${modelsForRequest.extractInfo?.[0]}, EC-${modelsForRequest.extractCfp?.[0]})`;
             console.log(`${description} ${modelDesc} - Response Status:`, response.status, response.data);
             setCrawlMessages(prev => [...prev, `${description} ${modelDesc}: ${response.data.message} (Runtime: ${response.data.runtime ?? 'N/A'}s)`]);
             return true;
@@ -193,7 +198,7 @@ export const useConferenceCrawl = (): UseConferenceCrawlReturn => {
 
     const processCrawlRequest = async (
         itemsToCrawl: SendToCrawlConference[],
-        modelsToUse: ApiModels, // Changed from CrawlModelType
+        modelsToUse: ApiModels,
         sourceDescription: string
     ) => {
         if (itemsToCrawl.length === 0) {
@@ -223,21 +228,66 @@ export const useConferenceCrawl = (): UseConferenceCrawlReturn => {
 
         setIsCrawling(true);
         setCrawlError(null);
+
+        let effectiveChunkSize: number;
+        let wasChunkingForceEnabled = false; // Biến để theo dõi chunking tự động
+
+        if (enableChunking) {
+            effectiveChunkSize = chunkSize; // chunkSize đã được giới hạn
+        } else {
+            // Nếu không bật chunking, nhưng số lượng items lớn hơn giới hạn
+            if (itemsToCrawl.length > MAX_ITEMS_PER_CRAWL_REQUEST) {
+                effectiveChunkSize = MAX_ITEMS_PER_CRAWL_REQUEST;
+                wasChunkingForceEnabled = true; // Đánh dấu là chunking được tự động bật
+            } else {
+                effectiveChunkSize = itemsToCrawl.length; // Gửi tất cả một lần nếu <= giới hạn
+            }
+        }
+        // Đảm bảo effectiveChunkSize không bao giờ bằng 0 hoặc âm nếu itemsToCrawl có phần tử
+        if (itemsToCrawl.length > 0 && effectiveChunkSize <= 0) {
+            effectiveChunkSize = MAX_ITEMS_PER_CRAWL_REQUEST;
+        }
+
+
+        const needsActualChunking = itemsToCrawl.length > effectiveChunkSize && itemsToCrawl.length > 0;
+
         const modelDescShort = `DL:${modelsToUse.determineLinks?.[0]}, EI:${modelsToUse.extractInfo?.[0]}, EC:${modelsToUse.extractCfp?.[0]}`;
-        setCrawlMessages(prev => [`Starting crawl for ${itemsToCrawl.length} items from "${sourceDescription}" using models (${modelDescShort})... (${enableChunking ? `Chunk size: ${chunkSize}` : 'Sending all'})`]);
-        setCrawlProgress({ current: 0, total: itemsToCrawl.length, status: 'crawling' });
+
+        let initialMessage = `Starting crawl for ${itemsToCrawl.length} items from "${sourceDescription}" using models (${modelDescShort})... `;
+        if (needsActualChunking) {
+            initialMessage += `Processing in chunks of up to ${effectiveChunkSize}.`;
+        } else if (itemsToCrawl.length > 0) { // Chỉ thêm "Sending all at once" nếu có items
+            initialMessage += 'Sending all at once.';
+        }
+
+        const newMessages = [initialMessage];
+
+        if (wasChunkingForceEnabled) {
+            newMessages.push(
+                `Note: Automatic chunking (max ${MAX_ITEMS_PER_CRAWL_REQUEST} items per request) was applied as the number of items exceeds the limit.`
+            );
+        }
+
+        setCrawlMessages(prev => [...newMessages, ...prev]); // Thêm message mới vào đầu
+
 
         let overallSuccess = true;
 
-        if (enableChunking && itemsToCrawl.length > chunkSize) {
-            const chunks = chunkArray(itemsToCrawl, chunkSize);
+        if (needsActualChunking) {
+            const chunks = chunkArray(itemsToCrawl, effectiveChunkSize);
             const totalChunks = chunks.length;
-            setCrawlProgress(prev => ({ ...prev, total: totalChunks, currentChunkData: undefined }));
+            setCrawlProgress({ current: 0, total: totalChunks, status: 'crawling' });
 
             for (let i = 0; i < totalChunks; i++) {
                 const currentChunk = chunks[i];
-                const description = `Chunk ${i + 1}/${totalChunks} (from ${sourceDescription})`;
-                setCrawlProgress(prev => ({ ...prev, current: i + 1, currentChunkData: currentChunk }));
+                // Kiểm tra nếu chunk rỗng (có thể xảy ra nếu logic chunkArray hoặc effectiveChunkSize có vấn đề)
+                if (currentChunk.length === 0) {
+                    console.warn(`Skipping empty chunk ${i + 1}/${totalChunks}`);
+                    setCrawlMessages(prev => [...prev, `Skipped empty chunk ${i + 1}/${totalChunks}.`]);
+                    continue;
+                }
+                const description = `Chunk ${i + 1}/${totalChunks} (${currentChunk.length} items, from ${sourceDescription})`;
+                setCrawlProgress(prev => ({ ...prev, current: i + 1 }));
                 const success = await sendApiRequest(currentChunk, description, modelsToUse);
 
                 if (!success) {
@@ -250,22 +300,33 @@ export const useConferenceCrawl = (): UseConferenceCrawlReturn => {
             if (overallSuccess && totalChunks > 0) {
                 setCrawlProgress(prev => ({ ...prev, status: 'success' }));
                 setCrawlMessages(prev => [...prev, `Successfully processed all ${totalChunks} chunks from "${sourceDescription}" with selected models.`]);
-            } else if (!overallSuccess) {
+            } else if (!overallSuccess && totalChunks > 0) { // Chỉ thêm message lỗi nếu có chunks để xử lý
                 setCrawlMessages(prev => [...prev, `Crawl process from "${sourceDescription}" with selected models stopped due to an error.`]);
+            } else if (totalChunks === 0 && itemsToCrawl.length > 0) { // Trường hợp không có chunks nào được tạo ra dù có items
+                setCrawlMessages(prev => [...prev, `Warning: No chunks were processed for "${sourceDescription}" despite having items.`]);
+                overallSuccess = false; // Coi như lỗi nếu có items mà không xử lý được chunk nào
+                setCrawlProgress(prev => ({ ...prev, status: 'error' }));
             }
 
-        } else {
-            setCrawlProgress(prev => ({ ...prev, current: 1, total: 1, status: 'crawling', currentChunkData: itemsToCrawl }));
-            const description = `Entire List (${itemsToCrawl.length} items from ${sourceDescription})`;
+
+        } else if (itemsToCrawl.length > 0) { // Chỉ gửi nếu có items để gửi
+            setCrawlProgress({ current: 0, total: 1, status: 'crawling' });
+            const description = `Batch (${itemsToCrawl.length} items from ${sourceDescription})`;
             const success = await sendApiRequest(itemsToCrawl, description, modelsToUse);
+            setCrawlProgress(prev => ({ ...prev, current: 1 }));
 
             if (success) {
                 setCrawlProgress(prev => ({ ...prev, status: 'success' }));
-                setCrawlMessages(prev => [...prev, `Successfully processed the entire list from "${sourceDescription}" with selected models.`]);
+                setCrawlMessages(prev => [...prev, `Successfully processed the batch of ${itemsToCrawl.length} items from "${sourceDescription}" with selected models.`]);
             } else {
                 setCrawlProgress(prev => ({ ...prev, status: 'error' }));
                 overallSuccess = false;
             }
+        } else {
+            // Trường hợp itemsToCrawl.length === 0, đã được xử lý ở đầu hàm
+            // Hoặc trường hợp không `needsActualChunking` và `itemsToCrawl.length` là 0.
+            // Có thể thêm 1 log ở đây nếu cần debug.
+            console.log("No items to crawl or no chunking needed for zero items.");
         }
         setIsCrawling(false);
     };
@@ -276,11 +337,9 @@ export const useConferenceCrawl = (): UseConferenceCrawlReturn => {
             setCrawlMessages(prev => ["No conferences selected from the CSV data.", ...prev.filter(m => !m.startsWith("No conferences selected from"))]);
             return;
         }
-        // apiModels state is used here
         await processCrawlRequest(selectedCsvRows, apiModels, "CSV Selections");
     };
 
-    // modelsToUse will now be ApiModels, passed from the component (e.g., from a modal)
     const startCrawlItems = async (items: SendToCrawlConference[], modelsToUse: ApiModels) => {
         await processCrawlRequest(items, modelsToUse, "Table Re-Crawl");
     };
@@ -290,8 +349,9 @@ export const useConferenceCrawl = (): UseConferenceCrawlReturn => {
         setParsedData(null);
         setIsParsing(false);
         setParseError(null);
-        // User preferences for chunking are kept
-        // Reset API models to initial state (requiring selection again)
+        // Giữ nguyên enableChunking và chunkSize nếu người dùng đã thiết lập
+        // setEnableChunking(false); // Reset nếu muốn
+        // setChunkSizeState(MAX_ITEMS_PER_CRAWL_REQUEST); // Reset chunkSize về mặc định nếu muốn
         setApiModels(initialApiModels);
         setIsCrawling(false);
         setCrawlError(null);
@@ -299,7 +359,7 @@ export const useConferenceCrawl = (): UseConferenceCrawlReturn => {
         setCrawlMessages([]);
         setSelectedCsvRows([]);
         console.log("Crawl state (including API models) reset.");
-    }, []);
+    }, []); // Thêm dependencies nếu cần
 
     return {
         file,
@@ -307,8 +367,8 @@ export const useConferenceCrawl = (): UseConferenceCrawlReturn => {
         isParsing,
         parseError,
         enableChunking,
-        chunkSize,
-        apiModels, // Expose current API models
+        chunkSize, // State này đã được giới hạn
+        apiModels,
         isCrawling,
         crawlError,
         crawlProgress,
@@ -317,8 +377,8 @@ export const useConferenceCrawl = (): UseConferenceCrawlReturn => {
         setSelectedCsvRows,
         handleFileChange,
         setEnableChunking,
-        setChunkSize,
-        setApiModel, // Expose setter for individual API models
+        setChunkSize, // Hàm setter này đã được cập nhật
+        setApiModel,
         startCrawlFromCsv,
         startCrawlItems,
         resetCrawl,
