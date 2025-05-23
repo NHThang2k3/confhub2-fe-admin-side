@@ -107,7 +107,11 @@ export const ConferenceTableRow: React.FC<ConferenceTableRowProps> = ({
   const colSpanBase = 14; // Đếm lại số cột cố định
   const colSpan = showRequestIdColumn ? colSpanBase + 1 : colSpanBase;
 
-  const crawlTypeDisplay =  crawlType.charAt(0).toUpperCase() + crawlType.slice(1);
+  // KIỂM TRA GIÁ TRỊ CỦA crawlType TRƯỚC KHI THỰC HIỆN THAO TÁC CHUỖI
+  const crawlTypeDisplay = crawlType && typeof crawlType === 'string' && crawlType.length > 0
+    ? crawlType.charAt(0).toUpperCase() + crawlType.slice(1)
+    : 'N/A'; // Hoặc một giá trị mặc định khác nếu crawlType không hợp lệ
+
   const crawlTypeColor = crawlType === 'update' ? 'text-sky-700 bg-sky-100' : 'text-teal-700 bg-teal-100';
 
 
