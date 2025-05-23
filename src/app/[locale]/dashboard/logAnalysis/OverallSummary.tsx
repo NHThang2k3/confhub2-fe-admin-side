@@ -1,6 +1,6 @@
 // src/app/[locale]/dashboard/logAnalysis/OverallSummary.tsx
 import React, { useMemo } from 'react';
-import { LogAnalysisResult, GoogleSearchHealthData, ValidationStats, GeminiApiAnalysis } from '../../../../models/logAnalysis'; // Thêm GeminiApiAnalysis
+import { LogAnalysisResult, GoogleSearchHealthData, ValidationStats, GeminiApiAnalysis } from '../../../../models/logAnalysis';
 import { transformRecordToBarChart, BarChartData, transformObjectToPieChartData, PieChartItem } from './utils/chartUtils';
 
 import SummaryHeaderComponent from './overallSummary/SummaryHeader';
@@ -19,11 +19,11 @@ const OverallSummary: React.FC<OverallSummaryProps> = ({
   onToggle
 }) => {
   const gSearchData = data?.googleSearch;
-  const geminiApiData = data?.geminiApi; // Đã có
+  const geminiApiData = data?.geminiApi;
   const validationStats = data?.validationStats;
 
   // --- Các useMemo hooks cũ giữ nguyên ---
-  const overallStatusData = useMemo<PieChartItem[]>(() => { /* ... giữ nguyên ... */
+  const overallStatusData = useMemo<PieChartItem[]>(() => {
     if (!data?.overall) return [];
     const { completedTasks = 0, failedOrCrashedTasks = 0, processingTasks = 0, skippedTasks = 0 } = data.overall;
     return [
@@ -34,7 +34,7 @@ const OverallSummary: React.FC<OverallSummaryProps> = ({
     ].filter(item => item.value > 0);
   }, [data?.overall]);
 
-  const playwrightLinkData = useMemo<PieChartItem[]>(() => { /* ... giữ nguyên ... */
+  const playwrightLinkData = useMemo<PieChartItem[]>(() => {
     if (!data?.playwright?.linkProcessing) return [];
     const { successfulAccess = 0, failedAccess = 0, redirects = 0 } = data.playwright.linkProcessing;
     return [
@@ -44,7 +44,7 @@ const OverallSummary: React.FC<OverallSummaryProps> = ({
     ].filter(item => item.value > 0);
   }, [data?.playwright?.linkProcessing]);
 
-  const searchStatusData = useMemo<PieChartItem[]>(() => { /* ... giữ nguyên ... */
+  const searchStatusData = useMemo<PieChartItem[]>(() => {
     if (!gSearchData) return [];
     const { successfulSearches = 0, failedSearches = 0, skippedSearches = 0, quotaErrors = 0 } = gSearchData;
     return [
@@ -55,11 +55,11 @@ const OverallSummary: React.FC<OverallSummaryProps> = ({
     ].filter(item => item.value > 0);
   }, [gSearchData]);
 
-  const apiKeyUsageData = useMemo<BarChartData>(() => { /* ... giữ nguyên ... */
+  const apiKeyUsageData = useMemo<BarChartData>(() => {
     return transformRecordToBarChart(gSearchData?.keyUsage, 0, false);
   }, [gSearchData?.keyUsage]);
 
-  const googleSearchHealthData = useMemo<GoogleSearchHealthData | null>(() => { /* ... giữ nguyên ... */
+  const googleSearchHealthData = useMemo<GoogleSearchHealthData | null>(() => {
     if (!gSearchData) return null;
     return {
       rotationsSuccess: gSearchData.apiKeyRotationsSuccess || 0,
@@ -70,11 +70,11 @@ const OverallSummary: React.FC<OverallSummaryProps> = ({
     };
   }, [gSearchData]);
 
-  const googleSearchErrorsData = useMemo<BarChartData>(() => { /* ... giữ nguyên ... */
+  const googleSearchErrorsData = useMemo<BarChartData>(() => {
     return transformRecordToBarChart(gSearchData?.errorsByType, 5, true);
   }, [gSearchData?.errorsByType]);
 
-  const googleSearchAttemptIssuesData = useMemo<BarChartData>(() => { /* ... giữ nguyên ... */
+  const googleSearchAttemptIssuesData = useMemo<BarChartData>(() => {
     return transformRecordToBarChart(gSearchData?.attemptIssueDetails, 5, true);
   }, [gSearchData?.attemptIssueDetails]);
 
@@ -82,7 +82,6 @@ const OverallSummary: React.FC<OverallSummaryProps> = ({
   const geminiApiStatusData = useMemo<PieChartItem[]>(() => {
     if (!geminiApiData) return [];
     const { successfulCalls = 0, failedCalls = 0, blockedBySafety = 0 } = geminiApiData;
-    // totalRetries có thể không cần thiết ở đây nếu chúng ta có biểu đồ riêng cho retries
     return [
       { name: 'Successful Calls', value: successfulCalls },
       { name: 'Failed Calls', value: failedCalls },
@@ -90,26 +89,32 @@ const OverallSummary: React.FC<OverallSummaryProps> = ({
     ].filter(item => item.value > 0);
   }, [geminiApiData]);
 
-  const totalGeminiCallsWithRetries = useMemo(() => { // Giữ lại để tính tổng số lần gọi bao gồm retry cho KPI
+  const totalGeminiCallsWithRetries = useMemo(() => {
     if (!geminiApiData) return 0;
     return (geminiApiData.totalCalls || 0) + (geminiApiData.totalRetries || 0);
   }, [geminiApiData]);
 
-  const geminiModelUsageDetailedData = useMemo<BarChartData>(() => {
-    if (!geminiApiData?.modelUsageByApiType) return { labels: [], values: [] };
-    const combined: Record<string, number> = {};
-    Object.entries(geminiApiData.modelUsageByApiType).forEach(([apiType, models]) => {
-      Object.entries(models).forEach(([modelIdentifier, stats]) => {
-        // Hiển thị calls, successes, failures, retries cho từng model
-        const baseKey = `${apiType}: ${modelIdentifier.replace(/models\//, '')}`;
-        if (stats.calls > 0) combined[`${baseKey} (Calls)`] = stats.calls;
-        if (stats.successes > 0) combined[`${baseKey} (Success)`] = stats.successes;
-        if (stats.failures > 0) combined[`${baseKey} (Failures)`] = stats.failures;
-        if (stats.retries > 0) combined[`${baseKey} (Retries)`] = stats.retries;
-      });
-    });
-    return transformRecordToBarChart(combined, 0, true); // Sắp xếp theo giá trị giảm dần
+  // Loại bỏ geminiModelUsageDetailedData
+  // const geminiModelUsageDetailedData = useMemo<BarChartData>(() => {
+  //   if (!geminiApiData?.modelUsageByApiType) return { labels: [], values: [] };
+  //   const combined: Record<string, number> = {};
+  //   Object.entries(geminiApiData.modelUsageByApiType).forEach(([apiType, models]) => {
+  //     Object.entries(models).forEach(([modelIdentifier, stats]) => {
+  //       const baseKey = `${apiType}: ${modelIdentifier.replace(/models\//, '')}`;
+  //       if (stats.calls > 0) combined[`${baseKey} (Calls)`] = stats.calls;
+  //       if (stats.successes > 0) combined[`${baseKey} (Success)`] = stats.successes;
+  //       if (stats.failures > 0) combined[`${baseKey} (Failures)`] = stats.failures;
+  //       if (stats.retries > 0) combined[`${baseKey} (Retries)`] = stats.retries;
+  //     });
+  //   });
+  //   return transformRecordToBarChart(combined, 0, true);
+  // }, [geminiApiData?.modelUsageByApiType]);
+
+  // THÊM: Dữ liệu raw cho bảng Model Usage
+  const geminiModelUsageRawData = useMemo<GeminiApiAnalysis['modelUsageByApiType']>(() => {
+    return geminiApiData?.modelUsageByApiType || {};
   }, [geminiApiData?.modelUsageByApiType]);
+
 
   const geminiOrchestrationData = useMemo<PieChartItem[]>(() => {
     if (!geminiApiData) return [];
@@ -122,7 +127,6 @@ const OverallSummary: React.FC<OverallSummaryProps> = ({
     return data.filter(item => item.value > 0);
   }, [geminiApiData]);
 
-  // Biểu đồ này có thể không cần thiết nữa nếu geminiOrchestrationData đã đủ
   const geminiFallbackSuccessRateData = useMemo<PieChartItem[]>(() => {
     if (!geminiApiData?.fallbackModelStats) return [];
     const { attempts = 0, successes = 0 } = geminiApiData.fallbackModelStats;
@@ -130,7 +134,7 @@ const OverallSummary: React.FC<OverallSummaryProps> = ({
     return [
       { name: 'Fallback Success', value: successes },
       { name: 'Fallback Failure', value: attempts - successes }
-    ].filter(item => item.value >= 0); // Giữ lại item có value = 0 nếu muốn hiển thị
+    ].filter(item => item.value >= 0);
   }, [geminiApiData?.fallbackModelStats]);
 
 
@@ -160,10 +164,10 @@ const OverallSummary: React.FC<OverallSummaryProps> = ({
     return [
       { name: 'Context Hits', value: cacheContextHits },
       { name: 'New Cache Created', value: cacheContextCreationSuccess },
-      { name: 'Existing Cache Used (Retrieved)', value: cacheContextRetrievalSuccess }, // Thêm
+      { name: 'Existing Cache Used (Retrieved)', value: cacheContextRetrievalSuccess },
       { name: 'Creation/Retrieval Failed', value: cacheContextCreationFailed },
       { name: 'Invalidations', value: cacheContextInvalidations },
-      { name: 'Cache Explicitly Disabled', value: cacheDecisionStats?.cacheExplicitlyDisabled || 0 }, // Thêm
+      { name: 'Cache Explicitly Disabled', value: cacheDecisionStats?.cacheExplicitlyDisabled || 0 },
     ].filter(item => item.value > 0);
   }, [geminiApiData]);
 
@@ -187,39 +191,39 @@ const OverallSummary: React.FC<OverallSummaryProps> = ({
   }, [geminiApiData?.errorsByType]);
 
   // --- Validation & Normalization - Giữ nguyên ---
-  const warningsByFieldData = useMemo<BarChartData>(() => { /* ... giữ nguyên ... */
+  const warningsByFieldData = useMemo<BarChartData>(() => {
     return transformRecordToBarChart(validationStats?.warningsByField, 0, true);
   }, [validationStats?.warningsByField]);
 
-  const warningsBySeverityData = useMemo<PieChartItem[]>(() => { /* ... giữ nguyên ... */
+  const warningsBySeverityData = useMemo<PieChartItem[]>(() => {
     if (!validationStats?.warningsBySeverity) return [];
     return transformObjectToPieChartData(validationStats.warningsBySeverity);
   }, [validationStats?.warningsBySeverity]);
 
-  const topWarningMessagesData = useMemo<BarChartData>(() => { /* ... giữ nguyên ... */
+  const topWarningMessagesData = useMemo<BarChartData>(() => {
     return transformRecordToBarChart(validationStats?.warningsByInsightMessage, 5, true);
   }, [validationStats?.warningsByInsightMessage]);
 
-  const normalizationsByFieldData = useMemo<BarChartData>(() => { /* ... giữ nguyên ... */
+  const normalizationsByFieldData = useMemo<BarChartData>(() => {
     return transformRecordToBarChart(validationStats?.normalizationsByField, 0, true);
   }, [validationStats?.normalizationsByField]);
 
-  const normalizationsByReasonData = useMemo<PieChartItem[]>(() => { /* ... giữ nguyên ... */
+  const normalizationsByReasonData = useMemo<PieChartItem[]>(() => {
      if (!validationStats?.normalizationsByReason) return [];
      return transformObjectToPieChartData(validationStats.normalizationsByReason);
   }, [validationStats?.normalizationsByReason]);
 
-  const topErrorsData = useMemo<BarChartData>(() => { /* ... giữ nguyên ... */
+  const topErrorsData = useMemo<BarChartData>(() => {
     return transformRecordToBarChart(data?.errorsAggregated, 10, true);
   }, [data?.errorsAggregated]);
 
-  const summaryTitle = useMemo(() => { /* ... giữ nguyên ... */
+  const summaryTitle = useMemo(() => {
     return data?.filterRequestId
       ? `Summary for Request: ${data.filterRequestId}`
       : "Overall Crawl Summary";
   }, [data?.filterRequestId]);
 
-  const hasMeaningfulData = useMemo(() => { /* ... giữ nguyên ... */
+  const hasMeaningfulData = useMemo(() => {
     return (data?.overall && (
       (data.overall.processedConferencesCount || 0) > 0 ||
       (data.overall.totalConferencesInput || 0) > 0
@@ -255,13 +259,14 @@ const OverallSummary: React.FC<OverallSummaryProps> = ({
           googleSearchAttemptIssuesData={googleSearchAttemptIssuesData}
           // Gemini API - Truyền các props mới
           geminiApiStatusData={geminiApiStatusData}
-          totalGeminiCallsWithRetries={totalGeminiCallsWithRetries} // Giữ lại cho KPI
-          geminiModelUsageDetailedData={geminiModelUsageDetailedData}
-          geminiOrchestrationData={geminiOrchestrationData} // Mới
-          geminiFallbackSuccessRateData={geminiFallbackSuccessRateData} // Có thể bỏ nếu orchestrationData đủ
+          totalGeminiCallsWithRetries={totalGeminiCallsWithRetries}
+          // geminiModelUsageDetailedData={geminiModelUsageDetailedData} // Loại bỏ
+          geminiModelUsageRawData={geminiModelUsageRawData} // TRUYỀN DỮ LIỆU RAW
+          geminiOrchestrationData={geminiOrchestrationData}
+          geminiFallbackSuccessRateData={geminiFallbackSuccessRateData}
           geminiConfigErrorsData={geminiConfigErrorsData}
           geminiCacheDetailedData={geminiCacheDetailedData}
-          geminiResponseProcessingData={geminiResponseProcessingData} // Mới
+          geminiResponseProcessingData={geminiResponseProcessingData}
           topGeminiErrorsData={topGeminiErrorsData}
           // Validation & Normalization
           warningsByFieldData={warningsByFieldData}
