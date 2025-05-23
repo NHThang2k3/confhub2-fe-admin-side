@@ -231,6 +231,11 @@
   },
   "conferencesPage": {
     "pageTitle": "Conference Management",
+    "editHistoryTitle": "Edit Conference History",
+    "common": {
+      "cancelButton": "Cancel",
+      "removeButton": "Remove"
+    },
     "columnHeaders": {
       "title": "Title",
       "acronym": "Acronym",
@@ -255,12 +260,62 @@
         "importantLink": "Important Link",
         "locations": "Locations:",
         "topics": "Topics:",
-        "dates": "Dates:"
+        "dates": "Dates:",
+        "lastUpdated": "Last Updated:"
       },
       "editButton": "Edit",
       "deleteButton": "Delete",
-      "deleteConfirmation": "Are you sure you want to delete this history?"
+      "deleteConfirmation": "Are you sure you want to delete this history?",
+      "editForm": {
+        "title": "Edit Conference History",
+        "cancel": "Cancel",
+        "save": "Save",
+        "saving": "Saving...",
+        "year": "Year",
+        "accessType": "Access Type",
+        "publisher": "Publisher",
+        "summary": "Summary",
+        "callForPaper": "Call for Papers",
+        "mainLink": "Main Link",
+        "cfpLink": "CFP Link",
+        "importantLink": "Important Link",
+        "locations": "Locations",
+        "addLocation": "Add Location",
+        "remove": "Remove",
+        "address": "Address",
+        "cityStateProvince": "City/State/Province",
+        "country": "Country",
+        "continent": "Continent",
+        "topics": "Topics",
+        "addTopic": "Add Topic",
+        "topicPlaceholder": "Enter topic",
+        "dates": "Dates",
+        "addDate": "Add Date",
+        "dateType": "Date Type",
+        "dateName": "Date Name",
+        "startDate": "Start Date",
+        "endDate": "End Date",
+        "fetchError": "Error fetching conference details",
+        "updateSuccess": "Conference updated successfully.",
+        "updateError": "Error updating conference",
+        "basicInfoTitle": "Basic Information",
+        "linksTitle": "Links",
+        "editModeEditButton": "Edit",
+        "editModeCancelButton": "Cancel",
+        "addressPlaceholder": "Address",
+        "cityStateProvincePlaceholder": "City/State/Province",
+        "countryPlaceholder": "Country",
+        "continentPlaceholder": "Continent",
+        "removeButton": "Remove"
+      }
     },
     "errorFetchingConferences": "Error fetching conferences:"
+  },
+  "ConferencesPageAuth": {
+    "AuthStatus_Loading": "Loading authentication status...",
+    "errorFetchingConferences": "Error fetching conferences:",
+    "errorFetchingConferenceDetails": "Error fetching conference details:",
+    "errorFetchingConferenceHistory": "Error fetching conference history:",
+    "errorFetchingConferenceHistoryDetails": "Error fetching conference history details:"
   }
 }
