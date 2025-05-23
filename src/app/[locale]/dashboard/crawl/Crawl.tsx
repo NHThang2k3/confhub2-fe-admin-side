@@ -5,66 +5,21 @@ import {
     FaExclamationTriangle, FaSyncAlt
 } from 'react-icons/fa';
 
-import AnalysisHeader from './analysis/AnalysisHeader';
-import OverallSummary from './OverallSummary';
-import ConferenceDetails from './analysis/ConferenceDetails';
+import ConferenceCrawlUploader from './ConferenceCrawlUploader';
+import JournalCrawlUploader from './JournalCrawlUploader';
 
 // New Child Components
-import LogRequestsList from './analysis/LogRequestsList';
-import RequestDetailView from './analysis/RequestDetailView';
-import LoadingScreen from './analysis/LoadingScreen';
-import ErrorScreen from './analysis/ErrorScreen';
-import NoDataDisplay from './analysis/NoDataDisplay';
+import CrawlerTools from './CrawlerTools';
+
+// import LogRequestsList from './analysis/LogRequestsList';
+// import RequestDetailView from './analysis/RequestDetailView';
+import LoadingScreen from '../logAnalysis/analysis/LoadingScreen';
+import ErrorScreen from '../logAnalysis/analysis/ErrorScreen';
+import NoDataDisplay from '../logAnalysis/analysis/NoDataDisplay';
 
 export type CrawlerType = 'conference' | 'journal';
 
-// (formatDateTime function giữ nguyên)
-export const formatDateTime = (isoString: string | null | undefined): string => {
-    if (!isoString) {
-        return 'N/A';
-    }
-    try {
-        const date = new Date(isoString);
-        if (isNaN(date.getTime())) {
-            return 'Invalid Date';
-        }
-        const datePart = date.toLocaleDateString('en-GB', {
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric'
-        });
-        const timePart = date.toLocaleTimeString('en-GB', {
-            hour: '2-digit',
-            minute: '2-digit',
-            second: '2-digit',
-            hour12: false
-        });
-        return `${datePart} ${timePart}`;
-    } catch (e) {
-        return 'Invalid Date String';
-    }
-};
-
-// Helper function để lấy class màu cho status chip (giữ nguyên)
-export const getStatusChipClass = (status: string | undefined | null): string => {
-    if (!status) return 'bg-gray-100 text-gray-700';
-    switch (status.toLowerCase()) {
-        case 'completed':
-            return 'bg-green-100 text-green-700';
-        case 'failed':
-            return 'bg-red-100 text-red-700';
-        case 'processing':
-            return 'bg-blue-100 text-blue-700';
-        case 'partiallycompleted':
-            return 'bg-yellow-100 text-yellow-700';
-        case 'unknown':
-            return 'bg-gray-200 text-gray-600';
-        default:
-            return 'bg-gray-100 text-gray-700';
-    }
-};
-
-const Analysis: React.FC = () => {
+const Crawl: React.FC = () => {
     const [timeFilterOption, setTimeFilterOption] = useState<string>('latest');
     const [filterStartTime, setFilterStartTime] = useState<number | undefined>(undefined);
     const [filterEndTime, setFilterEndTime] = useState<number | undefined>(undefined);
@@ -146,15 +101,6 @@ const Analysis: React.FC = () => {
     if (loading && !data && !error) {
         return (
             <LoadingScreen>
-                <AnalysisHeader
-                    loading={true} error={null} isConnected={isConnectedToSocket} data={null}
-                    timeFilterOption={timeFilterOption} handleFilterChange={handleTimeFilterChange}
-                    refetchData={refetchData}
-                    requestIdFilterInput={requestIdFilterInput}
-                    setRequestIdFilterInput={setRequestIdFilterInput}
-                    applyRequestIdFilter={applyRequestIdFilterFromInput}
-                    clearRequestIdFilter={clearActiveFilterAndGoToList}
-                />
             </LoadingScreen>
         );
     }
@@ -162,65 +108,20 @@ const Analysis: React.FC = () => {
     if (error && !data && !loading) {
         return (
             <ErrorScreen error={error} onRetry={refetchData}>
-                <AnalysisHeader
-                    loading={false} error={error} isConnected={isConnectedToSocket} data={null}
-                    timeFilterOption={timeFilterOption} handleFilterChange={handleTimeFilterChange}
-                    refetchData={refetchData}
-                    requestIdFilterInput={requestIdFilterInput}
-                    setRequestIdFilterInput={setRequestIdFilterInput}
-                    applyRequestIdFilter={applyRequestIdFilterFromInput}
-                    clearRequestIdFilter={clearActiveFilterAndGoToList}
-                />
             </ErrorScreen>
         );
     }
 
     return (
         <div className="p-4 md:p-6 lg:p-8 bg-gradient-to-br from-gray-100 to-blue-50 min-h-screen font-sans space-y-6">
-            <AnalysisHeader
-                loading={loading && !!data} // Show loading on header if data exists but is refreshing
-                error={(error && data) ? error : null} // Show error on header if data exists and refresh failed
-                isConnected={isConnectedToSocket}
-                data={data}
-                timeFilterOption={timeFilterOption}
-                handleFilterChange={handleTimeFilterChange}
-                refetchData={refetchData}
-                requestIdFilterInput={requestIdFilterInput}
-                setRequestIdFilterInput={setRequestIdFilterInput}
-                applyRequestIdFilter={applyRequestIdFilterFromInput}
-                clearRequestIdFilter={clearActiveFilterAndGoToList}
-            />
-
-            {isListView && data && (
-                <LogRequestsList
-                    isExpanded={isLogRequestsExpanded}
-                    onToggle={handleToggleLogRequests}
-                    data={data}
-                    onSelectRequest={handleSelectRequestFromList}
-                    formatDateTime={formatDateTime}
-                    getStatusChipClass={getStatusChipClass}
-                    OverallSummaryComponent={OverallSummary}
-                    isSummaryExpandedOverall={isSummaryExpanded}
-                    onToggleSummaryOverall={handleToggleSummary}
-                    getNoDataMessage={getNoDataFoundMessage}
-                    hasOverallDataForDisplay={hasOverallDataForDisplay}
-                />
-            )}
-
-            {isDetailView && data && (
-                <RequestDetailView
-                    data={data}
-                    activeRequestIdFilter={activeRequestIdFilter}
-                    onClearFilter={clearActiveFilterAndGoToList}
-                    OverallSummaryComponent={OverallSummary}
-                    isSummaryExpandedOverall={isSummaryExpanded}
-                    onToggleSummaryOverall={handleToggleSummary}
-                    ConferenceDetailsComponent={ConferenceDetails}
-                    getNoDataMessage={getNoDataFoundMessage}
-                    hasOverallDataForDisplay={hasOverallDataForDisplay}
-                    hasConferenceDetailsForDisplay={hasConferenceDetailsForDisplay}
-                    loading={loading}
-                // activeCrawler={activeCrawler} // Pass if JournalDetails is re-enabled and needs this
+            {!isDetailView && (
+                <CrawlerTools
+                    isExpanded={isCrawlerSectionExpanded}
+                    onToggle={handleToggleCrawlerSection}
+                    activeCrawler={activeCrawler}
+                    onSetCrawler={setActiveCrawler}
+                    ConferenceCrawlUploaderComponent={ConferenceCrawlUploader}
+                    JournalCrawlUploaderComponent={JournalCrawlUploader}
                 />
             )}
 
@@ -251,4 +152,4 @@ const Analysis: React.FC = () => {
     );
 };
 
-export default Analysis;
+export default Crawl;

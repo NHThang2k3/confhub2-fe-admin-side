@@ -5,7 +5,7 @@ import {
   FaSpinner,
   FaCheckCircle,
   FaExclamationTriangle,
-  FaRedo,
+  FaRedo, // Giữ lại FaRedo cho icon
   FaListUl,
   FaCheckDouble,
   FaTimesCircle,
@@ -22,16 +22,16 @@ interface ConferenceTableControlsProps {
   mainSaveStatus: MainSavingStatus
   rowSaveErrorsCount: number
   onSave: () => void
-  onCrawl: () => void;
+  onProcessAgain: () => void; // <--- ĐỔI TÊN PROP
   onSelectAll: () => void
   onSelectNoError: () => void
   onSelectError: () => void
-  onSelectWithoutWarningsOrErrors: () => void; // <--- Đổi tên prop ở đây
+  onSelectWithoutWarningsOrErrors: () => void;
   onSelectWarning: () => void
   onDeselectAll: () => void
   searchTerm: string
   onSearchChange: (term: string) => void
-  isCrawling?: boolean;
+  isProcessing?: boolean; // <--- ĐỔI TÊN PROP
 }
 
 
@@ -43,19 +43,20 @@ export const ConferenceTableControls: React.FC<
   mainSaveStatus,
   rowSaveErrorsCount,
   onSave,
-  onCrawl,
+  onProcessAgain, // <--- Nhận prop đã đổi tên
   onSelectAll,
   onSelectNoError,
   onSelectError,
-  onSelectWithoutWarningsOrErrors, // <--- Nhận prop đã đổi tên
+  onSelectWithoutWarningsOrErrors,
   onSelectWarning,
   onDeselectAll,
   searchTerm,
   onSearchChange,
-  isCrawling,
+  isProcessing, // <--- Nhận prop đã đổi tên
 
 }) => {
     const renderMainSaveButton = () => {
+      // ... (logic render nút save giữ nguyên)
       let icon = <FaSave className='mr-2' />
       let text = `Save Selected (${selectedCount})`
       let buttonClass = 'bg-blue-600 hover:bg-blue-700 text-white'
@@ -67,20 +68,20 @@ export const ConferenceTableControls: React.FC<
           icon = <FaSpinner className='mr-2 animate-spin' />
           text = 'Saving...'
           disabled = true
-          buttonClass = 'bg-gray-5 text-white cursor-not-allowed'
+          buttonClass = 'bg-gray-500 text-white cursor-not-allowed' // Sửa lại màu
           titleAttr = 'Saving in progress...'
           break
         case 'success':
           icon = <FaCheckCircle className='mr-2' />
           text = 'Saved Successfully'
-          disabled = true
+          disabled = true // Giữ disabled sau khi thành công để tránh double click
           buttonClass = 'bg-green-600 text-white cursor-default'
           titleAttr = 'Selected conferences saved successfully.'
           break
         case 'error':
           icon = <FaExclamationTriangle className='mr-2' />
           text = `Save Failed (${rowSaveErrorsCount} ${rowSaveErrorsCount === 1 ? 'error' : 'errors'})`
-          disabled = !isSaveEnabled // Allow retry if isSaveEnabled becomes true again
+          disabled = !isSaveEnabled // Cho phép thử lại nếu isSaveEnabled true trở lại
           buttonClass = 'bg-red-600 hover:bg-red-700 text-white'
           titleAttr = `Save failed for ${rowSaveErrorsCount} item(s). Check table for details. Click to retry if possible.`
           break
@@ -109,7 +110,8 @@ export const ConferenceTableControls: React.FC<
       )
     }
 
-    const isCrawlDisabled = selectedCount === 0 || mainSaveStatus === 'saving' || isCrawling;
+    // isProcessDisabled thay cho isCrawlDisabled
+    const isProcessDisabled = selectedCount === 0 || mainSaveStatus === 'saving' || isProcessing;
 
 
     return (
@@ -156,7 +158,7 @@ export const ConferenceTableControls: React.FC<
                 <FaTimesCircle />
               </button>
               <button
-                onClick={onSelectWithoutWarningsOrErrors} // <--- Gọi prop đã đổi tên
+                onClick={onSelectWithoutWarningsOrErrors}
                 title='Select Conferences Without Warnings or Errors'
                 className='rounded p-1 text-blue-600 hover:bg-gray-100 hover:text-blue-700'
               >
@@ -181,18 +183,18 @@ export const ConferenceTableControls: React.FC<
             {renderMainSaveButton()}
             <button
               type='button'
-              onClick={onCrawl}
-              disabled={isCrawlDisabled}
-              className={`inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm transition duration-150 ease-in-out hover:bg-gray-5 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 ${isCrawlDisabled ? 'cursor-not-allowed opacity-60' : ''}`}
+              onClick={onProcessAgain} // <--- Gọi prop đã đổi tên
+              disabled={isProcessDisabled} // <--- Sử dụng biến đã đổi tên
+              className={`inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm transition duration-150 ease-in-out hover:bg-gray-5 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 ${isProcessDisabled ? 'cursor-not-allowed opacity-60' : ''}`}
               title={
-                isCrawling
-                  ? 'Another crawl operation is in progress...'
+                isProcessing // <--- Sử dụng biến đã đổi tên
+                  ? 'Another process operation is in progress...'
                   : selectedCount === 0
-                    ? 'Select conferences to crawl again'
-                    : `Crawl selected (${selectedCount}) conferences again`
+                    ? 'Select conferences to process again'
+                    : `Process selected (${selectedCount}) conferences again`
               }
             >
-              <FaRedo className='mr-2' /> Crawl Again
+              <FaRedo className='mr-2' /> Process Again {/* <--- ĐỔI TEXT NÚT */}
             </button>
           </div>
         </div>

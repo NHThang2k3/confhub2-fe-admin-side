@@ -1,10 +1,9 @@
-// src/app/[locale]/dashboard/logAnalysis/ConferenceTableRow.tsx
 import React from 'react';
-import { FaChevronDown, FaChevronUp, FaTimesCircle, FaCheckCircle, FaExclamationTriangle, FaInfoCircle, FaWrench } from 'react-icons/fa';
-import { ConferenceTableData, RowSaveStatus } from '../../../../../hooks/crawl/useConferenceTableManager';
+import { FaChevronDown, FaChevronUp, FaTimesCircle, FaCheckCircle, FaExclamationTriangle, FaInfoCircle, FaWrench, FaLink, FaCogs } from 'react-icons/fa'; // Thêm FaLink, FaCogs
+import { ConferenceTableData, RowSaveStatus } from '@/src/hooks/crawl/useConferenceTableManager'; // Điều chỉnh path nếu cần
+import { DataQualityInsight } from '@/src/models/logAnalysis';
 import { StatusIcon } from '../StatusIcon';
 import { formatDuration } from '../utils/commonUtils';
-import { DataQualityInsight } from '@/src/models/logAnalysis';
 
 interface ConferenceTableRowProps {
   confData: ConferenceTableData;
@@ -41,7 +40,9 @@ export const ConferenceTableRow: React.FC<ConferenceTableRowProps> = ({
     uniqueRowId, title, acronym, status, durationSeconds, steps, errors, finalResult,
     errorCount,
     dataQualityInsights, dataQualityInsightCount, hasSignificantDataQualityIssues,
-    requestId
+    requestId,
+    crawlType, // <--- Lấy crawlType
+    link, cfpLink, impLink // <--- Lấy các link
   } = confData;
 
   const hasErrors = errorCount > 0;
@@ -83,27 +84,36 @@ export const ConferenceTableRow: React.FC<ConferenceTableRowProps> = ({
   const linkAttemptedCount = steps?.link_processing_attempted_count ?? 0;
   const linkSuccessCount = steps?.link_processing_success_count ?? 0;
 
-  let linkIconSuccess: boolean | null;
-  let linkIconAttempted: boolean;
-  let linkIconHasAttempts: boolean;
+  let linkIconSuccess: boolean | null = null; // Khởi tạo là null
+  let linkIconAttempted: boolean = false; // Khởi tạo là false
+  let linkIconHasAttempts: boolean = false; // Khởi tạo là false
 
-  if (linkAttemptedCount === 0) {
-    linkIconSuccess = false;
+  if (linkAttemptedCount > 0) {
     linkIconAttempted = true;
-    linkIconHasAttempts = false;
-  } else {
-    linkIconAttempted = true;
-    linkIconSuccess = (linkSuccessCount === linkAttemptedCount);
-    linkIconHasAttempts = (linkSuccessCount > 0 && linkSuccessCount < linkAttemptedCount);
+    if (linkSuccessCount === linkAttemptedCount) {
+      linkIconSuccess = true;
+    } else if (linkSuccessCount > 0) {
+      linkIconSuccess = null; // null cho trạng thái partially successful
+      linkIconHasAttempts = true;
+    } else {
+      linkIconSuccess = false;
+    }
   }
 
+
   const showRequestIdColumn = confData.requestId !== 'N/A';
-  const colSpanBase = 13;
+  // Cập nhật colSpan dựa trên số cột hiện tại
+  // Sel (1) + Title (1) + ActionType (1) + RequestID (0 or 1) + Status (1) + Duration (1) + 6 step icons (6) + Warns (1) + Errors (1) + Save (1) = 14 or 15
+  const colSpanBase = 14; // Đếm lại số cột cố định
   const colSpan = showRequestIdColumn ? colSpanBase + 1 : colSpanBase;
+
+  const crawlTypeDisplay =  crawlType.charAt(0).toUpperCase() + crawlType.slice(1);
+  const crawlTypeColor = crawlType === 'update' ? 'text-sky-700 bg-sky-100' : 'text-teal-700 bg-teal-100';
+
 
   return (
     <React.Fragment>
-       <tr className={`${rowBgClass} transition-colors duration-150`}>
+      <tr className={`${rowBgClass} transition-colors duration-150`}>
         <td className='whitespace-nowrap px-3 py-2 text-center text-sm'>
           <input type='checkbox' className='h-4 w-4 cursor-pointer rounded border-gray-300 text-indigo-600 focus:ring-indigo-500'
             checked={isSelected} onChange={() => onSelectToggle(uniqueRowId)} aria-label={`Select ${title}`} />
@@ -122,6 +132,14 @@ export const ConferenceTableRow: React.FC<ConferenceTableRowProps> = ({
               {acronym} - <span className="text-gray-500">{title}</span>
             </span>
           </div>
+        </td>
+
+        {/* Ô HIỂN THỊ ACTION TYPE */}
+        <td className='whitespace-nowrap px-3 py-2 text-sm'>
+          <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold leading-5 ${crawlTypeColor}`}>
+            {crawlType === 'update' ? <FaLink className="mr-1.5" /> : <FaCogs className="mr-1.5" />}
+            {crawlTypeDisplay}
+          </span>
         </td>
 
         {showRequestIdColumn && (
@@ -169,17 +187,39 @@ export const ConferenceTableRow: React.FC<ConferenceTableRowProps> = ({
       </tr>
 
 
+
       {/* PHẦN MỞ RỘNG (EXPANDED VIEW) */}
       {isExpanded && (
         <tr className='bg-slate-50 hover:bg-slate-100'>
           <td colSpan={colSpan} className='px-4 py-3 text-sm text-gray-700 md:px-6 md:py-4'>
             <div className='grid grid-cols-1 gap-x-6 gap-y-4 md:grid-cols-3'>
 
-              {/* CỘT 1: Extracted Data Preview */}
+              {/* CỘT 1: Extracted Data Preview VÀ LINKS (NẾU UPDATE) */}
               <div>
+                {crawlType === 'update' && (link || cfpLink || impLink) && (
+                  <div className="mb-4">
+                    <h4 className='mb-2 font-semibold text-sky-700'>Update Links:</h4>
+                    <ul className="list-none space-y-1 text-xs bg-sky-50 p-2.5 rounded border border-sky-200 shadow-inner">
+                      {link && (
+                        <li className="break-all">
+                          <strong className="text-sky-600">Main Link:</strong> <a href={link} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">{link}</a>
+                        </li>
+                      )}
+                      {cfpLink && (
+                        <li className="break-all">
+                          <strong className="text-sky-600">CFP Link:</strong> <a href={cfpLink} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">{cfpLink}</a>
+                        </li>
+                      )}
+                      {impLink && (
+                        <li className="break-all">
+                          <strong className="text-sky-600">Imp. Link:</strong> <a href={impLink} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">{impLink}</a>
+                        </li>
+                      )}
+                    </ul>
+                  </div>
+                )}
                 <h4 className='mb-2 font-semibold text-gray-800'>Extracted Data Preview:</h4>
-                {/* Giữ overflow-auto cho pre vì cuộn ngang thường cần thiết cho JSON */}
-                <pre className='custom-scrollbar max-h-[550px] overflow-auto rounded border border-gray-200 bg-gray-100 p-2.5 text-xs shadow-inner'>
+                <pre className='custom-scrollbar max-h-[500px] overflow-auto rounded border border-gray-200 bg-gray-100 p-2.5 text-xs shadow-inner'>
                   {finalResult ? JSON.stringify(finalResult, null, 2) : 'No preview available.'}
                 </pre>
               </div>
@@ -235,7 +275,7 @@ export const ConferenceTableRow: React.FC<ConferenceTableRowProps> = ({
                     <ul className='custom-scrollbar max-h-[300px] list-none space-y-2 overflow-y-auto overflow-x-hidden rounded border border-slate-200 bg-white p-2.5 text-xs shadow-inner'>
                       {dataQualityInsights.map((insight, index) => (
                         <li key={`insight-${index}`} className={`p-2 border rounded-md ${getSeverityClass(insight.severity)}`}>
-                           {/* break-words có thể không cần thiết ở đây nếu nội dung được cấu trúc tốt, nhưng không gây hại */}
+                          {/* break-words có thể không cần thiết ở đây nếu nội dung được cấu trúc tốt, nhưng không gây hại */}
                           <div className="font-semibold mb-0.5 flex items-center break-words">
                             {getInsightIcon(insight.insightType)}
                             Field: <span className="font-bold ml-1">{insight.field}</span> - <span className="italic ml-1">{insight.insightType.replace(/([A-Z])/g, ' $1').trim()}</span>

@@ -1,27 +1,25 @@
-// src/app/[locale]/dashboard/logAnalysis/ConferenceTable.tsx
 import React from 'react';
 import {
     ConferenceTableData,
     SortableColumn,
     SortDirection,
     RowSaveStatus
-} from '../../../../../hooks/crawl/useConferenceTableManager'; // Adjust path
-import { ConferenceTableHeader } from './ConferenceTableHeader'; // Adjust path
-import { ConferenceTableRow } from './ConferenceTableRow'; // Adjust path
+} from '@/src/hooks/crawl/useConferenceTableManager'; // Adjust path
+import { ConferenceTableHeader } from './ConferenceTableHeader';
+import { ConferenceTableRow } from './ConferenceTableRow';
 
 interface ConferenceTableProps {
     data: ConferenceTableData[];
-    selectedRows: Record<string, boolean>; // Thay đổi từ selectedConferences
-    expandedRowUniqueId: string | null;    // Thay đổi từ expandedConference
+    selectedRows: Record<string, boolean>;
+    expandedRowUniqueId: string | null;
     sortColumn: SortableColumn | null;
     sortDirection: SortDirection;
     rowSaveStatus: Record<string, RowSaveStatus>;
     rowSaveErrors: Record<string, string>;
     onSort: (column: SortableColumn) => void;
-    onToggleExpand: (uniqueRowId: string) => void; // Thay đổi tham số
-    onSelectToggle: (uniqueRowId: string) => void; // Thay đổi tham số
-    filterRequestId?: string | null; // Nhận prop mới
-
+    onToggleExpand: (uniqueRowId: string) => void;
+    onSelectToggle: (uniqueRowId: string) => void;
+    // filterRequestId?: string | null; // Prop này không còn dùng trực tiếp ở đây
 }
 
 export const ConferenceTable: React.FC<ConferenceTableProps> = ({
@@ -36,10 +34,14 @@ export const ConferenceTable: React.FC<ConferenceTableProps> = ({
     onToggleExpand,
     onSelectToggle,
 }) => {
-    // Logic mới để xác định có nên hiển thị cột Request ID không
-    // Hiển thị nếu có ít nhất một dòng dữ liệu và dòng đầu tiên có requestId khác 'N/A'
-    // HOẶC (tùy chọn) nếu có filterRequestId được set
-    const shouldShowRequestIdColumn = data.length > 0 && data[0]?.requestId !== 'N/A';
+    // Hiển thị cột Request ID nếu có ít nhất một dòng có requestId khác 'N/A'
+    const shouldShowRequestIdColumn = data.some(d => d.requestId && d.requestId !== 'N/A');
+
+    // Tính colSpan cho hàng "No data"
+    // Sel (1) + Title (1) + ActionType (1) + RequestID (0 or 1) + Status (1) + Duration (1) + 6 step icons (6) + Warns (1) + Errors (1) + Save (1) = 14 or 15
+    const baseColSpan = 14;
+    const noDataColSpan = shouldShowRequestIdColumn ? baseColSpan + 1 : baseColSpan;
+
 
     return (
         <div className="bg-white shadow-lg rounded-lg overflow-x-auto border border-gray-200">
@@ -48,31 +50,27 @@ export const ConferenceTable: React.FC<ConferenceTableProps> = ({
                     sortColumn={sortColumn}
                     sortDirection={sortDirection}
                     onSort={onSort}
-                    // Thêm một prop để biết có đang filter theo requestId không, để ẩn/hiện cột requestId
-                    // Sử dụng logic mới
-                    isFilteredByRequest={shouldShowRequestIdColumn}
+                    isFilteredByRequest={shouldShowRequestIdColumn} // Truyền trạng thái hiển thị cột Request ID
                 />
                 <tbody className="bg-white divide-y divide-gray-200">
                     {data.map((confData) => {
-                        // Sử dụng uniqueRowId làm key và để xác định trạng thái
                         const uniqueId = confData.uniqueRowId;
                         return (
                             <ConferenceTableRow
-                                key={uniqueId} // Quan trọng: sử dụng uniqueId làm key
+                                key={uniqueId}
                                 confData={confData}
                                 isSelected={!!selectedRows[uniqueId]}
                                 isExpanded={expandedRowUniqueId === uniqueId}
-                                onSelectToggle={onSelectToggle} // Truyền uniqueId
-                                onToggleExpand={onToggleExpand} // Truyền uniqueId
+                                onSelectToggle={onSelectToggle}
+                                onToggleExpand={onToggleExpand}
                                 saveStatus={rowSaveStatus[uniqueId] || 'idle'}
                                 saveError={rowSaveErrors[uniqueId]}
-
                             />
                         );
                     })}
                     {data.length === 0 && (
                         <tr>
-                            <td colSpan={14} className="px-6 py-12 text-center text-gray-500"> {/* Điều chỉnh colSpan */}
+                            <td colSpan={noDataColSpan} className="px-6 py-12 text-center text-gray-500">
                                 No conference data matches the current filters.
                             </td>
                         </tr>

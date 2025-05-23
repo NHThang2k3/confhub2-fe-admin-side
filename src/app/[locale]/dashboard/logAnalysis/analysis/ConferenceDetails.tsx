@@ -6,7 +6,8 @@ import { useConferenceTableManager } from '@/src/hooks/crawl/useConferenceTableM
 import { ConferenceTableControls } from '../conferenceTable/ConferenceTableControls';
 import { ConferenceTable } from '../conferenceTable/ConferenceTable';
 import { useConferenceCrawl } from '@/src/hooks/crawl/useConferenceCrawl';
-import CrawlModelSelectModal from '../conferenceTable/CrawlModelSelectModal';
+// Đổi tên import Modal
+import ProcessActionModal from '../conferenceTable/ProcessActionModal'; // <--- ĐỔI TÊN IMPORT
 
 interface ConferenceDetailsProps {
   logAnalysisResult: LogAnalysisResult | null | undefined;
@@ -16,7 +17,8 @@ const ConferenceDetails: React.FC<ConferenceDetailsProps> = ({
   logAnalysisResult
 }) => {
   const [isExpanded, setIsExpanded] = useState(true);
-  const { isCrawling: isGlobalCrawling } = useConferenceCrawl();
+  // isGlobalCrawling từ useConferenceCrawl vẫn có thể dùng để chỉ trạng thái chung của hook crawl
+  const { isCrawling: isGlobalProcessing } = useConferenceCrawl();
 
   const handleToggleExpand = () => {
     setIsExpanded(prev => !prev);
@@ -65,12 +67,12 @@ const ConferenceDetails: React.FC<ConferenceDetailsProps> = ({
                   mainSaveStatus={tableManager.mainSaveStatus}
                   rowSaveErrorsCount={rowSaveErrorsCount}
                   onSave={tableManager.handleBulkSave}
-                  onCrawl={tableManager.handleCrawlAgainClick}
-                  isCrawling={isGlobalCrawling}
+                  onProcessAgain={tableManager.handleProcessAgainClick} // <--- ĐỔI TÊN PROP
+                  isProcessing={isGlobalProcessing} // <--- ĐỔI TÊN PROP
                   onSelectAll={tableManager.handleSelectAll}
                   onSelectNoError={tableManager.handleSelectNoError}
                   onSelectError={tableManager.handleSelectError}
-                  onSelectWithoutWarningsOrErrors={tableManager.onSelectWithoutWarningsOrErrors} // <--- Đổi tên prop ở đây
+                  onSelectWithoutWarningsOrErrors={tableManager.onSelectWithoutWarningsOrErrors}
                   onSelectWarning={tableManager.handleSelectWarning}
                   onDeselectAll={tableManager.handleDeselectAll}
                   searchTerm={tableManager.searchQuery}
@@ -88,12 +90,12 @@ const ConferenceDetails: React.FC<ConferenceDetailsProps> = ({
                   mainSaveStatus={tableManager.mainSaveStatus}
                   rowSaveErrorsCount={rowSaveErrorsCount}
                   onSave={tableManager.handleBulkSave}
-                  onCrawl={tableManager.handleCrawlAgainClick}
-                  isCrawling={isGlobalCrawling}
+                  onProcessAgain={tableManager.handleProcessAgainClick} // <--- ĐỔI TÊN PROP
+                  isProcessing={isGlobalProcessing} // <--- ĐỔI TÊN PROP
                   onSelectAll={tableManager.handleSelectAll}
                   onSelectNoError={tableManager.handleSelectNoError}
                   onSelectError={tableManager.handleSelectError}
-                  onSelectWithoutWarningsOrErrors={tableManager.onSelectWithoutWarningsOrErrors} // <--- Đổi tên prop ở đây
+                  onSelectWithoutWarningsOrErrors={tableManager.onSelectWithoutWarningsOrErrors}
                   onSelectWarning={tableManager.handleSelectWarning}
                   onDeselectAll={tableManager.handleDeselectAll}
                   searchTerm={tableManager.searchQuery}
@@ -117,11 +119,12 @@ const ConferenceDetails: React.FC<ConferenceDetailsProps> = ({
         )}
       </section>
 
-      <CrawlModelSelectModal
-        isOpen={tableManager.isCrawlModelModalOpen}
-        onClose={() => tableManager.setIsCrawlModelModalOpen(false)}
-        onConfirm={tableManager.handleConfirmCrawlWithModels}
-        itemCount={tableManager.itemsToCrawlCount}
+      {/* Sử dụng Modal đã đổi tên và props mới */}
+      <ProcessActionModal
+        isOpen={tableManager.isProcessModalOpen} // <--- ĐỔI TÊN PROP
+        onClose={() => tableManager.setIsProcessModalOpen(false)} // <--- ĐỔI TÊN PROP
+        onConfirm={tableManager.handleConfirmProcessWithActionAndModels} // <--- ĐỔI TÊN PROP
+        itemsToProcess={tableManager.itemsToProcessFromTable} // <--- PROP MỚI để modal biết item nào đang xử lý
       />
     </>
   );

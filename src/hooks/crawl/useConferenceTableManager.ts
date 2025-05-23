@@ -1,13 +1,14 @@
 // src/hooks/crawl/useConferenceTableManager.ts
 import { useState, useMemo, useCallback, useEffect } from 'react';
 import {
-  ConferenceAnalysisDetail,
+  ConferenceAnalysisDetail, // Đảm bảo interface này đã có crawlType
   LogAnalysisResult,
   DataQualityInsight
 } from '@/src/models/logAnalysis';
 import { saveConferenceToJson } from '../../app/api/logAnalysis/saveConferences';
+import { ConferenceForAction } from '@/src/models/logAnalysis/importConferenceCrawl';
 import { useConferenceCrawl, ApiModels } from './useConferenceCrawl';
-import { SendToCrawlConference } from '@/src/models/logAnalysis/importConferenceCrawl';
+
 
 export type SortableColumn =
   | 'title'
@@ -15,22 +16,31 @@ export type SortableColumn =
   | 'status'
   | 'durationSeconds'
   | 'errorCount'
-  | 'dataQualityInsightCount' // Đã thay đổi
-  | 'requestId';
+  | 'dataQualityInsightCount'
+  | 'requestId'
+  | 'crawlType'; // <--- THÊM crawlType VÀO ĐÂY
 export type SortDirection = 'asc' | 'desc';
 export type MainSavingStatus = 'idle' | 'saving' | 'success' | 'error';
 export type RowSaveStatus = 'idle' | 'success' | 'error';
 
 
-export interface ConferenceTableData extends Omit<ConferenceAnalysisDetail, 'dataQualityInsights'> {
+export interface ConferenceTableData extends Omit<ConferenceAnalysisDetail, 'dataQualityInsights' | 'steps' | 'errors'> {
+  // Lấy trực tiếp từ ConferenceAnalysisDetail
+  crawlType: 'crawl' | 'update'; // <--- LẤY TỪ ConferenceAnalysisDetail
+  steps: ConferenceAnalysisDetail['steps']; // Giữ lại steps để hiển thị
+  errors: ConferenceAnalysisDetail['errors']; // Giữ lại errors để hiển thị
+
   uniqueRowId: string;
   title: string;
   acronym: string;
   requestId: string;
   errorCount: number;
-  dataQualityInsights?: DataQualityInsight[]; // Giữ nguyên, vì nó là một phần của ConferenceAnalysisDetail
-  dataQualityInsightCount: number; // Thêm trường này để dễ dàng sắp xếp và lọc
-  hasSignificantDataQualityIssues: boolean; // Thêm trường này để dễ dàng lọc theo cảnh báo/lỗi
+  dataQualityInsights?: DataQualityInsight[];
+  dataQualityInsightCount: number;
+  hasSignificantDataQualityIssues: boolean;
+  link?: string;
+  cfpLink?: string;
+  impLink?: string;
 }
 
 export interface UseConferenceTableManagerProps {
@@ -43,6 +53,7 @@ export const useConferenceTableManager = ({
   const [expandedRow, setExpandedRow] = useState<string | null>(null);
   const [sortColumn, setSortColumn] =
     useState<SortableColumn | null>('title');
+
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
   const [selectedRows, setSelectedRows] = useState<Record<string, boolean>>({});
   const [mainSaveStatus, setMainSaveStatus] =
@@ -56,11 +67,12 @@ export const useConferenceTableManager = ({
   const [searchQuery, setSearchQuery] = useState('');
 
   const {
-    startCrawlItems,
+    startCrawlItems, // This function now expects ConferenceForAction[]
   } = useConferenceCrawl();
 
-  const [isCrawlModelModalOpen, setIsCrawlModelModalOpen] = useState(false);
-  const [itemsToCrawlWithSelectedModel, setItemsToCrawlWithSelectedModel] = useState<SendToCrawlConference[]>([]);
+  const [isProcessModalOpen, setIsProcessModalOpen] = useState(false); // Renamed for clarity
+  // State to hold items prepared for re-processing, including their chosen action type
+  const [itemsToProcessWithAction, setItemsToProcessWithAction] = useState<ConferenceForAction[]>([]);
 
   const conferenceDataArray: ConferenceTableData[] = useMemo(() => {
     if (!logAnalysisResult?.conferenceAnalysis) return [];
@@ -77,34 +89,41 @@ export const useConferenceTableManager = ({
 
       const insightsArray = data.dataQualityInsights || [];
       const insightCount = insightsArray.length;
-      // Kiểm tra xem có cảnh báo nghiêm trọng (High/Medium ValidationWarning) hay không
       const hasSignificantIssues = insightsArray.some(
         insight => insight.insightType === 'ValidationWarning' && (insight.severity === 'High' || insight.severity === 'Medium')
       );
 
+      // Lấy link từ finalResult nếu có, fallback về finalResultPreview
+      const mainLink = data.finalResult?.mainLink || data.finalResult?.link || data.finalResultPreview?.mainLink || data.finalResultPreview?.link;
+      const cfpLinkVal = data.finalResult?.cfpLink || data.finalResultPreview?.cfpLink;
+      const impLinkVal = data.finalResult?.impLink || data.finalResultPreview?.impLink;
+
+
       return {
-        ...data,
+        ...data, // Bao gồm cả crawlType từ data (ConferenceAnalysisDetail)
         uniqueRowId,
         title: data.title || confKey.split(' - ')[1] || confKey,
         acronym: data.acronym || confKey.split(' - ')[0] || '',
         requestId: entryRequestId,
         errorCount: data.errors?.length || 0,
-        dataQualityInsights: insightsArray,
+        dataQualityInsights: insightsArray, // Giữ lại để truyền cho row
         dataQualityInsightCount: insightCount,
         hasSignificantDataQualityIssues: hasSignificantIssues,
+        link: mainLink, // Gán link đã lấy được
+        cfpLink: cfpLinkVal,
+        impLink: impLinkVal,
+        // steps và errors sẽ được bao gồm từ ...data
       };
     });
   }, [logAnalysisResult]);
 
   useEffect(() => {
-    // Reset selection and status when logAnalysisResult changes
     setSelectedRows({});
     setMainSaveStatus('idle');
     setRowSaveStatus({});
     setRowSaveErrors({});
-    setExpandedRow(null); // Collapse any expanded rows
-    setSearchQuery(''); // Clear search query
-    // Do not reset sort column/direction unless explicitly desired by design
+    setExpandedRow(null);
+    setSearchQuery('');
   }, [logAnalysisResult]);
 
 
@@ -136,6 +155,7 @@ export const useConferenceTableManager = ({
         case 'title':
         case 'status':
         case 'requestId':
+        case 'crawlType': // If added as a sortable column
           aValue = String(aValue).toLowerCase();
           bValue = String(bValue).toLowerCase();
           if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1;
@@ -143,7 +163,7 @@ export const useConferenceTableManager = ({
           return 0;
         case 'durationSeconds':
         case 'errorCount':
-        case 'dataQualityInsightCount': // Đã thay đổi
+        case 'dataQualityInsightCount':
           aValue = Number(aValue);
           bValue = Number(bValue);
           return sortDirection === 'asc' ? aValue - bValue : bValue - aValue;
@@ -201,7 +221,6 @@ export const useConferenceTableManager = ({
     setSelectedRows(newSelection);
   }, [sortedData]);
 
-  // THAY ĐỔI: Select Conferences With Warnings (significant data quality issues)
   const handleSelectWarning = useCallback(() => {
     const newSelection: Record<string, boolean> = {};
     sortedData.forEach(conf => {
@@ -212,8 +231,6 @@ export const useConferenceTableManager = ({
     setSelectedRows(newSelection);
   }, [sortedData]);
 
-  // THAY ĐỔI LỚN: Select Conferences Without Warnings OR Errors
-  // Đổi tên từ `handleSelectNoWarning` thành `handleSelectWithoutWarningsOrErrors`
   const handleSelectWithoutWarningsOrErrors = useCallback(() => {
     const newSelection: Record<string, boolean> = {};
     sortedData.forEach(conf => {
@@ -314,33 +331,44 @@ export const useConferenceTableManager = ({
   };
 
 
-  const handleCrawlAgainClick = useCallback(() => {
+  const handleProcessAgainClick = useCallback(() => {
     if (selectedRowIds.length === 0) {
-      alert("No items selected to re-crawl.");
+      alert("No items selected to re-process.");
       return;
     }
-    const itemsToReCrawl: SendToCrawlConference[] = conferenceDataArray
+    const itemsForModal: ConferenceForAction[] = conferenceDataArray
       .filter(conf => selectedRows[conf.uniqueRowId])
       .map(conf => ({
+        id: conf.uniqueRowId,
         Title: conf.title,
         Acronym: conf.acronym,
+        // Lấy crawlType hiện tại từ bảng làm mặc định cho modal
+        // Hoặc bạn có thể để modal tự quyết định mặc định
+        crawlType: conf.crawlType, // <--- Sử dụng crawlType hiện tại
+        link: conf.link,
+        cfpLink: conf.cfpLink,
+        impLink: conf.impLink,
         originalRequestId: conf.requestId
       }));
 
-    if (itemsToReCrawl.length > 0) {
-      setItemsToCrawlWithSelectedModel(itemsToReCrawl);
-      setIsCrawlModelModalOpen(true);
+    if (itemsForModal.length > 0) {
+      setItemsToProcessWithAction(itemsForModal);
+      setIsProcessModalOpen(true);
     }
   }, [selectedRowIds, conferenceDataArray, selectedRows]);
 
-  const handleConfirmCrawlWithModels = useCallback(async (selectedModels: ApiModels) => {
-    if (itemsToCrawlWithSelectedModel.length > 0) {
-      const modelDesc = `DL:${selectedModels.determineLinks}, EI:${selectedModels.extractInfo}, EC:${selectedModels.extractCfp}`;
-      console.log(`Triggering crawl again for ${itemsToCrawlWithSelectedModel.length} item(s) using models ${modelDesc}:`, itemsToCrawlWithSelectedModel);
-      await startCrawlItems(itemsToCrawlWithSelectedModel, selectedModels);
+  // This function will be called by the modal after user selects action type and models
+  const handleConfirmProcessWithActionAndModels = useCallback(async (
+    processedItemsFromModal: ConferenceForAction[], // Items with crawlType set by modal
+    selectedModels: ApiModels
+  ) => {
+    if (processedItemsFromModal.length > 0) {
+      // `startCrawlItems` expects ConferenceForAction[] where crawlType determines the payload
+      await startCrawlItems(processedItemsFromModal, selectedModels);
     }
-    setIsCrawlModelModalOpen(false);
-  }, [itemsToCrawlWithSelectedModel, startCrawlItems]);
+    setIsProcessModalOpen(false);
+    setItemsToProcessWithAction([]); // Clear the items
+  }, [startCrawlItems]);
 
 
   return {
@@ -354,8 +382,8 @@ export const useConferenceTableManager = ({
     handleSelectAll,
     handleSelectNoError,
     handleSelectError,
-    handleSelectWarning, // Giữ nguyên tên, logic bên trong thay đổi
-    onSelectWithoutWarningsOrErrors: handleSelectWithoutWarningsOrErrors, // Đã đổi tên và gán lại hàm
+    handleSelectWarning,
+    onSelectWithoutWarningsOrErrors: handleSelectWithoutWarningsOrErrors,
     handleDeselectAll,
     expandedRow,
     toggleExpand,
@@ -364,12 +392,14 @@ export const useConferenceTableManager = ({
     handleBulkSave,
     rowSaveStatus,
     rowSaveErrors,
-    handleCrawlAgainClick,
+    handleProcessAgainClick, // Renamed
     searchQuery,
     setSearchQuery,
-    isCrawlModelModalOpen,
-    setIsCrawlModelModalOpen,
-    handleConfirmCrawlWithModels,
-    itemsToCrawlCount: itemsToCrawlWithSelectedModel.length,
+    isProcessModalOpen, // Renamed
+    setIsProcessModalOpen, // Renamed
+    // Renamed for clarity, this now expects ConferenceForAction[] from the modal
+    handleConfirmProcessWithActionAndModels,
+    // itemsToProcessCount can be derived from itemsToProcessWithAction.length in the component
+    itemsToProcessFromTable: itemsToProcessWithAction, // Pass the items to the modal
   };
 };

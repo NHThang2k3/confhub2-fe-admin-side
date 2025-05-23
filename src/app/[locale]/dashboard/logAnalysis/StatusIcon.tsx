@@ -10,10 +10,10 @@ interface StatusIconProps {
 
 export const StatusIcon: React.FC<StatusIconProps> = ({ success, attempted, hasAttempts }) => {
     if (hasAttempts === true) return <FaExclamationTriangle className="text-yellow-500" title="Attempted / Partial Success" />;
+    if (attempted === false) return <FaMinusCircle className="text-gray-400" title="Not Attempted" />; // Đổi title cho rõ hơn
     if (success === true) return <FaCheckCircle className="text-green-500" title="Success" />;
     if (success === false) return <FaTimesCircle className="text-red-500" title="Failed" />;
     if (success === 'skipped') return <FaBan className="text-gray-500" title="Skipped" />; // Xử lý 'skipped'
-    if (attempted === false) return <FaMinusCircle className="text-gray-400" title="Not Attempted" />; // Đổi title cho rõ hơn
 
     // Default: Unknown/Not Run (nếu attempted là null/undefined và success cũng vậy)
     // Hoặc Processing (nếu attempted là true nhưng success chưa có giá trị boolean/skipped)
