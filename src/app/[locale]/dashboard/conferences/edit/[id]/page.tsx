@@ -2,15 +2,18 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useTranslations } from 'next-intl';
+import { useTranslations } from 'next-intl'; // Sử dụng hook dịch thuật
 import axios from 'axios';
-import { useForm, useFieldArray, Controller, ControllerRenderProps, FieldArray } from 'react-hook-form';
+import { useForm, useFieldArray, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { DATA_API_URL } from '@/src/config';
 import { toast, Toaster } from 'react-hot-toast';
 import TopicsTable from '../components/TopicsTable';
 import DatesTable from '../components/DatesTable';
+import { Link } from '@/src/navigation';
+// import { Link } from 'lucide-react';
+
 
 interface Location {
   address?: string;
@@ -29,7 +32,7 @@ interface ConferenceDate {
 interface FormValues {
   year?: number;
   accessType?: 'Online' | 'Offline' | 'Hybrid';
-  isAvailable?: boolean;
+  isAvailable?: boolean; // Chưa được sử dụng trong form hiện tại, nhưng giữ lại trong interface
   publisher?: string;
   summerize?: string;
   callForPaper?: string;
@@ -56,28 +59,28 @@ const locationSchema = z.object({
 
 const dateSchema = z.object({
   type: z.string().optional(),
-  startDate: z.string().optional(),
-  endDate: z.string().optional(),
+  startDate: z.string().optional(), // Có thể cần validate format ngày tháng
+  endDate: z.string().optional(),   // Có thể cần validate format ngày tháng
   name: z.string().optional(),
 });
 
 const formSchema = z.object({
-  year: z.number().min(1900).max(2100).optional(),
+  year: z.number().min(1900).max(2100).optional(), // Thêm message tùy chỉnh nếu cần dịch Zod errors
   accessType: z.enum(['Online', 'Offline', 'Hybrid']).default('Offline'),
   isAvailable: z.boolean().optional(),
   publisher: z.string().optional(),
   summerize: z.string().optional(),
   callForPaper: z.string().optional(),
-  link: z.string().url('Must be a valid URL').optional(),
-  cfpLink: z.string().url('Must be a valid URL').optional(),
-  impLink: z.string().url('Must be a valid URL').optional(),
+  link: z.string().url('Must be a valid URL').optional(), // Thêm message tùy chỉnh nếu cần dịch Zod errors
+  cfpLink: z.string().url('Must be a valid URL').optional(), // Thêm message tùy chỉnh nếu cần dịch Zod errors
+  impLink: z.string().url('Must be a valid URL').optional(), // Thêm message tùy chỉnh nếu cần dịch Zod errors
   locations: z.array(locationSchema).optional(),
   topics: z.array(z.string()).optional(),
   dates: z.array(dateSchema).optional(),
 });
 
 export default function EditConferenceHistory({ params }: { params: { id: string } }) {
-  const t = useTranslations('conferencesPage');
+  const t = useTranslations('conferencesPage'); // Sử dụng namespace 'conferencesPage'
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [editMode, setEditMode] = useState<EditMode>({
@@ -94,55 +97,61 @@ export default function EditConferenceHistory({ params }: { params: { id: string
     setValue,
     formState: { errors },
   } = useForm<FormValues>({
+    // Resolver được giữ nguyên logic hiện tại, tập trung vào việc sử dụng t trong JSX
+    // Lưu ý: Zod validation messages ('Must be a valid URL', min/max errors) không được dịch tự động bởi `t` hook này.
+    // Để dịch chúng, bạn cần cấu hình i18n cho Zod resolver hoặc hiển thị lỗi tùy chỉnh trong JSX.
     resolver: async (data) => {
       try {
-        // Create a new object with only the fields that are in edit mode
+        // Tạo một đối tượng mới chỉ chứa các trường đang ở chế độ chỉnh sửa
         const dataToValidate: Partial<FormValues> = {};
-        
+
         if (editMode.basicInfo) {
           dataToValidate.year = data.year;
-          dataToValidate.accessType = data.accessType || 'Offline'; // Set default if empty
+          dataToValidate.accessType = data.accessType || 'Offline'; // Đặt default nếu trống
           dataToValidate.publisher = data.publisher;
           dataToValidate.summerize = data.summerize;
           dataToValidate.callForPaper = data.callForPaper;
         }
-        
+
         if (editMode.links) {
           dataToValidate.link = data.link;
           dataToValidate.cfpLink = data.cfpLink;
           dataToValidate.impLink = data.impLink;
         }
-        
+
         if (editMode.locations) {
           dataToValidate.locations = data.locations;
         }
-        
-        // Always include topics and dates
+
+        // Luôn bao gồm topics và dates vì chúng luôn có thể chỉnh sửa
         dataToValidate.topics = data.topics;
         dataToValidate.dates = data.dates;
 
-        // Validate only the fields that are in edit mode
+        // Validate chỉ các trường đang ở chế độ chỉnh sửa
         const result = await formSchema.safeParseAsync(dataToValidate);
-        
+
         if (result.success) {
           return { values: data, errors: {} };
         } else {
+          // Trả về errors cho các trường bị validate lỗi
           return {
-            values: {},
+            values: {}, // Không có values thành công nếu có lỗi validation
             errors: result.error.flatten().fieldErrors,
           };
         }
       } catch (error) {
+        // Xử lý lỗi không mong muốn trong quá trình validate
+         console.error("Validation error:", error);
         return {
           values: {},
-          errors: {},
+          errors: {}, // Không có errors cụ thể nếu lỗi không từ validation schema
         };
       }
     },
     defaultValues: {
       year: new Date().getFullYear(),
       accessType: 'Offline',
-      isAvailable: true,
+      isAvailable: true, // Mặc định là true, nhưng không hiển thị trong form
       publisher: '',
       summerize: '',
       callForPaper: '',
@@ -180,42 +189,52 @@ export default function EditConferenceHistory({ params }: { params: { id: string
         reset({
           ...data,
           topics: data.topics,
+          // Đảm bảo locations và dates cũng là array nếu chúng là undefined hoặc null
+          locations: Array.isArray(data.locations) ? data.locations : [],
+          dates: Array.isArray(data.dates) ? data.dates : [],
         });
       } else {
         reset({
           ...data,
-          topics: [''],
+          topics: [], // Đảm bảo topics là array rỗng nếu không có data.topics
+          locations: Array.isArray(data.locations) ? data.locations : [],
+          dates: Array.isArray(data.dates) ? data.dates : [],
         });
       }
     } catch (error) {
       console.error('Error fetching organization data:', error);
+      // Sử dụng key dịch cho thông báo lỗi
       toast.error(t('modal.editForm.fetchError'));
     }
   };
 
   useEffect(() => {
     fetchConferenceData();
-  }, [params.id]);
+  }, [params.id, t]); // Thêm t vào dependency array
 
   const handleTopicsChange = (newTopics: string[]) => {
     // Update the form state directly using setValue
-    setValue('topics', newTopics, { 
-      shouldValidate: true, 
+    setValue('topics', newTopics, {
+      shouldValidate: true,
       shouldDirty: true,
-      shouldTouch: true 
+      shouldTouch: true
     });
   };
 
   const handleDatesChange = (newDates: ConferenceDate[]) => {
     // Update the form state directly using setValue
-    setValue('dates', newDates, { 
-      shouldValidate: true, 
+    setValue('dates', newDates, {
+      shouldValidate: true,
       shouldDirty: true,
-      shouldTouch: true 
+      shouldTouch: true
     });
   };
 
   const toggleEditMode = (group: keyof EditMode) => {
+    // Khi tắt chế độ chỉnh sửa, reset lại form để bỏ qua các thay đổi chưa lưu
+    if (editMode[group]) {
+        fetchConferenceData(); // Tải lại dữ liệu gốc
+    }
     setEditMode(prev => ({
       ...prev,
       [group]: !prev[group]
@@ -225,9 +244,9 @@ export default function EditConferenceHistory({ params }: { params: { id: string
   const onSubmit = async (data: FormValues) => {
     try {
       setIsSubmitting(true);
-      // Only include fields that are in edit mode
+      // Chỉ bao gồm các trường đang ở chế độ chỉnh sửa HOẶC luôn có thể chỉnh sửa
       const updatedData: Partial<FormValues> = {};
-      
+
       if (editMode.basicInfo) {
         updatedData.year = data.year;
         updatedData.accessType = data.accessType;
@@ -235,18 +254,18 @@ export default function EditConferenceHistory({ params }: { params: { id: string
         updatedData.summerize = data.summerize;
         updatedData.callForPaper = data.callForPaper;
       }
-      
+
       if (editMode.links) {
         updatedData.link = data.link;
         updatedData.cfpLink = data.cfpLink;
         updatedData.impLink = data.impLink;
       }
-      
+
       if (editMode.locations) {
         updatedData.locations = data.locations;
       }
-      
-      // Always include topics and dates
+
+      // Luôn bao gồm topics và dates vì chúng luôn có thể chỉnh sửa
       updatedData.topics = data.topics;
       updatedData.dates = data.dates;
 
@@ -257,11 +276,13 @@ export default function EditConferenceHistory({ params }: { params: { id: string
           ...updatedData,
         }
       );
-      
+
+      // Cập nhật lại form với dữ liệu mới từ response
       reset(response.data);
       router.refresh();
-      
-      toast.success('Conference updated successfully!', {
+
+      // Sử dụng key dịch cho thông báo thành công
+      toast.success(t('modal.editForm.updateSuccess'), {
         duration: 4000,
         position: 'top-right',
         style: {
@@ -271,11 +292,17 @@ export default function EditConferenceHistory({ params }: { params: { id: string
           borderRadius: '8px',
         },
       });
-      
-      await fetchConferenceData();
+
+      // Có thể tắt chế độ chỉnh sửa sau khi lưu thành công nếu muốn
+      // setEditMode({ basicInfo: false, links: false, locations: false });
+
+      // Không cần fetch lại dữ liệu nếu reset(response.data) đã làm điều đó
+      // await fetchConferenceData();
+
     } catch (error) {
       console.error('Error updating conference history:', error);
-      toast.error('Failed to update conference. Please try again.', {
+      // Sử dụng key dịch cho thông báo lỗi cập nhật
+      toast.error(t('modal.editForm.updateError'), {
         duration: 4000,
         position: 'top-right',
         style: {
@@ -294,39 +321,45 @@ export default function EditConferenceHistory({ params }: { params: { id: string
     <div className="p-6 max-w-4xl mx-auto">
       <Toaster />
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">{t('modal.editForm.title')}</h1>
-        <button
-          onClick={() => router.push('/en/dashboard/conferences')}
-          className="px-4 py-2 border rounded-md hover:bg-gray-100"
-        >
+        {/* Sử dụng key dịch cho tiêu đề */}
+        <h1 className="text-2xl font-bold">{t('editHistoryTitle')}</h1>
+        {/* Sử dụng key dịch cho nút Cancel */}
+        <Link
+          href="/dashboard/conferences"
+          className="px-4 py-2  border rounded-md hover:bg-gray-10"
+          >
           {t('modal.editForm.cancel')}
-        </button>
+        </Link>
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         {/* Basic Info Group */}
         <div className="border rounded-lg p-4">
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-lg font-semibold">Basic Information</h2>
+            {/* Sử dụng key dịch cho tiêu đề nhóm */}
+            <h2 className="text-lg font-semibold">{t('modal.editForm.basicInfoTitle')}</h2>
+            {/* Sử dụng key dịch cho nút Edit/Cancel Edit */}
             <button
               type="button"
               onClick={() => toggleEditMode('basicInfo')}
               className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
             >
-              {editMode.basicInfo ? 'Cancel Edit' : 'Edit'}
+              {editMode.basicInfo ? t('modal.editForm.editModeCancelButton') : t('modal.editForm.editModeEditButton')}
             </button>
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4"> {/* Sử dụng sm:grid-cols-2 cho layout tốt hơn trên màn hình lớn */}
             <div>
-              <label className="block text-sm font-medium mb-1">{t('modal.editForm.year')}</label>
+              {/* Sử dụng key dịch cho label */}
+              <label htmlFor="year" className="block text-sm font-medium mb-1">{t('modal.editForm.year')}</label>
               <Controller
                 name="year"
                 control={control}
                 render={({ field }) => (
                   <input
+                    id="year" // Thêm id để label hoạt động
                     type="number"
                     {...field}
-                    onChange={(e) => field.onChange(parseInt(e.target.value))}
+                    onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value, 10) : undefined)} // Xử lý giá trị empty
                     className="w-full px-3 py-2 border rounded-md"
                     disabled={!editMode.basicInfo}
                   />
@@ -336,15 +369,16 @@ export default function EditConferenceHistory({ params }: { params: { id: string
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-1">{t('modal.editForm.accessType')}</label>
+              {/* Sử dụng key dịch cho label */}
+              <label htmlFor="accessType" className="block text-sm font-medium mb-1">{t('modal.editForm.accessType')}</label>
               <Controller
                 name="accessType"
                 control={control}
                 render={({ field }) => (
-                  <select {...field} className="w-full px-3 py-2 border rounded-md" disabled={!editMode.basicInfo}>
-                    <option value="Online">Online</option>
-                    <option value="Offline">Offline</option>
-                    <option value="Hybrid">Hybrid</option>
+                  <select id="accessType" {...field} className="w-full px-3 py-2 border rounded-md" disabled={!editMode.basicInfo}>
+                    <option value="Online">Online</option> {/* Có thể dịch các option này nếu cần */}
+                    <option value="Offline">Offline</option> {/* Có thể dịch các option này nếu cần */}
+                    <option value="Hybrid">Hybrid</option> {/* Có thể dịch các option này nếu cần */}
                   </select>
                 )}
               />
@@ -353,36 +387,39 @@ export default function EditConferenceHistory({ params }: { params: { id: string
           </div>
 
           <div className="mt-4">
-            <label className="block text-sm font-medium mb-1">{t('modal.editForm.publisher')}</label>
+            {/* Sử dụng key dịch cho label */}
+            <label htmlFor="publisher" className="block text-sm font-medium mb-1">{t('modal.editForm.publisher')}</label>
             <Controller
               name="publisher"
               control={control}
               render={({ field }) => (
-                <input {...field} className="w-full px-3 py-2 border rounded-md" disabled={!editMode.basicInfo} />
+                <input id="publisher" {...field} className="w-full px-3 py-2 border rounded-md" disabled={!editMode.basicInfo} />
               )}
             />
             {errors.publisher && <p className="text-red-500 text-sm mt-1">{errors.publisher.message}</p>}
           </div>
 
           <div className="mt-4">
-            <label className="block text-sm font-medium mb-1">{t('modal.editForm.summary')}</label>
+            {/* Sử dụng key dịch cho label (sử dụng key summary thay vì summerize) */}
+            <label htmlFor="summerize" className="block text-sm font-medium mb-1">{t('modal.editForm.summary')}</label>
             <Controller
               name="summerize"
               control={control}
               render={({ field }) => (
-                <textarea {...field} className="w-full px-3 py-2 border rounded-md" rows={3} disabled={!editMode.basicInfo} />
+                <textarea id="summerize" {...field} className="w-full px-3 py-2 border rounded-md" rows={3} disabled={!editMode.basicInfo} />
               )}
             />
             {errors.summerize && <p className="text-red-500 text-sm mt-1">{errors.summerize.message}</p>}
           </div>
 
           <div className="mt-4">
-            <label className="block text-sm font-medium mb-1">{t('modal.editForm.callForPaper')}</label>
+            {/* Sử dụng key dịch cho label */}
+            <label htmlFor="callForPaper" className="block text-sm font-medium mb-1">{t('modal.editForm.callForPaper')}</label>
             <Controller
               name="callForPaper"
               control={control}
               render={({ field }) => (
-                <textarea {...field} className="w-full px-3 py-2 border rounded-md" rows={3} disabled={!editMode.basicInfo} />
+                <textarea id="callForPaper" {...field} className="w-full px-3 py-2 border rounded-md" rows={3} disabled={!editMode.basicInfo} />
               )}
             />
             {errors.callForPaper && <p className="text-red-500 text-sm mt-1">{errors.callForPaper.message}</p>}
@@ -392,47 +429,52 @@ export default function EditConferenceHistory({ params }: { params: { id: string
         {/* Links Group */}
         <div className="border rounded-lg p-4">
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-lg font-semibold">Links</h2>
+            {/* Sử dụng key dịch cho tiêu đề nhóm */}
+            <h2 className="text-lg font-semibold">{t('modal.editForm.linksTitle')}</h2>
+            {/* Sử dụng key dịch cho nút Edit/Cancel Edit */}
             <button
               type="button"
               onClick={() => toggleEditMode('links')}
               className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
             >
-              {editMode.links ? 'Cancel Edit' : 'Edit'}
+              {editMode.links ? t('modal.editForm.editModeCancelButton') : t('modal.editForm.editModeEditButton')}
             </button>
           </div>
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4"> {/* Sử dụng sm:grid-cols-3 cho layout tốt hơn */}
             <div>
-              <label className="block text-sm font-medium mb-1">{t('modal.editForm.mainLink')}</label>
+              {/* Sử dụng key dịch cho label */}
+              <label htmlFor="link" className="block text-sm font-medium mb-1">{t('modal.editForm.mainLink')}</label>
               <Controller
                 name="link"
                 control={control}
                 render={({ field }) => (
-                  <input type="url" {...field} className="w-full px-3 py-2 border rounded-md" disabled={!editMode.links} />
+                  <input id="link" type="url" {...field} className="w-full px-3 py-2 border rounded-md" disabled={!editMode.links} />
                 )}
               />
               {errors.link && <p className="text-red-500 text-sm mt-1">{errors.link.message}</p>}
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-1">{t('modal.editForm.cfpLink')}</label>
+              {/* Sử dụng key dịch cho label */}
+              <label htmlFor="cfpLink" className="block text-sm font-medium mb-1">{t('modal.editForm.cfpLink')}</label>
               <Controller
                 name="cfpLink"
                 control={control}
                 render={({ field }) => (
-                  <input type="url" {...field} className="w-full px-3 py-2 border rounded-md" disabled={!editMode.links} />
+                  <input id="cfpLink" type="url" {...field} className="w-full px-3 py-2 border rounded-md" disabled={!editMode.links} />
                 )}
               />
               {errors.cfpLink && <p className="text-red-500 text-sm mt-1">{errors.cfpLink.message}</p>}
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-1">{t('modal.editForm.importantLink')}</label>
+              {/* Sử dụng key dịch cho label */}
+              <label htmlFor="impLink" className="block text-sm font-medium mb-1">{t('modal.editForm.importantLink')}</label>
               <Controller
                 name="impLink"
                 control={control}
                 render={({ field }) => (
-                  <input type="url" {...field} className="w-full px-3 py-2 border rounded-md" disabled={!editMode.links} />
+                  <input id="impLink" type="url" {...field} className="w-full px-3 py-2 border rounded-md" disabled={!editMode.links} />
                 )}
               />
               {errors.impLink && <p className="text-red-500 text-sm mt-1">{errors.impLink.message}</p>}
@@ -443,16 +485,19 @@ export default function EditConferenceHistory({ params }: { params: { id: string
         {/* Locations Group */}
         <div className="border rounded-lg p-4">
           <div className="flex justify-between items-center mb-4">
+            {/* Sử dụng key dịch cho tiêu đề nhóm */}
             <h2 className="text-lg font-semibold">{t('modal.editForm.locations')}</h2>
-            <button
+            {/* Sử dụng key dịch cho nút Edit/Cancel Edit */}
+             <button
               type="button"
               onClick={() => toggleEditMode('locations')}
               className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
             >
-              {editMode.locations ? 'Cancel Edit' : 'Edit'}
+              {editMode.locations ? t('modal.editForm.editModeCancelButton') : t('modal.editForm.editModeEditButton')}
             </button>
           </div>
           {editMode.locations && (
+            // Sử dụng key dịch cho nút Add Location
             <button
               type="button"
               onClick={() => appendLocation({ address: '', cityStateProvince: '', country: '', continent: '' })}
@@ -462,14 +507,15 @@ export default function EditConferenceHistory({ params }: { params: { id: string
             </button>
           )}
           {locationFields.map((field, index) => (
-            <div key={field.id} className="grid grid-cols-2 gap-4 mb-2">
+            <div key={field.id} className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4 p-2 border rounded-md"> {/* Thêm padding và border cho từng mục */}
               <Controller
                 name={`locations.${index}.address`}
                 control={control}
                 render={({ field }) => (
                   <input
                     {...field}
-                    placeholder={t('modal.editForm.address')}
+                    // Sử dụng key dịch cho placeholder
+                    placeholder={t('modal.editForm.addressPlaceholder')}
                     className="px-3 py-2 border rounded-md"
                     disabled={!editMode.locations}
                   />
@@ -481,7 +527,8 @@ export default function EditConferenceHistory({ params }: { params: { id: string
                 render={({ field }) => (
                   <input
                     {...field}
-                    placeholder={t('modal.editForm.cityStateProvince')}
+                    // Sử dụng key dịch cho placeholder
+                    placeholder={t('modal.editForm.cityStateProvincePlaceholder')}
                     className="px-3 py-2 border rounded-md"
                     disabled={!editMode.locations}
                   />
@@ -493,7 +540,8 @@ export default function EditConferenceHistory({ params }: { params: { id: string
                 render={({ field }) => (
                   <input
                     {...field}
-                    placeholder={t('modal.editForm.country')}
+                    // Sử dụng key dịch cho placeholder
+                    placeholder={t('modal.editForm.countryPlaceholder')}
                     className="px-3 py-2 border rounded-md"
                     disabled={!editMode.locations}
                   />
@@ -505,63 +553,80 @@ export default function EditConferenceHistory({ params }: { params: { id: string
                 render={({ field }) => (
                   <input
                     {...field}
-                    placeholder={t('modal.editForm.continent')}
+                    // Sử dụng key dịch cho placeholder
+                    placeholder={t('modal.editForm.continentPlaceholder')}
                     className="px-3 py-2 border rounded-md"
                     disabled={!editMode.locations}
                   />
                 )}
               />
-              {editMode.locations && index > 0 && (
-                <button
-                  type="button"
-                  onClick={() => removeLocation(index)}
-                  className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
-                >
-                  {t('modal.editForm.remove')}
-                </button>
+              {/* Nút remove luôn ở dưới các input cho layout tốt hơn */}
+              {editMode.locations && locationFields.length > 1 && ( // Chỉ hiển thị nút remove nếu có nhiều hơn 1 location
+                <div className="sm:col-span-2 flex justify-end"> {/* Đảm bảo nút remove chiếm hết chiều rộng nếu cần */}
+                  <button
+                    type="button"
+                    onClick={() => removeLocation(index)}
+                    className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
+                  >
+                    {/* Sử dụng key dịch cho nút Remove */}
+                    {t('modal.editForm.removeButton')}
+                  </button>
+                </div>
               )}
             </div>
           ))}
+          {/* Lưu ý: Errors cho locations sẽ hiển thị chung, Zod errors cụ thể cho từng trường con cần xử lý riêng nếu muốn chi tiết hơn */}
           {errors.locations && <p className="text-red-500 text-sm mt-1">{errors.locations.message}</p>}
         </div>
 
         {/* Topics Group - Always Editable */}
         <div className="border rounded-lg p-4">
+          {/* Sử dụng key dịch cho tiêu đề nhóm */}
           <h2 className="text-lg font-semibold mb-4">{t('modal.editForm.topics')}</h2>
           <TopicsTable
             topics={topics}
             onTopicsChange={handleTopicsChange}
+            // Props khác cho TopicsTable có thể cần dịch (ví dụ: placeholder input, nút add)
+            // tFunction={t} // Truyền hàm t vào TopicsTable nếu nó cần dịch nội bộ
+            // translateKeys={{ addTopic: t('modal.editForm.addTopicButton'), topicPlaceholder: t('modal.editForm.topicPlaceholder'), ... }}
           />
           {errors.topics && <p className="text-red-500 text-sm mt-1">{errors.topics.message}</p>}
         </div>
 
         {/* Dates Group - Always Editable */}
         <div className="border rounded-lg p-4">
+          {/* Sử dụng key dịch cho tiêu đề nhóm */}
           <h2 className="text-lg font-semibold mb-4">{t('modal.editForm.dates')}</h2>
-          <DatesTable
+           <DatesTable
             dates={dates}
             onDatesChange={handleDatesChange}
+             // Props khác cho DatesTable có thể cần dịch (ví dụ: tiêu đề cột, nút add, placeholders)
+            // tFunction={t} // Truyền hàm t vào DatesTable nếu nó cần dịch nội bộ
+            // translateKeys={{ addDate: t('modal.editForm.addDateButton'), startDateLabel: t('modal.editForm.startDateLabel'), ... }}
           />
           {errors.dates && <p className="text-red-500 text-sm mt-1">{errors.dates.message}</p>}
         </div>
 
         <div className="flex justify-end gap-4 mt-6">
+           {/* Sử dụng key dịch cho nút Cancel cuối form */}
           <button
             type="button"
-            onClick={() => router.push('/dashboard/conferences')}
+            onClick={() => router.push('/dashboard/conferences')} // Đường dẫn nên dựa vào locale hiện tại
             className="px-4 py-2 border rounded-md hover:bg-gray-100"
           >
             {t('modal.editForm.cancel')}
           </button>
+           {/* Sử dụng key dịch cho nút Save */}
           <button
             type="submit"
             disabled={isSubmitting}
             className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 disabled:opacity-50"
           >
+            {/* Sử dụng key dịch cho trạng thái nút Save */}
             {isSubmitting ? t('modal.editForm.saving') : t('modal.editForm.save')}
           </button>
         </div>
       </form>
     </div>
   );
-} 
+}
