@@ -7,7 +7,7 @@ import {
   BarChartData,
   PieChartItem // << IMPORT PieChartItem
 } from '../utils/chartUtils';
-import { GoogleSearchHealthData } from '@/src/models/logAnalysis/logAnalysis';
+import { GoogleSearchHealthData } from '@/src/models/logAnalysis';
 import { FaGoogle, FaBrain, FaShieldAlt, FaBroom } from 'react-icons/fa'; // Thêm icon
 
 interface ChartsSectionProps {

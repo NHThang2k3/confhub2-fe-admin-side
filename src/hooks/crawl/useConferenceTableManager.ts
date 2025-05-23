@@ -4,7 +4,7 @@ import {
   ConferenceAnalysisDetail,
   LogAnalysisResult,
   DataQualityInsight
-} from '@/src/models/logAnalysis/logAnalysis';
+} from '@/src/models/logAnalysis';
 import { saveConferenceToJson } from '../../app/api/logAnalysis/saveConferences';
 import { useConferenceCrawl, ApiModels } from './useConferenceCrawl';
 import { SendToCrawlConference } from '@/src/models/logAnalysis/importConferenceCrawl';

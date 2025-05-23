@@ -2,7 +2,7 @@ import React from 'react';
 import { FaArrowLeft, FaFileAlt, FaInfoCircle } from 'react-icons/fa';
 // import { CrawlerType } from './Analysis';
 import NoDataDisplay from './NoDataDisplay';
-import { LogAnalysisResult } from '@/src/models/logAnalysis/logAnalysis';
+import { LogAnalysisResult } from '@/src/models/logAnalysis';
 
 interface RequestDetailViewProps {
     data: LogAnalysisResult;

@@ -4,7 +4,7 @@ import { FaChevronDown, FaChevronUp, FaTimesCircle, FaCheckCircle, FaExclamation
 import { ConferenceTableData, RowSaveStatus } from '../../../../../hooks/crawl/useConferenceTableManager';
 import { StatusIcon } from '../StatusIcon';
 import { formatDuration } from '../utils/commonUtils';
-import { DataQualityInsight } from '@/src/models/logAnalysis/logAnalysis';
+import { DataQualityInsight } from '@/src/models/logAnalysis';
 
 interface ConferenceTableRowProps {
   confData: ConferenceTableData;

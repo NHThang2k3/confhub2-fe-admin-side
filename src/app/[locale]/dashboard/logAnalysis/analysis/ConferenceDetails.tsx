@@ -1,7 +1,7 @@
 // src/app/[locale]/dashboard/logAnalysis/analysis/ConferenceDetails.tsx
 import React, { useState } from 'react';
 import { FaChevronUp, FaChevronDown } from 'react-icons/fa';
-import { LogAnalysisResult } from '@/src/models/logAnalysis/logAnalysis';
+import { LogAnalysisResult } from '@/src/models/logAnalysis';
 import { useConferenceTableManager } from '@/src/hooks/crawl/useConferenceTableManager';
 import { ConferenceTableControls } from '../conferenceTable/ConferenceTableControls';
 import { ConferenceTable } from '../conferenceTable/ConferenceTable';

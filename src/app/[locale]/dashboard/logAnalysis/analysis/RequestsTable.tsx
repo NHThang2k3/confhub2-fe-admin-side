@@ -1,6 +1,6 @@
 import React from 'react';
 import { FaExternalLinkAlt } from 'react-icons/fa';
-import { RequestTimings } from '@/src/models/logAnalysis/logAnalysis';
+import { RequestTimings } from '@/src/models/logAnalysis';
 import { FaLink } from 'react-icons/fa';
 
 interface RequestsTableProps {

@@ -2,7 +2,7 @@ import React from 'react';
 import { FaListAlt, FaChevronUp, FaChevronDown, FaInfoCircle } from 'react-icons/fa';
 import RequestsTable from './RequestsTable'; // Import the new table component
 import NoDataDisplay from './NoDataDisplay';
-import { LogAnalysisResult, RequestTimings } from '@/src/models/logAnalysis/logAnalysis';
+import { LogAnalysisResult, RequestTimings } from '@/src/models/logAnalysis';
 interface LogRequestsListProps {
     isExpanded: boolean;
     onToggle: () => void;

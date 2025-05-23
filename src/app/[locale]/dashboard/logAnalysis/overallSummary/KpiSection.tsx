@@ -2,19 +2,20 @@
 import React from 'react';
 import {
   FaExclamationTriangle, FaClipboardCheck, FaKey, FaSyncAlt, FaBan,
-  FaSearch, FaGoogle, FaBrain, FaCodeBranch, FaArchive, FaTools, FaCogs, FaBroom // << THÊM FaBroom
+  FaSearch, FaGoogle, FaBrain, FaCodeBranch, FaArchive, FaTools, FaCogs, FaBroom,
+  FaShieldAlt, FaTasks, FaHourglassHalf, FaRocket, FaWrench, FaServer, FaMemory, FaBolt, FaFileAlt
 } from 'react-icons/fa';
 import KpiCard from './KpiCard';
 import {
   LogAnalysisResult,
   GoogleSearchHealthData,
   GeminiApiAnalysis,
-  ValidationStats // << IMPORT ValidationStats
-} from '@/src/models/logAnalysis/logAnalysis';
+  ValidationStats
+} from '@/src/models/logAnalysis';
 import { formatDuration } from '../utils/commonUtils';
 
 const KpiIcon: React.FC<{ bgColor: string; textColor: string; children: React.ReactNode }> = ({ bgColor, textColor, children }) => (
-  <div className={`rounded-full p-2.5 ${bgColor} ${textColor}`}> {/* Giảm padding một chút cho icon nhỏ hơn */}
+  <div className={`rounded-full p-2.5 ${bgColor} ${textColor}`}>
     {children}
   </div>
 );
@@ -23,83 +24,89 @@ interface KpiSectionProps {
   data: LogAnalysisResult;
   googleSearchHealthData: GoogleSearchHealthData | null;
   geminiApiData: GeminiApiAnalysis | undefined;
-  totalGeminiCallsWithRetries: number;
-  validationStats?: ValidationStats; // << THÊM validationStats, có thể là undefined ban đầu
+  validationStats?: ValidationStats;
 }
 
 const KpiSection: React.FC<KpiSectionProps> = ({
   data,
   googleSearchHealthData,
   geminiApiData,
-  totalGeminiCallsWithRetries,
-  validationStats // << Thêm vào props
+  validationStats
 }) => {
   const overall = data.overall;
   const fileOutput = data.fileOutput;
   const gSearchHealth = googleSearchHealthData;
   const gSearchStats = data.googleSearch;
 
+  const actualTotalGeminiCallsWithRetries = geminiApiData
+    ? (geminiApiData.totalCalls || 0) + (geminiApiData.totalRetries || 0)
+    : 0;
+
   const geminiInit = geminiApiData?.serviceInitialization;
-  const geminiFallback = geminiApiData?.fallbackLogic;
-  const geminiConfig = geminiApiData?.configErrors;
+  const geminiPrimary = geminiApiData?.primaryModelStats;
+  const geminiFallback = geminiApiData?.fallbackModelStats;
+  const geminiCache = geminiApiData;
 
   const geminiInitFailures = geminiInit?.failures || 0;
-  const geminiFallbackPrimaryFails = geminiFallback?.primaryModelFailuresLeadingToFallback || 0;
 
   const totalTasks = overall?.processedConferencesCount || 0;
   const failedTasks = overall?.failedOrCrashedTasks || 0;
-
-  let failedTasksDisplay = `${failedTasks}`; // Mặc định chỉ hiển thị số lượng
+  let failedTasksDisplay = `${failedTasks}`;
   if (totalTasks > 0) {
     const failedTasksPercentage = (failedTasks / totalTasks) * 100;
-    failedTasksDisplay = `${failedTasks} (${failedTasksPercentage.toFixed(2)}%)`;
-  } else if (failedTasks > 0) { // Nếu có failed tasks nhưng không có total tasks (trường hợp hiếm)
+    failedTasksDisplay = `${failedTasks} (${failedTasksPercentage.toFixed(1)}%)`;
+  } else if (failedTasks > 0) {
     failedTasksDisplay = `${failedTasks}`;
   }
-  // --- KẾT THÚC PHẦN THÊM VÀO ---
+
+  // --- SỬA LỖI Ở ĐÂY ---
+  const primaryFailures = geminiPrimary?.failures || 0;
+  const primarySuccesses = geminiPrimary?.successes || 0;
+  const primaryAttempts = geminiPrimary?.attempts || 0;
+
+  const fallbackFailures = geminiFallback?.failures || 0;
+  const fallbackSuccesses = geminiFallback?.successes || 0;
+  const fallbackAttempts = geminiFallback?.attempts || 0;
+
+  const totalConfigSetupErrors = geminiApiData ?
+    (geminiApiData.configErrors?.modelListMissing || 0) +
+    (geminiApiData.configErrors?.apiTypeConfigMissing || 0) +
+    (geminiApiData.apiCallSetupFailures || 0) +
+    (geminiPrimary?.preparationFailures || 0) + // Sử dụng biến đã kiểm tra undefined
+    (geminiFallback?.preparationFailures || 0)  // Sử dụng biến đã kiểm tra undefined
+    : 0;
+
+  const totalResponseProcessingIssues = geminiApiData?.responseProcessingStats ?
+    (geminiApiData.responseProcessingStats.jsonValidationFailedInternal || 0) +
+    (geminiApiData.responseProcessingStats.emptyAfterProcessingInternal || 0)
+    : 0;
+  // --- KẾT THÚC SỬA LỖI ---
 
   return (
     <div className="space-y-6">
       {/* --- General KPIs --- */}
-      <div className='grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'> {/* Điều chỉnh grid cho phù hợp */}
+      <div className='grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'>
         <KpiCard
-          icon={
-            <KpiIcon bgColor="bg-blue-100" textColor="text-blue-600">
-              <svg xmlns='http://www.w3.org/2000/svg' className='h-5 w-5' fill='none' viewBox='0 0 24 24' stroke='currentColor'><path strokeLinecap='round' strokeLinejoin='round' strokeWidth='2' d='M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z' /></svg>
-            </KpiIcon>
-          }
+          icon={<KpiIcon bgColor="bg-blue-100" textColor="text-blue-600"><FaHourglassHalf className='h-5 w-5' /></KpiIcon>}
           label="Total Duration"
           value={formatDuration(overall?.durationSeconds)}
         />
         <KpiCard
-          icon={
-            <KpiIcon bgColor="bg-green-100" textColor="text-green-600">
-              <svg xmlns='http://www.w3.org/2000/svg' className='h-5 w-5' fill='none' viewBox='0 0 24 24' stroke='currentColor'><path strokeLinecap='round' strokeLinejoin='round' strokeWidth='2' d='M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z' /></svg>
-            </KpiIcon>
-          }
+          icon={<KpiIcon bgColor="bg-green-100" textColor="text-green-600"><FaTasks className='h-5 w-5' /></KpiIcon>}
           label={data.filterRequestId ? 'Tasks in Request' : 'Conferences Processed'}
           value={overall?.processedConferencesCount ?? 0}
           valueDenominator={data.filterRequestId ? undefined : (overall?.totalConferencesInput ?? undefined)}
         />
         <KpiCard
-          icon={
-            <KpiIcon bgColor="bg-red-100" textColor="text-red-600">
-              <FaExclamationTriangle className='h-5 w-5' />
-            </KpiIcon>
-          }
+          icon={<KpiIcon bgColor="bg-red-100" textColor="text-red-600"><FaExclamationTriangle className='h-5 w-5' /></KpiIcon>}
           label="Failed Tasks"
-          value={failedTasksDisplay} // Sử dụng chuỗi đã được định dạng
+          value={failedTasksDisplay}
           valueColor={(overall?.failedOrCrashedTasks || 0) > 0 ? "text-red-600" : undefined}
-        // Bỏ subText và subTextColor ở đây
         />
         <KpiCard
-          icon={
-            <KpiIcon bgColor="bg-purple-100" textColor="text-purple-600">
-              <FaBrain className='h-5 w-5' />
-            </KpiIcon>
-          }
-          label="Gemini Calls (Total)"
-          value={totalGeminiCallsWithRetries}
+          icon={<KpiIcon bgColor="bg-purple-100" textColor="text-purple-600"><FaRocket className='h-5 w-5' /></KpiIcon>}
+          label="Gemini Ops (Calls+Retries)"
+          value={actualTotalGeminiCallsWithRetries}
         />
       </div>
 
@@ -107,22 +114,30 @@ const KpiSection: React.FC<KpiSectionProps> = ({
       {geminiApiData && (
         <div className="pt-4 border-t border-gray-200">
           <h3 className="text-md font-semibold mb-3 text-gray-700 flex items-center">
-            <FaBrain className="mr-2 text-purple-500" /> Gemini API Health
+            <FaBrain className="mr-2 text-purple-500" /> Gemini API Health & Performance
           </h3>
-          <div className='grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'>
+          <div className='grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5'>
             <KpiCard
-              icon={<KpiIcon bgColor="bg-indigo-100" textColor="text-indigo-600"><FaCogs className='h-5 w-5' /></KpiIcon>}
+              icon={<KpiIcon bgColor="bg-indigo-100" textColor="text-indigo-600"><FaServer className='h-5 w-5' /></KpiIcon>}
               label="Service Inits"
               value={geminiInit?.completes || 0}
               valueDenominator={geminiInit?.starts || 0}
               subText={geminiInitFailures > 0 ? `${geminiInitFailures} Failed` : undefined}
               subTextColor={geminiInitFailures > 0 ? "text-xs text-red-500" : undefined}
             />
+             <KpiCard
+              icon={<KpiIcon bgColor="bg-sky-100" textColor="text-sky-600"><FaTools className='h-5 w-5' /></KpiIcon>}
+              label="Primary Calls"
+              value={primaryAttempts}
+              subText={`${primarySuccesses}S / ${primaryFailures}F`}
+              subTextColor={primaryFailures > 0 ? "text-xs text-red-500" : "text-xs text-green-500"}
+            />
             <KpiCard
               icon={<KpiIcon bgColor="bg-cyan-100" textColor="text-cyan-600"><FaCodeBranch className='h-5 w-5' /></KpiIcon>}
-              label="Fallback Calls Made"
-              value={geminiFallback?.attemptsWithFallbackModel || 0}
-              subText={geminiFallbackPrimaryFails > 0 ? `${geminiFallbackPrimaryFails} Primary Fails` : undefined}
+              label="Fallback Calls"
+              value={fallbackAttempts}
+              subText={`${fallbackSuccesses}S / ${fallbackFailures}F`}
+              subTextColor={fallbackFailures > 0 ? "text-xs text-red-500" : "text-xs text-green-500"}
             />
             <KpiCard
               icon={<KpiIcon bgColor="bg-pink-100" textColor="text-pink-600"><FaBan className='h-5 w-5' /></KpiIcon>}
@@ -133,12 +148,36 @@ const KpiSection: React.FC<KpiSectionProps> = ({
             <KpiCard
               icon={<KpiIcon bgColor="bg-lime-100" textColor="text-lime-600"><FaArchive className='h-5 w-5' /></KpiIcon>}
               label="Total Tokens Used"
-              value={geminiApiData.totalTokens !== undefined ? (geminiApiData.totalTokens / 1000).toFixed(1) + 'k' : '0k'}
+              value={geminiApiData.totalTokens > 0 ? (geminiApiData.totalTokens / 1000).toFixed(1) + 'k' : '0k'}
+            />
+            <KpiCard
+              icon={<KpiIcon bgColor="bg-yellow-100" textColor="text-yellow-600"><FaMemory className='h-5 w-5' /></KpiIcon>}
+              label="Cache Hits"
+              value={geminiCache?.cacheContextHits || 0}
+              valueDenominator={geminiCache?.cacheDecisionStats?.cacheUsageAttempts || 0}
+              subText="Attempted to Use Cache"
+            />
+             <KpiCard
+              icon={<KpiIcon bgColor="bg-orange-100" textColor="text-orange-600"><FaWrench className='h-5 w-5' /></KpiIcon>}
+              label="Config/Setup Errors"
+              value={totalConfigSetupErrors}
+              valueColor={totalConfigSetupErrors > 0 ? "text-orange-600" : undefined}
+            />
+             <KpiCard
+              icon={<KpiIcon bgColor="bg-red-100" textColor="text-red-600"><FaBolt className='h-5 w-5' /></KpiIcon>}
+              label="Intermediate Errors"
+              value={geminiApiData.intermediateErrors || 0}
+              valueColor={(geminiApiData.intermediateErrors || 0) > 0 ? "text-red-500" : undefined}
+            />
+             <KpiCard
+              icon={<KpiIcon bgColor="bg-gray-100" textColor="text-gray-600"><FaFileAlt className='h-5 w-5' /></KpiIcon>}
+              label="Response Proc. Issues"
+              value={totalResponseProcessingIssues}
+              valueColor={totalResponseProcessingIssues > 0 ? "text-yellow-700" : undefined}
             />
           </div>
         </div>
       )}
-
 
       {/* --- Google Search KPIs --- */}
       {(gSearchStats || gSearchHealth) && (
@@ -146,7 +185,7 @@ const KpiSection: React.FC<KpiSectionProps> = ({
           <h3 className="text-md font-semibold mb-3 text-gray-700 flex items-center">
             <FaGoogle className="mr-2 text-blue-500" /> Google Search Metrics
           </h3>
-          <div className='grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'> {/* Điều chỉnh grid */}
+          <div className='grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'>
             <KpiCard
               icon={<KpiIcon bgColor="bg-teal-100" textColor="text-teal-600"><FaSearch className='h-5 w-5' /></KpiIcon>}
               label="GS Total Requests"
@@ -154,13 +193,13 @@ const KpiSection: React.FC<KpiSectionProps> = ({
             />
             <KpiCard
               icon={<KpiIcon
-                bgColor={(gSearchStats?.quotaErrorsEncountered || 0) > 0 ? "bg-red-100" : "bg-gray-100"}
-                textColor={(gSearchStats?.quotaErrorsEncountered || 0) > 0 ? "text-red-600" : "text-gray-500"}>
+                bgColor={(gSearchStats?.quotaErrors || 0) > 0 ? "bg-red-100" : "bg-gray-100"}
+                textColor={(gSearchStats?.quotaErrors || 0) > 0 ? "text-red-600" : "text-gray-500"}>
                 <FaBan className='h-5 w-5' />
               </KpiIcon>}
               label="GS Quota Errors"
-              value={gSearchStats?.quotaErrorsEncountered || 0}
-              valueColor={(gSearchStats?.quotaErrorsEncountered || 0) > 0 ? "text-red-600" : undefined}
+              value={gSearchStats?.quotaErrors || 0}
+              valueColor={(gSearchStats?.quotaErrors || 0) > 0 ? "text-red-600" : undefined}
             />
             {gSearchHealth && (
               <>
@@ -196,7 +235,7 @@ const KpiSection: React.FC<KpiSectionProps> = ({
       {/* --- Output & Validation KPIs --- */}
       <div className="pt-4 border-t border-gray-200">
         <h3 className="text-md font-semibold mb-3 text-gray-700">Output & Data Quality</h3>
-        <div className='grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'> {/* Điều chỉnh grid */}
+        <div className='grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'>
           <KpiCard
             icon={<KpiIcon
               bgColor={fileOutput?.csvFileGenerated === true ? 'bg-emerald-100' : fileOutput?.csvFileGenerated === false ? 'bg-red-100' : 'bg-gray-100'}
@@ -205,7 +244,7 @@ const KpiSection: React.FC<KpiSectionProps> = ({
             </KpiIcon>}
             label="CSV Records Written"
             value={fileOutput?.csvRecordsSuccessfullyWritten ?? 0}
-            valueDenominator={fileOutput?.csvRecordsAttempted ?? undefined} // Chỉ hiển thị nếu > 0
+            valueDenominator={fileOutput?.csvRecordsAttempted ?? undefined}
             subText={fileOutput?.csvPipelineFailures ?? 0 > 0 ? `${fileOutput?.csvPipelineFailures} Pipeline Fails` : undefined}
             subTextColor={fileOutput?.csvPipelineFailures ?? 0 > 0 ? "text-xs text-red-500 mt-0.5" : undefined}
           />

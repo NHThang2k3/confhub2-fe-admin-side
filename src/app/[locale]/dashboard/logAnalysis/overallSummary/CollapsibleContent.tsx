@@ -3,34 +3,39 @@ import React, { useState } from 'react';
 import KpiSection from './KpiSection';
 import LogProcessingErrorsDisplay from './LogProcessingErrorsDisplay';
 import { BarChartData, PieChartItem } from '../utils/chartUtils';
-import { LogAnalysisResult, GoogleSearchHealthData } from '@/src/models/logAnalysis/logAnalysis';
+import { LogAnalysisResult, GoogleSearchHealthData } from '@/src/models/logAnalysis';
 
 import GeneralCharts from './chartTabs/GeneralCharts';
 import ValidationQualityCharts from './chartTabs/ValidationQualityCharts';
-import GeminiApiCharts from './chartTabs/GeminiApiCharts';
+import GeminiApiCharts from './chartTabs/GeminiApiCharts'; // Sẽ được cập nhật
 import GoogleSearchCharts from './chartTabs/GoogleSearchCharts';
 
-import { FaGoogle, FaBrain, FaShieldAlt, FaChartLine, FaListAlt, FaChevronUp, FaChevronDown } from 'react-icons/fa'; // Thêm FaChevronUp, FaChevronDown
+import { FaGoogle, FaBrain, FaShieldAlt, FaChartLine, FaListAlt, FaChevronUp, FaChevronDown } from 'react-icons/fa';
 
 interface CollapsibleContentProps {
-  isExpanded: boolean; // This is for the main OverallSummary expand/collapse
+  isExpanded: boolean;
   data: LogAnalysisResult;
-  // ... (other props remain the same)
+  // General
   overallStatusData: PieChartItem[];
   playwrightLinkData: PieChartItem[];
   topErrorsData: BarChartData;
+  // Google Search
   searchStatusData: PieChartItem[];
   apiKeyUsageData: BarChartData;
   googleSearchHealthData: GoogleSearchHealthData | null;
   googleSearchErrorsData: BarChartData;
   googleSearchAttemptIssuesData: BarChartData;
+  // Gemini API - Thêm props mới
   geminiApiStatusData: PieChartItem[];
   totalGeminiCallsWithRetries: number;
   geminiModelUsageDetailedData: BarChartData;
+  geminiOrchestrationData: PieChartItem[]; // Mới
   geminiFallbackSuccessRateData: PieChartItem[];
   geminiConfigErrorsData: BarChartData;
   geminiCacheDetailedData: PieChartItem[];
+  geminiResponseProcessingData: BarChartData; // Mới
   topGeminiErrorsData: BarChartData;
+  // Validation & Normalization
   warningsByFieldData: BarChartData;
   warningsBySeverityData: PieChartItem[];
   topWarningMessagesData: BarChartData;
@@ -58,7 +63,14 @@ const chartTabs: { key: ChartTabKey; label: string; icon: React.ReactNode, dataE
     key: 'gemini',
     label: 'Gemini API',
     icon: <FaBrain className="mr-2" />,
-    dataExists: (props) => props.geminiApiStatusData.length > 0 || props.geminiModelUsageDetailedData.labels.length > 0 || props.topGeminiErrorsData.labels.length > 0 || props.geminiCacheDetailedData.length > 0 || props.geminiFallbackSuccessRateData.length > 0 || props.geminiConfigErrorsData.labels.length > 0,
+    dataExists: (props) => // Cập nhật điều kiện dataExists
+      props.geminiApiStatusData.length > 0 ||
+      props.geminiModelUsageDetailedData.labels.length > 0 ||
+      props.geminiOrchestrationData.length > 0 ||
+      props.geminiConfigErrorsData.labels.length > 0 ||
+      props.geminiCacheDetailedData.length > 0 ||
+      props.geminiResponseProcessingData.labels.length > 0 ||
+      props.topGeminiErrorsData.labels.length > 0,
   },
   {
     key: 'googleSearch',
@@ -75,16 +87,22 @@ const CollapsibleContent: React.FC<CollapsibleContentProps> = (props) => {
     data,
     overallStatusData, playwrightLinkData, topErrorsData,
     searchStatusData, apiKeyUsageData, googleSearchHealthData, googleSearchErrorsData, googleSearchAttemptIssuesData,
-    geminiApiStatusData, totalGeminiCallsWithRetries, geminiModelUsageDetailedData, geminiFallbackSuccessRateData, geminiConfigErrorsData, geminiCacheDetailedData, topGeminiErrorsData,
+    geminiApiStatusData,
+    totalGeminiCallsWithRetries,
+    geminiModelUsageDetailedData,
+    geminiOrchestrationData, // Mới
+    geminiFallbackSuccessRateData,
+    geminiConfigErrorsData,
+    geminiCacheDetailedData,
+    geminiResponseProcessingData, // Mới
+    topGeminiErrorsData,
+
     warningsByFieldData, warningsBySeverityData, topWarningMessagesData, normalizationsByFieldData, normalizationsByReasonData,
   } = props;
 
   const availableTabs = chartTabs.filter(tab => tab.dataExists(props));
   const [activeTab, setActiveTab] = useState<ChartTabKey>(availableTabs.length > 0 ? availableTabs[0].key : 'general');
-
-  // State for Detailed Statistics expand/collapse
-  const [isDetailedStatisticsExpanded, setIsDetailedStatisticsExpanded] = useState(false); // Default to expanded
-
+  const [isDetailedStatisticsExpanded, setIsDetailedStatisticsExpanded] = useState(false); // Mặc định đóng
   const toggleDetailedStatistics = () => {
     setIsDetailedStatisticsExpanded(prev => !prev);
   };
@@ -95,16 +113,15 @@ const CollapsibleContent: React.FC<CollapsibleContentProps> = (props) => {
   return (
     <div
       id='overall-summary-content-area'
-      className={`overflow-hidden transition-all duration-500 ease-in-out ${
-        isExpanded ? 'max-h-[15000px] opacity-100 visible' : 'max-h-0 opacity-0 invisible' // No padding here, applied below
-      }`}
+      className={`overflow-hidden transition-all duration-500 ease-in-out ${isExpanded ? 'max-h-[15000px] opacity-100 visible' : 'max-h-0 opacity-0 invisible' // No padding here, applied below
+        }`}
     >
       {/* Apply padding to an inner div so it collapses correctly */}
       <div className={`${isExpanded ? 'p-4' : 'p-0'}`}>
         <KpiSection
           data={data}
           googleSearchHealthData={googleSearchHealthData}
-          geminiApiData={data.geminiApi}
+          geminiApiData={data.geminiApi} // Truyền toàn bộ geminiApiData
           totalGeminiCallsWithRetries={totalGeminiCallsWithRetries}
           validationStats={data.validationStats}
         />
@@ -138,11 +155,10 @@ const CollapsibleContent: React.FC<CollapsibleContentProps> = (props) => {
             {/* Collapsible content for Detailed Statistics */}
             <div
               id="detailed-statistics-content"
-              className={`overflow-hidden transition-all duration-300 ease-in-out ${
-                isDetailedStatisticsExpanded
+              className={`overflow-hidden transition-all duration-300 ease-in-out ${isDetailedStatisticsExpanded
                   ? 'max-h-[10000px] opacity-100 visible pt-3' // Added pt-3 for spacing when expanded
                   : 'max-h-0 opacity-0 invisible pt-0'
-              }`}
+                }`}
             >
               {/* Tab Navigation */}
               <nav className="flex flex-wrap -mb-px border-b border-gray-200" aria-label="Tabs">
@@ -153,10 +169,9 @@ const CollapsibleContent: React.FC<CollapsibleContentProps> = (props) => {
                     className={`
                       flex items-center py-3 px-4 border-b-2 font-medium text-sm
                       hover:text-blue-600 hover:border-blue-300 focus:outline-none
-                      ${
-                        activeTab === tab.key
-                          ? 'border-blue-500 text-blue-600'
-                          : 'border-transparent text-gray-500 hover:text-gray-700'
+                      ${activeTab === tab.key
+                        ? 'border-blue-500 text-blue-600'
+                        : 'border-transparent text-gray-500 hover:text-gray-700'
                       }
                     `}
                     role="tab"
@@ -192,16 +207,16 @@ const CollapsibleContent: React.FC<CollapsibleContentProps> = (props) => {
                   </div>
                 )}
                 {activeTab === 'gemini' && (
-                  <div id="tab-panel-gemini" role="tabpanel" aria-labelledby="tab-gemini">
-                    <GeminiApiCharts
-                      geminiApiStatusData={geminiApiStatusData}
-                      geminiModelUsageDetailedData={geminiModelUsageDetailedData}
-                      geminiFallbackSuccessRateData={geminiFallbackSuccessRateData}
-                      geminiConfigErrorsData={geminiConfigErrorsData}
-                      geminiCacheDetailedData={geminiCacheDetailedData}
-                      topGeminiErrorsData={topGeminiErrorsData}
-                    />
-                  </div>
+                  <GeminiApiCharts
+                    geminiApiStatusData={geminiApiStatusData}
+                    geminiModelUsageDetailedData={geminiModelUsageDetailedData}
+                    geminiOrchestrationData={geminiOrchestrationData} // Mới
+                    geminiFallbackSuccessRateData={geminiFallbackSuccessRateData}
+                    geminiConfigErrorsData={geminiConfigErrorsData}
+                    geminiCacheDetailedData={geminiCacheDetailedData}
+                    geminiResponseProcessingData={geminiResponseProcessingData} // Mới
+                    topGeminiErrorsData={topGeminiErrorsData}
+                  />
                 )}
                 {activeTab === 'googleSearch' && (
                   <div id="tab-panel-googleSearch" role="tabpanel" aria-labelledby="tab-googleSearch">

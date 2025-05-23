@@ -2,32 +2,40 @@
 
 import React from 'react';
 import ReactECharts from 'echarts-for-react';
-import { EChartsOption } from 'echarts'; // Import EChartsOption type
+import { EChartsOption } from 'echarts';
 
 interface ChartCardProps {
-  option: EChartsOption; // Use the EChartsOption type
+  option: EChartsOption;
   dataExists: boolean;
   noDataMessage?: string;
-  className?: string; // For additional styling like col-span
+  className?: string;
+  chartHeight?: string; // << THÊM PROP MỚI
 }
 
 const ChartCard: React.FC<ChartCardProps> = ({
   option,
   dataExists,
   noDataMessage = "No Data Available",
-  className = ""
+  className = "",
+  chartHeight = '300px' // << GIÁ TRỊ MẶC ĐỊNH
 }) => {
   return (
-    <div className={`min-h-[340px] rounded-lg border border-gray-100 bg-white p-4 shadow-sm ${className}`}>
+    // Điều chỉnh min-h-[...] để phù hợp với chartHeight hoặc loại bỏ nếu chartHeight luôn được set
+    // Ở đây, chúng ta sẽ để chartHeight quyết định chiều cao chính, nhưng giữ min-h cho trường hợp noData
+    <div className={`rounded-lg border border-gray-100 bg-white p-4 shadow-sm ${className}`}>
       {dataExists ? (
         <ReactECharts
           option={option}
-          style={{ height: '300px', width: '100%' }}
+          style={{ height: chartHeight, width: '100%' }} // << SỬ DỤNG chartHeight
           notMerge
           lazyUpdate
         />
       ) : (
-        <div className='flex h-[300px] items-center justify-center text-gray-500'>
+        // Đảm bảo noDataMessage cũng có chiều cao tương ứng nếu cần
+        <div
+          className='flex items-center justify-center text-gray-500'
+          style={{ height: chartHeight }} // << ÁP DỤNG chartHeight CHO NO DATA
+        >
           {noDataMessage}
         </div>
       )}

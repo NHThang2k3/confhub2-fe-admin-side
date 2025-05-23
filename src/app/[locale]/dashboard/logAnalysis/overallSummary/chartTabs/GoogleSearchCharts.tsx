@@ -1,7 +1,7 @@
 import React from 'react';
 import ChartCard from '../ChartCard';
 import { getPieChartOption, getBarChartOption, BarChartData, PieChartItem } from '../../utils/chartUtils';
-import { GoogleSearchHealthData } from '@/src/models/logAnalysis/logAnalysis';
+import { GoogleSearchHealthData } from '@/src/models/logAnalysis';
 
 
 interface GoogleSearchChartsProps {

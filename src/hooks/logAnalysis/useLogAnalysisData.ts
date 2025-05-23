@@ -3,7 +3,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Socket } from 'socket.io-client';
-import { LogAnalysisResult } from '../../models/logAnalysis/logAnalysis'; // Adjust path if needed
+import { LogAnalysisResult } from '../../models/logAnalysis'; // Adjust path if needed
 import { useAuth } from '@/src/contexts/AuthContext'; // Adjust path if needed
 import { fetchLogAnalysisData as apiFetchLogAnalysisData } from '@/src/app/api/logAnalysis/logAnalysisApi'; // Adjust path
 import { getSocketInstance, disconnectSocket } from '@/src/utils/socket'; // Adjust path
