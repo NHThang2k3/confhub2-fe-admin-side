@@ -8,6 +8,8 @@ import {
 import { saveConferenceToJson } from '../../app/api/logAnalysis/saveConferences';
 import { ConferenceForAction } from '@/src/models/logAnalysis/importConferenceCrawl';
 import { useConferenceCrawl, ApiModels } from './useConferenceCrawl';
+import { persistConferenceSaveStatus, PersistSaveStatusPayload } from '../../app/api/logAnalysis/persistSaveStatus'; // Điều chỉnh path
+
 
 
 export type SortableColumn =
@@ -29,6 +31,9 @@ export interface ConferenceTableData extends Omit<ConferenceAnalysisDetail, 'dat
   crawlType: 'crawl' | 'update'; // <--- LẤY TỪ ConferenceAnalysisDetail
   steps: ConferenceAnalysisDetail['steps']; // Giữ lại steps để hiển thị
   errors: ConferenceAnalysisDetail['errors']; // Giữ lại errors để hiển thị
+
+  persistedSaveStatus?: 'SAVED_TO_DATABASE' | string; // Thêm từ ConferenceAnalysisDetail
+  persistedSaveTimestamp?: string; // Thêm từ ConferenceAnalysisDetail
 
   uniqueRowId: string;
   title: string;
@@ -100,7 +105,7 @@ export const useConferenceTableManager = ({
 
 
       return {
-        ...data, // Bao gồm cả crawlType từ data (ConferenceAnalysisDetail)
+        ...data, // Bao gồm persistedSaveStatus, persistedSaveTimestamp từ ConferenceAnalysisDetail
         uniqueRowId,
         title: data.title || confKey.split(' - ')[1] || confKey,
         acronym: data.acronym || confKey.split(' - ')[0] || '',
@@ -127,6 +132,7 @@ export const useConferenceTableManager = ({
   }, [logAnalysisResult]);
 
 
+  
   const filteredData = useMemo(() => {
     if (!searchQuery.trim()) {
       return conferenceDataArray;
@@ -257,12 +263,18 @@ export const useConferenceTableManager = ({
   }, [selectedRowIds, selectedRows, conferenceDataArray]);
 
   const isSaveEnabled = useMemo(() => {
-    return (
-      selectedRowIds.length > 0 &&
-      !isSelectedWithProblem &&
-      mainSaveStatus !== 'saving'
-    );
-  }, [selectedRowIds.length, isSelectedWithProblem, mainSaveStatus]);
+    if (selectedRowIds.length === 0 || mainSaveStatus === 'saving') {
+        return false;
+    }
+    // Kiểm tra xem có item nào được chọn đã được lưu bền vững chưa
+    const selectedConfs = conferenceDataArray.filter(conf => selectedRows[conf.uniqueRowId]);
+    const anySelectedAlreadyPersisted = selectedConfs.some(conf => conf.persistedSaveStatus === 'SAVED_TO_DATABASE');
+    
+    // Chỉ enable nếu không có lỗi/warning VÀ chưa có item nào được chọn đã được lưu bền vững
+    // HOẶC bạn có thể cho phép lưu lại, tùy theo logic nghiệp vụ
+    return !isSelectedWithProblem && !anySelectedAlreadyPersisted; 
+
+}, [selectedRowIds.length, isSelectedWithProblem, mainSaveStatus, selectedRows, conferenceDataArray]);
 
   useEffect(() => {
     if (mainSaveStatus === 'error' || mainSaveStatus === 'success') {
@@ -286,48 +298,83 @@ export const useConferenceTableManager = ({
       conf => selectedRows[conf.uniqueRowId]
     );
 
-    const savePromises = itemsToSave.map(conf =>
-      saveConferenceToJson(
-        conf.acronym,
-        conf.title,
-        conf.finalResultPreview || conf.finalResult
+    // Mảng để lưu trữ các promise gọi API persist status
+    const persistStatusPromises: Promise<any>[] = [];
+
+    const results = await Promise.allSettled(
+      itemsToSave.map(conf =>
+        saveConferenceToJson(
+          conf.acronym,
+          conf.title,
+          conf.finalResultPreview || conf.finalResult
+        ).then(dbSaveResult => ({ // Trả về cả conf và kết quả để dùng sau
+          conf,
+          dbSaveResult
+        }))
       )
     );
 
-    const results = await Promise.allSettled(savePromises);
     const finalRowStatusUpdate: Record<string, RowSaveStatus> = {};
     const finalRowErrorsUpdate: Record<string, string> = {};
     let overallSuccess = true;
 
-    results.forEach((settledResult, index) => {
-      const item = itemsToSave[index];
-      const rowId = item.uniqueRowId;
-
+    results.forEach(settledResult => {
       if (settledResult.status === 'fulfilled') {
-        const apiResult = settledResult.value;
-        if (apiResult.success) {
+        const { conf, dbSaveResult } = settledResult.value; // Lấy conf và dbSaveResult
+        const rowId = conf.uniqueRowId;
+
+        if (dbSaveResult.success) {
           finalRowStatusUpdate[rowId] = 'success';
+
+          // GỌI API ĐỂ LƯU STATUS BỀN VỮNG
+          const persistPayload: PersistSaveStatusPayload = {
+            batchRequestId: conf.requestId, // Đảm bảo requestId là batchRequestId
+            acronym: conf.acronym,
+            title: conf.title,
+            status: 'SAVED_TO_DATABASE',
+            clientTimestamp: new Date().toISOString(),
+          };
+          // Không await ở đây để không block vòng lặp, nhưng thu thập promise
+          const persistPromise = persistConferenceSaveStatus(persistPayload)
+            .then(persistResult => {
+              if (!persistResult.success) {
+                console.warn(`Failed to persist save status for ${conf.acronym}: ${persistResult.message}`);
+                // Quyết định: có nên đánh dấu lỗi ở đây không?
+                // Hiện tại, chỉ log warning, vì việc lưu vào DB đã thành công.
+              } else {
+                console.log(`Successfully persisted save status for ${conf.acronym}`);
+              }
+            });
+          persistStatusPromises.push(persistPromise);
+
         } else {
           overallSuccess = false;
           finalRowStatusUpdate[rowId] = 'error';
-          finalRowErrorsUpdate[rowId] =
-            apiResult.message || 'Save failed (unknown reason).';
+          finalRowErrorsUpdate[rowId] = dbSaveResult.message || 'Save failed (unknown reason).';
         }
-      } else {
+      } else { // Promise rejected (từ saveConferenceToJson, dù hàm này được thiết kế để luôn resolve)
         overallSuccess = false;
-        finalRowStatusUpdate[rowId] = 'error';
-        finalRowErrorsUpdate[rowId] =
-          (settledResult.reason as Error)?.message ||
-          'Promise rejected unexpectedly.';
+        // Cần xác định item nào gây lỗi nếu cấu trúc settledResult không cung cấp trực tiếp
+        // Giả sử lỗi này không nên xảy ra nếu saveConferenceToJson luôn resolve
+        console.error("Unexpected rejection in saveConferenceToJson promise:", settledResult.reason);
+        // Cần một cách để map settledResult.reason về item cụ thể nếu cần
       }
     });
 
     setRowSaveStatus(prev => ({ ...prev, ...finalRowStatusUpdate }));
     setRowSaveErrors(prev => ({ ...prev, ...finalRowErrorsUpdate }));
     setMainSaveStatus(overallSuccess ? 'success' : 'error');
+
     if (overallSuccess) {
       handleDeselectAll();
     }
+
+    // Đợi tất cả các lệnh persist status hoàn thành (không bắt buộc phải block UI)
+    Promise.all(persistStatusPromises).then(() => {
+      console.log("All persist save status calls have completed.");
+    }).catch(err => {
+      console.error("Error during persisting save statuses:", err);
+    });
   };
 
 

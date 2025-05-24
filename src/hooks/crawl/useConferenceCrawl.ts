@@ -9,7 +9,9 @@ import {
     ConferenceForAction,
     ConferenceApiPayloadItem
 } from '../../models/logAnalysis/importConferenceCrawl'; // Adjust path as needed
+import { IRowNode } from 'ag-grid-community'; // Explicitly import IRowNode if needed for clarity
 import { appConfig } from '@/src/middleware'; // Adjust path as needed
+import { AgGridReact } from 'ag-grid-react';
 import { SelectionChangedEvent } from 'ag-grid-community';
 
 const API_CONFERENCE_ENDPOINT = `${appConfig.NEXT_PUBLIC_BACKEND_URL}/api/v1/crawl-conferences`;
@@ -62,6 +64,8 @@ export interface UseConferenceCrawlReturn {
     startCrawlItems: (items: ConferenceForAction[], modelsToUse: ApiModels) => Promise<void>;
     resetCrawl: () => void;
     onCsvSelectionChanged: (event: SelectionChangedEvent<Conference>) => void;
+    updateActionTypeOfSelectedRows: (actionType: 'crawl' | 'update', gridApi: AgGridReact<Conference>['api'] | null) => void; // Add this
+
 }
 
 export const useConferenceCrawl = (): UseConferenceCrawlReturn => {
@@ -70,25 +74,22 @@ export const useConferenceCrawl = (): UseConferenceCrawlReturn => {
     const [isParsing, setIsParsing] = useState<boolean>(false);
     const [parseError, setParseError] = useState<string | null>(null);
 
-    // Configuration States (Step 3)
     const [enableChunking, setEnableChunking] = useState<boolean>(false);
     const [chunkSize, setChunkSizeState] = useState<number>(MAX_ITEMS_PER_CRAWL_REQUEST);
-    const [apiModels, setApiModels] = useState<ApiModels>({ ...initialApiModels }); // Use spread for a new object
+    const [apiModels, setApiModels] = useState<ApiModels>({ ...initialApiModels });
 
-    // Processing States (Step 3)
     const [isCrawling, setIsCrawling] = useState<boolean>(false);
     const [crawlError, setCrawlError] = useState<string | null>(null);
     const [crawlProgress, setCrawlProgress] = useState<CrawlProgress>({ current: 0, total: 0, status: 'idle' });
     const [crawlMessages, setCrawlMessages] = useState<string[]>([]);
 
-    // Selection State (Step 2)
     const [selectedCsvRows, setSelectedCsvRows] = useState<ConferenceForAction[]>([]);
 
     const parseCSV = useCallback(async (csvFile: File) => {
         setIsParsing(true);
         setParseError(null);
-        setParsedData(null); // Clear previous parsed data before new parse
-        setSelectedCsvRows([]); // Clear selections if new file is parsed
+        setParsedData(null);
+        setSelectedCsvRows([]);
 
         const body = new FormData();
         body.append('file', csvFile);
@@ -106,7 +107,6 @@ export const useConferenceCrawl = (): UseConferenceCrawlReturn => {
                     const errorData = await response.json();
                     errorMsg = errorData?.message || errorData?.error || errorMsg;
                 } catch (jsonError) {
-                    // If JSON parsing fails, try to get text
                     try {
                         const textError = await response.text();
                         if (textError) errorMsg = `${errorMsg} - Server response: ${textError.substring(0, 200)}`;
@@ -120,10 +120,9 @@ export const useConferenceCrawl = (): UseConferenceCrawlReturn => {
                 const conferencesWithDefaults: Conference[] = data.data.map((conf: any, index: number) => ({
                     ...conf,
                     id: conf.id || `${conf.acronym || 'conf'}-${Date.now()}-${index}`,
-                    crawlType: 'crawl', // Default action type
+                    crawlType: 'crawl',
                 }));
                 setParsedData(conferencesWithDefaults);
-                // Reset messages related to previous crawls if any, add new success message
                 setCrawlMessages([`File uploaded and parsed successfully. ${conferencesWithDefaults.length} records found.`]);
             } else {
                 setParsedData([]);
@@ -136,66 +135,123 @@ export const useConferenceCrawl = (): UseConferenceCrawlReturn => {
         } finally {
             setIsParsing(false);
         }
-    }, []); // No dependencies needed if UPLOAD_FILE_ENDPOINT is constant
+    }, []);
 
     const handleFileChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
         const currentFile = event.target.files?.[0];
-
-        // Reset states related to the previous file and any ongoing/completed crawl
         setFile(null);
         setParsedData(null);
         setIsParsing(false);
         setParseError(null);
         setSelectedCsvRows([]);
-
-        // Reset crawl/processing specific states as new file implies a new full process
         setIsCrawling(false);
         setCrawlError(null);
         setCrawlProgress({ current: 0, total: 0, status: 'idle' });
         setCrawlMessages([]);
-        // Note: apiModels, enableChunking, chunkSize are intentionally NOT reset here
-        // to allow users to keep their preferred configurations when changing files.
-        // They are reset by the `resetCrawl` function if a full reset is desired.
 
         if (currentFile) {
             if (currentFile.type !== 'text/csv' && !currentFile.name.toLowerCase().endsWith('.csv')) {
                 setParseError("Invalid file type. Please select a CSV file.");
-                if (event.target) event.target.value = ''; // Clear the input
+                if (event.target) event.target.value = '';
                 return;
             }
             setFile(currentFile);
-            parseCSV(currentFile); // Call parsing logic
+            parseCSV(currentFile);
         }
-        if (event.target) event.target.value = ''; // Allow re-selecting the same file
+        if (event.target) event.target.value = '';
     }, [parseCSV]);
 
     const onCsvSelectionChanged = useCallback((event: SelectionChangedEvent<Conference>) => {
         const selectedNodes = event.api.getSelectedNodes();
-        // LOGGING POINT 1: Kiểm tra dữ liệu thô từ các node đã chọn
-        console.log("AG Grid Selected Nodes Raw Data:", selectedNodes.map(node => node.data));
-
         const selectedActions: ConferenceForAction[] = selectedNodes.map(node => {
-            const confData = node.data as Conference; // confData là một object Conference từ AG Grid
-
-            // LOGGING POINT 2: Kiểm tra từng confData trước khi map
-            console.log("Node Data (confData) being mapped:", JSON.stringify(confData));
-
+            const confData = node.data as Conference;
             return {
-                id: confData.id, // Quan trọng: id phải có và duy nhất
+                id: confData.id,
                 Title: confData.title,
                 Acronym: confData.acronym,
-                crawlType: confData.crawlType, // Lấy từ cell đã chỉnh sửa trong grid
-                link: confData.link,         // <--- Lấy link từ confData
-                cfpLink: confData.cfpLink,   // <--- Lấy cfpLink từ confData
-                impLink: confData.impLink,   // <--- Lấy impLink từ confData
-                // originalRequestId: confData.originalRequestId, // Nếu có
+                crawlType: confData.crawlType,
+                link: confData.link,
+                cfpLink: confData.cfpLink,
+                impLink: confData.impLink,
             };
         });
-        // LOGGING POINT 3: Kiểm tra mảng selectedActions đã được tạo
-        console.log("Generated selectedActions (to become selectedCsvRows):", JSON.stringify(selectedActions));
+        setSelectedCsvRows(selectedActions);
+    }, []);
 
-        setSelectedCsvRows(selectedActions); // Cập nhật state với đầy đủ thông tin
-    }, []); // Dependencies: setSelectedCsvRows (thường ổn định từ useState)
+    const updateActionTypeOfSelectedRows = useCallback((
+        actionType: 'crawl' | 'update',
+        gridApi: AgGridReact<Conference>['api'] | null
+    ) => {
+        if (!gridApi) {
+            console.error("Grid API not available for updating action type.");
+            return;
+        }
+
+        const selectedNodes = gridApi.getSelectedNodes();
+        if (selectedNodes.length === 0) {
+            console.log("No rows selected to update action type.");
+            return;
+        }
+
+        // Filter nodes that have data before accessing node.data
+        const selectedNodesWithData = selectedNodes.filter(
+            (node): node is IRowNode<Conference> & { data: Conference } => node.data !== undefined
+        );
+
+        if (selectedNodesWithData.length === 0) {
+            console.log("Selected nodes have no data to update.");
+            return;
+        }
+
+        const selectedIds = selectedNodesWithData.map(node => node.data.id);
+        let updatedCount = 0;
+
+        const newParsedData = parsedData?.map(conf => {
+            if (selectedIds.includes(conf.id)) {
+                updatedCount++;
+                return { ...conf, crawlType: actionType };
+            }
+            return conf;
+        }) || null;
+
+        if (newParsedData && updatedCount > 0) { // Ensure some updates actually happened
+            setParsedData(newParsedData);
+
+            const newSelectedCsvRows = selectedCsvRows.map(selRow => {
+                if (selectedIds.includes(selRow.id)) {
+                    return { ...selRow, crawlType: actionType };
+                }
+                return selRow;
+            });
+            setSelectedCsvRows(newSelectedCsvRows);
+
+            // Prepare row nodes for refresh, ensuring data is updated in the node itself
+            // before telling AG Grid to refresh the cell.
+            const rowNodesToUpdate: IRowNode<Conference>[] = [];
+            selectedNodesWithData.forEach(node => {
+                // node.data should already be the new reference if parsedData is used as rowData directly,
+                // but explicitly setting it here ensures the node object itself has the updated value
+                // before refreshCells is called.
+                // This is particularly useful if the grid isn't directly re-rendering from a rowData prop change.
+                node.data.crawlType = actionType;
+                rowNodesToUpdate.push(node);
+            });
+
+
+            gridApi.refreshCells({
+                rowNodes: rowNodesToUpdate,
+                columns: ['crawlType'],
+                force: true
+            });
+
+            console.log(`Updated action type to "${actionType}" for ${updatedCount} selected conferences.`);
+            setCrawlMessages(prev => [`Applied action type '${actionType}' to ${updatedCount} selected conferences.`, ...prev.slice(0, 10)]);
+        } else if (updatedCount === 0) {
+            console.log("No matching conferences found in parsedData to update action type.");
+        }
+
+    }, [parsedData, selectedCsvRows, setSelectedCsvRows, setParsedData, setCrawlMessages]);
+
 
 
     const setApiModel = useCallback((apiName: ApiName, model: CrawlModelType) => {
@@ -214,7 +270,6 @@ export const useConferenceCrawl = (): UseConferenceCrawlReturn => {
     ): Promise<boolean> => {
         const apiPayloadItems: ConferenceApiPayloadItem[] = [];
         for (const item of items) {
-            // Base payload common to both crawl and update
             const commonPayload = {
                 Title: item.Title,
                 Acronym: item.Acronym,
@@ -222,34 +277,27 @@ export const useConferenceCrawl = (): UseConferenceCrawlReturn => {
             };
 
             if (item.crawlType === 'update') {
-                // For 'update', mainLink is required.
                 if (item.link && item.link.trim() !== '') {
                     apiPayloadItems.push({
                         ...commonPayload,
-                        mainLink: item.link, // item.link is a non-empty string here
-                        // cfpLink and impLink will always be present, value will be string or null
+                        mainLink: item.link,
                         cfpLink: (item.cfpLink && item.cfpLink.trim() !== '') ? item.cfpLink : null,
                         impLink: (item.impLink && item.impLink.trim() !== '') ? item.impLink : null,
                     });
                 } else {
-                    // Fallback to 'crawl' if mainLink is missing for an 'update' type
                     const warningMsg = `Conference "${item.Acronym}" (${item.Title}) marked for UPDATE but is missing 'link'. Sending as CRAWL.`;
                     console.warn(warningMsg);
                     setCrawlMessages(prev => [warningMsg, ...prev]);
                     apiPayloadItems.push({
                         ...commonPayload,
-                        // Explicitly set link fields to undefined for 'crawl' type for type safety,
-                        // or ensure they are not part of the 'crawl' object structure.
-                        // Based on the updated ConferenceApiPayloadItem, these should not be present or be undefined.
                         mainLink: undefined,
                         cfpLink: undefined,
                         impLink: undefined,
                     });
                 }
-            } else { // 'crawl'
+            } else {
                 apiPayloadItems.push({
                     ...commonPayload,
-                    // Explicitly set link fields to undefined for 'crawl' type for type safety
                     mainLink: undefined,
                     cfpLink: undefined,
                     impLink: undefined,
@@ -267,12 +315,10 @@ export const useConferenceCrawl = (): UseConferenceCrawlReturn => {
         const params = { dataSource: 'client', models: modelsForRequest };
         const modelDesc = `(Models: DL-${modelsForRequest.determineLinks?.[0]}, EI-${modelsForRequest.extractInfo?.[0]}, EC-${modelsForRequest.extractCfp?.[0]})`;
         try {
-            // Type assertion to ensure TypeScript understands the payload structure,
-            // though the logic above should already build it correctly.
             const response = await axios.post<ApiCrawlResponse>(API_CONFERENCE_ENDPOINT, apiPayloadItems as any[], {
                 params: params,
                 headers: { 'Content-Type': 'application/json' },
-                timeout: 7200000 // 2 hours
+                timeout: 7200000
             });
             console.log(`${description} ${modelDesc} - Response Status:`, response.status, response.data);
             setCrawlMessages(prev => [...prev, `${description} ${modelDesc}: ${response.data.message} (Runtime: ${response.data.runtime ?? 'N/A'}s)`]);
@@ -290,9 +336,7 @@ export const useConferenceCrawl = (): UseConferenceCrawlReturn => {
             setCrawlMessages(prev => [...prev, `FAILED to send ${description} ${modelDesc}. Details: ${errorMessage}`]);
             return false;
         }
-        // Thêm dependencies nếu có, ví dụ: setCrawlMessages, setCrawlError
     }, [setCrawlMessages, setCrawlError]);
-
 
     const processCrawlRequest = async (
         itemsToCrawl: ConferenceForAction[],
@@ -301,7 +345,7 @@ export const useConferenceCrawl = (): UseConferenceCrawlReturn => {
     ) => {
         if (itemsToCrawl.length === 0) {
             const msg = `No items from "${sourceDescription}" to process.`;
-            setCrawlError(msg); // Use crawlError for user-facing primary errors
+            setCrawlError(msg);
             setCrawlMessages(prev => [msg, ...prev.filter(m => !m.startsWith("No items from"))]);
             setIsCrawling(false);
             return;
@@ -327,27 +371,22 @@ export const useConferenceCrawl = (): UseConferenceCrawlReturn => {
         }
 
         setIsCrawling(true);
-        setCrawlError(null); // Clear previous primary error
-        // Consider clearing specific messages or just appending
-        // setCrawlMessages([]); // Option: clear all old messages for a fresh log
+        setCrawlError(null);
 
         let effectiveChunkSize = enableChunking ? chunkSize : MAX_ITEMS_PER_CRAWL_REQUEST;
         let wasChunkingForceEnabled = false;
 
         if (!enableChunking && itemsToCrawl.length > MAX_ITEMS_PER_CRAWL_REQUEST) {
-            // effectiveChunkSize is already MAX_ITEMS_PER_CRAWL_REQUEST
             wasChunkingForceEnabled = true;
         } else if (!enableChunking) {
-            effectiveChunkSize = itemsToCrawl.length; // Process all at once if below threshold
+            effectiveChunkSize = itemsToCrawl.length;
         }
 
-        // Ensure effectiveChunkSize is at least 1 if there are items
         if (itemsToCrawl.length > 0 && effectiveChunkSize <= 0) {
             effectiveChunkSize = MAX_ITEMS_PER_CRAWL_REQUEST;
         }
 
-
-        const needsActualChunking = itemsToCrawl.length > 0 && itemsToCrawl.length > effectiveChunkSize && enableChunking; // Only chunk if enabled and needed
+        const needsActualChunking = itemsToCrawl.length > 0 && itemsToCrawl.length > effectiveChunkSize && enableChunking;
         const modelDescShort = `DL:${modelsToUse.determineLinks?.[0]}, EI:${modelsToUse.extractInfo?.[0]}, EC:${modelsToUse.extractCfp?.[0]}`;
         let initialMessage = `Starting process for ${itemsToCrawl.length} items from "${sourceDescription}" using models (${modelDescShort})... `;
 
@@ -366,14 +405,12 @@ export const useConferenceCrawl = (): UseConferenceCrawlReturn => {
                 `Note: Automatic batching (max ${MAX_ITEMS_PER_CRAWL_REQUEST} items per request) was applied as the number of items exceeds the limit and chunking was not explicitly enabled.`
             );
         }
-        // Prepend new messages, clear old "Starting process..." message
         setCrawlMessages(prev => [...newMessages, ...prev.filter(m => !m.startsWith("Starting process for"))]);
 
         let overallSuccess = true;
-        const itemsForBatches = [...itemsToCrawl]; // Create a copy for manipulation if needed
+        const itemsForBatches = [...itemsToCrawl];
 
         if (itemsForBatches.length > 0) {
-            // Determine if we send in one batch or multiple
             const useMultipleBatches = enableChunking || itemsForBatches.length > MAX_ITEMS_PER_CRAWL_REQUEST;
 
             if (useMultipleBatches) {
@@ -400,7 +437,7 @@ export const useConferenceCrawl = (): UseConferenceCrawlReturn => {
                 } else if (!overallSuccess && totalChunks > 0) {
                     setCrawlMessages(prev => [...prev, `Process from "${sourceDescription}" with selected models stopped due to an error.`]);
                 }
-            } else { // Single batch
+            } else {
                 setCrawlProgress({ current: 0, total: 1, status: 'crawling', currentChunkData: itemsForBatches });
                 const description = `Batch (${itemsForBatches.length} items from ${sourceDescription})`;
                 const success = await sendApiRequest(itemsForBatches, description, modelsToUse);
@@ -413,12 +450,13 @@ export const useConferenceCrawl = (): UseConferenceCrawlReturn => {
                     overallSuccess = false;
                 }
             }
-        } else { // Should have been caught by initial itemsToCrawl.length === 0 check
-            overallSuccess = false; // No items to process
+        } else {
+            overallSuccess = false;
         }
 
         setIsCrawling(false);
     };
+
 
     const startCrawlFromCsv = async () => {
         if (selectedCsvRows.length === 0) {
@@ -435,24 +473,18 @@ export const useConferenceCrawl = (): UseConferenceCrawlReturn => {
     };
 
     const resetCrawl = useCallback(() => {
-        // Resets everything to initial state, as if the component just mounted
         setFile(null);
         setParsedData(null);
         setIsParsing(false);
         setParseError(null);
-
-        setApiModels({ ...initialApiModels }); // Reset model selections
-        // Optionally reset chunking config, or leave it as user preference
-        // setEnableChunking(false);
-        // setChunkSizeState(MAX_ITEMS_PER_CRAWL_REQUEST);
-
+        setApiModels({ ...initialApiModels });
         setIsCrawling(false);
         setCrawlError(null);
         setCrawlProgress({ current: 0, total: 0, status: 'idle' });
         setCrawlMessages([]);
         setSelectedCsvRows([]);
         console.log("Crawl state (including API models) fully reset.");
-    }, []); // No dependencies if initialApiModels is stable
+    }, []);
 
     return {
         file,
@@ -475,5 +507,6 @@ export const useConferenceCrawl = (): UseConferenceCrawlReturn => {
         startCrawlItems,
         resetCrawl,
         onCsvSelectionChanged,
+        updateActionTypeOfSelectedRows, // Expose the new function
     };
 };

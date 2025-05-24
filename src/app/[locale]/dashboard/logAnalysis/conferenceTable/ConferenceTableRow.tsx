@@ -42,7 +42,8 @@ export const ConferenceTableRow: React.FC<ConferenceTableRowProps> = ({
     dataQualityInsights, dataQualityInsightCount, hasSignificantDataQualityIssues,
     requestId,
     crawlType, // <--- Lấy crawlType
-    link, cfpLink, impLink // <--- Lấy các link
+    link, cfpLink, impLink, // <--- Lấy các link
+    persistedSaveStatus, // Lấy trạng thái lưu trữ bền vững
   } = confData;
 
   const hasErrors = errorCount > 0;
@@ -185,8 +186,16 @@ export const ConferenceTableRow: React.FC<ConferenceTableRowProps> = ({
           {errorCount}
         </td>
         <td className='whitespace-nowrap pl-3 pr-3 py-2 text-center text-lg'>
-          {saveStatus === 'success' && <FaCheckCircle className='text-green-500' title='Saved' />}
+          {/* Ưu tiên hiển thị trạng thái của hành động save hiện tại */}
+          {saveStatus === 'success' && <FaCheckCircle className='text-green-500' title='Saved in this session' />}
           {saveStatus === 'error' && <FaTimesCircle className='text-red-500' title={`Save failed: ${saveError || 'Unknown'}`} />}
+
+
+          {/* Nếu không có hành động save hiện tại, và đã được lưu từ trước */}
+          {saveStatus === 'idle' && persistedSaveStatus === 'SAVED_TO_DATABASE' && (
+            <FaCheckCircle className='text-gray-400' title={`Persistently saved on ${confData.persistedSaveTimestamp ? new Date(confData.persistedSaveTimestamp).toLocaleString() : 'N/A'}`} />
+          )}
+          {/* Có thể thêm logic để hiển thị nút save (FaSave) nếu saveStatus === 'idle' và !persistedSaveStatus */}
         </td>
       </tr>
 

@@ -45,6 +45,8 @@ export const ConferenceCrawlUploader: React.FC = () => {
     setApiModel, // Thêm vào để truyền xuống ConfigurationStep
     setEnableChunking, // Thêm vào để truyền xuống ConfigurationStep
     setChunkSize, // Thêm vào để truyền xuống ConfigurationStep
+        updateActionTypeOfSelectedRows, // Add this
+
   } = crawlHook;
 
   const canProceedToStep2 = useMemo(() => {
@@ -108,17 +110,15 @@ export const ConferenceCrawlUploader: React.FC = () => {
           />
         )}
 
-        {currentStep === 2 && parsedData && (
+          {currentStep === 2 && parsedData && (
           <ConferenceSelectionStep
-            // colDefs={colDefs} // Pass colDefs from here or define in child
-            // gridOptions={gridOptions} // Pass gridOptions from here or define in child
-            // getRowId={getRowId} // Pass getRowId from here or define in child
             parsedData={parsedData}
             onSelectionChanged={crawlHook.onCsvSelectionChanged}
             selectedCsvRowsCount={selectedCsvRows.length}
             onNext={handleNextStep}
             onPrev={handlePrevStep}
             canProceed={canProceedToStep3}
+            onUpdateActionTypeForSelected={updateActionTypeOfSelectedRows} // Pass the new function
           />
         )}
 
