@@ -14,6 +14,8 @@ export enum ConferenceDateType {
   CONFERENCE_DATE = 'conferenceDate',
   CAMERA_READY_DATE = 'cameraReadyDate',
   NOTIFICATION_DATE = 'notificationDate',
+  SUBMISSION_DATE = 'submissionDate',
+  REGISTRATION_DATE = 'registrationDate',
   OTHER_DATE = 'otherDate'
 }
 
