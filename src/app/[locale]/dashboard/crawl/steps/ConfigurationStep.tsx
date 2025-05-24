@@ -15,7 +15,10 @@ interface ConfigurationStepProps {
   setApiModel: (apiName: ApiName, modelType: CrawlModelType) => void;
   apiStepsForUploader: ApiStepConfig[];
   isCrawling: boolean;
-  allModelsSelected: boolean; // Thêm prop này để kiểm tra
+  allModelsSelected: boolean;
+  onNext: () => void; // Thêm onNext
+  onPrev: () => void; // Thêm onPrev
+  canProceed: boolean; // Thêm canProceed
 }
 
 const ConfigurationStep: React.FC<ConfigurationStepProps> = ({
@@ -27,7 +30,10 @@ const ConfigurationStep: React.FC<ConfigurationStepProps> = ({
   setApiModel,
   apiStepsForUploader,
   isCrawling,
-  allModelsSelected
+  allModelsSelected,
+  onNext, // Nhận prop onNext
+  onPrev, // Nhận prop onPrev
+  canProceed, // Nhận prop canProceed
 }) => {
   return (
     <div className="space-y-6 rounded-lg border border-gray-200 p-6 bg-white shadow mb-6">
@@ -119,6 +125,26 @@ const ConfigurationStep: React.FC<ConfigurationStepProps> = ({
                 Please select a model for all API steps before proceeding.
             </p>
         )}
+      </div>
+
+      {/* Navigation Buttons */}
+      <div className="mt-6 flex justify-between">
+        <button
+          type="button"
+          onClick={onPrev}
+          disabled={isCrawling}
+          className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-5 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          Previous: Select Conferences
+        </button>
+        <button
+          type="button"
+          onClick={onNext}
+          disabled={!canProceed || isCrawling}
+          className="ml-3 inline-flex justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          Next: Start Processing
+        </button>
       </div>
     </div>
   );

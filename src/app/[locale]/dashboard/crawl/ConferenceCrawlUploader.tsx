@@ -20,7 +20,8 @@ const apiStepsForUploader: { name: ApiName; displayName: string }[] = [
 const STEPS = [
   { id: 1, name: 'Import CSV' },
   { id: 2, name: 'Select Conferences' },
-  { id: 3, name: 'Configure & Process' },
+  { id: 3, name: 'Configure Settings' }, // Đổi tên để rõ ràng hơn
+  { id: 4, name: 'Process & View Status' }, // Thêm bước 4
 ];
 
 export const ConferenceCrawlUploader: React.FC = () => {
@@ -37,16 +38,15 @@ export const ConferenceCrawlUploader: React.FC = () => {
     isCrawling,
     startCrawlFromCsv,
     resetCrawl,
-    enableChunking, // Thêm vào để truyền xuống ProcessingStep
-    chunkSize, // Thêm vào để truyền xuống ProcessingStep
-    crawlError, // Thêm vào để truyền xuống ProcessingStep
-    crawlProgress, // Thêm vào để truyền xuống ProcessingStep
-    crawlMessages, // Thêm vào để truyền xuống ProcessingStep
-    setApiModel, // Thêm vào để truyền xuống ConfigurationStep
-    setEnableChunking, // Thêm vào để truyền xuống ConfigurationStep
-    setChunkSize, // Thêm vào để truyền xuống ConfigurationStep
-        updateActionTypeOfSelectedRows, // Add this
-
+    enableChunking,
+    chunkSize,
+    crawlError,
+    crawlProgress,
+    crawlMessages,
+    setApiModel,
+    setEnableChunking,
+    setChunkSize,
+    updateActionTypeOfSelectedRows,
   } = crawlHook;
 
   const canProceedToStep2 = useMemo(() => {
@@ -61,9 +61,13 @@ export const ConferenceCrawlUploader: React.FC = () => {
     return apiStepsForUploader.every(step => apiModels[step.name] !== null);
   }, [apiModels]);
 
-  const canStartProcessing = useMemo(() => {
-    return canProceedToStep3 && allModelsSelected && !isCrawling;
-  }, [canProceedToStep3, allModelsSelected, isCrawling]);
+  const canProceedToStep4 = useMemo(() => { // Logic mới cho việc chuyển sang bước 4
+    return canProceedToStep3 && allModelsSelected; // Phải chọn đủ model để chuyển sang bước xử lý
+  }, [canProceedToStep3, allModelsSelected]);
+
+  const canStartProcessing = useMemo(() => { // Logic giữ nguyên cho việc bắt đầu xử lý
+    return canProceedToStep4 && !isCrawling;
+  }, [canProceedToStep4, isCrawling]);
 
 
   const handleNextStep = () => {
@@ -71,11 +75,15 @@ export const ConferenceCrawlUploader: React.FC = () => {
       setCurrentStep(2);
     } else if (currentStep === 2 && canProceedToStep3) {
       setCurrentStep(3);
+    } else if (currentStep === 3 && canProceedToStep4) { // Thêm logic cho bước 3 -> 4
+        setCurrentStep(4);
     }
   };
 
   const handlePrevStep = () => {
-    if (currentStep === 3) {
+    if (currentStep === 4) { // Thêm logic cho bước 4 -> 3
+        setCurrentStep(3);
+    } else if (currentStep === 3) {
       setCurrentStep(2);
     } else if (currentStep === 2) {
       // Optionally clear selections or keep them
@@ -118,33 +126,29 @@ export const ConferenceCrawlUploader: React.FC = () => {
             onNext={handleNextStep}
             onPrev={handlePrevStep}
             canProceed={canProceedToStep3}
-            onUpdateActionTypeForSelected={updateActionTypeOfSelectedRows} // Pass the new function
+            onUpdateActionTypeForSelected={updateActionTypeOfSelectedRows}
           />
         )}
 
         {currentStep === 3 && (
-          // === START: Điều chỉnh bố cục 2 cột cho Step 3 ===
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6"> {/* Sử dụng grid cho 2 cột */}
-            {/* Cột trái: Chunk & Model Selection */}
-            <div>
-              <h3 className="sr-only">Chunk & Model Selection</h3> {/* Tiêu đề ẩn, ConfigurationStep đã có tiêu đề riêng */}
-              <ConfigurationStep
-                enableChunking={enableChunking}
-                setEnableChunking={setEnableChunking}
-                chunkSize={chunkSize}
-                setChunkSize={setChunkSize}
-                apiModels={apiModels}
-                setApiModel={setApiModel}
-                apiStepsForUploader={apiStepsForUploader}
-                isCrawling={isCrawling}
-                allModelsSelected={allModelsSelected}
-              />
-            </div>
+          <ConfigurationStep
+            enableChunking={enableChunking}
+            setEnableChunking={setEnableChunking}
+            chunkSize={chunkSize}
+            setChunkSize={setChunkSize}
+            apiModels={apiModels}
+            setApiModel={setApiModel}
+            apiStepsForUploader={apiStepsForUploader}
+            isCrawling={isCrawling}
+            allModelsSelected={allModelsSelected}
+            onNext={handleNextStep} // Thêm onNext và onPrev
+            onPrev={handlePrevStep}
+            canProceed={canProceedToStep4} // Logic cho ConfigurationStep có thể tiến tới bước tiếp theo
+          />
+        )}
 
-            {/* Cột phải: Process Execution & Status */}
-            <div>
-              <h3 className="sr-only">Process Execution & Status</h3> {/* Tiêu đề ẩn, ProcessingStep đã có tiêu đề riêng */}
-              <ProcessingStep
+        {currentStep === 4 && ( // Hiển thị ProcessingStep ở bước 4
+            <ProcessingStep
                 isCrawling={isCrawling}
                 crawlError={crawlError}
                 crawlProgress={crawlProgress}
@@ -153,11 +157,8 @@ export const ConferenceCrawlUploader: React.FC = () => {
                 onStartProcess={startCrawlFromCsv}
                 onResetAll={handleReset}
                 canStartProcess={canStartProcessing}
-                onPrev={handlePrevStep}
-              />
-            </div>
-          </div>
-          // === END: Điều chỉnh bố cục 2 cột cho Step 3 ===
+                onPrev={handlePrevStep} // Giữ nguyên onPrev
+            />
         )}
       </div>
     </div>
