@@ -1,4 +1,3 @@
-// src/app/[locale]/dashboard/logAnalysis/ProcessActionModal.tsx
 import React, { useState, useEffect } from 'react';
 import { CrawlModelType, ApiModels, ApiName } from '@/src/hooks/crawl/useConferenceCrawl';
 import { ConferenceForAction } from '@/src/models/logAnalysis/importConferenceCrawl'; // Import ConferenceForAction
@@ -138,7 +137,7 @@ const ProcessActionModal: React.FC<ProcessActionModalProps> = ({
                   />
                   <span className="ml-2 block text-sm font-medium text-gray-700">Non-Tuned</span>
                 </label>
-                <label htmlFor={`${step.name}-tuned`} className="flex items-center cursor-pointer">
+                <label htmlFor={`${step.name}-tuned`} className={`flex items-center cursor-pointer ${step.name === 'extractCfp' ? 'opacity-50 cursor-not-allowed' : ''}`}>
                   <input
                     type="radio"
                     id={`${step.name}-tuned`}
@@ -147,9 +146,13 @@ const ProcessActionModal: React.FC<ProcessActionModalProps> = ({
                     checked={selectedApiModels[step.name] === 'tuned'}
                     onChange={() => handleModelChange(step.name, 'tuned')}
                     className="h-4 w-4 text-indigo-600 border-gray-300 focus:ring-indigo-500"
+                    disabled={step.name === 'extractCfp'} // Khóa nếu là 'extractCfp'
                   />
                   <span className="ml-2 block text-sm font-medium text-gray-700">Tuned</span>
                 </label>
+                {step.name === 'extractCfp' && selectedApiModels[step.name] === 'tuned' && (
+                    <p className="ml-2 text-xs text-red-500">Temporarily disabled</p> // Thông báo cho người dùng
+                )}
               </div>
             </div>
           ))}

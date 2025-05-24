@@ -1,4 +1,3 @@
-// src/appp/[locale]/dashboard/logAnalysis/steps/ConfigurationStep.tsx
 import React from 'react';
 import { ApiName, CrawlModelType } from '@/src/hooks/crawl/useConferenceCrawl'; // Adjust path if needed
 
@@ -94,26 +93,32 @@ const ConfigurationStep: React.FC<ConfigurationStepProps> = ({
           <div key={step.name}>
             <label className='block text-xs font-medium text-gray-600 mb-1'>{step.displayName}:</label>
             <div className='flex space-x-4'>
-              {(['non-tuned', 'tuned'] as CrawlModelType[]).map(modelValue => (
-                <div key={modelValue} className='flex items-center'>
-                  <input
-                    id={`model-${step.name}-${modelValue}`}
-                    name={`model-${step.name}`}
-                    type='radio'
-                    value={modelValue}
-                    checked={apiModels[step.name] === modelValue}
-                    onChange={() => setApiModel(step.name, modelValue)}
-                    disabled={isCrawling}
-                    className='h-4 w-4 border-gray-300 text-blue-600 focus:ring-blue-500'
-                  />
-                  <label
-                    htmlFor={`model-${step.name}-${modelValue}`}
-                    className='ml-2 block text-sm text-gray-900 capitalize'
-                  >
-                    {modelValue.replace('-', ' ')}
-                  </label>
-                </div>
-              ))}
+              {(['non-tuned', 'tuned'] as CrawlModelType[]).map(modelValue => {
+                const isDisabled = isCrawling || (step.name === 'extractCfp' && modelValue === 'tuned');
+                return (
+                  <div key={modelValue} className='flex items-center'>
+                    <input
+                      id={`model-${step.name}-${modelValue}`}
+                      name={`model-${step.name}`}
+                      type='radio'
+                      value={modelValue}
+                      checked={apiModels[step.name] === modelValue}
+                      onChange={() => setApiModel(step.name, modelValue)}
+                      disabled={isDisabled}
+                      className='h-4 w-4 border-gray-300 text-blue-600 focus:ring-blue-500'
+                    />
+                    <label
+                      htmlFor={`model-${step.name}-${modelValue}`}
+                      className={`ml-2 block text-sm font-medium text-gray-900 capitalize ${isDisabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    >
+                      {modelValue.replace('-', ' ')}
+                    </label>
+                    {step.name === 'extractCfp' && modelValue === 'tuned' && isDisabled && (
+                        <p className="ml-2 text-xs text-red-500">Temporarily disabled</p> // Thông báo cho người dùng
+                    )}
+                  </div>
+                );
+              })}
             </div>
               {apiModels[step.name] === null && !isCrawling && (
                   <p className="text-xs text-red-500 mt-1">Please select a model for {step.displayName.replace(' Model', '')}.</p>

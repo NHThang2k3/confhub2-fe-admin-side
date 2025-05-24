@@ -132,7 +132,7 @@ export const useConferenceTableManager = ({
   }, [logAnalysisResult]);
 
 
-  
+
   const filteredData = useMemo(() => {
     if (!searchQuery.trim()) {
       return conferenceDataArray;
@@ -230,7 +230,8 @@ export const useConferenceTableManager = ({
   const handleSelectWarning = useCallback(() => {
     const newSelection: Record<string, boolean> = {};
     sortedData.forEach(conf => {
-      if (conf.hasSignificantDataQualityIssues) {
+      // THAY ĐỔI Ở ĐÂY:
+      if (conf.dataQualityInsightCount > 0) {
         newSelection[conf.uniqueRowId] = true;
       }
     });
@@ -240,13 +241,13 @@ export const useConferenceTableManager = ({
   const handleSelectWithoutWarningsOrErrors = useCallback(() => {
     const newSelection: Record<string, boolean> = {};
     sortedData.forEach(conf => {
-      if (conf.errorCount === 0 && !conf.hasSignificantDataQualityIssues) {
+      // THAY ĐỔI Ở ĐÂY:
+      if (conf.errorCount === 0 && conf.dataQualityInsightCount === 0) {
         newSelection[conf.uniqueRowId] = true;
       }
     });
     setSelectedRows(newSelection);
   }, [sortedData]);
-
 
   const toggleExpand = useCallback((uniqueRowId: string) => {
     setExpandedRow(prev => (prev === uniqueRowId ? null : uniqueRowId));
@@ -264,17 +265,17 @@ export const useConferenceTableManager = ({
 
   const isSaveEnabled = useMemo(() => {
     if (selectedRowIds.length === 0 || mainSaveStatus === 'saving') {
-        return false;
+      return false;
     }
     // Kiểm tra xem có item nào được chọn đã được lưu bền vững chưa
     const selectedConfs = conferenceDataArray.filter(conf => selectedRows[conf.uniqueRowId]);
     const anySelectedAlreadyPersisted = selectedConfs.some(conf => conf.persistedSaveStatus === 'SAVED_TO_DATABASE');
-    
+
     // Chỉ enable nếu không có lỗi/warning VÀ chưa có item nào được chọn đã được lưu bền vững
     // HOẶC bạn có thể cho phép lưu lại, tùy theo logic nghiệp vụ
-    return !isSelectedWithProblem && !anySelectedAlreadyPersisted; 
+    return !isSelectedWithProblem && !anySelectedAlreadyPersisted;
 
-}, [selectedRowIds.length, isSelectedWithProblem, mainSaveStatus, selectedRows, conferenceDataArray]);
+  }, [selectedRowIds.length, isSelectedWithProblem, mainSaveStatus, selectedRows, conferenceDataArray]);
 
   useEffect(() => {
     if (mainSaveStatus === 'error' || mainSaveStatus === 'success') {

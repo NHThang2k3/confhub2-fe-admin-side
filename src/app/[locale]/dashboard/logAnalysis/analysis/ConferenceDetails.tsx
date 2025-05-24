@@ -1,4 +1,3 @@
-// src/app/[locale]/dashboard/logAnalysis/analysis/ConferenceDetails.tsx
 import React, { useState } from 'react';
 import { FaChevronUp, FaChevronDown } from 'react-icons/fa';
 import { LogAnalysisResult } from '@/src/models/logAnalysis';
@@ -6,8 +5,7 @@ import { useConferenceTableManager } from '@/src/hooks/crawl/useConferenceTableM
 import { ConferenceTableControls } from '../conferenceTable/ConferenceTableControls';
 import { ConferenceTable } from '../conferenceTable/ConferenceTable';
 import { useConferenceCrawl } from '@/src/hooks/crawl/useConferenceCrawl';
-// Đổi tên import Modal
-import ProcessActionModal from '../conferenceTable/ProcessActionModal'; // <--- ĐỔI TÊN IMPORT
+import ProcessActionModal from '../conferenceTable/ProcessActionModal';
 
 interface ConferenceDetailsProps {
   logAnalysisResult: LogAnalysisResult | null | undefined;
@@ -67,8 +65,8 @@ const ConferenceDetails: React.FC<ConferenceDetailsProps> = ({
                   mainSaveStatus={tableManager.mainSaveStatus}
                   rowSaveErrorsCount={rowSaveErrorsCount}
                   onSave={tableManager.handleBulkSave}
-                  onProcessAgain={tableManager.handleProcessAgainClick} // <--- ĐỔI TÊN PROP
-                  isProcessing={isGlobalProcessing} // <--- ĐỔI TÊN PROP
+                  onProcessAgain={tableManager.handleProcessAgainClick}
+                  isProcessing={isGlobalProcessing}
                   onSelectAll={tableManager.handleSelectAll}
                   onSelectNoError={tableManager.handleSelectNoError}
                   onSelectError={tableManager.handleSelectError}
@@ -90,8 +88,8 @@ const ConferenceDetails: React.FC<ConferenceDetailsProps> = ({
                   mainSaveStatus={tableManager.mainSaveStatus}
                   rowSaveErrorsCount={rowSaveErrorsCount}
                   onSave={tableManager.handleBulkSave}
-                  onProcessAgain={tableManager.handleProcessAgainClick} // <--- ĐỔI TÊN PROP
-                  isProcessing={isGlobalProcessing} // <--- ĐỔI TÊN PROP
+                  onProcessAgain={tableManager.handleProcessAgainClick}
+                  isProcessing={isGlobalProcessing}
                   onSelectAll={tableManager.handleSelectAll}
                   onSelectNoError={tableManager.handleSelectNoError}
                   onSelectError={tableManager.handleSelectError}
@@ -121,10 +119,10 @@ const ConferenceDetails: React.FC<ConferenceDetailsProps> = ({
 
       {/* Sử dụng Modal đã đổi tên và props mới */}
       <ProcessActionModal
-        isOpen={tableManager.isProcessModalOpen} // <--- ĐỔI TÊN PROP
-        onClose={() => tableManager.setIsProcessModalOpen(false)} // <--- ĐỔI TÊN PROP
-        onConfirm={tableManager.handleConfirmProcessWithActionAndModels} // <--- ĐỔI TÊN PROP
-        itemsToProcess={tableManager.itemsToProcessFromTable} // <--- PROP MỚI để modal biết item nào đang xử lý
+        isOpen={tableManager.isProcessModalOpen}
+        onClose={() => tableManager.setIsProcessModalOpen(false)}
+        onConfirm={tableManager.handleConfirmProcessWithActionAndModels}
+        itemsToProcess={tableManager.itemsToProcessFromTable}
       />
     </>
   );
