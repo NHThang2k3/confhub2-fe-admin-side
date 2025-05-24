@@ -79,7 +79,7 @@ const formSchema = z.object({
   dates: z.array(dateSchema).optional(),
 });
 
-export default function EditConferenceHistory({ params }: { params: { id: string } }) {
+export default function EditConferenceHistory({ params }: { params: { id: string, locale: string } }) {
   const t = useTranslations('conferencesPage'); // Sử dụng namespace 'conferencesPage'
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -326,8 +326,8 @@ export default function EditConferenceHistory({ params }: { params: { id: string
         {/* Sử dụng key dịch cho nút Cancel */}
         <Link
           href="/dashboard/conferences"
-          className="px-4 py-2  border rounded-md hover:bg-gray-10"
-          >
+          className="px-4 py-2 border rounded-md hover:bg-gray-100"
+        >
           {t('modal.editForm.cancel')}
         </Link>
       </div>
@@ -609,7 +609,7 @@ export default function EditConferenceHistory({ params }: { params: { id: string
            {/* Sử dụng key dịch cho nút Cancel cuối form */}
           <button
             type="button"
-            onClick={() => router.push('/dashboard/conferences')} // Đường dẫn nên dựa vào locale hiện tại
+            onClick={() => router.push(`/${params.locale}/dashboard/conferences`)}
             className="px-4 py-2 border rounded-md hover:bg-gray-100"
           >
             {t('modal.editForm.cancel')}
