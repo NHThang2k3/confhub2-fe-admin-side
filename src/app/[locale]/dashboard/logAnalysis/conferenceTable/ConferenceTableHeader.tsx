@@ -63,20 +63,20 @@ export const ConferenceTableHeader: React.FC<ConferenceTableHeaderProps> = ({
   // Cấu hình các cột, bao gồm cả việc có hiển thị cột Request ID hay không
   const columnsConfig = [
     { key: 'sel', title: 'Sel', sortable: false, filterable: false, className: 'w-12' },
-    { key: 'title', title: 'Title/Acronym', sortable: true, sortKey: 'title' as SortableColumn, filterable: true, filterKey: 'title' as keyof ColumnFiltersState, className: 'min-w-[250px]' },
-    { key: 'crawlType', title: 'Action Type', sortable: true, sortKey: 'crawlType' as SortableColumn, filterable: true, filterKey: 'crawlType' as keyof ColumnFiltersState, className: 'min-w-[120px]' },
-    ...(isFilteredByRequest ? [{ key: 'requestId', title: 'Request ID', sortable: true, sortKey: 'requestId' as SortableColumn, filterable: true, filterKey: 'requestId' as keyof ColumnFiltersState, className: 'min-w-[150px]' }] : []),
-    { key: 'status', title: 'Status', sortable: true, sortKey: 'status' as SortableColumn, filterable: true, filterKey: 'status' as keyof ColumnFiltersState, className: 'min-w-[100px]' },
+    { key: 'title', title: 'Title/Acronym', sortable: true, sortKey: 'title' as SortableColumn, filterable: true, filterKey: 'title' as keyof ColumnFiltersState, className: 'min-w-[200px]' },
+    { key: 'crawlType', title: 'Action', sortable: true, sortKey: 'crawlType' as SortableColumn, filterable: true, filterKey: 'crawlType' as keyof ColumnFiltersState, className: 'min-w-[20px] max-w-[60px]' },
+    // ...(isFilteredByRequest ? [{ key: 'requestId', title: 'Request ID', sortable: true, sortKey: 'requestId' as SortableColumn, filterable: true, filterKey: 'requestId' as keyof ColumnFiltersState, className: 'min-w-[220px]' }] : []),
+    { key: 'status', title: 'Status', sortable: true, sortKey: 'status' as SortableColumn, filterable: true, filterKey: 'status' as keyof ColumnFiltersState, className: 'min-w-[80px]' },
     { key: 'durationSeconds', title: 'Duration', sortable: true, sortKey: 'durationSeconds' as SortableColumn, filterable: false, className: 'min-w-[90px] text-center' },
-    { key: 'search', title: 'Search', sortable: false, filterable: false, className: 'text-center' },
-    { key: 'link', title: 'Link', sortable: false, filterable: false, className: 'text-center' },
-    { key: 'html', title: 'Html', sortable: false, filterable: false, className: 'text-center' },
-    { key: 'g_det', title: 'Det', sortable: false, filterable: false, className: 'text-center' },
-    { key: 'g_cfp', title: 'Cfp', sortable: false, filterable: false, className: 'text-center' },
-    { key: 'g_ext', title: 'Ext', sortable: false, filterable: false, className: 'text-center' },
-    { key: 'dataQualityInsightCount', title: 'Warns', sortable: true, sortKey: 'dataQualityInsightCount' as SortableColumn, filterable: true, filterKey: 'dataQualityInsightCount' as keyof ColumnFiltersState, inputType: 'number' as 'number', className: 'min-w-[80px] text-center' },
-    { key: 'errorCount', title: 'Errors', sortable: true, sortKey: 'errorCount' as SortableColumn, filterable: true, filterKey: 'errorCount' as keyof ColumnFiltersState, inputType: 'number' as 'number', className: 'min-w-[80px] text-center' },
-    { key: 'save', title: 'Save', sortable: false, filterable: false, className: 'text-center' },
+    { key: 'search', title: 'Search', sortable: false, filterable: false, className: 'min-w-[90px] text-left' },
+    { key: 'link', title: 'Link', sortable: false, filterable: false, className: 'min-w-[90px] text-left' },
+    { key: 'html', title: 'Html', sortable: false, filterable: false, className: 'min-w-[90px] text-left' },
+    { key: 'g_det', title: 'Det', sortable: false, filterable: false, className: 'min-w-[90px] text-left' },
+    { key: 'g_cfp', title: 'Cfp', sortable: false, filterable: false, className: 'min-w-[90px] text-left' },
+    { key: 'g_ext', title: 'Ext', sortable: false, filterable: false, className: 'min-w-[90px] text-left' },
+    { key: 'dataQualityInsightCount', title: 'Warns', sortable: true, sortKey: 'dataQualityInsightCount' as SortableColumn, filterable: true, filterKey: 'dataQualityInsightCount' as keyof ColumnFiltersState, inputType: 'number' as 'number', className: 'min-w-[60px] text-center' },
+    { key: 'errorCount', title: 'Errors', sortable: true, sortKey: 'errorCount' as SortableColumn, filterable: true, filterKey: 'errorCount' as keyof ColumnFiltersState, inputType: 'number' as 'number', className: 'min-w-[60px] text-center' },
+    { key: 'save', title: 'Save', sortable: false, filterable: false, className: 'min-w-[60px] text-center' },
   ];
 
 

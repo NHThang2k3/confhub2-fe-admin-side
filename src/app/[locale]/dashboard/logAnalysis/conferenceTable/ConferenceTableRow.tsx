@@ -104,7 +104,7 @@ export const ConferenceTableRow: React.FC<ConferenceTableRowProps> = ({
 
   const showRequestIdColumn = confData.requestId !== 'N/A';
   // Cập nhật colSpan dựa trên số cột hiện tại
-  // Sel (1) + Title (1) + ActionType (1) + RequestID (0 or 1) + Status (1) + Duration (1) + 6 step icons (6) + Warns (1) + Errors (1) + Save (1) = 14 or 15
+  // Sel (1) + Title (1) + Action (1)  + Status (1) + Duration (1) + 6 step icons (6) + Warns (1) + Errors (1) + Save (1) = 14 or 15
   const colSpanBase = 14; // Đếm lại số cột cố định
   const colSpan = showRequestIdColumn ? colSpanBase + 1 : colSpanBase;
 
@@ -139,7 +139,7 @@ export const ConferenceTableRow: React.FC<ConferenceTableRowProps> = ({
           </div>
         </td>
 
-        {/* Ô HIỂN THỊ ACTION TYPE */}
+        {/* Ô HIỂN THỊ ACTION */}
         <td className='whitespace-nowrap px-3 py-2 text-sm'>
           <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold leading-5 ${crawlTypeColor}`}>
             {crawlType === 'update' ? <FaLink className="mr-1.5" /> : <FaCogs className="mr-1.5" />}
@@ -147,11 +147,11 @@ export const ConferenceTableRow: React.FC<ConferenceTableRowProps> = ({
           </span>
         </td>
 
-        {showRequestIdColumn && (
+        {/* {showRequestIdColumn && (
           <td className='px-3 py-2 text-sm text-gray-500 max-w-[150px] truncate' title={requestId}>
             {requestId}
           </td>
-        )}
+        )} */}
 
         <td className='whitespace-nowrap px-3 py-2 text-sm'>
           <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold leading-5 ${statusBadgeClass}`}>
@@ -159,18 +159,18 @@ export const ConferenceTableRow: React.FC<ConferenceTableRowProps> = ({
           </span>
         </td>
         <td className='whitespace-nowrap px-3 py-2 text-sm text-gray-500 text-center'>{formatDuration(durationSeconds)}</td>
-        <td className='whitespace-nowrap px-2 py-2 text-center text-lg'><StatusIcon success={steps?.search_success} attempted={steps?.search_attempted} /></td>
-        <td className='whitespace-nowrap px-2 py-2 text-center text-lg'>
+        <td className='whitespace-nowrap px-2 py-2 text-right text-lg'><StatusIcon success={steps?.search_success} attempted={steps?.search_attempted} /></td>
+        <td className='whitespace-nowrap px-2 py-2 text-right text-lg'>
           <StatusIcon
             success={linkIconSuccess}
             attempted={linkIconAttempted}
             hasAttempts={linkIconHasAttempts}
           />
         </td>
-        <td className='whitespace-nowrap px-2 py-2 text-center text-lg'><StatusIcon success={steps?.html_save_success} attempted={steps?.html_save_attempted} /></td>
-        <td className='whitespace-nowrap px-2 py-2 text-center text-lg'><StatusIcon success={steps?.gemini_determine_success} attempted={steps?.gemini_determine_attempted} /></td>
-        <td className='whitespace-nowrap px-2 py-2 text-center text-lg'><StatusIcon success={steps?.gemini_cfp_success} attempted={steps?.gemini_cfp_attempted} /></td>
-        <td className='whitespace-nowrap px-2 py-2 text-center text-lg'><StatusIcon success={steps?.gemini_extract_success} attempted={steps?.gemini_extract_attempted} /></td>
+        <td className='whitespace-nowrap px-2 py-2 text-right text-lg'><StatusIcon success={steps?.html_save_success} attempted={steps?.html_save_attempted} /></td>
+        <td className='whitespace-nowrap px-2 py-2 text-right text-lg'><StatusIcon success={steps?.gemini_determine_success} attempted={steps?.gemini_determine_attempted} /></td>
+        <td className='whitespace-nowrap px-2 py-2 text-right text-lg'><StatusIcon success={steps?.gemini_cfp_success} attempted={steps?.gemini_cfp_attempted} /></td>
+        <td className='whitespace-nowrap px-2 py-2 text-right text-lg'><StatusIcon success={steps?.gemini_extract_success} attempted={steps?.gemini_extract_attempted} /></td>
         <td className={`whitespace-nowrap px-3 py-2 text-center text-sm font-medium ${hasSignificantDataQualityIssues ? 'text-amber-600' : 'text-gray-500'}`}>
           {dataQualityInsightCount > 0 && (
             <FaInfoCircle
