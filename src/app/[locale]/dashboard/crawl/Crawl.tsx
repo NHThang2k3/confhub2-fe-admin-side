@@ -121,7 +121,7 @@ const Crawl: React.FC = () => {
                     activeCrawler={activeCrawler}
                     onSetCrawler={setActiveCrawler}
                     ConferenceCrawlUploaderComponent={ConferenceCrawlUploader}
-                    JournalCrawlUploaderComponent={JournalCrawlUploader}
+                    // JournalCrawlUploaderComponent={JournalCrawlUploader}
                 />
             )}
 

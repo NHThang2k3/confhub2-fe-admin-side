@@ -8,7 +8,7 @@ interface CrawlerToolsProps {
     activeCrawler: CrawlerType;
     onSetCrawler: (crawler: CrawlerType) => void;
     ConferenceCrawlUploaderComponent: React.FC;
-    JournalCrawlUploaderComponent: React.FC;
+    // JournalCrawlUploaderComponent: React.FC;
 }
 
 const CrawlerTools: React.FC<CrawlerToolsProps> = ({
@@ -17,7 +17,7 @@ const CrawlerTools: React.FC<CrawlerToolsProps> = ({
     activeCrawler,
     onSetCrawler,
     ConferenceCrawlUploaderComponent,
-    JournalCrawlUploaderComponent
+    // JournalCrawlUploaderComponent
 }) => {
     return (
         <div className="bg-white rounded-lg shadow-md border border-gray-200">
@@ -59,7 +59,7 @@ const CrawlerTools: React.FC<CrawlerToolsProps> = ({
                     </div>
                     <div>
                         {activeCrawler === 'conference' && <ConferenceCrawlUploaderComponent />}
-                        {activeCrawler === 'journal' && <JournalCrawlUploaderComponent />}
+                        {/* {activeCrawler === 'journal' && <JournalCrawlUploaderComponent />} */}
                     </div>
                 </div>
             </div>
