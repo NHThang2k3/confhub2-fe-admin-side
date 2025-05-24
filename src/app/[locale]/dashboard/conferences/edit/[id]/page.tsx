@@ -600,9 +600,7 @@ export default function EditConferenceHistory({ params }: { params: { id: string
            <DatesTable
             dates={dates}
             onDatesChange={handleDatesChange}
-             // Props khác cho DatesTable có thể cần dịch (ví dụ: tiêu đề cột, nút add, placeholders)
-            // tFunction={t} // Truyền hàm t vào DatesTable nếu nó cần dịch nội bộ
-            // translateKeys={{ addDate: t('modal.editForm.addDateButton'), startDateLabel: t('modal.editForm.startDateLabel'), ... }}
+            onRefetch={fetchConferenceData}
           />
           {errors.dates && <p className="text-red-500 text-sm mt-1">{errors.dates.message}</p>}
         </div>
