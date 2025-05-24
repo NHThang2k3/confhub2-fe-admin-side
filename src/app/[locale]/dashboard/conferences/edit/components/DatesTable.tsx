@@ -4,39 +4,44 @@ import { useTranslations } from 'next-intl';
 import { AgGridReact } from 'ag-grid-react';
 import { AllCommunityModule, ColDef, GridReadyEvent, ICellRendererParams, ModuleRegistry, IRowNode, RowSelectionModule } from 'ag-grid-community';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { fromString } from 'any-date-parser';
+import { useFieldArray, Control, UseFormWatch } from 'react-hook-form';
+import { DatePicker } from 'antd';
+import dayjs from 'dayjs';
+
 ModuleRegistry.registerModules([AllCommunityModule, RowSelectionModule]);
 
-interface ConferenceDate {
-  type?: string;
-  name?: string;
-  startDate?: string;
-  endDate?: string;
+export enum ConferenceDateType {
+  CONFERENCE_DATE = 'conferenceDate',
+  CAMERA_READY_DATE = 'cameraReadyDate',
+  NOTIFICATION_DATE = 'notificationDate',
+  OTHER_DATE = 'otherDate'
+}
+
+export interface ConferenceDate {
+  type: ConferenceDateType;
+  name: string;
+  startDate: string;
+  endDate: string;
 }
 
 interface DatesTableProps {
-  dates: ConferenceDate[];
-  onDatesChange: (newDates: ConferenceDate[]) => void;
+  control: Control<any>;
+  watch: UseFormWatch<any>;
+  name: string;
   onRefetch?: () => Promise<void>;
 }
 
 interface DateRow extends ConferenceDate {}
 
-export default function DatesTable({ dates, onDatesChange, onRefetch }: DatesTableProps) {
+export default function DatesTable({ control, watch, name, onRefetch }: DatesTableProps) {
   const t = useTranslations('conferencesPage');
   const gridRef = useRef<AgGridReact>(null);
-  const [rowData, setRowData] = useState<DateRow[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Update rowData when dates prop changes
-  useEffect(() => {
-    if (dates) {
-      const newRowData = dates.length > 0 
-        ? dates.map(date => ({ ...date }))
-        : [{ type: '', name: '', startDate: '', endDate: '' }];
-      setRowData(newRowData);
-    }
-  }, [dates]);
+  const { fields, append, remove, update } = useFieldArray({
+    control,
+    name
+  });
 
   const handleCancel = async () => {
     if (onRefetch) {
@@ -57,33 +62,53 @@ export default function DatesTable({ dates, onDatesChange, onRefetch }: DatesTab
       headerName: t('modal.editForm.dateType'),
       editable: true,
       flex: 1,
+      cellEditor: 'agSelectCellEditor',
+      cellEditorParams: {
+        values: Object.values(ConferenceDateType)
+      },
+      valueFormatter: (params) => {
+        if (!params.value) return '';
+        return params.value;
+      },
+      onCellValueChanged: (params) => {
+        const index = params.node?.rowIndex ?? 0;
+        update(index, { ...params.data, type: params.newValue });
+      }
     },
     {
       field: 'name',
       headerName: t('modal.editForm.dateName'),
       editable: true,
       flex: 1,
+      cellEditor: 'agTextCellEditor',
+      cellEditorParams: {
+        maxLength: 100
+      },
+      valueFormatter: (params) => {
+        if (!params.value) return '';
+        return params.value;
+      },
+      onCellValueChanged: (params) => {
+        const index = params.node?.rowIndex ?? 0;
+        update(index, { ...params.data, name: params.newValue });
+      }
     },
     {
       field: 'startDate',
       headerName: t('modal.editForm.startDate'),
       editable: true,
       flex: 1,
+      cellEditor: 'datePicker',
+      cellEditorParams: {
+        format: 'YYYY-MM-DD'
+      },
       valueFormatter: (params) => {
         if (!params.value) return '';
-        return new Date(params.value).toLocaleDateString();
+        return dayjs(params.value).format('YYYY-MM-DD');
       },
-      valueParser: (params) => {
-        if (!params.newValue) return '';
-        try {
-          const parsedDate = fromString(params.newValue);
-          if (parsedDate) {
-            return parsedDate.toISOString();
-          }
-        } catch (error) {
-          console.error('Error parsing date:', error);
-        }
-        return params.newValue;
+      onCellValueChanged: (params) => {
+        const index = params.node?.rowIndex ?? 0;
+        update(index, { ...params.data, startDate: params.newValue });
       }
     },
     {
@@ -91,21 +116,17 @@ export default function DatesTable({ dates, onDatesChange, onRefetch }: DatesTab
       headerName: t('modal.editForm.endDate'),
       editable: true,
       flex: 1,
+      cellEditor: 'datePicker',
+      cellEditorParams: {
+        format: 'YYYY-MM-DD'
+      },
       valueFormatter: (params) => {
         if (!params.value) return '';
-        return new Date(params.value).toLocaleDateString();
+        return dayjs(params.value).format('YYYY-MM-DD');
       },
-      valueParser: (params) => {
-        if (!params.newValue) return '';
-        try {
-          const parsedDate = fromString(params.newValue);
-          if (parsedDate) {
-            return parsedDate.toISOString();
-          }
-        } catch (error) {
-          console.error('Error parsing date:', error);
-        }
-        return params.newValue;
+      onCellValueChanged: (params) => {
+        const index = params.node?.rowIndex ?? 0;
+        update(index, { ...params.data, endDate: params.newValue });
       }
     },
     {
@@ -115,7 +136,8 @@ export default function DatesTable({ dates, onDatesChange, onRefetch }: DatesTab
         const rowIndex = params.node?.rowIndex ?? 0;
         return (
           <button
-            onClick={() => handleRemoveDate(rowIndex)}
+            type="button"
+            onClick={() => remove(rowIndex)}
             className="text-red-600 hover:text-red-900"
           >
             {t('modal.editForm.remove')}
@@ -125,28 +147,14 @@ export default function DatesTable({ dates, onDatesChange, onRefetch }: DatesTab
     },
   ];
 
-  const handleRemoveDate = (index: number) => {
-    const newRowData = rowData.filter((_, i) => i !== index);
-    setRowData(newRowData);
-    onDatesChange(newRowData);
-  };
-
   const handleAddDate = () => {
-    const newRowData = [...rowData, { type: '', name: '', startDate: '', endDate: '' }];
-    setRowData(newRowData);
-    onDatesChange(newRowData);
+    append({
+      type: ConferenceDateType.OTHER_DATE,
+      name: '',
+      startDate: '',
+      endDate: ''
+    });
   };
-
-  const onCellValueChanged = useCallback(() => {
-    if (gridRef.current?.api) {
-      const newDates = gridRef.current.api
-        .getRenderedNodes()
-        .map((node: IRowNode) => node.data as DateRow)
-        .filter(date => date.type?.trim() !== '' || date.name?.trim() !== '' || 
-                        date.startDate?.trim() !== '' || date.endDate?.trim() !== '');
-      onDatesChange(newDates);
-    }
-  }, [onDatesChange]);
 
   return (
     <div className="space-y-4">
@@ -174,9 +182,8 @@ export default function DatesTable({ dates, onDatesChange, onRefetch }: DatesTab
       <div className="ag-theme-alpine w-full" style={{ height: 400 }}>
         <AgGridReact
           ref={gridRef}
-          rowData={rowData}
+          rowData={fields}
           columnDefs={columnDefs}
-          onCellValueChanged={onCellValueChanged}
           defaultColDef={{
             sortable: true,
             filter: true,
