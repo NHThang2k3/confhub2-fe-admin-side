@@ -79,10 +79,10 @@ const ConferenceDetails: React.FC<ConferenceDetailsProps> = ({
                   searchTerm={tableManager.searchQuery}
                   onSearchChange={tableManager.setSearchQuery}
                 />
-                <p className='text-center text-gray-500 py-8'>
+                {/* <p className='text-center text-gray-500 py-8'>
                   No conferences match your current filter criteria.
                   {tableManager.searchQuery && ` (Search: "${tableManager.searchQuery}")`}
-                </p>
+                </p> */}
                  {/* Hiển thị ConferenceTable trống với header filter để người dùng có thể thay đổi filter */}
                 <ConferenceTable
                   data={[]} // Truyền mảng rỗng

@@ -218,7 +218,7 @@ const ConferenceSelectionStep: React.FC<ConferenceSelectionStepProps> = ({
         </div>
       </div>
 
-      <div className="ag-theme-alpine w-full overflow-hidden" style={{ height: 'calc(100vh - 400px)', minHeight: '300px' }}>
+      <div className="ag-theme-alpine w-full overflow-hidden" style={{ height: 'calc(100vh - 150px)', minHeight: '300px' }}>
         <AgGridReact<Conference>
           ref={gridRef}
           rowData={parsedData}
