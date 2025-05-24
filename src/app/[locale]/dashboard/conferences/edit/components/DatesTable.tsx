@@ -7,6 +7,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useFieldArray, Control, UseFormWatch } from 'react-hook-form';
 import { DatePicker } from 'antd';
 import dayjs from 'dayjs';
+import { toast } from 'react-hot-toast';
 
 ModuleRegistry.registerModules([AllCommunityModule, RowSelectionModule]);
 
@@ -20,10 +21,10 @@ export enum ConferenceDateType {
 }
 
 export interface ConferenceDate {
-  type: ConferenceDateType;
-  name: string;
-  startDate: string;
-  endDate: string;
+  type: ConferenceDateType | null;
+  name: string | null;
+  startDate: string | null;
+  endDate: string | null;
 }
 
 interface DatesTableProps {
@@ -52,6 +53,7 @@ export default function DatesTable({ control, watch, name, onRefetch }: DatesTab
         await onRefetch();
       } catch (error) {
         console.error('Error refetching data:', error);
+        toast.error(t('modal.editForm.fetchError'));
       } finally {
         setIsLoading(false);
       }
@@ -74,7 +76,7 @@ export default function DatesTable({ control, watch, name, onRefetch }: DatesTab
       },
       onCellValueChanged: (params) => {
         const index = params.node?.rowIndex ?? 0;
-        update(index, { ...params.data, type: params.newValue });
+        update(index, { ...params.data, type: params.newValue || null });
       }
     },
     {
@@ -92,7 +94,7 @@ export default function DatesTable({ control, watch, name, onRefetch }: DatesTab
       },
       onCellValueChanged: (params) => {
         const index = params.node?.rowIndex ?? 0;
-        update(index, { ...params.data, name: params.newValue });
+        update(index, { ...params.data, name: params.newValue || null });
       }
     },
     {
@@ -100,17 +102,21 @@ export default function DatesTable({ control, watch, name, onRefetch }: DatesTab
       headerName: t('modal.editForm.startDate'),
       editable: true,
       flex: 1,
-      cellEditor: 'datePicker',
+      cellEditor: 'agDateCellEditor',
       cellEditorParams: {
-        format: 'YYYY-MM-DD'
+        browserDatePicker: true
       },
       valueFormatter: (params) => {
         if (!params.value) return '';
         return dayjs(params.value).format('YYYY-MM-DD');
       },
+      valueParser: (params) => {
+        if (!params.newValue) return null;
+        return dayjs(params.newValue).format('YYYY-MM-DD');
+      },
       onCellValueChanged: (params) => {
         const index = params.node?.rowIndex ?? 0;
-        update(index, { ...params.data, startDate: params.newValue });
+        update(index, { ...params.data, startDate: params.newValue || null });
       }
     },
     {
@@ -118,17 +124,21 @@ export default function DatesTable({ control, watch, name, onRefetch }: DatesTab
       headerName: t('modal.editForm.endDate'),
       editable: true,
       flex: 1,
-      cellEditor: 'datePicker',
+      cellEditor: 'agDateCellEditor',
       cellEditorParams: {
-        format: 'YYYY-MM-DD'
+        browserDatePicker: true
       },
       valueFormatter: (params) => {
         if (!params.value) return '';
         return dayjs(params.value).format('YYYY-MM-DD');
       },
+      valueParser: (params) => {
+        if (!params.newValue) return null;
+        return dayjs(params.newValue).format('YYYY-MM-DD');
+      },
       onCellValueChanged: (params) => {
         const index = params.node?.rowIndex ?? 0;
-        update(index, { ...params.data, endDate: params.newValue });
+        update(index, { ...params.data, endDate: params.newValue || null });
       }
     },
     {
@@ -151,10 +161,10 @@ export default function DatesTable({ control, watch, name, onRefetch }: DatesTab
 
   const handleAddDate = () => {
     append({
-      type: ConferenceDateType.OTHER_DATE,
-      name: '',
-      startDate: '',
-      endDate: ''
+      type: null,
+      name: null,
+      startDate: null,
+      endDate: null
     });
   };
 
@@ -195,7 +205,8 @@ export default function DatesTable({ control, watch, name, onRefetch }: DatesTab
           rowSelection="multiple"
           suppressRowClickSelection={true}
           pagination={true}
-          paginationPageSize={10}
+          paginationPageSize={20}
+          paginationPageSizeSelector={[20, 50, 100]}
         />
       </div>
     </div>

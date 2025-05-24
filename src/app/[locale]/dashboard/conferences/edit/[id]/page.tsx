@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl'; // Sử dụng hook dịch thuật
 import axios from 'axios';
@@ -60,23 +60,23 @@ const dateSchema = z.object({
 });
 
 const formSchema = z.object({
-  year: z.number().min(1900).max(2100).optional(),
-  accessType: z.enum(['Online', 'Offline', 'Hybrid']).default('Offline'),
-  isAvailable: z.boolean().optional(),
-  publisher: z.string().optional(),
-  summerize: z.string().optional(),
-  callForPaper: z.string().optional(),
-  link: z.string().url('Must be a valid URL').optional(),
-  cfpLink: z.string().url('Must be a valid URL').optional(),
-  impLink: z.string().url('Must be a valid URL').optional(),
-  locations: z.array(locationSchema).optional(),
-  topics: z.array(z.string()).optional(),
+  year: z.number().min(1900).max(2100).optional().nullable(),
+  accessType: z.enum(['Online', 'Offline', 'Hybrid']).default('Offline').optional().nullable(),
+  isAvailable: z.boolean().optional().nullable(),
+  publisher: z.string().optional().nullable(),
+  summerize: z.string().optional().nullable(),
+  callForPaper: z.string().optional().nullable(),
+  link: z.string().url('Must be a valid URL').optional().nullable(),
+  cfpLink: z.string().url('Must be a valid URL').optional().nullable(),
+  impLink: z.string().url('Must be a valid URL').optional().nullable(),
+  locations: z.array(locationSchema).optional().nullable(),
+  topics: z.array(z.string()).optional().nullable(),
   dates: z.array(z.object({
-    type: z.nativeEnum(ConferenceDateType),
-    name: z.string().min(1, 'Date name is required'),
-    startDate: z.string().min(1, 'Start date is required'),
-    endDate: z.string().min(1, 'End date is required')
-  })).optional(),
+    type: z.nativeEnum(ConferenceDateType).optional().nullable(),
+    name: z.string().optional().nullable(),
+    startDate: z.string().optional().nullable(),
+    endDate: z.string().optional().nullable()
+  })).optional().nullable(),
 });
 
 export default function EditConferenceHistory({ params }: { params: { id: string, locale: string } }) {
@@ -95,63 +95,11 @@ export default function EditConferenceHistory({ params }: { params: { id: string
     reset,
     watch,
     setValue,
-    formState: { errors },
   } = useForm<FormValues>({
-    // Resolver được giữ nguyên logic hiện tại, tập trung vào việc sử dụng t trong JSX
-    // Lưu ý: Zod validation messages ('Must be a valid URL', min/max errors) không được dịch tự động bởi `t` hook này.
-    // Để dịch chúng, bạn cần cấu hình i18n cho Zod resolver hoặc hiển thị lỗi tùy chỉnh trong JSX.
-    resolver: async (data) => {
-      try {
-        // Tạo một đối tượng mới chỉ chứa các trường đang ở chế độ chỉnh sửa
-        const dataToValidate: Partial<FormValues> = {};
-
-        if (editMode.basicInfo) {
-          dataToValidate.year = data.year;
-          dataToValidate.accessType = data.accessType || 'Offline'; // Đặt default nếu trống
-          dataToValidate.publisher = data.publisher;
-          dataToValidate.summerize = data.summerize;
-          dataToValidate.callForPaper = data.callForPaper;
-        }
-
-        if (editMode.links) {
-          dataToValidate.link = data.link;
-          dataToValidate.cfpLink = data.cfpLink;
-          dataToValidate.impLink = data.impLink;
-        }
-
-        if (editMode.locations) {
-          dataToValidate.locations = data.locations;
-        }
-
-        // Luôn bao gồm topics và dates vì chúng luôn có thể chỉnh sửa
-        dataToValidate.topics = data.topics;
-        dataToValidate.dates = data.dates;
-
-        // Validate chỉ các trường đang ở chế độ chỉnh sửa
-        const result = await formSchema.safeParseAsync(dataToValidate);
-
-        if (result.success) {
-          return { values: data, errors: {} };
-        } else {
-          // Trả về errors cho các trường bị validate lỗi
-          return {
-            values: {}, // Không có values thành công nếu có lỗi validation
-            errors: result.error.flatten().fieldErrors,
-          };
-        }
-      } catch (error) {
-        // Xử lý lỗi không mong muốn trong quá trình validate
-         console.error("Validation error:", error);
-        return {
-          values: {},
-          errors: {}, // Không có errors cụ thể nếu lỗi không từ validation schema
-        };
-      }
-    },
     defaultValues: {
       year: new Date().getFullYear(),
       accessType: 'Offline',
-      isAvailable: true, // Mặc định là true, nhưng không hiển thị trong form
+      isAvailable: true,
       publisher: '',
       summerize: '',
       callForPaper: '',
@@ -179,11 +127,12 @@ export default function EditConferenceHistory({ params }: { params: { id: string
 
   // Watch dates field for changes
   const dates = watch('dates') || [];
-
-  const fetchConferenceData = async () => {
+  console.log('dates', dates, DATA_API_URL);
+  const fetchConferenceData = useCallback(async () => {
     try {
-      const response = await axios.get(`${DATA_API_URL}/api/v1/admin/conferences/history/${params.id}`);
-      const data = response.data;
+      const response = await fetch(`${DATA_API_URL}/api/v1/admin/conferences/history/${params.id}`);
+      if (!response.ok) throw new Error('Failed to fetch data');
+      const data = await response.json();
       
       // Convert dates to the new format
       const formattedDates = data.dates?.map((date: any) => ({
@@ -213,11 +162,11 @@ export default function EditConferenceHistory({ params }: { params: { id: string
       console.error('Error fetching organization data:', error);
       toast.error(t('modal.editForm.fetchError'));
     }
-  };
+  }, [params.id, reset, t]);
 
   useEffect(() => {
     fetchConferenceData();
-  }, [params.id, t]); // Thêm t vào dependency array
+  }, [fetchConferenceData]);
 
   const handleTopicsChange = (newTopics: string[]) => {
     // Update the form state directly using setValue
@@ -248,69 +197,64 @@ export default function EditConferenceHistory({ params }: { params: { id: string
     }));
   };
 
-  const onSubmit = async (data: FormValues) => {
+  const onSubmit = async () => {
     try {
       setIsSubmitting(true);
-      // Chỉ bao gồm các trường đang ở chế độ chỉnh sửa HOẶC luôn có thể chỉnh sửa
+      const formState = watch();
+      
+      // Remove validation check
       const updatedData: Partial<FormValues> = {};
 
       if (editMode.basicInfo) {
-        updatedData.year = data.year;
-        updatedData.accessType = data.accessType;
-        updatedData.publisher = data.publisher;
-        updatedData.summerize = data.summerize;
-        updatedData.callForPaper = data.callForPaper;
+        updatedData.year = formState.year;
+        updatedData.accessType = formState.accessType;
+        updatedData.publisher = formState.publisher;
+        updatedData.summerize = formState.summerize;
+        updatedData.callForPaper = formState.callForPaper;
       }
 
       if (editMode.links) {
-        updatedData.link = data.link;
-        updatedData.cfpLink = data.cfpLink;
-        updatedData.impLink = data.impLink;
+        updatedData.link = formState.link;
+        updatedData.cfpLink = formState.cfpLink;
+        updatedData.impLink = formState.impLink;
       }
 
       if (editMode.locations) {
-        updatedData.locations = data.locations;
+        updatedData.locations = formState.locations;
       }
 
-      // Luôn bao gồm topics và dates vì chúng luôn có thể chỉnh sửa
-      updatedData.topics = data.topics;
-      updatedData.dates = data.dates;
+      updatedData.topics = formState.topics;
+      updatedData.dates = formState.dates;
 
-      const response = await axios.put(
-        `${DATA_API_URL}/api/v1/admin/conferences/update-history`,
-        {
+      console.log('Submitting form state:', updatedData);
+
+      const response = await fetch(`${DATA_API_URL}/api/v1/admin/conferences/update-history`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
           id: params.id,
           ...updatedData,
-        }
-      );
-
-      // Cập nhật lại form với dữ liệu mới từ response
-      reset(response.data);
-      router.refresh();
-
-      toast.success(t('modal.editForm.updateSuccess'), {
-        duration: 4000,
-        position: 'top-right',
-        style: {
-          background: '#4CAF50',
-          color: '#fff',
-          padding: '16px',
-          borderRadius: '8px',
-        },
+        }),
       });
+
+      if (!response.ok) throw new Error('Failed to update data');
+      const responseData = await response.json();
+
+      await fetchConferenceData();
+      
+      setEditMode({
+        basicInfo: false,
+        links: false,
+        locations: false,
+      });
+
+      toast.success(t('modal.editForm.updateSuccess'));
 
     } catch (error) {
       console.error('Error updating conference history:', error);
-      toast.error(t('modal.editForm.updateError'), {
-        duration: 4000,
-        position: 'top-right',
-        style: {
-          background: '#F44336',
-          color: '#fff',
-          padding: '16px',
-          borderRadius: '8px',
-        },
-      });
+      toast.error(t('modal.editForm.updateError'));
     } finally {
       setIsSubmitting(false);
     }
@@ -355,16 +299,15 @@ export default function EditConferenceHistory({ params }: { params: { id: string
                 control={control}
                 render={({ field }) => (
                   <input
-                    id="year" // Thêm id để label hoạt động
+                    id="year"
                     type="number"
                     {...field}
-                    onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value, 10) : undefined)} // Xử lý giá trị empty
+                    onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value, 10) : undefined)}
                     className="w-full px-3 py-2 border rounded-md"
                     disabled={!editMode.basicInfo}
                   />
                 )}
               />
-              {errors.year && <p className="text-red-500 text-sm mt-1">{errors.year.message}</p>}
             </div>
 
             <div>
@@ -375,13 +318,12 @@ export default function EditConferenceHistory({ params }: { params: { id: string
                 control={control}
                 render={({ field }) => (
                   <select id="accessType" {...field} className="w-full px-3 py-2 border rounded-md" disabled={!editMode.basicInfo}>
-                    <option value="Online">Online</option> {/* Có thể dịch các option này nếu cần */}
-                    <option value="Offline">Offline</option> {/* Có thể dịch các option này nếu cần */}
-                    <option value="Hybrid">Hybrid</option> {/* Có thể dịch các option này nếu cần */}
+                    <option value="Online">Online</option>
+                    <option value="Offline">Offline</option>
+                    <option value="Hybrid">Hybrid</option>
                   </select>
                 )}
               />
-              {errors.accessType && <p className="text-red-500 text-sm mt-1">{errors.accessType.message}</p>}
             </div>
           </div>
 
@@ -395,7 +337,6 @@ export default function EditConferenceHistory({ params }: { params: { id: string
                 <input id="publisher" {...field} className="w-full px-3 py-2 border rounded-md" disabled={!editMode.basicInfo} />
               )}
             />
-            {errors.publisher && <p className="text-red-500 text-sm mt-1">{errors.publisher.message}</p>}
           </div>
 
           <div className="mt-4">
@@ -408,7 +349,6 @@ export default function EditConferenceHistory({ params }: { params: { id: string
                 <textarea id="summerize" {...field} className="w-full px-3 py-2 border rounded-md" rows={3} disabled={!editMode.basicInfo} />
               )}
             />
-            {errors.summerize && <p className="text-red-500 text-sm mt-1">{errors.summerize.message}</p>}
           </div>
 
           <div className="mt-4">
@@ -421,7 +361,6 @@ export default function EditConferenceHistory({ params }: { params: { id: string
                 <textarea id="callForPaper" {...field} className="w-full px-3 py-2 border rounded-md" rows={3} disabled={!editMode.basicInfo} />
               )}
             />
-            {errors.callForPaper && <p className="text-red-500 text-sm mt-1">{errors.callForPaper.message}</p>}
           </div>
         </div>
 
@@ -450,7 +389,6 @@ export default function EditConferenceHistory({ params }: { params: { id: string
                   <input id="link" type="url" {...field} className="w-full px-3 py-2 border rounded-md" disabled={!editMode.links} />
                 )}
               />
-              {errors.link && <p className="text-red-500 text-sm mt-1">{errors.link.message}</p>}
             </div>
 
             <div>
@@ -463,7 +401,6 @@ export default function EditConferenceHistory({ params }: { params: { id: string
                   <input id="cfpLink" type="url" {...field} className="w-full px-3 py-2 border rounded-md" disabled={!editMode.links} />
                 )}
               />
-              {errors.cfpLink && <p className="text-red-500 text-sm mt-1">{errors.cfpLink.message}</p>}
             </div>
 
             <div>
@@ -476,7 +413,6 @@ export default function EditConferenceHistory({ params }: { params: { id: string
                   <input id="impLink" type="url" {...field} className="w-full px-3 py-2 border rounded-md" disabled={!editMode.links} />
                 )}
               />
-              {errors.impLink && <p className="text-red-500 text-sm mt-1">{errors.impLink.message}</p>}
             </div>
           </div>
         </div>
@@ -575,7 +511,6 @@ export default function EditConferenceHistory({ params }: { params: { id: string
             </div>
           ))}
           {/* Lưu ý: Errors cho locations sẽ hiển thị chung, Zod errors cụ thể cho từng trường con cần xử lý riêng nếu muốn chi tiết hơn */}
-          {errors.locations && <p className="text-red-500 text-sm mt-1">{errors.locations.message}</p>}
         </div>
 
         {/* Topics Group - Always Editable */}
@@ -589,7 +524,6 @@ export default function EditConferenceHistory({ params }: { params: { id: string
             // tFunction={t} // Truyền hàm t vào TopicsTable nếu nó cần dịch nội bộ
             // translateKeys={{ addTopic: t('modal.editForm.addTopicButton'), topicPlaceholder: t('modal.editForm.topicPlaceholder'), ... }}
           />
-          {errors.topics && <p className="text-red-500 text-sm mt-1">{errors.topics.message}</p>}
         </div>
 
         {/* Dates Group - Always Editable */}
@@ -602,7 +536,6 @@ export default function EditConferenceHistory({ params }: { params: { id: string
             name="dates"
             onRefetch={fetchConferenceData}
           />
-          {errors.dates && <p className="text-red-500 text-sm mt-1">{errors.dates.message}</p>}
         </div>
 
         <div className="flex justify-end gap-4 mt-6">
@@ -619,8 +552,11 @@ export default function EditConferenceHistory({ params }: { params: { id: string
             type="submit"
             disabled={isSubmitting}
             className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 disabled:opacity-50"
+            onClick={(e) => {
+              e.preventDefault();
+              onSubmit()
+            }}
           >
-            {/* Sử dụng key dịch cho trạng thái nút Save */}
             {isSubmitting ? t('modal.editForm.saving') : t('modal.editForm.save')}
           </button>
         </div>
