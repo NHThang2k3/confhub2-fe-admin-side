@@ -4,6 +4,7 @@ import { useTranslations } from 'next-intl';
 import { AgGridReact } from 'ag-grid-react';
 import { AllCommunityModule, ColDef, GridReadyEvent, ICellRendererParams, ModuleRegistry, IRowNode, RowSelectionModule } from 'ag-grid-community';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { fromString } from 'any-date-parser';
 ModuleRegistry.registerModules([AllCommunityModule, RowSelectionModule]);
 
 interface ConferenceDate {
@@ -16,14 +17,16 @@ interface ConferenceDate {
 interface DatesTableProps {
   dates: ConferenceDate[];
   onDatesChange: (newDates: ConferenceDate[]) => void;
+  onRefetch?: () => Promise<void>;
 }
 
 interface DateRow extends ConferenceDate {}
 
-export default function DatesTable({ dates, onDatesChange }: DatesTableProps) {
+export default function DatesTable({ dates, onDatesChange, onRefetch }: DatesTableProps) {
   const t = useTranslations('conferencesPage');
   const gridRef = useRef<AgGridReact>(null);
   const [rowData, setRowData] = useState<DateRow[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   // Update rowData when dates prop changes
   useEffect(() => {
@@ -34,6 +37,19 @@ export default function DatesTable({ dates, onDatesChange }: DatesTableProps) {
       setRowData(newRowData);
     }
   }, [dates]);
+
+  const handleCancel = async () => {
+    if (onRefetch) {
+      try {
+        setIsLoading(true);
+        await onRefetch();
+      } catch (error) {
+        console.error('Error refetching data:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+  };
 
   const columnDefs: ColDef[] = [
     {
@@ -53,12 +69,44 @@ export default function DatesTable({ dates, onDatesChange }: DatesTableProps) {
       headerName: t('modal.editForm.startDate'),
       editable: true,
       flex: 1,
+      valueFormatter: (params) => {
+        if (!params.value) return '';
+        return new Date(params.value).toLocaleDateString();
+      },
+      valueParser: (params) => {
+        if (!params.newValue) return '';
+        try {
+          const parsedDate = fromString(params.newValue);
+          if (parsedDate) {
+            return parsedDate.toISOString();
+          }
+        } catch (error) {
+          console.error('Error parsing date:', error);
+        }
+        return params.newValue;
+      }
     },
     {
       field: 'endDate',
       headerName: t('modal.editForm.endDate'),
       editable: true,
       flex: 1,
+      valueFormatter: (params) => {
+        if (!params.value) return '';
+        return new Date(params.value).toLocaleDateString();
+      },
+      valueParser: (params) => {
+        if (!params.newValue) return '';
+        try {
+          const parsedDate = fromString(params.newValue);
+          if (parsedDate) {
+            return parsedDate.toISOString();
+          }
+        } catch (error) {
+          console.error('Error parsing date:', error);
+        }
+        return params.newValue;
+      }
     },
     {
       headerName: t('modal.editForm.remove'),
@@ -104,13 +152,24 @@ export default function DatesTable({ dates, onDatesChange }: DatesTableProps) {
     <div className="space-y-4">
       <div className="flex justify-between items-center">
         <label className="block text-sm font-medium">{t('modal.editForm.dates')}</label>
-        <button
-          type="button"
-          onClick={handleAddDate}
-          className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
-        >
-          {t('modal.editForm.addDate')}
-        </button>
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={handleCancel}
+            disabled={isLoading}
+            className="px-3 py-1 bg-gray-500 text-white rounded hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isLoading ? t('modal.editForm.loading') : t('modal.editForm.cancel')}
+          </button>
+          <button
+            type="button"
+            onClick={handleAddDate}
+            disabled={isLoading}
+            className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {t('modal.editForm.addDate')}
+          </button>
+        </div>
       </div>
       <div className="ag-theme-alpine w-full" style={{ height: 400 }}>
         <AgGridReact

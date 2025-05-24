@@ -29,14 +29,28 @@ interface ConferenceSelectionStepProps {
 
 const defaultColDefs: ColDef<Conference>[] = [
   {
-    field: 'acronym', headerName: 'Acronym', sortable: true, filter: true,
-    checkboxSelection: true, headerCheckboxSelection: true, width: 180,
+    field: 'acronym', 
+    headerName: 'Acronym', 
+    sortable: true, 
+    filter: true,
+    checkboxSelection: true, 
+    headerCheckboxSelection: true, 
+    width: 150,
+    minWidth: 120,
   },
-  { field: 'title', headerName: 'Title', sortable: true, filter: true, flex: 1 },
+  { 
+    field: 'title', 
+    headerName: 'Title', 
+    sortable: true, 
+    filter: true, 
+    flex: 1,
+    minWidth: 200,
+  },
   {
     field: 'crawlType',
     headerName: 'Action Type',
-    width: 150,
+    width: 130,
+    minWidth: 120,
     editable: true,
     cellEditor: 'agSelectCellEditor',
     cellEditorParams: { values: ['crawl', 'update'] },
@@ -48,25 +62,73 @@ const defaultColDefs: ColDef<Conference>[] = [
       return params.value ? params.value.charAt(0).toUpperCase() + params.value.slice(1) : '';
     }
   },
-  { field: 'sources', headerName: 'Sources', sortable: true, filter: true, width: 150 },
-  { field: 'ranks', headerName: 'Ranks', sortable: true, filter: true, width: 120 },
-  { field: 'researchFields', headerName: 'Research Fields', sortable: true, filter: true, width: 200 },
-  { field: 'status', headerName: 'Status', sortable: true, filter: true, width: 120 },
+  { 
+    field: 'sources', 
+    headerName: 'Sources', 
+    sortable: true, 
+    filter: true, 
+    width: 130,
+    minWidth: 120,
+  },
+  { 
+    field: 'ranks', 
+    headerName: 'Ranks', 
+    sortable: true, 
+    filter: true, 
+    width: 100,
+    minWidth: 90,
+  },
+  { 
+    field: 'researchFields', 
+    headerName: 'Research Fields', 
+    sortable: true, 
+    filter: true, 
+    width: 180,
+    minWidth: 150,
+  },
+  { 
+    field: 'status', 
+    headerName: 'Status', 
+    sortable: true, 
+    filter: true, 
+    width: 100,
+    minWidth: 90,
+  },
   {
-    field: 'updatedAt', headerName: 'Updated At', sortable: true, filter: true, width: 200,
+    field: 'updatedAt', 
+    headerName: 'Updated At', 
+    sortable: true, 
+    filter: true, 
+    width: 180,
+    minWidth: 150,
     valueFormatter: (params: ValueFormatterParams<Conference, string | number | Date | undefined>) =>
       params.value ? new Date(params.value).toLocaleString() : ''
   },
   {
-    field: 'link', headerName: 'Link (for Update)', sortable: true, filter: true, width: 200,
+    field: 'link', 
+    headerName: 'Link (for Update)', 
+    sortable: true, 
+    filter: true, 
+    width: 180,
+    minWidth: 150,
     cellClassRules: { 'italic text-gray-500': params => !params.data || params.data.crawlType === 'crawl' }
   },
   {
-    field: 'impLink', headerName: 'Imp Link (for Update)', sortable: true, filter: true, width: 200,
+    field: 'impLink', 
+    headerName: 'Imp Link (for Update)', 
+    sortable: true, 
+    filter: true, 
+    width: 180,
+    minWidth: 150,
     cellClassRules: { 'italic text-gray-500': params => !params.data || params.data.crawlType === 'crawl' }
   },
   {
-    field: 'cfpLink', headerName: 'Cfp Link (for Update)', sortable: true, filter: true, width: 200,
+    field: 'cfpLink', 
+    headerName: 'Cfp Link (for Update)', 
+    sortable: true, 
+    filter: true, 
+    width: 180,
+    minWidth: 150,
     cellClassRules: { 'italic text-gray-500': params => !params.data || params.data.crawlType === 'crawl' }
   }
 ];
@@ -95,7 +157,7 @@ const ConferenceSelectionStep: React.FC<ConferenceSelectionStepProps> = ({
   onNext,
   onPrev,
   canProceed,
-  onUpdateActionTypeForSelected, // Destructure new prop
+  onUpdateActionTypeForSelected,
 }) => {
   const [colDefs] = useState<ColDef<Conference>[]>(defaultColDefs);
   const gridOptions = useMemo<GridOptions<Conference>>(() => ({
@@ -122,41 +184,43 @@ const ConferenceSelectionStep: React.FC<ConferenceSelectionStepProps> = ({
 
 
   return (
-    <div className="space-y-6 rounded-lg border border-gray-200 p-6 bg-white shadow">
-      <h3 className="text-lg font-medium leading-6 text-gray-900">Step 2: Select Conferences and Action Type</h3>
-      <p className="text-sm text-gray-600">
+    <div className="space-y-4 md:space-y-6 rounded-lg border border-gray-200 p-3 md:p-6 bg-white shadow">
+      <h3 className="text-base md:text-lg font-medium leading-6 text-gray-900">Step 2: Select Conferences and Action Type</h3>
+      <p className="text-xs md:text-sm text-gray-600">
         Select conferences from the table below and specify the action type (Crawl or Update).
         For &apos;Update&apos; actions, ensure the relevant link fields (Link, Imp Link, Cfp Link) are provided if needed.
       </p>
 
       {/* UI for global action type selection */}
-      <div className="my-4 flex items-center space-x-3 p-3 bg-gray-5 rounded-md border border-gray-200">
-        <label htmlFor="globalActionType" className="block text-sm font-medium text-gray-700">
+      <div className="my-4 flex flex-col sm:flex-row items-start sm:items-center gap-3 p-3 bg-gray-5 rounded-md border border-gray-200">
+        <label htmlFor="globalActionType" className="block text-sm font-medium text-gray-700 whitespace-nowrap">
           Action Type for Selected:
         </label>
-        <select
-          id="globalActionType"
-          name="globalActionType"
-          value={globalActionType}
-          onChange={(e) => setGlobalActionType(e.target.value as 'crawl' | 'update')}
-          className="block w-auto rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm py-2 px-3"
-        >
-          <option value="crawl">Crawl</option>
-          <option value="update">Update</option>
-        </select>
-        <button
-          type="button"
-          onClick={handleApplyGlobalActionType}
-          disabled={selectedCsvRowsCount === 0}
-          className="inline-flex items-center rounded-md border border-transparent bg-indigo-600 px-3 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          Apply to {selectedCsvRowsCount} Selected
-        </button>
+        <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+          <select
+            id="globalActionType"
+            name="globalActionType"
+            value={globalActionType}
+            onChange={(e) => setGlobalActionType(e.target.value as 'crawl' | 'update')}
+            className="block w-full sm:w-auto rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm py-2 px-3"
+          >
+            <option value="crawl">Crawl</option>
+            <option value="update">Update</option>
+          </select>
+          <button
+            type="button"
+            onClick={handleApplyGlobalActionType}
+            disabled={selectedCsvRowsCount === 0}
+            className="inline-flex items-center justify-center rounded-md border border-transparent bg-indigo-600 px-3 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
+          >
+            Apply to {selectedCsvRowsCount} Selected
+          </button>
+        </div>
       </div>
 
-      <div className="ag-theme-alpine" style={{ height: 'calc(100vh - 500px)', minHeight: '350px', width: '100%' }}> {/* Adjusted height for new UI */}
+      <div className="ag-theme-alpine w-full overflow-hidden" style={{ height: 'calc(100vh - 400px)', minHeight: '300px' }}>
         <AgGridReact<Conference>
-          ref={gridRef} // Assign ref
+          ref={gridRef}
           rowData={parsedData}
           columnDefs={colDefs}
           gridOptions={gridOptions}
@@ -164,19 +228,17 @@ const ConferenceSelectionStep: React.FC<ConferenceSelectionStepProps> = ({
           getRowId={getRowId}
           domLayout='normal'
           className="w-full"
-          // Ensure AG Grid re-renders when rowData changes by reference
-          // This is usually default behavior in React AG Grid
         />
       </div>
-      <p className="mt-2 text-sm text-gray-600">
+      <p className="mt-2 text-xs md:text-sm text-gray-600">
         Selected {selectedCsvRowsCount} conference(s).
       </p>
 
-      <div className="mt-6 flex justify-between">
+      <div className="mt-4 md:mt-6 flex flex-col sm:flex-row justify-between gap-3">
         <button
           type="button"
           onClick={onPrev}
-          className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-5 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+          className="w-full sm:w-auto rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-5 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
         >
           Previous: Import File
         </button>
@@ -184,7 +246,7 @@ const ConferenceSelectionStep: React.FC<ConferenceSelectionStepProps> = ({
           type="button"
           onClick={onNext}
           disabled={!canProceed}
-          className="inline-flex items-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full sm:w-auto inline-flex items-center justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           Next: Configure & Process
         </button>
