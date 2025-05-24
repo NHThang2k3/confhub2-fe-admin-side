@@ -94,22 +94,6 @@ const OverallSummary: React.FC<OverallSummaryProps> = ({
     return (geminiApiData.totalCalls || 0) + (geminiApiData.totalRetries || 0);
   }, [geminiApiData]);
 
-  // Loại bỏ geminiModelUsageDetailedData
-  // const geminiModelUsageDetailedData = useMemo<BarChartData>(() => {
-  //   if (!geminiApiData?.modelUsageByApiType) return { labels: [], values: [] };
-  //   const combined: Record<string, number> = {};
-  //   Object.entries(geminiApiData.modelUsageByApiType).forEach(([apiType, models]) => {
-  //     Object.entries(models).forEach(([modelIdentifier, stats]) => {
-  //       const baseKey = `${apiType}: ${modelIdentifier.replace(/models\//, '')}`;
-  //       if (stats.calls > 0) combined[`${baseKey} (Calls)`] = stats.calls;
-  //       if (stats.successes > 0) combined[`${baseKey} (Success)`] = stats.successes;
-  //       if (stats.failures > 0) combined[`${baseKey} (Failures)`] = stats.failures;
-  //       if (stats.retries > 0) combined[`${baseKey} (Retries)`] = stats.retries;
-  //     });
-  //   });
-  //   return transformRecordToBarChart(combined, 0, true);
-  // }, [geminiApiData?.modelUsageByApiType]);
-
   // THÊM: Dữ liệu raw cho bảng Model Usage
   const geminiModelUsageRawData = useMemo<GeminiApiAnalysis['modelUsageByApiType']>(() => {
     return geminiApiData?.modelUsageByApiType || {};

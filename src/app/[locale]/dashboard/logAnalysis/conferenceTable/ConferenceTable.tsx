@@ -1,10 +1,12 @@
+// src/app/[locale]/dashboard/logAnalysis/ConferenceTable.tsx
 import React from 'react';
 import {
     ConferenceTableData,
     SortableColumn,
     SortDirection,
-    RowSaveStatus
-} from '@/src/hooks/crawl/useConferenceTableManager'; // Adjust path
+    RowSaveStatus,
+    ColumnFiltersState // <--- IMPORT ColumnFiltersState
+} from '@/src/hooks/crawl/useConferenceTableManager';
 import { ConferenceTableHeader } from './ConferenceTableHeader';
 import { ConferenceTableRow } from './ConferenceTableRow';
 
@@ -19,7 +21,8 @@ interface ConferenceTableProps {
     onSort: (column: SortableColumn) => void;
     onToggleExpand: (uniqueRowId: string) => void;
     onSelectToggle: (uniqueRowId: string) => void;
-    // filterRequestId?: string | null; // Prop này không còn dùng trực tiếp ở đây
+    columnFilters: ColumnFiltersState; // <--- PROP MỚI
+    onColumnFilterChange: (column: keyof ColumnFiltersState, value: string) => void; // <--- PROP MỚI
 }
 
 export const ConferenceTable: React.FC<ConferenceTableProps> = ({
@@ -33,15 +36,12 @@ export const ConferenceTable: React.FC<ConferenceTableProps> = ({
     onSort,
     onToggleExpand,
     onSelectToggle,
+    columnFilters, // <--- NHẬN PROP
+    onColumnFilterChange, // <--- NHẬN PROP
 }) => {
-    // Hiển thị cột Request ID nếu có ít nhất một dòng có requestId khác 'N/A'
     const shouldShowRequestIdColumn = data.some(d => d.requestId && d.requestId !== 'N/A');
-
-    // Tính colSpan cho hàng "No data"
-    // Sel (1) + Title (1) + ActionType (1) + RequestID (0 or 1) + Status (1) + Duration (1) + 6 step icons (6) + Warns (1) + Errors (1) + Save (1) = 14 or 15
     const baseColSpan = 14;
     const noDataColSpan = shouldShowRequestIdColumn ? baseColSpan + 1 : baseColSpan;
-
 
     return (
         <div className="bg-white shadow-lg rounded-lg overflow-x-auto border border-gray-200">
@@ -50,7 +50,9 @@ export const ConferenceTable: React.FC<ConferenceTableProps> = ({
                     sortColumn={sortColumn}
                     sortDirection={sortDirection}
                     onSort={onSort}
-                    isFilteredByRequest={shouldShowRequestIdColumn} // Truyền trạng thái hiển thị cột Request ID
+                    isFilteredByRequest={shouldShowRequestIdColumn}
+                    columnFilters={columnFilters} // <--- TRUYỀN XUỐNG
+                    onColumnFilterChange={onColumnFilterChange} // <--- TRUYỀN XUỐNG
                 />
                 <tbody className="bg-white divide-y divide-gray-200">
                     {data.map((confData) => {

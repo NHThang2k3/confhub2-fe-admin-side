@@ -160,7 +160,6 @@ export const ConferenceTableRow: React.FC<ConferenceTableRowProps> = ({
         </td>
         <td className='whitespace-nowrap px-3 py-2 text-sm text-gray-500 text-center'>{formatDuration(durationSeconds)}</td>
         <td className='whitespace-nowrap px-2 py-2 text-center text-lg'><StatusIcon success={steps?.search_success} attempted={steps?.search_attempted} /></td>
-        <td className='whitespace-nowrap px-2 py-2 text-center text-lg'><StatusIcon success={steps?.html_save_success} attempted={steps?.html_save_attempted} /></td>
         <td className='whitespace-nowrap px-2 py-2 text-center text-lg'>
           <StatusIcon
             success={linkIconSuccess}
@@ -168,6 +167,7 @@ export const ConferenceTableRow: React.FC<ConferenceTableRowProps> = ({
             hasAttempts={linkIconHasAttempts}
           />
         </td>
+        <td className='whitespace-nowrap px-2 py-2 text-center text-lg'><StatusIcon success={steps?.html_save_success} attempted={steps?.html_save_attempted} /></td>
         <td className='whitespace-nowrap px-2 py-2 text-center text-lg'><StatusIcon success={steps?.gemini_determine_success} attempted={steps?.gemini_determine_attempted} /></td>
         <td className='whitespace-nowrap px-2 py-2 text-center text-lg'><StatusIcon success={steps?.gemini_cfp_success} attempted={steps?.gemini_cfp_attempted} /></td>
         <td className='whitespace-nowrap px-2 py-2 text-center text-lg'><StatusIcon success={steps?.gemini_extract_success} attempted={steps?.gemini_extract_attempted} /></td>

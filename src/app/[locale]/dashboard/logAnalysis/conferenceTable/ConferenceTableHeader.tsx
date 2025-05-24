@@ -1,87 +1,127 @@
-// src/app/[locale]/dashboard/logAnalysis/ConferenceTableHeader.tsx
+// ConferenceTableHeader.tsx
 import React from 'react';
-import {
-  FaSort, FaSortUp, FaSortDown, FaTimesCircle, FaSave, FaExclamationCircle, FaCogs
-} from 'react-icons/fa';
-import {
-  SortableColumn,
-  SortDirection
-} from '@/src/hooks/crawl/useConferenceTableManager'; // Adjusted path
-import { Rocket } from 'lucide-react';
+import { FaArrowUp, FaArrowDown } from 'react-icons/fa';
+import { SortableColumn, SortDirection, ColumnFiltersState } from '@/src/hooks/crawl/useConferenceTableManager'; // Adjust path
 
 interface ConferenceTableHeaderProps {
   sortColumn: SortableColumn | null;
   sortDirection: SortDirection;
   onSort: (column: SortableColumn) => void;
-  isFilteredByRequest?: boolean;
+  isFilteredByRequest: boolean; // Giữ lại prop này nếu vẫn dùng để quyết định hiển thị cột Request ID
+  columnFilters: ColumnFiltersState;
+  onColumnFilterChange: (column: keyof ColumnFiltersState, value: string) => void;
 }
+
+const ThWithSort: React.FC<{
+  column: SortableColumn;
+  title: string;
+  currentSortColumn: SortableColumn | null;
+  currentSortDirection: SortDirection;
+  onSort: (column: SortableColumn) => void;
+  className?: string;
+}> = ({ column, title, currentSortColumn, currentSortDirection, onSort, className }) => (
+  <th
+    scope="col"
+    className={`px-3 py-3 text-left text-xs font-medium uppercase tracking-wider cursor-pointer hover:bg-gray-100 ${className || ''}`}
+    onClick={() => onSort(column)}
+  >
+    <div className="flex items-center">
+      {title}
+      {currentSortColumn === column && (
+        currentSortDirection === 'asc' ? <FaArrowUp className="ml-1.5 h-3 w-3" /> : <FaArrowDown className="ml-1.5 h-3 w-3" />
+      )}
+    </div>
+  </th>
+);
+
+const FilterInput: React.FC<{
+  columnKey: keyof ColumnFiltersState;
+  value: string | undefined;
+  onChange: (column: keyof ColumnFiltersState, value: string) => void;
+  placeholder?: string;
+  type?: 'text' | 'number';
+}> = ({ columnKey, value, onChange, placeholder, type = 'text' }) => (
+  <input
+    type={type}
+    className="block w-full border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md p-1.5 text-xs"
+    placeholder={placeholder || `Filter ${columnKey}...`}
+    value={value || ''}
+    onChange={(e) => onChange(columnKey, e.target.value)}
+    onClick={(e) => e.stopPropagation()} // Ngăn sort khi click vào input
+  />
+);
+
 
 export const ConferenceTableHeader: React.FC<ConferenceTableHeaderProps> = ({
   sortColumn,
   sortDirection,
   onSort,
-  isFilteredByRequest
+  isFilteredByRequest, // Sử dụng prop này để quyết định có hiển thị cột Request ID hay không
+  columnFilters,
+  onColumnFilterChange
 }) => {
-  const renderSortIcon = (column: SortableColumn) => {
-    if (sortColumn !== column) return <FaSort className='ml-1 inline-block text-gray-400' />;
-    return sortDirection === 'asc' ? <FaSortUp className='ml-1 inline-block text-blue-600' /> : <FaSortDown className='ml-1 inline-block text-blue-600' />;
-  };
+  // Cấu hình các cột, bao gồm cả việc có hiển thị cột Request ID hay không
+  const columnsConfig = [
+    { key: 'sel', title: 'Sel', sortable: false, filterable: false, className: 'w-12' },
+    { key: 'title', title: 'Title/Acronym', sortable: true, sortKey: 'title' as SortableColumn, filterable: true, filterKey: 'title' as keyof ColumnFiltersState, className: 'min-w-[250px]' },
+    { key: 'crawlType', title: 'Action Type', sortable: true, sortKey: 'crawlType' as SortableColumn, filterable: true, filterKey: 'crawlType' as keyof ColumnFiltersState, className: 'min-w-[120px]' },
+    ...(isFilteredByRequest ? [{ key: 'requestId', title: 'Request ID', sortable: true, sortKey: 'requestId' as SortableColumn, filterable: true, filterKey: 'requestId' as keyof ColumnFiltersState, className: 'min-w-[150px]' }] : []),
+    { key: 'status', title: 'Status', sortable: true, sortKey: 'status' as SortableColumn, filterable: true, filterKey: 'status' as keyof ColumnFiltersState, className: 'min-w-[100px]' },
+    { key: 'durationSeconds', title: 'Duration', sortable: true, sortKey: 'durationSeconds' as SortableColumn, filterable: false, className: 'min-w-[90px] text-center' },
+    { key: 'search', title: 'Search', sortable: false, filterable: false, className: 'text-center' },
+    { key: 'link', title: 'Link', sortable: false, filterable: false, className: 'text-center' },
+    { key: 'html', title: 'Html', sortable: false, filterable: false, className: 'text-center' },
+    { key: 'g_det', title: 'Det', sortable: false, filterable: false, className: 'text-center' },
+    { key: 'g_cfp', title: 'Cfp', sortable: false, filterable: false, className: 'text-center' },
+    { key: 'g_ext', title: 'Ext', sortable: false, filterable: false, className: 'text-center' },
+    { key: 'dataQualityInsightCount', title: 'Warns', sortable: true, sortKey: 'dataQualityInsightCount' as SortableColumn, filterable: true, filterKey: 'dataQualityInsightCount' as keyof ColumnFiltersState, inputType: 'number' as 'number', className: 'min-w-[80px] text-center' },
+    { key: 'errorCount', title: 'Errors', sortable: true, sortKey: 'errorCount' as SortableColumn, filterable: true, filterKey: 'errorCount' as keyof ColumnFiltersState, inputType: 'number' as 'number', className: 'min-w-[80px] text-center' },
+    { key: 'save', title: 'Save', sortable: false, filterable: false, className: 'text-center' },
+  ];
 
-  const SortButton: React.FC<{ column: SortableColumn, title: string, className?: string, children: React.ReactNode }> =
-    ({ column, title, className = '', children }) => (
-      <button
-        className={`group flex w-full items-center text-left focus:outline-none ${className}`}
-        onClick={() => onSort(column)}
-        title={`Sort by ${title} ${sortColumn === column ? (sortDirection === 'asc' ? '(Ascending)' : '(Descending)') : ''}`}
-      >
-        {children}
-        {renderSortIcon(column)}
-      </button>
-    );
 
   return (
-    <thead className='bg-gray-100 sticky top-0 z-10'>
+    <thead className="bg-gray-5 text-gray-500">
       <tr>
-        <th scope='col' className='w-[3%] px-3 py-3 text-center text-xs font-medium uppercase tracking-wider text-gray-500'>Sel</th>
-        <th scope='col' className='min-w-[200px] px-3 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500'><SortButton column='title' title='Title'>Title</SortButton></th> {/* Increased min-width for title */}
-
-        {/* THÊM CỘT ACTION TYPE */}
-        <th scope='col' className='w-[100px] px-3 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500'>
-          <SortButton column='crawlType' title='Action Type'>
-            <FaCogs size={14} className='mr-1 inline text-teal-600' /> Action
-          </SortButton>
-        </th>
-
-        {isFilteredByRequest && (
-          <th scope='col' className='min-w-[150px] px-3 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500'> {/* Increased min-width */}
-            <SortButton column='requestId' title='Request ID'>
-              <Rocket size={16} className='mr-1 inline text-purple-500' /> Request ID
-            </SortButton>
+        {columnsConfig.map(col => {
+          if (col.sortable) {
+            return (
+              <ThWithSort
+                key={col.key}
+                column={col.sortKey!}
+                title={col.title}
+                currentSortColumn={sortColumn}
+                currentSortDirection={sortDirection}
+                onSort={onSort}
+                className={col.className}
+              />
+            );
+          }
+          return (
+            <th key={col.key} scope="col" className={`px-3 py-3 text-left text-xs font-medium uppercase tracking-wider ${col.className || ''}`}>
+              {col.title}
+            </th>
+          );
+        })}
+      </tr>
+      {/* Hàng cho Filter Inputs */}
+      <tr className="bg-gray-5">
+        {columnsConfig.map(col => (
+          <th key={`${col.key}-filter`} className="px-1 py-1 align-top">
+            {col.filterable && col.filterKey ? (
+              <FilterInput
+                columnKey={col.filterKey}
+                value={columnFilters[col.filterKey]}
+                onChange={onColumnFilterChange}
+                placeholder={`${col.title}...`}
+                type={col.inputType || 'text'}
+              />
+            ) : (
+              // Ô trống cho các cột không có filter
+              <div className="h-[30px]"></div> // Đảm bảo chiều cao bằng với input
+            )}
           </th>
-        )}
-
-        <th scope='col' className='w-[100px] px-3 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500'><SortButton column='status' title='Status'>Status</SortButton></th>
-        <th scope='col' className='w-[100px] px-3 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500'><SortButton column='durationSeconds' title='Duration'>Duration</SortButton></th>
-        <th scope='col' className='w-[80px] px-2 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500' title='Google Search'>Search</th>
-        <th scope='col' className='w-[80px] px-2 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500' title='HTML Save'>HTML</th>
-        <th scope='col' className='w-[80px] px-2 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500' title='Link Processing'>Links</th>
-        <th scope='col' className='w-[80px] px-2 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500' title='Gemini Determine'>Det.</th>
-        <th scope='col' className='w-[80px] px-2 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500' title='Gemini CFP'>CFP</th>
-        <th scope='col' className='w-[80px] px-2 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500' title='Gemini Extract'>Ext.</th>
-        <th scope='col' className='w-[90px] px-3 pt-0.5 text-left text-xs font-medium uppercase tracking-wider text-gray-500'>
-          {/* Sửa tên cột sortable */}
-          <SortButton column='dataQualityInsightCount' title='Data Quality Insight Count' className='justify-center'>
-            <FaExclamationCircle className='mr-1 inline text-amber-500' /> Warns
-          </SortButton>
-        </th>
-        <th scope='col' className='w-[90px] px-3 pt-0.5 text-center text-xs font-medium uppercase tracking-wider text-gray-500'>
-          <SortButton column='errorCount' title='Error Count' className='justify-center'>
-            <FaTimesCircle className='mb-0.5 mr-1 inline text-red-500' /> Errors
-          </SortButton>
-        </th>
-        <th scope='col' className='w-[80px] pr-4 pt-0.5 text-right text-xs font-medium uppercase tracking-wider text-gray-500' title='Save Status'>
-          <FaSave className='mr-1 inline' />Save
-        </th>
+        ))}
       </tr>
     </thead>
   );

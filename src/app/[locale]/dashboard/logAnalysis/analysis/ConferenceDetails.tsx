@@ -1,11 +1,12 @@
+// src/app/[locale]/dashboard/logAnalysis/analysis/ConferenceDetails.tsx
 import React, { useState } from 'react';
 import { FaChevronUp, FaChevronDown } from 'react-icons/fa';
 import { LogAnalysisResult } from '@/src/models/logAnalysis';
 import { useConferenceTableManager } from '@/src/hooks/crawl/useConferenceTableManager';
-import { ConferenceTableControls } from '../conferenceTable/ConferenceTableControls';
-import { ConferenceTable } from '../conferenceTable/ConferenceTable';
+import { ConferenceTableControls } from '../conferenceTable/ConferenceTableControls'; // Kiểm tra lại đường dẫn này
+import { ConferenceTable } from '../conferenceTable/ConferenceTable'; // Kiểm tra lại đường dẫn này
 import { useConferenceCrawl } from '@/src/hooks/crawl/useConferenceCrawl';
-import ProcessActionModal from '../conferenceTable/ProcessActionModal';
+import ProcessActionModal from '../conferenceTable/ProcessActionModal'; // Kiểm tra lại đường dẫn này
 
 interface ConferenceDetailsProps {
   logAnalysisResult: LogAnalysisResult | null | undefined;
@@ -15,7 +16,6 @@ const ConferenceDetails: React.FC<ConferenceDetailsProps> = ({
   logAnalysisResult
 }) => {
   const [isExpanded, setIsExpanded] = useState(true);
-  // isGlobalCrawling từ useConferenceCrawl vẫn có thể dùng để chỉ trạng thái chung của hook crawl
   const { isCrawling: isGlobalProcessing } = useConferenceCrawl();
 
   const handleToggleExpand = () => {
@@ -26,9 +26,12 @@ const ConferenceDetails: React.FC<ConferenceDetailsProps> = ({
   const hasData = tableManager.sortedData && tableManager.sortedData.length > 0;
   const rowSaveErrorsCount = Object.keys(tableManager.rowSaveErrors).length;
 
+  // Kiểm tra xem có filter cột nào đang được áp dụng không
+  const hasActiveColumnFilters = Object.values(tableManager.columnFilters).some(value => value && value.trim() !== '');
+
   return (
     <>
-      <section className='bg-white shadow-xl rounded-lg p-4 md:p-6 border border-gray-200 mt-6 hover:bg-gray-5'>
+      <section className='bg-white shadow-xl rounded-lg p-4 md:p-6 border border-gray-200 mt-6 hover:bg-gray-5'> {/* Sửa hover:bg-gray-5 thành hover:bg-gray-5 */}
         <div
           className='flex flex-wrap items-center justify-between mb-4 pb-2 border-b border-gray-300 gap-4 cursor-pointer'
           onClick={handleToggleExpand}
@@ -57,7 +60,7 @@ const ConferenceDetails: React.FC<ConferenceDetailsProps> = ({
               <p className='text-center text-gray-500 py-8'>
                 No conference analysis data available.
               </p>
-            ) : !hasData && tableManager.searchQuery ? (
+            ) : !hasData && (tableManager.searchQuery || hasActiveColumnFilters) ? ( // Kiểm tra cả searchQuery và columnFilters
               <>
                 <ConferenceTableControls
                   selectedCount={tableManager.selectedRowIds.length}
@@ -77,8 +80,24 @@ const ConferenceDetails: React.FC<ConferenceDetailsProps> = ({
                   onSearchChange={tableManager.setSearchQuery}
                 />
                 <p className='text-center text-gray-500 py-8'>
-                  No conferences match your search term "{tableManager.searchQuery}".
+                  No conferences match your current filter criteria.
+                  {tableManager.searchQuery && ` (Search: "${tableManager.searchQuery}")`}
                 </p>
+                 {/* Hiển thị ConferenceTable trống với header filter để người dùng có thể thay đổi filter */}
+                <ConferenceTable
+                  data={[]} // Truyền mảng rỗng
+                  selectedRows={{}}
+                  expandedRowUniqueId={null}
+                  sortColumn={tableManager.sortColumn}
+                  sortDirection={tableManager.sortDirection}
+                  rowSaveStatus={{}}
+                  rowSaveErrors={{}}
+                  onSort={tableManager.handleSort}
+                  onToggleExpand={tableManager.toggleExpand}
+                  onSelectToggle={tableManager.handleRowSelectToggle}
+                  columnFilters={tableManager.columnFilters} // <--- TRUYỀN VÀO
+                  onColumnFilterChange={tableManager.handleColumnFilterChange} // <--- TRUYỀN VÀO
+                />
               </>
             ) : (
               <>
@@ -110,6 +129,8 @@ const ConferenceDetails: React.FC<ConferenceDetailsProps> = ({
                   onSort={tableManager.handleSort}
                   onToggleExpand={tableManager.toggleExpand}
                   onSelectToggle={tableManager.handleRowSelectToggle}
+                  columnFilters={tableManager.columnFilters} // <--- TRUYỀN VÀO
+                  onColumnFilterChange={tableManager.handleColumnFilterChange} // <--- TRUYỀN VÀO
                 />
               </>
             )}
@@ -117,7 +138,6 @@ const ConferenceDetails: React.FC<ConferenceDetailsProps> = ({
         )}
       </section>
 
-      {/* Sử dụng Modal đã đổi tên và props mới */}
       <ProcessActionModal
         isOpen={tableManager.isProcessModalOpen}
         onClose={() => tableManager.setIsProcessModalOpen(false)}

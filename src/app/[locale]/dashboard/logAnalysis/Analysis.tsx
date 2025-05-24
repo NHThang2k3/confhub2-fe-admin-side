@@ -176,7 +176,7 @@ const Analysis: React.FC = () => {
     }
 
     return (
-        <div className="p-4 md:p-6 lg:p-8 bg-gradient-to-br from-gray-100 to-blue-50 min-h-screen font-sans space-y-6">
+        <div className="p-2 bg-gradient-to-br from-gray-100 to-blue-50 min-h-screen font-sans space-y-6">
             <AnalysisHeader
                 loading={loading && !!data} // Show loading on header if data exists but is refreshing
                 error={(error && data) ? error : null} // Show error on header if data exists and refresh failed

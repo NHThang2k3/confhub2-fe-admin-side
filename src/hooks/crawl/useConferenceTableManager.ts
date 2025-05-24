@@ -48,6 +48,19 @@ export interface ConferenceTableData extends Omit<ConferenceAnalysisDetail, 'dat
   impLink?: string;
 }
 
+
+// Thêm interface cho column filters
+export interface ColumnFiltersState {
+  title?: string;
+  acronym?: string;
+  status?: string;
+  requestId?: string;
+  crawlType?: string;
+  dataQualityInsightCount?: string; // Sẽ parse thành số, dùng string để input dễ hơn
+  errorCount?: string; // Tương tự
+  // Thêm các cột khác nếu cần
+}
+
 export interface UseConferenceTableManagerProps {
   logAnalysisResult: LogAnalysisResult | null | undefined;
 }
@@ -70,6 +83,7 @@ export const useConferenceTableManager = ({
     {}
   );
   const [searchQuery, setSearchQuery] = useState('');
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>({}); // <--- STATE MỚI
 
   const {
     startCrawlItems, // This function now expects ConferenceForAction[]
@@ -122,6 +136,7 @@ export const useConferenceTableManager = ({
     });
   }, [logAnalysisResult]);
 
+
   useEffect(() => {
     setSelectedRows({});
     setMainSaveStatus('idle');
@@ -129,22 +144,78 @@ export const useConferenceTableManager = ({
     setRowSaveErrors({});
     setExpandedRow(null);
     setSearchQuery('');
+    setColumnFilters({}); // <--- RESET COLUMN FILTERS
   }, [logAnalysisResult]);
 
 
 
+
+  const handleColumnFilterChange = useCallback(
+    (column: keyof ColumnFiltersState, value: string) => {
+      setColumnFilters(prev => ({
+        ...prev,
+        [column]: value,
+      }));
+    },
+    []
+  );
+
+
+
+
   const filteredData = useMemo(() => {
-    if (!searchQuery.trim()) {
-      return conferenceDataArray;
+    let dataToFilter = [...conferenceDataArray]; // Tạo bản sao để không thay đổi mảng gốc
+
+    // 1. Lọc bằng Global Search Query (searchQuery)
+    if (searchQuery.trim()) {
+      const lowercasedQuery = searchQuery.toLowerCase();
+      dataToFilter = dataToFilter.filter(
+        conf =>
+          conf.title.toLowerCase().includes(lowercasedQuery) ||
+          conf.acronym.toLowerCase().includes(lowercasedQuery) ||
+          (conf.status && conf.status.toLowerCase().includes(lowercasedQuery))
+        // Bạn có thể thêm các trường khác vào global search nếu muốn
+      );
     }
-    const lowercasedQuery = searchQuery.toLowerCase();
-    return conferenceDataArray.filter(
-      conf =>
-        conf.title.toLowerCase().includes(lowercasedQuery) ||
-        conf.acronym.toLowerCase().includes(lowercasedQuery) ||
-        (conf.status && conf.status.toLowerCase().includes(lowercasedQuery))
+
+    // 2. Lọc bằng Column-Specific Filters (columnFilters)
+    const activeColumnFilters = Object.entries(columnFilters).filter(
+      ([, value]) => value !== undefined && value.trim() !== ''
     );
-  }, [conferenceDataArray, searchQuery]);
+
+    if (activeColumnFilters.length > 0) {
+      dataToFilter = dataToFilter.filter(conf => {
+        return activeColumnFilters.every(([key, filterValue]) => {
+          const filterValLower = filterValue.toLowerCase();
+          switch (key as keyof ColumnFiltersState) {
+            case 'title':
+              return conf.title.toLowerCase().includes(filterValLower);
+            case 'acronym':
+              return conf.acronym.toLowerCase().includes(filterValLower);
+            case 'status':
+              return conf.status?.toLowerCase().includes(filterValLower);
+            case 'requestId':
+              // Kiểm tra requestId có tồn tại và khác 'N/A' không trước khi lọc
+              return conf.requestId && conf.requestId !== 'N/A' && conf.requestId.toLowerCase().includes(filterValLower);
+            case 'crawlType':
+              return conf.crawlType?.toLowerCase().includes(filterValLower);
+            case 'dataQualityInsightCount':
+              const countWarns = parseInt(filterValue, 10);
+              return !isNaN(countWarns) ? conf.dataQualityInsightCount === countWarns : true; // Nếu không phải số hợp lệ, bỏ qua filter này
+            case 'errorCount':
+              const countErrors = parseInt(filterValue, 10);
+              return !isNaN(countErrors) ? conf.errorCount === countErrors : true; // Nếu không phải số hợp lệ, bỏ qua filter này
+            default:
+              return true;
+          }
+        });
+      });
+    }
+
+    return dataToFilter;
+  }, [conferenceDataArray, searchQuery, columnFilters]);
+
+
 
   const sortedData = useMemo(() => {
     if (!sortColumn) return filteredData;
@@ -443,6 +514,8 @@ export const useConferenceTableManager = ({
     handleProcessAgainClick, // Renamed
     searchQuery,
     setSearchQuery,
+    columnFilters, // <--- TRẢ VỀ COLUMN FILTERS
+    handleColumnFilterChange, // <--- TRẢ VỀ HÀM XỬ LÝ
     isProcessModalOpen, // Renamed
     setIsProcessModalOpen, // Renamed
     // Renamed for clarity, this now expects ConferenceForAction[] from the modal
