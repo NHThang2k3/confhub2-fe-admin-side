@@ -12,6 +12,8 @@ import { toast, Toaster } from 'react-hot-toast';
 import TopicsTable from '../components/TopicsTable';
 import DatesTable from '../components/DatesTable';
 import { Link } from '@/src/navigation';
+import { ConferenceDateType, ConferenceDate } from '../components/DatesTable';
+import dayjs from 'dayjs';
 // import { Link } from 'lucide-react';
 
 
@@ -20,13 +22,6 @@ interface Location {
   cityStateProvince?: string;
   country?: string;
   continent?: string;
-}
-
-interface ConferenceDate {
-  type?: string;
-  startDate?: string;
-  endDate?: string;
-  name?: string;
 }
 
 interface FormValues {
@@ -65,18 +60,23 @@ const dateSchema = z.object({
 });
 
 const formSchema = z.object({
-  year: z.number().min(1900).max(2100).optional(), // Thêm message tùy chỉnh nếu cần dịch Zod errors
+  year: z.number().min(1900).max(2100).optional(),
   accessType: z.enum(['Online', 'Offline', 'Hybrid']).default('Offline'),
   isAvailable: z.boolean().optional(),
   publisher: z.string().optional(),
   summerize: z.string().optional(),
   callForPaper: z.string().optional(),
-  link: z.string().url('Must be a valid URL').optional(), // Thêm message tùy chỉnh nếu cần dịch Zod errors
-  cfpLink: z.string().url('Must be a valid URL').optional(), // Thêm message tùy chỉnh nếu cần dịch Zod errors
-  impLink: z.string().url('Must be a valid URL').optional(), // Thêm message tùy chỉnh nếu cần dịch Zod errors
+  link: z.string().url('Must be a valid URL').optional(),
+  cfpLink: z.string().url('Must be a valid URL').optional(),
+  impLink: z.string().url('Must be a valid URL').optional(),
   locations: z.array(locationSchema).optional(),
   topics: z.array(z.string()).optional(),
-  dates: z.array(dateSchema).optional(),
+  dates: z.array(z.object({
+    type: z.nativeEnum(ConferenceDateType),
+    name: z.string().min(1, 'Date name is required'),
+    startDate: z.string().min(1, 'Start date is required'),
+    endDate: z.string().min(1, 'End date is required')
+  })).optional(),
 });
 
 export default function EditConferenceHistory({ params }: { params: { id: string, locale: string } }) {
@@ -184,26 +184,33 @@ export default function EditConferenceHistory({ params }: { params: { id: string
     try {
       const response = await axios.get(`${DATA_API_URL}/api/v1/admin/conferences/history/${params.id}`);
       const data = response.data;
+      
+      // Convert dates to the new format
+      const formattedDates = data.dates?.map((date: any) => ({
+        type: date.type || ConferenceDateType.OTHER_DATE,
+        name: date.name || '',
+        startDate: date.startDate ? dayjs(date.startDate).format('YYYY-MM-DD') : '',
+        endDate: date.endDate ? dayjs(date.endDate).format('YYYY-MM-DD') : ''
+      })) || [];
+
       // Ensure topics is always an array
       if (data.topics && Array.isArray(data.topics)) {
         reset({
           ...data,
           topics: data.topics,
-          // Đảm bảo locations và dates cũng là array nếu chúng là undefined hoặc null
+          dates: formattedDates,
           locations: Array.isArray(data.locations) ? data.locations : [],
-          dates: Array.isArray(data.dates) ? data.dates : [],
         });
       } else {
         reset({
           ...data,
-          topics: [], // Đảm bảo topics là array rỗng nếu không có data.topics
+          topics: [],
+          dates: formattedDates,
           locations: Array.isArray(data.locations) ? data.locations : [],
-          dates: Array.isArray(data.dates) ? data.dates : [],
         });
       }
     } catch (error) {
       console.error('Error fetching organization data:', error);
-      // Sử dụng key dịch cho thông báo lỗi
       toast.error(t('modal.editForm.fetchError'));
     }
   };
@@ -272,7 +279,7 @@ export default function EditConferenceHistory({ params }: { params: { id: string
       const response = await axios.put(
         `${DATA_API_URL}/api/v1/admin/conferences/update-history`,
         {
-          conferenceId: params.id,
+          id: params.id,
           ...updatedData,
         }
       );
@@ -281,7 +288,6 @@ export default function EditConferenceHistory({ params }: { params: { id: string
       reset(response.data);
       router.refresh();
 
-      // Sử dụng key dịch cho thông báo thành công
       toast.success(t('modal.editForm.updateSuccess'), {
         duration: 4000,
         position: 'top-right',
@@ -293,15 +299,8 @@ export default function EditConferenceHistory({ params }: { params: { id: string
         },
       });
 
-      // Có thể tắt chế độ chỉnh sửa sau khi lưu thành công nếu muốn
-      // setEditMode({ basicInfo: false, links: false, locations: false });
-
-      // Không cần fetch lại dữ liệu nếu reset(response.data) đã làm điều đó
-      // await fetchConferenceData();
-
     } catch (error) {
       console.error('Error updating conference history:', error);
-      // Sử dụng key dịch cho thông báo lỗi cập nhật
       toast.error(t('modal.editForm.updateError'), {
         duration: 4000,
         position: 'top-right',
@@ -597,9 +596,10 @@ export default function EditConferenceHistory({ params }: { params: { id: string
         <div className="border rounded-lg p-4">
           {/* Sử dụng key dịch cho tiêu đề nhóm */}
           <h2 className="text-lg font-semibold mb-4">{t('modal.editForm.dates')}</h2>
-           <DatesTable
-            dates={dates}
-            onDatesChange={handleDatesChange}
+          <DatesTable
+            control={control}
+            watch={watch}
+            name="dates"
             onRefetch={fetchConferenceData}
           />
           {errors.dates && <p className="text-red-500 text-sm mt-1">{errors.dates.message}</p>}
