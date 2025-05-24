@@ -6,8 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/src/contexts/AuthContext';
 import Crawl from './Crawl';
 import { useTranslations } from 'next-intl';
-import 'ag-grid-community/styles/ag-grid.css';
-import 'ag-grid-community/styles/ag-theme-alpine.css';
+
 
 export default function CrawlPage({ params: { locale } }: { params: { locale: string } }) {
     const t = useTranslations('CrawlPage'); // Cần namespace 'CrawlPage' trong file messages/[locale].json

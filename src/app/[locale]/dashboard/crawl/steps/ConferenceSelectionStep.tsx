@@ -11,13 +11,11 @@ import {
   ValueFormatterParams,
   SelectionChangedEvent,
   GridApi, // Import GridApi
+  PaginationNumberFormatterParams,
 } from 'ag-grid-community';
 import { AgGridReact } from 'ag-grid-react';
 
 ModuleRegistry.registerModules([AllCommunityModule, RowSelectionModule]);
-
-import 'ag-grid-community/styles/ag-grid.css';
-import 'ag-grid-community/styles/ag-theme-alpine.css';
 
 interface ConferenceSelectionStepProps {
   parsedData: Conference[];
@@ -76,6 +74,10 @@ const defaultColDefs: ColDef<Conference>[] = [
 const defaultGridOptions: GridOptions<Conference> = {
   rowSelection: 'multiple',
   suppressRowClickSelection: true,
+  pagination: true,
+  paginationPageSize: 10,
+  paginationPageSizeSelector: [10, 20, 50, 100],
+  domLayout: 'normal',
   // Enable this if you want the grid to re-render when rowData prop changes.
   // It's often true by default for React.
   // deltaRowDataMode: true, // Not strictly needed if you pass a new array to rowData
@@ -96,7 +98,12 @@ const ConferenceSelectionStep: React.FC<ConferenceSelectionStepProps> = ({
   onUpdateActionTypeForSelected, // Destructure new prop
 }) => {
   const [colDefs] = useState<ColDef<Conference>[]>(defaultColDefs);
-  const gridOptions = useMemo<GridOptions<Conference>>(() => defaultGridOptions, []);
+  const gridOptions = useMemo<GridOptions<Conference>>(() => ({
+    ...defaultGridOptions,
+    paginationNumberFormatter: (params: PaginationNumberFormatterParams) => {
+      return '[' + params.value.toLocaleString() + ']';
+    },
+  }), []);
   const gridRef = useRef<AgGridReact<Conference>>(null); // Ref for AG Grid
 
   const [globalActionType, setGlobalActionType] = useState<'crawl' | 'update'>('crawl');
@@ -119,7 +126,7 @@ const ConferenceSelectionStep: React.FC<ConferenceSelectionStepProps> = ({
       <h3 className="text-lg font-medium leading-6 text-gray-900">Step 2: Select Conferences and Action Type</h3>
       <p className="text-sm text-gray-600">
         Select conferences from the table below and specify the action type (Crawl or Update).
-        For 'Update' actions, ensure the relevant link fields (Link, Imp Link, Cfp Link) are provided if needed.
+        For &apos;Update&apos; actions, ensure the relevant link fields (Link, Imp Link, Cfp Link) are provided if needed.
       </p>
 
       {/* UI for global action type selection */}
@@ -156,6 +163,7 @@ const ConferenceSelectionStep: React.FC<ConferenceSelectionStepProps> = ({
           onSelectionChanged={onSelectionChanged}
           getRowId={getRowId}
           domLayout='normal'
+          className="w-full"
           // Ensure AG Grid re-renders when rowData changes by reference
           // This is usually default behavior in React AG Grid
         />

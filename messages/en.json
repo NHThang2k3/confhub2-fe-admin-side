@@ -317,5 +317,20 @@
     "errorFetchingConferenceDetails": "Error fetching conference details:",
     "errorFetchingConferenceHistory": "Error fetching conference history:",
     "errorFetchingConferenceHistoryDetails": "Error fetching conference history details:"
+  },
+  "CrawlPage": {
+    "title": "Conference Crawl",
+    "description": "Import and crawl conference data from various sources",
+    "steps": {
+      "import": "Import File",
+      "select": "Select Conferences",
+      "configure": "Configure & Process"
+    },
+    "actions": {
+      "next": "Next",
+      "previous": "Previous",
+      "start": "Start Crawl",
+      "cancel": "Cancel"
+    }
   }
 }
