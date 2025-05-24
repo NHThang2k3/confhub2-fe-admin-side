@@ -554,7 +554,7 @@ export default function EditConferenceHistory({ params }: { params: { id: string
             className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 disabled:opacity-50"
             onClick={(e) => {
               e.preventDefault();
-              onSubmit()
+              handleSubmit(onSubmit)();
             }}
           >
             {isSubmitting ? t('modal.editForm.saving') : t('modal.editForm.save')}

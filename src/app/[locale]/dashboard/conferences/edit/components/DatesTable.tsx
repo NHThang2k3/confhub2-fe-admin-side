@@ -21,6 +21,7 @@ export enum ConferenceDateType {
 }
 
 export interface ConferenceDate {
+  id: string;
   type: ConferenceDateType | null;
   name: string | null;
   startDate: string | null;
@@ -60,6 +61,16 @@ export default function DatesTable({ control, watch, name, onRefetch }: DatesTab
     }
   };
 
+  const handleAddDate = () => {
+    append({
+      id: crypto.randomUUID(),
+      type: null,
+      name: null,
+      startDate: null,
+      endDate: null
+    });
+  };
+
   const columnDefs: ColDef[] = [
     {
       field: 'type',
@@ -75,8 +86,10 @@ export default function DatesTable({ control, watch, name, onRefetch }: DatesTab
         return params.value;
       },
       onCellValueChanged: (params) => {
-        const index = params.node?.rowIndex ?? 0;
-        update(index, { ...params.data, type: params.newValue || null });
+        const index = fields.findIndex(field => field.id === params.data.id);
+        if (index !== -1) {
+          update(index, { ...params.data, type: params.newValue || null });
+        }
       }
     },
     {
@@ -93,8 +106,10 @@ export default function DatesTable({ control, watch, name, onRefetch }: DatesTab
         return params.value;
       },
       onCellValueChanged: (params) => {
-        const index = params.node?.rowIndex ?? 0;
-        update(index, { ...params.data, name: params.newValue || null });
+        const index = fields.findIndex(field => field.id === params.data.id);
+        if (index !== -1) {
+          update(index, { ...params.data, name: params.newValue || null });
+        }
       }
     },
     {
@@ -115,8 +130,10 @@ export default function DatesTable({ control, watch, name, onRefetch }: DatesTab
         return dayjs(params.newValue).format('YYYY-MM-DD');
       },
       onCellValueChanged: (params) => {
-        const index = params.node?.rowIndex ?? 0;
-        update(index, { ...params.data, startDate: params.newValue || null });
+        const index = fields.findIndex(field => field.id === params.data.id);
+        if (index !== -1) {
+          update(index, { ...params.data, startDate: params.newValue || null });
+        }
       }
     },
     {
@@ -137,19 +154,22 @@ export default function DatesTable({ control, watch, name, onRefetch }: DatesTab
         return dayjs(params.newValue).format('YYYY-MM-DD');
       },
       onCellValueChanged: (params) => {
-        const index = params.node?.rowIndex ?? 0;
-        update(index, { ...params.data, endDate: params.newValue || null });
+        const index = fields.findIndex(field => field.id === params.data.id);
+        if (index !== -1) {
+          update(index, { ...params.data, endDate: params.newValue || null });
+        }
       }
     },
     {
       headerName: t('modal.editForm.remove'),
       width: 100,
       cellRenderer: (params: ICellRendererParams) => {
-        const rowIndex = params.node?.rowIndex ?? 0;
+        const index = fields.findIndex(field => field.id === params.data.id);
+        if (index === -1) return null;
         return (
           <button
             type="button"
-            onClick={() => remove(rowIndex)}
+            onClick={() => remove(index)}
             className="text-red-600 hover:text-red-900"
           >
             {t('modal.editForm.remove')}
@@ -158,15 +178,6 @@ export default function DatesTable({ control, watch, name, onRefetch }: DatesTab
       },
     },
   ];
-
-  const handleAddDate = () => {
-    append({
-      type: null,
-      name: null,
-      startDate: null,
-      endDate: null
-    });
-  };
 
   return (
     <div className="space-y-4">
