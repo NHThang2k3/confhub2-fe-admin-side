@@ -55,11 +55,11 @@ export interface ConferenceUpdateData {
     /** The acronym or abbreviation of the conference. */
     Acronym: string;
     /** The primary URL of the conference. */
-    mainLink: string;
+    mainLink: any;
     /** The URL for the Call for Papers (CFP). */
-    cfpLink: string;
+    cfpLink: any;
     /** The URL for important dates. */
-    impLink: string;
+    impLink: any;
     /** Optional: The ID of the original request if this is a re-crawl. */
     originalRequestId?: string;
 }
@@ -76,7 +76,7 @@ export interface BatchEntry {
     /** The acronym of the conference. */
     conferenceAcronym: string;
     /** The resolved main link (URL) of the conference. */
-    conferenceLink: string;
+    mainLink: string;
     /** The file path to the extracted text content of the main conference link. Null if text extraction failed. */
     conferenceTextPath: string | null;
     /** Optional: The ID of the original request, carried forward from the initial `ConferenceData`. */
@@ -102,6 +102,10 @@ export interface BatchUpdateEntry {
     conferenceTitle: string;
     /** The acronym of the conference. */
     conferenceAcronym: string;
+
+    mainLink: string;
+    cfpLink: string;
+    impLink: string;
     /** The file path to the text content of the main conference page. */
     conferenceTextPath: string;
     /** The file path to the text content of the CFP page. Null if CFP link was not available or text extraction failed. */
@@ -119,6 +123,8 @@ export interface BatchUpdateEntry {
  * ready to be written to a JSONL file. Includes unique batch IDs and all metadata from AI API calls.
  */
 export interface BatchEntryWithIds extends BatchEntry {
+    internalProcessingAcronym: string; // Acronym after addAcronymSafely, for internal file uniqueness
+
     /** The unique identifier for the batch API call that processed this item. */
     batchRequestId: string;
     /** Optional: The file path to the raw response text from the 'determine_links' API. */
@@ -140,6 +146,8 @@ export interface BatchEntryWithIds extends BatchEntry {
  * ready to be written to a JSONL file.
  */
 export interface BatchUpdateDataWithIds extends BatchUpdateEntry {
+    internalProcessingAcronym: string; // Acronym after addAcronymSafely, for internal file uniqueness
+
     /** The unique identifier for the batch API call that processed this item. */
     batchRequestId: string;
     /** Optional: The file path to the raw response text from the 'extract_information' API. */
@@ -165,7 +173,7 @@ export interface InputRowData {
     /** The acronym of the conference. */
     conferenceAcronym: string;
     /** Optional: The resolved main link of the conference. */
-    conferenceLink?: string;
+    mainLink?: string;
     /** Optional: Path to the text content of the main conference link. */
     conferenceTextPath?: string | null;
     /** Optional: The Call for Papers (CFP) link identified. */
@@ -260,7 +268,7 @@ export interface ProcessedRowData extends ProcessedResponseData {
     /** The acronym of the conference (from initial input). */
     acronym: string;
     /** The main URL of the conference. */
-    link: string;
+    mainLink: string;
     /** The Call for Papers (CFP) URL. */
     cfpLink: string;
     /** The Important Dates (IMP) URL. */

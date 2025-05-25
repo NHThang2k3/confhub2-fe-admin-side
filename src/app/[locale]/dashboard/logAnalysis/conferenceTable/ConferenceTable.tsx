@@ -5,7 +5,7 @@ import {
     SortableColumn,
     SortDirection,
     RowSaveStatus,
-    ColumnFiltersState // <--- IMPORT ColumnFiltersState
+    ColumnFiltersState
 } from '@/src/hooks/crawl/useConferenceTableManager';
 import { ConferenceTableHeader } from './ConferenceTableHeader';
 import { ConferenceTableRow } from './ConferenceTableRow';
@@ -21,8 +21,12 @@ interface ConferenceTableProps {
     onSort: (column: SortableColumn) => void;
     onToggleExpand: (uniqueRowId: string) => void;
     onSelectToggle: (uniqueRowId: string) => void;
-    columnFilters: ColumnFiltersState; // <--- PROP MỚI
-    onColumnFilterChange: (column: keyof ColumnFiltersState, value: string) => void; // <--- PROP MỚI
+    columnFilters: ColumnFiltersState;
+    onColumnFilterChange: (column: keyof ColumnFiltersState, value: string) => void;
+    // Thêm prop để truyền tổng số hàng và số hàng được chọn cho checkbox "Select All"
+    totalRowsCount: number;
+    selectedRowsCount: number;
+    onSelectAll: () => void;
 }
 
 export const ConferenceTable: React.FC<ConferenceTableProps> = ({
@@ -36,8 +40,11 @@ export const ConferenceTable: React.FC<ConferenceTableProps> = ({
     onSort,
     onToggleExpand,
     onSelectToggle,
-    columnFilters, // <--- NHẬN PROP
-    onColumnFilterChange, // <--- NHẬN PROP
+    columnFilters,
+    onColumnFilterChange,
+    totalRowsCount, // Nhận prop
+    selectedRowsCount, // Nhận prop
+    onSelectAll, // Nhận prop
 }) => {
     const shouldShowRequestIdColumn = data.some(d => d.requestId && d.requestId !== 'N/A');
     const baseColSpan = 14;
@@ -51,8 +58,12 @@ export const ConferenceTable: React.FC<ConferenceTableProps> = ({
                     sortDirection={sortDirection}
                     onSort={onSort}
                     isFilteredByRequest={shouldShowRequestIdColumn}
-                    columnFilters={columnFilters} // <--- TRUYỀN XUỐNG
-                    onColumnFilterChange={onColumnFilterChange} // <--- TRUYỀN XUỐNG
+                    columnFilters={columnFilters}
+                    onColumnFilterChange={onColumnFilterChange}
+                    // Truyền props cho checkbox "Select All"
+                    totalRowsCount={totalRowsCount}
+                    selectedRowsCount={selectedRowsCount}
+                    onSelectAll={onSelectAll}
                 />
                 <tbody className="bg-white divide-y divide-gray-200">
                     {data.map((confData) => {

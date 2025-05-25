@@ -3,10 +3,10 @@ import React, { useState } from 'react';
 import { FaChevronUp, FaChevronDown } from 'react-icons/fa';
 import { LogAnalysisResult } from '@/src/models/logAnalysis';
 import { useConferenceTableManager } from '@/src/hooks/crawl/useConferenceTableManager';
-import { ConferenceTableControls } from '../conferenceTable/ConferenceTableControls'; // Kiểm tra lại đường dẫn này
-import { ConferenceTable } from '../conferenceTable/ConferenceTable'; // Kiểm tra lại đường dẫn này
+import { ConferenceTableControls } from '../conferenceTable/ConferenceTableControls';
+import { ConferenceTable } from '../conferenceTable/ConferenceTable';
 import { useConferenceCrawl } from '@/src/hooks/crawl/useConferenceCrawl';
-import ProcessActionModal from '../conferenceTable/ProcessActionModal'; // Kiểm tra lại đường dẫn này
+import ProcessActionModal from '../conferenceTable/ProcessActionModal';
 
 interface ConferenceDetailsProps {
   logAnalysisResult: LogAnalysisResult | null | undefined;
@@ -31,7 +31,7 @@ const ConferenceDetails: React.FC<ConferenceDetailsProps> = ({
 
   return (
     <>
-      <section className='bg-white shadow-xl rounded-lg p-4 md:p-6 border border-gray-200 mt-6 hover:bg-gray-5'> {/* Sửa hover:bg-gray-5 thành hover:bg-gray-5 */}
+      <section className='bg-white shadow-xl rounded-lg p-4 md:p-6 border border-gray-200 mt-6 hover:bg-gray-5'>
         <div
           className='flex flex-wrap items-center justify-between mb-4 pb-2 border-b border-gray-300 gap-4 cursor-pointer'
           onClick={handleToggleExpand}
@@ -60,7 +60,7 @@ const ConferenceDetails: React.FC<ConferenceDetailsProps> = ({
               <p className='text-center text-gray-500 py-8'>
                 No conference analysis data available.
               </p>
-            ) : !hasData && (tableManager.searchQuery || hasActiveColumnFilters) ? ( // Kiểm tra cả searchQuery và columnFilters
+            ) : !hasData && (tableManager.searchQuery || hasActiveColumnFilters) ? (
               <>
                 <ConferenceTableControls
                   selectedCount={tableManager.selectedRowIds.length}
@@ -79,13 +79,8 @@ const ConferenceDetails: React.FC<ConferenceDetailsProps> = ({
                   searchTerm={tableManager.searchQuery}
                   onSearchChange={tableManager.setSearchQuery}
                 />
-                {/* <p className='text-center text-gray-500 py-8'>
-                  No conferences match your current filter criteria.
-                  {tableManager.searchQuery && ` (Search: "${tableManager.searchQuery}")`}
-                </p> */}
-                 {/* Hiển thị ConferenceTable trống với header filter để người dùng có thể thay đổi filter */}
-                <ConferenceTable
-                  data={[]} // Truyền mảng rỗng
+                 <ConferenceTable
+                  data={[]}
                   selectedRows={{}}
                   expandedRowUniqueId={null}
                   sortColumn={tableManager.sortColumn}
@@ -95,8 +90,13 @@ const ConferenceDetails: React.FC<ConferenceDetailsProps> = ({
                   onSort={tableManager.handleSort}
                   onToggleExpand={tableManager.toggleExpand}
                   onSelectToggle={tableManager.handleRowSelectToggle}
-                  columnFilters={tableManager.columnFilters} // <--- TRUYỀN VÀO
-                  onColumnFilterChange={tableManager.handleColumnFilterChange} // <--- TRUYỀN VÀO
+                  columnFilters={tableManager.columnFilters}
+                  onColumnFilterChange={tableManager.handleColumnFilterChange}
+                  // --- BỔ SUNG CÁC PROPS MỚI CHO ConferenceTable ---
+                  totalRowsCount={tableManager.totalRowsCount}
+                  selectedRowsCount={tableManager.selectedRowsCount}
+                  onSelectAll={tableManager.handleSelectAll}
+                  // --- KẾT THÚC BỔ SUNG ---
                 />
               </>
             ) : (
@@ -129,8 +129,13 @@ const ConferenceDetails: React.FC<ConferenceDetailsProps> = ({
                   onSort={tableManager.handleSort}
                   onToggleExpand={tableManager.toggleExpand}
                   onSelectToggle={tableManager.handleRowSelectToggle}
-                  columnFilters={tableManager.columnFilters} // <--- TRUYỀN VÀO
-                  onColumnFilterChange={tableManager.handleColumnFilterChange} // <--- TRUYỀN VÀO
+                  columnFilters={tableManager.columnFilters}
+                  onColumnFilterChange={tableManager.handleColumnFilterChange}
+                  // --- BỔ SUNG CÁC PROPS MỚI CHO ConferenceTable ---
+                  totalRowsCount={tableManager.totalRowsCount}
+                  selectedRowsCount={tableManager.selectedRowsCount}
+                  onSelectAll={tableManager.handleSelectAll}
+                  // --- KẾT THÚC BỔ SỔNG ---
                 />
               </>
             )}

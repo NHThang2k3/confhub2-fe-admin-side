@@ -78,14 +78,27 @@ export interface FilteredData {
     analysisEndMillis: number | null;
 }
 
+
+export interface LogErrorContext {
+    phase?: 'primary_execution' | 'fallback_execution' | 'setup' | 'response_processing' | 'sdk_call' | string;
+    modelIdentifier?: string;
+    apiType?: string;
+    [key: string]: any; // <-- Dòng này cho phép thêm bất kỳ thuộc tính nào khác
+}
+
+
+
 /**
  * Represents a generic error structure for logging.
  */
 export interface LogError {
     timestamp: string;
     message: string;
-    details?: any; // Consider a more specific type if known
-    errorCode?: string; // Specific error code (e.g., 'API_QUOTA_EXCEEDED')
-    sourceService?: string; // The service that originated the error (e.g., 'GoogleSearchService', 'GeminiApiService')
-    errorType?: 'DataParsing' | 'Network' | 'APIQuota' | 'Logic' | 'FileSystem' | 'Unknown'; // Categorization of the error
+    key: string; // Normalized key
+    details?: any;
+    errorCode?: string;
+    sourceService?: string;
+    errorType?: 'DataParsing' | 'Network' | 'APIQuota' | 'Logic' | 'FileSystem' | 'SafetyBlock' | 'Configuration' | 'Unknown' | 'ThirdPartyAPI';
+    isRecovered?: boolean; // True nếu lỗi này đã được khắc phục bởi một hành động sau đó (ví dụ: fallback)
+    context?: LogErrorContext; // Context chi tiết hơn về nguồn gốc lỗi
 }
