@@ -1,5 +1,5 @@
-// src/appp/[locale]/dashboard/logAnalysis/steps/StepperNavigation.tsx
 import React from 'react';
+import { FaCheck } from 'react-icons/fa';
 
 interface Step {
   id: number;
@@ -13,14 +13,14 @@ interface StepperNavigationProps {
 
 const StepperNavigation: React.FC<StepperNavigationProps> = ({ steps, currentStepId }) => {
   return (
-    <nav aria-label="Progress" className="mb-4 md:mb-8">
-      <ol role="list" className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-4 md:space-x-8 lg:space-x-16">
+    <nav aria-label="Progress" className="mb-6"> {/* Reduced margin-bottom */}
+      <ol role="list" className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-6 md:space-x-10 lg:space-x-14"> {/* Reduced spacing */}
         {steps.map((step, stepIdx) => (
           <React.Fragment key={step.name}>
             {stepIdx > 0 && (
               <div className="hidden sm:flex items-center">
                 <svg
-                  className={`h-4 w-4 md:h-5 md:w-5 ${
+                  className={`h-4 w-4 md:h-5 md:w-5 ${ // Reduced icon size
                     currentStepId > step.id ? 'text-blue-600' : 'text-gray-300'
                   }`}
                   viewBox="0 0 20 20"
@@ -38,7 +38,7 @@ const StepperNavigation: React.FC<StepperNavigationProps> = ({ steps, currentSte
             <li className="relative flex items-center w-full sm:w-auto">
               <div className="flex items-center w-full sm:w-auto">
                 <span
-                  className={`flex h-8 w-8 sm:h-10 sm:w-10 flex-shrink-0 items-center justify-center rounded-full border-2 ${
+                  className={`flex h-9 w-9 sm:h-10 sm:w-10 flex-shrink-0 items-center justify-center rounded-full border-2 transition-colors duration-200 ease-in-out ${ // Reduced size
                     currentStepId === step.id
                       ? 'border-blue-600 bg-blue-50'
                       : currentStepId > step.id
@@ -47,17 +47,15 @@ const StepperNavigation: React.FC<StepperNavigationProps> = ({ steps, currentSte
                   }`}
                 >
                   {currentStepId > step.id ? (
-                    <svg className="h-5 w-5 sm:h-6 sm:w-6" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                      <path fillRule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clipRule="evenodd" />
-                    </svg>
+                    <FaCheck className="h-5 w-5 text-white" aria-hidden="true" /> // Reduced icon size
                   ) : (
-                    <span className={`text-sm sm:text-base ${currentStepId === step.id ? 'text-blue-600' : 'text-gray-500'}`}>
+                    <span className={`text-base sm:text-lg font-semibold ${currentStepId === step.id ? 'text-blue-600' : 'text-gray-500'}`}> {/* Reduced text size */}
                       {step.id}
                     </span>
                   )}
                 </span>
                 <span 
-                  className={`ml-3 text-xs sm:text-sm font-medium ${
+                  className={`ml-3 text-sm sm:text-base font-medium ${ // Reduced margin, text size
                     currentStepId === step.id 
                       ? 'text-blue-600' 
                       : currentStepId > step.id 

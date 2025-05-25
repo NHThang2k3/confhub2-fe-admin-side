@@ -1,7 +1,6 @@
 import React from 'react';
-import { FaExternalLinkAlt } from 'react-icons/fa';
+import { FaExternalLinkAlt, FaLink, FaClock, FaStopwatch, FaInfoCircle, FaCheckCircle, FaTimesCircle, FaQuestionCircle, FaEllipsisH, FaListAlt, FaChartPie, FaExclamationTriangle } from 'react-icons/fa';
 import { RequestTimings } from '@/src/models/logAnalysis';
-import { FaLink } from 'react-icons/fa';
 
 interface RequestsTableProps {
     requestIds: string[];
@@ -19,31 +18,94 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
     getStatusChipClass,
 }) => {
     if (!requestIds || requestIds.length === 0) {
-        return null; // NoData message handled by parent
+        return null;
     }
 
+    const getStatusIcon = (status: string | undefined | null) => {
+        switch (status?.toLowerCase()) {
+            case 'completed':
+                return <FaCheckCircle className="text-green-500 mr-1" />;
+            case 'completedwitherrors':
+            case 'partiallycompleted':
+                return <FaExclamationTriangle className="text-yellow-600 mr-1" />;
+            case 'failed':
+                return <FaTimesCircle className="text-red-500 mr-1" />;
+            case 'processing':
+                return <FaStopwatch className="text-blue-500 mr-1 animate-pulse" />;
+            case 'pending':
+                return <FaEllipsisH className="text-gray-500 mr-1" />;
+            case 'skipped':
+                return <FaQuestionCircle className="text-gray-400 mr-1" />;
+            case 'nodata':
+            case 'unknown':
+            default:
+                return <FaQuestionCircle className="text-gray-400 mr-1" />;
+        }
+    };
+
+    const getProgressBarColorClass = (percentage: number): string => {
+        if (percentage >= 80) return 'bg-green-500';
+        if (percentage >= 50) return 'bg-yellow-500';
+        return 'bg-red-500';
+    };
+
+    let totalProcessedConferencesOverall = 0;
+    let totalConferencesOverallInput = 0;
+
+    requestIds.forEach(reqId => {
+        const details = requestsData[reqId];
+        if (details?.processedConferencesCountForRequest != null) {
+            totalProcessedConferencesOverall += details.processedConferencesCountForRequest;
+        }
+        if (details?.totalConferencesInputForRequest != null) {
+            totalConferencesOverallInput += details.totalConferencesInputForRequest;
+        }
+    });
+
+    const overallSuccessRatePercentage = totalConferencesOverallInput > 0
+        ? ((totalProcessedConferencesOverall / totalConferencesOverallInput) * 100)
+        : 0;
+    const overallSuccessRatePercentageString = overallSuccessRatePercentage.toFixed(1);
+
     return (
-        <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200 border border-gray-200 rounded-lg shadow-sm">
+        <div className="overflow-x-auto border border-gray-200 rounded-lg shadow-sm">
+            <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-5">
                     <tr>
                         <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Request ID
+                            <div className="flex items-center">
+                                <FaListAlt className="mr-1.5 h-3.5 w-3.5 text-gray-400" /> Request ID
+                            </div>
                         </th>
                         <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Original Request ID
+                            <div className="flex items-center">
+                                <FaLink className="mr-1.5 h-3.5 w-3.5 text-gray-400" /> Original Request ID
+                            </div>
                         </th>
                         <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Start Time
+                            <div className="flex items-center">
+                                <FaClock className="mr-1.5 h-3.5 w-3.5 text-gray-400" /> Start Time
+                            </div>
                         </th>
                         <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            End Time
+                            <div className="flex items-center">
+                                <FaClock className="mr-1.5 h-3.5 w-3.5 text-gray-400" /> End Time
+                            </div>
                         </th>
                         <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Duration
+                            <div className="flex items-center">
+                                <FaStopwatch className="mr-1.5 h-3.5 w-3.5 text-gray-400" /> Duration
+                            </div>
                         </th>
                         <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Status
+                            <div className="flex items-center">
+                                <FaInfoCircle className="mr-1.5 h-3.5 w-3.5 text-gray-400" /> Status
+                            </div>
+                        </th>
+                        <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <div className="flex items-center">
+                                <FaChartPie className="mr-1.5 h-3.5 w-3.5 text-gray-400" /> Success Rate
+                            </div>
                         </th>
                         <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             Actions
@@ -53,6 +115,17 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
                 <tbody className="bg-white divide-y divide-gray-200">
                     {requestIds.map((reqId) => {
                         const details = requestsData[reqId];
+                        const totalInputForRequest = details?.totalConferencesInputForRequest ?? 0;
+                        const processedForRequest = details?.processedConferencesCountForRequest ?? 0;
+
+                        const requestSuccessRateValue = totalInputForRequest > 0
+                            ? (processedForRequest / totalInputForRequest) * 100
+                            : 0;
+                        const requestSuccessRateString = requestSuccessRateValue.toFixed(1);
+
+                        // Changed: Always use text-gray-700 or text-gray-900 for consistency
+                        const textColorForProgressBar = 'text-gray-700'; // Or 'text-gray-900' for darker
+
                         return (
                             <tr key={reqId} className="hover:bg-gray-5 transition-colors duration-150">
                                 <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900 break-all">
@@ -61,12 +134,12 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
                                 <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600 break-all">
                                     {details?.originalRequestId ? (
                                         <button
-                                            onClick={() => onSelectRequest(details.originalRequestId!)} // Thêm ! để khẳng định originalRequestId tồn tại trong ngữ cảnh này
-                                            className="text-indigo-600 hover:text-indigo-900 hover:underline focus:outline-none flex items-center"
+                                            onClick={() => onSelectRequest(details.originalRequestId!)}
+                                            className="text-blue-600 hover:text-blue-800 hover:underline focus:outline-none flex items-center group"
                                             title={`View details for original request: ${details.originalRequestId}`}
                                             aria-label={`View details for original request ID ${details.originalRequestId}`}
                                         >
-                                            <FaLink className="mr-1.5 h-3 w-3 text-indigo-500" />
+                                            <FaLink className="mr-1.5 h-3 w-3 text-blue-500 group-hover:text-blue-700 transition-colors duration-150" />
                                             {details.originalRequestId}
                                         </button>
                                     ) : (
@@ -84,24 +157,62 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
                                 </td>
                                 <td className="px-4 py-3 whitespace-nowrap text-sm">
                                     {details && details.status ? (
-                                        <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${getStatusChipClass(details.status)}`}>
+                                        <span className={`px-2.5 py-1 rounded-full text-xs font-semibold flex items-center ${getStatusChipClass(details.status)}`}>
+                                            {getStatusIcon(details.status)}
                                             {details.status}
                                         </span>
-                                    ) : <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${getStatusChipClass(null)}`}>Unknown</span>}
+                                    ) : (
+                                        <span className={`px-2.5 py-1 rounded-full text-xs font-semibold flex items-center ${getStatusChipClass(null)}`}>
+                                            <FaQuestionCircle className="mr-1" /> Unknown
+                                        </span>
+                                    )}
+                                </td>
+                                {/* Cell for Success Rate with Progress Bar */}
+                                <td className="px-4 py-3">
+                                    {totalInputForRequest > 0 ? (
+                                        <div className="relative w-32 bg-gray-200 rounded-full py-1.5">
+                                            <div
+                                                className={`absolute inset-y-0 left-0 rounded-full transition-all duration-300 ease-in-out ${getProgressBarColorClass(requestSuccessRateValue)}`}
+                                                style={{ width: `${requestSuccessRateValue}%` }}
+                                            ></div>
+                                            <span className={`relative z-10 flex items-center justify-center text-xs font-bold ${textColorForProgressBar} leading-none`}>
+                                                {requestSuccessRateString}%
+                                            </span>
+                                        </div>
+                                    ) : (
+                                        <span className="text-gray-400 text-xs">N/A</span>
+                                    )}
                                 </td>
                                 <td className="px-4 py-3 whitespace-nowrap text-sm font-medium">
                                     <button
                                         onClick={() => onSelectRequest(reqId)}
-                                        className="text-blue-600 hover:text-blue-800 hover:underline flex items-center"
+                                        className="text-blue-600 hover:text-blue-800 hover:underline focus:outline-none flex items-center group"
                                         aria-label={`View details for request ${reqId}`}
                                     >
-                                        View Details <FaExternalLinkAlt className="ml-1.5 h-3 w-3" />
+                                        View Details <FaExternalLinkAlt className="ml-1.5 h-3 w-3 text-blue-500 group-hover:text-blue-700 transition-colors duration-150" />
                                     </button>
                                 </td>
                             </tr>
                         );
                     })}
                 </tbody>
+                {/* Table Footer for overall success rate for this table */}
+                {totalConferencesOverallInput > 0 && (
+                    <tfoot className="bg-gray-5 border-t border-gray-200">
+                        <tr>
+                            <td colSpan={6} className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                                <div className="flex items-center font-semibold">
+                                    <FaChartPie className="mr-2 h-4 w-4 text-gray-600" />
+                                    Total Success Rate for Displayed Requests:
+                                </div>
+                            </td>
+                            <td className="px-4 py-3 whitespace-nowrap text-sm font-bold text-gray-900">
+                                {totalProcessedConferencesOverall} / {totalConferencesOverallInput} ({overallSuccessRatePercentageString}%)
+                            </td>
+                            <td className="px-4 py-3"></td> {/* Empty cell for Actions column */}
+                        </tr>
+                    </tfoot>
+                )}
             </table>
         </div>
     );

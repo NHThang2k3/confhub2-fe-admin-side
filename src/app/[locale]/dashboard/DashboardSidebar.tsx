@@ -3,10 +3,19 @@
 'use client';
 
 import React from 'react';
-import { useTranslations } from 'next-intl'; // Keep import
-import { Link } from '@/src/navigation'; // Ensure this is the next-intl Link
+import { useTranslations } from 'next-intl';
+import { Link } from '@/src/navigation';
 import { usePathname } from 'next/navigation';
-import GlobeIcon from '@/src/app/icons/globe'; // Assuming this is a React component
+import GlobeIcon from '@/src/app/icons/globe'; // Assuming this is still a custom React component for your logo
+
+// Import React Icons
+import {
+  FaDatabase, // For Crawl/Analysis (something related to data/processing)
+  FaChartBar, // Alternative for Analysis
+  FaShieldAlt, // For Moderation
+  FaBookOpen, // For Conferences (something related to documents/knowledge)
+  FaKey, // For Request_Admin
+} from 'react-icons/fa'; // Using Font Awesome icons from react-icons
 
 interface MenuItem {
   label: string;
@@ -16,63 +25,41 @@ interface MenuItem {
 
 interface DashboardSidebarProps {
   isSidebarOpen: boolean;
-  locale: string; // Keep locale prop
+  locale: string;
   sidebarWidth: number;
   headerHeight: number;
 }
 
 export default function DashboardSidebar({ isSidebarOpen, locale, sidebarWidth, headerHeight }: DashboardSidebarProps) {
-  // Call useTranslations hook (already present)
-  const t = useTranslations(''); // Using the default namespace
+  const t = useTranslations('');
 
   const pathname = usePathname();
 
-  // Define menu items using the translated labels
+  // Define menu items using React Icons
   const menuItems: MenuItem[] = [
     {
-      // Label already uses t()
       label: t('Crawl'),
-      icon: (
-        <svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='1.5' strokeLinecap='round' strokeLinejoin='round' className='lucide lucide-airplay-icon lucide-airplay'>
-          <path d='M5 17H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-1' />
-          <path d='m12 15 5 6H7Z' />
-        </svg>
-      ),
+      icon: <FaDatabase className="h-5 w-5" />, // Icon for Crawl (data collection)
       hrefSegment: 'crawl'
     },
     {
-      // Label already uses t()
       label: t('Analysis'),
-      icon: (
-        <svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='1.5' strokeLinecap='round' strokeLinejoin='round' className='lucide lucide-airplay-icon lucide-airplay'>
-          <path d='M5 17H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-1' />
-          <path d='m12 15 5 6H7Z' />
-        </svg>
-      ),
+      icon: <FaChartBar className="h-5 w-5" />, // Icon for Analysis (charts/reports)
       hrefSegment: 'logAnalysis'
     },
     {
-      // Label already uses t()
       label: t('Moderation.Moderation'),
-      icon: (
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-circle-check-big-icon lucide-circle-check-big"><path d="M21.801 10A10 10 0 1 1 17 3.335" /><path d="m9 11 3 3L22 4" /></svg>
-      ),
+      icon: <FaShieldAlt className="h-5 w-5" />, // Icon for Moderation (security/control)
       hrefSegment: 'moderation'
     },
     {
-      // Label already uses t()
       label: t('Conferences'),
-      icon: (
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-scroll-text-icon lucide-scroll-text"><path d="M15 12h-5" /><path d="M15 8h-5" /><path d="M19 17V5a2 2 0 0 0-2-2H4" /><path d="M8 21h12a2 2 0 0 0 2-2v-1a1 1 0 0 0-1-1H11a1 1 0 0 0-1 1v1a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v2a1 1 0 0 0 1 1h3" /></svg>
-      ),
+      icon: <FaBookOpen className="h-5 w-5" />, // Icon for Conferences (documents/library)
       hrefSegment: 'conferences'
     },
     // {
-    //   // Label already uses t()
     //   label: t('Request_Admin'),
-    //   icon: (
-    //     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-key-round-icon lucide-key-round"><path d="M2.586 17.414A2 2 0 0 0 2 18.828V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h.172a2 2 0 0 0 1.414-.586l.814-.814a6.5 6.5 0 1 0-4-4z"/><circle cx="16.5" cy="7.5" r=".5" fill="currentColor"/></svg>
-    //   ),
+    //   icon: <FaKey className="h-5 w-5" />, // Icon for Request_Admin (key/access)
     //   hrefSegment: 'requestAdminTab'
     // },
   ];
@@ -112,9 +99,8 @@ export default function DashboardSidebar({ isSidebarOpen, locale, sidebarWidth, 
           <div className='h-8 w-8 mr-2'>
             <GlobeIcon />
           </div>
-          {/* Translate the title */}
           <strong className='text-sm font-bold whitespace-nowrap text-foreground'>
-            {t('GlobalConferenceHub_Title')} {/* <-- Translated */}
+            {t('GlobalConferenceHub_Title')}
           </strong>
         </div>
       </div>
@@ -123,19 +109,14 @@ export default function DashboardSidebar({ isSidebarOpen, locale, sidebarWidth, 
         <ul className='w-full'>
           {menuItems.map(item => {
             const href = `/dashboard/${item.hrefSegment}`;
-            // Construct the full path including locale for accurate checking
-            const fullHrefForCheck = `/${locale}${href}`; // Corrected path construction
-
-            // Check if the current pathname starts with the item's full path (including locale)
-            // and potentially handles trailing slashes if needed, although startsWith is usually sufficient
+            const fullHrefForCheck = `/${locale}${href}`;
             const isActive = pathname === fullHrefForCheck || pathname.startsWith(`${fullHrefForCheck}/`);
-
 
             return (
               <li className='w-full' key={item.hrefSegment}>
                 <Link
                   href={href}
-                  locale={locale} // Pass locale to the Link component
+                  locale={locale}
                   className={`
                     flex h-12 w-full items-center px-4
                     transition-all duration-200 ease-in-out
@@ -150,14 +131,16 @@ export default function DashboardSidebar({ isSidebarOpen, locale, sidebarWidth, 
                     display: 'flex',
                   } as React.CSSProperties}
                 >
+                  {/* Direct use of React Icon component */}
                   <span className={`${isSidebarOpen ? 'mr-2' : 'mr-0'} transition-margin duration-300 ease-in-out`}>
+                    {/* React Icons automatically handle sizing and color via className */}
                     {React.cloneElement(item.icon, {
-                      className: `${item.icon.props.className || ''} ${isActive ? 'text-primary dark:text-primary-foreground' : 'text-gray-600 dark:text-gray-300'}`
+                      className: `${item.icon.props.className || ''} ${isActive ? 'text-primary' : 'text-gray-600 dark:text-gray-300'}`
                     })}
                   </span>
-                  {/* Text span */}
+                  
                   <span className={`whitespace-nowrap text-sm ${isSidebarOpen ? '' : 'hidden'}`}>
-                    {item.label} {/* Label is already translated */}
+                    {item.label}
                   </span>
                 </Link>
               </li>
