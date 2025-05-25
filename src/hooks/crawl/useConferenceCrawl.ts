@@ -161,7 +161,7 @@ export const useConferenceCrawl = (): UseConferenceCrawlReturn => {
         if (event.target) event.target.value = '';
     }, [parseCSV]);
 
-    const onCsvSelectionChanged = useCallback((event: SelectionChangedEvent<Conference>) => {
+    const onCsvSelectionChanged =(event: SelectionChangedEvent<Conference>) => {
         const selectedNodes = event.api.getSelectedNodes();
         const selectedActions: ConferenceForAction[] = selectedNodes.map(node => {
             const confData = node.data as Conference;
@@ -176,7 +176,7 @@ export const useConferenceCrawl = (): UseConferenceCrawlReturn => {
             };
         });
         setSelectedCsvRows(selectedActions);
-    }, []);
+    };
 
     const updateActionTypeOfSelectedRows = useCallback((
         actionType: 'crawl' | 'update',
