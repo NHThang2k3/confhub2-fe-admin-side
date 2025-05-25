@@ -60,12 +60,10 @@ export interface UseConferenceCrawlReturn {
     setChunkSize: (size: number) => void;
     setApiModel: (apiName: ApiName, model: CrawlModelType) => void;
     startCrawlFromCsv: () => Promise<void>;
-    // startCrawlItems might be useful for other scenarios, keeping it
     startCrawlItems: (items: ConferenceForAction[], modelsToUse: ApiModels) => Promise<void>;
     resetCrawl: () => void;
-    onCsvSelectionChanged: (event: SelectionChangedEvent<Conference>) => void;
-    updateActionTypeOfSelectedRows: (actionType: 'crawl' | 'update', gridApi: AgGridReact<Conference>['api'] | null) => void; // Add this
-
+    onCsvSelectionChanged: (selectedRows: Conference[]) => void;
+    updateActionTypeOfSelectedRows: (actionType: 'crawl' | 'update', selectedRows: Conference[]) => void;
 }
 
 export const useConferenceCrawl = (): UseConferenceCrawlReturn => {
@@ -161,49 +159,29 @@ export const useConferenceCrawl = (): UseConferenceCrawlReturn => {
         if (event.target) event.target.value = '';
     }, [parseCSV]);
 
-    const onCsvSelectionChanged =(event: SelectionChangedEvent<Conference>) => {
-        const selectedNodes = event.api.getSelectedNodes();
-        const selectedActions: ConferenceForAction[] = selectedNodes.map(node => {
-            const confData = node.data as Conference;
-            return {
-                id: confData.id,
-                Title: confData.title,
-                Acronym: confData.acronym,
-                crawlType: confData.crawlType,
-                link: confData.link,
-                cfpLink: confData.cfpLink,
-                impLink: confData.impLink,
-            };
-        });
+    const onCsvSelectionChanged = (selectedRows: Conference[]) => {
+        const selectedActions: ConferenceForAction[] = selectedRows.map(confData => ({
+            id: confData.id,
+            Title: confData.title,
+            Acronym: confData.acronym,
+            crawlType: confData.crawlType,
+            link: confData.link,
+            cfpLink: confData.cfpLink,
+            impLink: confData.impLink,
+        }));
         setSelectedCsvRows(selectedActions);
     };
 
     const updateActionTypeOfSelectedRows = useCallback((
         actionType: 'crawl' | 'update',
-        gridApi: AgGridReact<Conference>['api'] | null
+        selectedRows: Conference[]
     ) => {
-        if (!gridApi) {
-            console.error("Grid API not available for updating action type.");
-            return;
-        }
-
-        const selectedNodes = gridApi.getSelectedNodes();
-        if (selectedNodes.length === 0) {
+        if (selectedRows.length === 0) {
             console.log("No rows selected to update action type.");
             return;
         }
 
-        // Filter nodes that have data before accessing node.data
-        const selectedNodesWithData = selectedNodes.filter(
-            (node): node is IRowNode<Conference> & { data: Conference } => node.data !== undefined
-        );
-
-        if (selectedNodesWithData.length === 0) {
-            console.log("Selected nodes have no data to update.");
-            return;
-        }
-
-        const selectedIds = selectedNodesWithData.map(node => node.data.id);
+        const selectedIds = selectedRows.map(row => row.id);
         let updatedCount = 0;
 
         const newParsedData = parsedData?.map(conf => {
@@ -214,7 +192,7 @@ export const useConferenceCrawl = (): UseConferenceCrawlReturn => {
             return conf;
         }) || null;
 
-        if (newParsedData && updatedCount > 0) { // Ensure some updates actually happened
+        if (newParsedData && updatedCount > 0) {
             setParsedData(newParsedData);
 
             const newSelectedCsvRows = selectedCsvRows.map(selRow => {
@@ -225,34 +203,12 @@ export const useConferenceCrawl = (): UseConferenceCrawlReturn => {
             });
             setSelectedCsvRows(newSelectedCsvRows);
 
-            // Prepare row nodes for refresh, ensuring data is updated in the node itself
-            // before telling AG Grid to refresh the cell.
-            const rowNodesToUpdate: IRowNode<Conference>[] = [];
-            selectedNodesWithData.forEach(node => {
-                // node.data should already be the new reference if parsedData is used as rowData directly,
-                // but explicitly setting it here ensures the node object itself has the updated value
-                // before refreshCells is called.
-                // This is particularly useful if the grid isn't directly re-rendering from a rowData prop change.
-                node.data.crawlType = actionType;
-                rowNodesToUpdate.push(node);
-            });
-
-
-            gridApi.refreshCells({
-                rowNodes: rowNodesToUpdate,
-                columns: ['crawlType'],
-                force: true
-            });
-
             console.log(`Updated action type to "${actionType}" for ${updatedCount} selected conferences.`);
             setCrawlMessages(prev => [`Applied action type '${actionType}' to ${updatedCount} selected conferences.`, ...prev.slice(0, 10)]);
         } else if (updatedCount === 0) {
             console.log("No matching conferences found in parsedData to update action type.");
         }
-
     }, [parsedData, selectedCsvRows, setSelectedCsvRows, setParsedData, setCrawlMessages]);
-
-
 
     const setApiModel = useCallback((apiName: ApiName, model: CrawlModelType) => {
         setApiModels(prev => ({ ...prev, [apiName]: model }));
@@ -457,7 +413,6 @@ export const useConferenceCrawl = (): UseConferenceCrawlReturn => {
         setIsCrawling(false);
     };
 
-
     const startCrawlFromCsv = async () => {
         if (selectedCsvRows.length === 0) {
             const msg = "No conferences selected from the CSV data to process.";
@@ -507,6 +462,6 @@ export const useConferenceCrawl = (): UseConferenceCrawlReturn => {
         startCrawlItems,
         resetCrawl,
         onCsvSelectionChanged,
-        updateActionTypeOfSelectedRows, // Expose the new function
+        updateActionTypeOfSelectedRows,
     };
 };

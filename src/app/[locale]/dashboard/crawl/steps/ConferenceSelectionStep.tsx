@@ -1,154 +1,30 @@
 // src/appp/[locale]/dashboard/logAnalysis/steps/ConferenceSelectionStep.tsx
-import React, { useMemo, useState, useRef, useCallback } from 'react'; // Import useRef, useCallback
+import React, { useMemo, useState, useRef, useCallback } from 'react';
 import { Conference } from '@/src/models/logAnalysis/importConferenceCrawl';
 import {
-  AllCommunityModule,
-  ModuleRegistry,
-  RowSelectionModule,
-  GridOptions,
-  ColDef,
-  GetRowIdParams,
-  ValueFormatterParams,
-  SelectionChangedEvent,
-  GridApi, // Import GridApi
-  PaginationNumberFormatterParams,
-} from 'ag-grid-community';
-import { AgGridReact } from 'ag-grid-react';
-
-ModuleRegistry.registerModules([AllCommunityModule, RowSelectionModule]);
+  useReactTable,
+  getCoreRowModel,
+  getSortedRowModel,
+  getFilteredRowModel,
+  getPaginationRowModel,
+  ColumnDef,
+  flexRender,
+  SortingState,
+  ColumnFiltersState,
+  RowSelectionState,
+  PaginationState,
+} from '@tanstack/react-table';
+import { ChevronUpIcon, ChevronDownIcon, ChevronsUpDown, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Search } from 'lucide-react';
 
 interface ConferenceSelectionStepProps {
   parsedData: Conference[];
-  onSelectionChanged: (event: SelectionChangedEvent<Conference>) => void;
+  onSelectionChanged: (selectedRows: Conference[]) => void;
   selectedCsvRowsCount: number;
   onNext: () => void;
   onPrev: () => void;
   canProceed: boolean;
-  onUpdateActionTypeForSelected: (actionType: 'crawl' | 'update', gridApi: GridApi<Conference> | null) => void; // New prop
+  onUpdateActionTypeForSelected: (actionType: 'crawl' | 'update', selectedRows: Conference[]) => void;
 }
-
-const defaultColDefs: ColDef<Conference>[] = [
-  {
-    field: 'acronym', 
-    headerName: 'Acronym', 
-    sortable: true, 
-    filter: true,
-    checkboxSelection: true, 
-    headerCheckboxSelection: true, 
-    width: 150,
-    minWidth: 120,
-  },
-  { 
-    field: 'title', 
-    headerName: 'Title', 
-    sortable: true, 
-    filter: true, 
-    flex: 1,
-    minWidth: 200,
-  },
-  {
-    field: 'crawlType',
-    headerName: 'Action Type',
-    width: 130,
-    minWidth: 120,
-    editable: true,
-    cellEditor: 'agSelectCellEditor',
-    cellEditorParams: { values: ['crawl', 'update'] },
-    cellClassRules: {
-      'font-semibold text-blue-700': params => params.value === 'crawl',
-      'font-semibold text-green-700': params => params.value === 'update',
-    },
-    valueFormatter: (params: ValueFormatterParams<Conference, 'crawl' | 'update'>) => {
-      return params.value ? params.value.charAt(0).toUpperCase() + params.value.slice(1) : '';
-    }
-  },
-  { 
-    field: 'sources', 
-    headerName: 'Sources', 
-    sortable: true, 
-    filter: true, 
-    width: 130,
-    minWidth: 120,
-  },
-  { 
-    field: 'ranks', 
-    headerName: 'Ranks', 
-    sortable: true, 
-    filter: true, 
-    width: 100,
-    minWidth: 90,
-  },
-  { 
-    field: 'researchFields', 
-    headerName: 'Research Fields', 
-    sortable: true, 
-    filter: true, 
-    width: 180,
-    minWidth: 150,
-  },
-  { 
-    field: 'status', 
-    headerName: 'Status', 
-    sortable: true, 
-    filter: true, 
-    width: 100,
-    minWidth: 90,
-  },
-  {
-    field: 'updatedAt', 
-    headerName: 'Updated At', 
-    sortable: true, 
-    filter: true, 
-    width: 180,
-    minWidth: 150,
-    valueFormatter: (params: ValueFormatterParams<Conference, string | number | Date | undefined>) =>
-      params.value ? new Date(params.value).toLocaleString() : ''
-  },
-  {
-    field: 'link', 
-    headerName: 'Link (for Update)', 
-    sortable: true, 
-    filter: true, 
-    width: 180,
-    minWidth: 150,
-    cellClassRules: { 'italic text-gray-500': params => !params.data || params.data.crawlType === 'crawl' }
-  },
-  {
-    field: 'impLink', 
-    headerName: 'Imp Link (for Update)', 
-    sortable: true, 
-    filter: true, 
-    width: 180,
-    minWidth: 150,
-    cellClassRules: { 'italic text-gray-500': params => !params.data || params.data.crawlType === 'crawl' }
-  },
-  {
-    field: 'cfpLink', 
-    headerName: 'Cfp Link (for Update)', 
-    sortable: true, 
-    filter: true, 
-    width: 180,
-    minWidth: 150,
-    cellClassRules: { 'italic text-gray-500': params => !params.data || params.data.crawlType === 'crawl' }
-  }
-];
-
-const defaultGridOptions: GridOptions<Conference> = {
-  rowSelection: 'multiple',
-  suppressRowClickSelection: true,
-  pagination: true,
-  paginationPageSize: 10,
-  paginationPageSizeSelector: [10, 20, 50, 100],
-  domLayout: 'normal',
-  // Enable this if you want the grid to re-render when rowData prop changes.
-  // It's often true by default for React.
-  // deltaRowDataMode: true, // Not strictly needed if you pass a new array to rowData
-  // singleClickEdit: true, // Bật nếu muốn edit bằng 1 click
-};
-
-const getRowId = (params: GetRowIdParams<Conference>): string => {
-  return params.data.id;
-};
 
 const ConferenceSelectionStep: React.FC<ConferenceSelectionStepProps> = ({
   parsedData,
@@ -159,29 +35,166 @@ const ConferenceSelectionStep: React.FC<ConferenceSelectionStepProps> = ({
   canProceed,
   onUpdateActionTypeForSelected,
 }) => {
-  const [colDefs] = useState<ColDef<Conference>[]>(defaultColDefs);
-  const gridOptions = useMemo<GridOptions<Conference>>(() => ({
-    ...defaultGridOptions,
-    paginationNumberFormatter: (params: PaginationNumberFormatterParams) => {
-      return '[' + params.value.toLocaleString() + ']';
-    },
-  }), []);
-  const gridRef = useRef<AgGridReact<Conference>>(null); // Ref for AG Grid
-
+  const [sorting, setSorting] = useState<SortingState>([]);
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
   const [globalActionType, setGlobalActionType] = useState<'crawl' | 'update'>('crawl');
+  const [pagination, setPagination] = useState<PaginationState>({
+    pageIndex: 0,
+    pageSize: 10,
+  });
+
+  const columns = useMemo<ColumnDef<Conference>[]>(() => [
+    {
+      id: 'select',
+      header: ({ table }) => (
+        <input
+          type="checkbox"
+          checked={table.getIsAllPageRowsSelected()}
+          onChange={table.getToggleAllPageRowsSelectedHandler()}
+          className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+        />
+      ),
+      cell: ({ row }) => (
+        <input
+          type="checkbox"
+          checked={row.getIsSelected()}
+          onChange={row.getToggleSelectedHandler()}
+          className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+        />
+      ),
+      enableSorting: false,
+      enableHiding: false,
+    },
+    {
+      accessorKey: 'acronym',
+      header: 'Acronym',
+      cell: ({ row }) => <div className="font-medium">{row.getValue('acronym')}</div>,
+    },
+    {
+      accessorKey: 'title',
+      header: 'Title',
+      cell: ({ row }) => <div className="font-medium">{row.getValue('title')}</div>,
+    },
+    {
+      accessorKey: 'crawlType',
+      header: 'Action Type',
+      cell: ({ row }) => {
+        const crawlType = row.getValue('crawlType') as 'crawl' | 'update';
+        return (
+          <select
+            value={crawlType}
+            onChange={(e) => {
+              const newValue = e.target.value as 'crawl' | 'update';
+              row.original.crawlType = newValue;
+            }}
+            className={`font-semibold ${
+              crawlType === 'crawl' ? 'text-blue-700' : 'text-green-700'
+            } bg-transparent border-none focus:ring-0`}
+          >
+            <option value="crawl">Crawl</option>
+            <option value="update">Update</option>
+          </select>
+        );
+      },
+    },
+    {
+      accessorKey: 'sources',
+      header: 'Sources',
+    },
+    {
+      accessorKey: 'ranks',
+      header: 'Ranks',
+    },
+    {
+      accessorKey: 'researchFields',
+      header: 'Research Fields',
+    },
+    {
+      accessorKey: 'status',
+      header: 'Status',
+    },
+    {
+      accessorKey: 'updatedAt',
+      header: 'Updated At',
+      cell: ({ row }) => {
+        const date = row.getValue('updatedAt');
+        return date ? new Date(date as string).toLocaleString() : '';
+      },
+    },
+    {
+      accessorKey: 'link',
+      header: 'Link (for Update)',
+      cell: ({ row }) => {
+        const crawlType = row.getValue('crawlType') as 'crawl' | 'update';
+        return (
+          <div className={crawlType === 'crawl' ? 'italic text-gray-500' : ''}>
+            {row.getValue('link')}
+          </div>
+        );
+      },
+    },
+    {
+      accessorKey: 'impLink',
+      header: 'Imp Link (for Update)',
+      cell: ({ row }) => {
+        const crawlType = row.getValue('crawlType') as 'crawl' | 'update';
+        return (
+          <div className={crawlType === 'crawl' ? 'italic text-gray-500' : ''}>
+            {row.getValue('impLink')}
+          </div>
+        );
+      },
+    },
+    {
+      accessorKey: 'cfpLink',
+      header: 'Cfp Link (for Update)',
+      cell: ({ row }) => {
+        const crawlType = row.getValue('crawlType') as 'crawl' | 'update';
+        return (
+          <div className={crawlType === 'crawl' ? 'italic text-gray-500' : ''}>
+            {row.getValue('cfpLink')}
+          </div>
+        );
+      },
+    },
+  ], []);
+
+  const table = useReactTable({
+    data: parsedData,
+    columns,
+    state: {
+      sorting,
+      columnFilters,
+      rowSelection,
+      pagination,
+    },
+    enableRowSelection: true,
+    onRowSelectionChange: setRowSelection,
+    onSortingChange: setSorting,
+    onColumnFiltersChange: setColumnFilters,
+    onPaginationChange: setPagination,
+    getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+    pageCount: Math.ceil(parsedData.length / pagination.pageSize),
+  });
+
+  // Update parent component when selection changes
+  React.useEffect(() => {
+    const selectedRows = table.getSelectedRowModel().rows.map(row => row.original);
+    onSelectionChanged(selectedRows);
+  }, [rowSelection, table, onSelectionChanged]);
 
   const handleApplyGlobalActionType = useCallback(() => {
-    if (gridRef.current && gridRef.current.api) {
-        if (selectedCsvRowsCount > 0) {
-            onUpdateActionTypeForSelected(globalActionType, gridRef.current.api);
-        } else {
-            alert("Please select at least one conference to apply the action type.");
-        }
+    const selectedRows = table.getSelectedRowModel().rows.map(row => row.original);
+    if (selectedRows.length > 0) {
+      onUpdateActionTypeForSelected(globalActionType, selectedRows);
     } else {
-        console.error("Grid API not available.");
+      alert("Please select at least one conference to apply the action type.");
     }
-  }, [globalActionType, onUpdateActionTypeForSelected, selectedCsvRowsCount]);
-
+  }, [globalActionType, onUpdateActionTypeForSelected, table]);
 
   return (
     <div className="space-y-4 md:space-y-6 rounded-lg border border-gray-200 p-3 md:p-6 bg-white shadow">
@@ -218,18 +231,161 @@ const ConferenceSelectionStep: React.FC<ConferenceSelectionStepProps> = ({
         </div>
       </div>
 
-      <div className="ag-theme-alpine w-full overflow-hidden" style={{ height: 'calc(100vh - 150px)', minHeight: '300px' }}>
-        <AgGridReact<Conference>
-          ref={gridRef}
-          rowData={parsedData}
-          columnDefs={colDefs}
-          gridOptions={gridOptions}
-          onSelectionChanged={onSelectionChanged}
-          getRowId={getRowId}
-          domLayout='normal'
-          className="w-full"
-        />
+      {/* Filters */}
+      <div className="mb-4 grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="relative">
+          <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+            <Search className="h-4 w-4 text-gray-400" />
+          </div>
+          <input
+            type="text"
+            placeholder="Filter by acronym..."
+            value={(table.getColumn('acronym')?.getFilterValue() as string) ?? ''}
+            onChange={(e) => table.getColumn('acronym')?.setFilterValue(e.target.value)}
+            className="block w-full rounded-md border-0 py-1.5 pl-10 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+          />
+        </div>
+        <div className="relative">
+          <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+            <Search className="h-4 w-4 text-gray-400" />
+          </div>
+          <input
+            type="text"
+            placeholder="Filter by title..."
+            value={(table.getColumn('title')?.getFilterValue() as string) ?? ''}
+            onChange={(e) => table.getColumn('title')?.setFilterValue(e.target.value)}
+            className="block w-full rounded-md border-0 py-1.5 pl-10 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+          />
+        </div>
+        <div className="relative">
+          <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+            <Search className="h-4 w-4 text-gray-400" />
+          </div>
+          <input
+            type="text"
+            placeholder="Filter by status..."
+            value={(table.getColumn('status')?.getFilterValue() as string) ?? ''}
+            onChange={(e) => table.getColumn('status')?.setFilterValue(e.target.value)}
+            className="block w-full rounded-md border-0 py-1.5 pl-10 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+          />
+        </div>
       </div>
+
+      <div className="w-full rounded-lg border border-gray-200">
+        <div className="overflow-x-auto">
+          <div className="inline-block min-w-full align-middle">
+            <div className="overflow-y-auto" style={{ maxHeight: 'calc(100vh - 300px)' }}>
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-blue-50 sticky top-0 z-10">
+                  {table.getHeaderGroups().map(headerGroup => (
+                    <tr key={headerGroup.id}>
+                      {headerGroup.headers.map(header => (
+                        <th
+                          key={header.id}
+                          className="border-b border-blue-100 px-4 py-3 text-left text-sm font-semibold text-blue-900 whitespace-nowrap"
+                        >
+                          {header.isPlaceholder ? null : (
+                            <div
+                              {...{
+                                className: header.column.getCanSort()
+                                  ? 'cursor-pointer select-none flex items-center gap-2 hover:text-blue-700 transition-colors'
+                                  : '',
+                                onClick: header.column.getToggleSortingHandler(),
+                              }}
+                            >
+                              {flexRender(
+                                header.column.columnDef.header,
+                                header.getContext()
+                              )}
+                              {{
+                                asc: <ChevronUpIcon className="h-4 w-4 text-blue-600" />,
+                                desc: <ChevronDownIcon className="h-4 w-4 text-blue-600" />,
+                              }[header.column.getIsSorted() as string] ?? (
+                                header.column.getCanSort() ? (
+                                  <ChevronsUpDown className="h-4 w-4 text-blue-400" />
+                                ) : null
+                              )}
+                            </div>
+                          )}
+                        </th>
+                      ))}
+                    </tr>
+                  ))}
+                </thead>
+                <tbody className="divide-y divide-gray-200 bg-white">
+                  {table.getRowModel().rows.map(row => (
+                    <tr key={row.id} className="hover:bg-gray-50 transition-colors">
+                      {row.getVisibleCells().map(cell => (
+                        <td key={cell.id} className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
+                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Enhanced Pagination */}
+      <div className="flex items-center justify-between px-4 py-3 bg-white border-t border-gray-200">
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => table.setPageIndex(0)}
+            disabled={!table.getCanPreviousPage()}
+            className="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-2.5 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <ChevronsLeft className="h-4 w-4" />
+          </button>
+          <button
+            onClick={() => table.previousPage()}
+            disabled={!table.getCanPreviousPage()}
+            className="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-2.5 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </button>
+          <span className="flex items-center gap-1 text-sm text-gray-700">
+            <div>Page</div>
+            <strong className="text-gray-900">
+              {table.getState().pagination.pageIndex + 1} of{' '}
+              {table.getPageCount()}
+            </strong>
+          </span>
+          <button
+            onClick={() => table.nextPage()}
+            disabled={!table.getCanNextPage()}
+            className="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-2.5 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <ChevronRight className="h-4 w-4" />
+          </button>
+          <button
+            onClick={() => table.setPageIndex(table.getPageCount() - 1)}
+            disabled={!table.getCanNextPage()}
+            className="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-2.5 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <ChevronsRight className="h-4 w-4" />
+          </button>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-gray-700">Rows per page</span>
+          <select
+            value={table.getState().pagination.pageSize}
+            onChange={e => {
+              table.setPageSize(Number(e.target.value));
+            }}
+            className="rounded-md border border-gray-300 bg-white px-2.5 py-1.5 text-sm font-medium text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+          >
+            {[10, 20, 50, 100].map(pageSize => (
+              <option key={pageSize} value={pageSize}>
+                {pageSize}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+
       <p className="mt-2 text-xs md:text-sm text-gray-600">
         Selected {selectedCsvRowsCount} conference(s).
       </p>
