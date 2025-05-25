@@ -84,46 +84,47 @@ export const getErrorDisplayProps = (error: LogError) => {
     }
   }
   return { icon, textColor, bgColor, borderColor };
+
 };
-/**
- * Helper để xác định số cột và tỷ lệ cho expanded view dựa trên sự hiện diện của các phần nội dung.
- * @param {boolean} hasPreviewData - true nếu có phần preview data.
- * @param {boolean} hasErrorsOrLinkFailures - true nếu có phần errors hoặc link failures.
- * @param {boolean} hasDataQualityOrStepDetails - true nếu có phần data quality hoặc step details.
- * @returns Chuỗi class CSS cho Tailwind CSS grid-cols.
- */
+
+
+// Helper để xác định số cột cho expanded view
 export const getExpandedGridColumnsClass = ({
-  hasPreviewData,
-  hasErrorsOrLinkFailures,
-  hasDataQualityOrStepDetails // Cờ này đại diện cho Cột 3 (DQ + Steps)
+  showPreview,
+  showErrors,
+  showDataQualityAndOrStepsCombined, // True nếu DQ và Steps (hoặc chỉ một trong hai) được hiển thị trong một cột
+  showStepsAsSeparateColumn,      // True nếu Steps được hiển thị như một cột riêng (trường hợp đặc biệt)
 }: {
-  hasPreviewData: boolean;
-  hasErrorsOrLinkFailures: boolean;
-  hasDataQualityOrStepDetails: boolean;
+  showPreview: boolean;
+  showErrors: boolean;
+  showDataQualityAndOrStepsCombined: boolean;
+  showStepsAsSeparateColumn: boolean;
 }): string => {
-  // Đếm số lượng cột logic đang hoạt động
-  const activeColumnCount = [hasPreviewData, hasErrorsOrLinkFailures, hasDataQualityOrStepDetails].filter(Boolean).length;
+  let activeColumnCount = 0;
+  if (showPreview) activeColumnCount++;
+  if (showErrors) activeColumnCount++;
+  if (showDataQualityAndOrStepsCombined) activeColumnCount++;
+  if (showStepsAsSeparateColumn) activeColumnCount++; // Sẽ chỉ true nếu showDataQualityAndOrStepsCombined là false
 
   if (activeColumnCount === 3) {
-    // 3 cột: Preview + Error + DataQuality/Step - Kích thước đều nhau
+    // Các trường hợp 3 cột:
+    // 1. Preview + Errors + (DQ/Steps Combined)
+    // 2. Preview + Errors + Steps (riêng, khi không có DQ)
+    // Yêu cầu: kích thước đều nhau
     return 'md:grid-cols-3';
   } else if (activeColumnCount === 2) {
-    // Các trường hợp 2 cột với tỷ lệ
-    if (hasPreviewData && hasDataQualityOrStepDetails) {
-      // 2 cột: Preview + DataQuality/Step (không có Error) - Tỷ lệ 65 - 35
-      return 'md:grid-cols-[2fr_1fr]';
-    } else if (hasErrorsOrLinkFailures && hasDataQualityOrStepDetails) {
-      // 2 cột: Error + DataQuality/Step (không có Preview) - Tỷ lệ 65 - 35
-      return 'md:grid-cols-[2fr_1fr]';
-    } else if (hasPreviewData && hasErrorsOrLinkFailures) {
-      // 2 cột: Preview + Error (không có DataQuality/Step) - Tỷ lệ 50-50 (mặc định)
-      return 'md:grid-cols-2';
+    // Trường hợp Preview + (DQ/Steps Combined hoặc Steps riêng) VÀ KHÔNG có Errors
+    if (showPreview && (showDataQualityAndOrStepsCombined || showStepsAsSeparateColumn) && !showErrors) {
+      return 'md:grid-cols-[65fr_35fr]'; // Tỉ lệ 65-35
     }
-    // Trường hợp này không nên xảy ra nếu activeColumnCount là 2 và các điều kiện trên đã bao phủ
+    // Trường hợp Errors + (DQ/Steps Combined hoặc Steps riêng) VÀ KHÔNG có Preview
+    if (showErrors && (showDataQualityAndOrStepsCombined || showStepsAsSeparateColumn) && !showPreview) {
+      return 'md:grid-cols-[65fr_35fr]'; // Tỉ lệ 65-35
+    }
+    // Trường hợp 2 cột còn lại (ví dụ: Preview + Errors)
+    return 'md:grid-cols-2'; // Kích thước đều nhau
   } else if (activeColumnCount === 1) {
-    // 1 cột
     return 'md:grid-cols-1';
   }
-  // Mặc định hoặc khi không có cột nào hiển thị
-  return 'md:grid-cols-1';
+  return 'md:grid-cols-1'; // Mặc định hoặc không có nội dung
 };
