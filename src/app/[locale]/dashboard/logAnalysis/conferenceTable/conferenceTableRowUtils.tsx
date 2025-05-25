@@ -85,7 +85,6 @@ export const getErrorDisplayProps = (error: LogError) => {
   }
   return { icon, textColor, bgColor, borderColor };
 };
-
 /**
  * Helper để xác định số cột và tỷ lệ cho expanded view dựa trên sự hiện diện của các phần nội dung.
  * @param {boolean} hasPreviewData - true nếu có phần preview data.
@@ -96,18 +95,20 @@ export const getErrorDisplayProps = (error: LogError) => {
 export const getExpandedGridColumnsClass = ({
   hasPreviewData,
   hasErrorsOrLinkFailures,
-  hasDataQualityOrStepDetails
+  hasDataQualityOrStepDetails // Cờ này đại diện cho Cột 3 (DQ + Steps)
 }: {
   hasPreviewData: boolean;
   hasErrorsOrLinkFailures: boolean;
   hasDataQualityOrStepDetails: boolean;
 }): string => {
+  // Đếm số lượng cột logic đang hoạt động
   const activeColumnCount = [hasPreviewData, hasErrorsOrLinkFailures, hasDataQualityOrStepDetails].filter(Boolean).length;
 
   if (activeColumnCount === 3) {
     // 3 cột: Preview + Error + DataQuality/Step - Kích thước đều nhau
     return 'md:grid-cols-3';
   } else if (activeColumnCount === 2) {
+    // Các trường hợp 2 cột với tỷ lệ
     if (hasPreviewData && hasDataQualityOrStepDetails) {
       // 2 cột: Preview + DataQuality/Step (không có Error) - Tỷ lệ 65 - 35
       return 'md:grid-cols-[2fr_1fr]';
@@ -115,7 +116,7 @@ export const getExpandedGridColumnsClass = ({
       // 2 cột: Error + DataQuality/Step (không có Preview) - Tỷ lệ 65 - 35
       return 'md:grid-cols-[2fr_1fr]';
     } else if (hasPreviewData && hasErrorsOrLinkFailures) {
-      // 2 cột: Preview + Error (không có DataQuality/Step) - Tỷ lệ 50-50
+      // 2 cột: Preview + Error (không có DataQuality/Step) - Tỷ lệ 50-50 (mặc định)
       return 'md:grid-cols-2';
     }
     // Trường hợp này không nên xảy ra nếu activeColumnCount là 2 và các điều kiện trên đã bao phủ
@@ -123,6 +124,6 @@ export const getExpandedGridColumnsClass = ({
     // 1 cột
     return 'md:grid-cols-1';
   }
-  // Mặc định hoặc khi không có cột nào hiển thị (nên xử lý null ở component cha)
+  // Mặc định hoặc khi không có cột nào hiển thị
   return 'md:grid-cols-1';
 };
