@@ -318,7 +318,7 @@ export const useConferenceCrawl = (): UseConferenceCrawlReturn => {
             const response = await axios.post<ApiCrawlResponse>(API_CONFERENCE_ENDPOINT, apiPayloadItems as any[], {
                 params: params,
                 headers: { 'Content-Type': 'application/json' },
-                timeout: 7200000
+                timeout: 720000
             });
             console.log(`${description} ${modelDesc} - Response Status:`, response.status, response.data);
             setCrawlMessages(prev => [...prev, `${description} ${modelDesc}: ${response.data.message} (Runtime: ${response.data.runtime ?? 'N/A'}s)`]);
