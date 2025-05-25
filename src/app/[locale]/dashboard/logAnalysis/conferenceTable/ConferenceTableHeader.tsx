@@ -95,17 +95,17 @@ export const ConferenceTableHeader: React.FC<ConferenceTableHeaderProps> = ({
   const columnsConfig = [
     { key: 'sel', title: 'Sel', sortable: false, filterable: false, className: 'w-12 text-center' },
     { key: 'title', title: 'Title/Acronym', sortable: true, sortKey: 'title' as SortableColumn, filterable: true, filterKey: 'title' as keyof ColumnFiltersState, className: 'min-w-[200px]' },
-    { key: 'crawlType', title: 'Action', sortable: true, sortKey: 'crawlType' as SortableColumn, filterable: true, filterKey: 'crawlType' as keyof ColumnFiltersState, className: 'min-w-[20px] max-w-[60px]' },
-    { key: 'status', title: 'Status', sortable: true, sortKey: 'status' as SortableColumn, filterable: true, filterKey: 'status' as keyof ColumnFiltersState, className: 'min-w-[80px]' },
-    { key: 'durationSeconds', title: 'Duration', sortable: true, sortKey: 'durationSeconds' as SortableColumn, filterable: false, className: 'min-w-[90px] text-center' },
-    { key: 'search', title: 'Search', sortable: false, filterable: false, className: 'min-w-[90px] text-left' },
-    { key: 'html', title: 'Html', sortable: false, filterable: false, className: 'min-w-[90px] text-left' },
-    { key: 'link', title: 'Link', sortable: false, filterable: false, className: 'min-w-[90px] text-left' },
-    { key: 'g_det', title: 'Det', sortable: false, filterable: false, className: 'min-w-[90px] text-left' },
-    { key: 'g_cfp', title: 'Cfp', sortable: false, filterable: false, className: 'min-w-[90px] text-left' },
-    { key: 'g_ext', title: 'Ext', sortable: false, filterable: false, className: 'min-w-[90px] text-left' },
+    { key: 'crawlType', title: 'Action', sortable: true, sortKey: 'crawlType' as SortableColumn, filterable: true, filterKey: 'crawlType' as keyof ColumnFiltersState, className: 'min-w-[20px] max-w-[40px]' },
+    { key: 'status', title: 'Status', sortable: true, sortKey: 'status' as SortableColumn, filterable: true, filterKey: 'status' as keyof ColumnFiltersState, className: 'min-w-[40px]' },
+    { key: 'durationSeconds', title: 'Duration', sortable: true, sortKey: 'durationSeconds' as SortableColumn, filterable: false, className: 'min-w-[40px] text-center' },
+    { key: 'search', title: 'Search', sortable: false, filterable: false, className: 'min-w-[80px] text-left' },
+    { key: 'html', title: 'Html', sortable: false, filterable: false, className: 'min-w-[80px] text-left' },
+    { key: 'link', title: 'Link', sortable: false, filterable: false, className: 'min-w-[80px] text-left' },
+    { key: 'g_det', title: 'Det', sortable: false, filterable: false, className: 'min-w-[80px] text-left' },
+    { key: 'g_cfp', title: 'Cfp', sortable: false, filterable: false, className: 'min-w-[80px] text-left' },
+    { key: 'g_ext', title: 'Ext', sortable: false, filterable: false, className: 'min-w-[80px] text-left' },
     { key: 'dataQualityInsightCount', title: 'Warns', sortable: true, sortKey: 'dataQualityInsightCount' as SortableColumn, filterable: true, filterKey: 'dataQualityInsightCount' as keyof ColumnFiltersState, filterType: 'level', className: 'min-w-[60px] text-center' },
-    { key: 'unrecoveredErrorCount', title: 'Unrecovered Errors', sortable: true, sortKey: 'unrecoveredErrorCount' as SortableColumn, filterable: true, filterKey: 'unrecoveredErrorCount' as keyof ColumnFiltersState, filterType: 'level', className: 'min-w-[60px] text-center' }, // Cập nhật sortKey và filterKey
+    { key: 'unrecoveredErrorCount', title: 'Unrecovered Errors', sortable: true, sortKey: 'unrecoveredErrorCount' as SortableColumn, filterable: true, filterKey: 'unrecoveredErrorCount' as keyof ColumnFiltersState, filterType: 'level', className: 'min-w-[200px] text-center' }, // Cập nhật sortKey và filterKey
     { key: 'save', title: 'Save', sortable: false, filterable: false, className: 'min-w-[60px] text-center' },
   ];
 
