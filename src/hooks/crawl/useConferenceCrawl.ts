@@ -64,6 +64,7 @@ export interface UseConferenceCrawlReturn {
     resetCrawl: () => void;
     onCsvSelectionChanged: (selectedRows: Conference[]) => void;
     updateActionTypeOfSelectedRows: (actionType: 'crawl' | 'update', selectedRows: Conference[]) => void;
+    onRowSelectionChange: (selectedRows: Conference[]) => void;
 }
 
 export const useConferenceCrawl = (): UseConferenceCrawlReturn => {
@@ -159,7 +160,7 @@ export const useConferenceCrawl = (): UseConferenceCrawlReturn => {
         if (event.target) event.target.value = '';
     }, [parseCSV]);
 
-    const onCsvSelectionChanged = (selectedRows: Conference[]) => {
+    const onCsvSelectionChanged = useCallback((selectedRows: Conference[]) => {
         const selectedActions: ConferenceForAction[] = selectedRows.map(confData => ({
             id: confData.id,
             Title: confData.title,
@@ -170,7 +171,7 @@ export const useConferenceCrawl = (): UseConferenceCrawlReturn => {
             impLink: confData.impLink,
         }));
         setSelectedCsvRows(selectedActions);
-    };
+    }, []);
 
     const updateActionTypeOfSelectedRows = useCallback((
         actionType: 'crawl' | 'update',
@@ -441,6 +442,10 @@ export const useConferenceCrawl = (): UseConferenceCrawlReturn => {
         console.log("Crawl state (including API models) fully reset.");
     }, []);
 
+    const handleRowSelectionChange = useCallback((selectedRows: Conference[]) => {
+        onCsvSelectionChanged(selectedRows);
+    }, [onCsvSelectionChanged]);
+
     return {
         file,
         parsedData,
@@ -463,5 +468,6 @@ export const useConferenceCrawl = (): UseConferenceCrawlReturn => {
         resetCrawl,
         onCsvSelectionChanged,
         updateActionTypeOfSelectedRows,
+        onRowSelectionChange: handleRowSelectionChange,
     };
 };

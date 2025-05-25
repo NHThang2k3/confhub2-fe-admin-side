@@ -1,5 +1,5 @@
 // src/appp/[locale]/dashboard/logAnalysis/steps/ConferenceSelectionStep.tsx
-import React, { useMemo, useState, useRef, useCallback } from 'react';
+import React, { useMemo, useState, useRef, useCallback, useEffect } from 'react';
 import { Conference } from '@/src/models/logAnalysis/importConferenceCrawl';
 import {
   useReactTable,
@@ -13,6 +13,7 @@ import {
   ColumnFiltersState,
   RowSelectionState,
   PaginationState,
+  TableMeta,
 } from '@tanstack/react-table';
 import { ChevronUpIcon, ChevronDownIcon, ChevronsUpDown, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Search } from 'lucide-react';
 
@@ -25,6 +26,11 @@ interface ConferenceSelectionStepProps {
   canProceed: boolean;
   onUpdateActionTypeForSelected: (actionType: 'crawl' | 'update', selectedRows: Conference[]) => void;
 }
+
+// Add type definition for table meta
+type TableMetaType = TableMeta<Conference> & {
+  updateData: (rowIndex: number, columnId: string, value: any) => void;
+};
 
 const ConferenceSelectionStep: React.FC<ConferenceSelectionStepProps> = ({
   parsedData,
@@ -44,6 +50,12 @@ const ConferenceSelectionStep: React.FC<ConferenceSelectionStepProps> = ({
     pageSize: 10,
   });
 
+  // Memoize the selection change handler
+  const handleRowSelectionChange = useCallback((updater: RowSelectionState | ((old: RowSelectionState) => RowSelectionState)) => {
+    setRowSelection(updater);
+  }, []);
+
+  // Memoize the columns to prevent unnecessary re-renders
   const columns = useMemo<ColumnDef<Conference>[]>(() => [
     {
       id: 'select',
@@ -86,7 +98,9 @@ const ConferenceSelectionStep: React.FC<ConferenceSelectionStepProps> = ({
             value={crawlType}
             onChange={(e) => {
               const newValue = e.target.value as 'crawl' | 'update';
-              row.original.crawlType = newValue;
+              if (newValue !== crawlType) {
+                onUpdateActionTypeForSelected(newValue, [row.original]);
+              }
             }}
             className={`font-semibold ${
               crawlType === 'crawl' ? 'text-blue-700' : 'text-green-700'
@@ -158,10 +172,10 @@ const ConferenceSelectionStep: React.FC<ConferenceSelectionStepProps> = ({
         );
       },
     },
-  ], []);
+  ], [onUpdateActionTypeForSelected]);
 
   const table = useReactTable({
-    data: parsedData,
+    data: parsedData || [],
     columns,
     state: {
       sorting,
@@ -170,7 +184,7 @@ const ConferenceSelectionStep: React.FC<ConferenceSelectionStepProps> = ({
       pagination,
     },
     enableRowSelection: true,
-    onRowSelectionChange: setRowSelection,
+    onRowSelectionChange: handleRowSelectionChange,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     onPaginationChange: setPagination,
@@ -178,23 +192,33 @@ const ConferenceSelectionStep: React.FC<ConferenceSelectionStepProps> = ({
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
-    pageCount: Math.ceil(parsedData.length / pagination.pageSize),
+    pageCount: Math.ceil((parsedData?.length || 0) / pagination.pageSize),
   });
 
   // Update parent component when selection changes
-  React.useEffect(() => {
+  useEffect(() => {
     const selectedRows = table.getSelectedRowModel().rows.map(row => row.original);
     onSelectionChanged(selectedRows);
-  }, [rowSelection, table, onSelectionChanged]);
+  }, [table, onSelectionChanged]);
 
-  const handleApplyGlobalActionType = useCallback(() => {
-    const selectedRows = table.getSelectedRowModel().rows.map(row => row.original);
-    if (selectedRows.length > 0) {
-      onUpdateActionTypeForSelected(globalActionType, selectedRows);
-    } else {
-      alert("Please select at least one conference to apply the action type.");
+  const handleGlobalActionTypeChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newValue = e.target.value as 'crawl' | 'update';
+    if (newValue !== globalActionType) {
+      setGlobalActionType(newValue);
+      
+      const selectedRows = table.getSelectedRowModel().rows.map(row => row.original);
+      if (selectedRows.length > 0) {
+        onUpdateActionTypeForSelected(newValue, selectedRows);
+      }
     }
-  }, [globalActionType, onUpdateActionTypeForSelected, table]);
+  }, [table, onUpdateActionTypeForSelected, globalActionType]);
+
+  // Reset selection when parsedData changes
+  useEffect(() => {
+    if (parsedData) {
+      setRowSelection({});
+    }
+  }, [parsedData]);
 
   return (
     <div className="space-y-4 md:space-y-6 rounded-lg border border-gray-200 p-3 md:p-6 bg-white shadow">
@@ -214,7 +238,7 @@ const ConferenceSelectionStep: React.FC<ConferenceSelectionStepProps> = ({
             id="globalActionType"
             name="globalActionType"
             value={globalActionType}
-            onChange={(e) => setGlobalActionType(e.target.value as 'crawl' | 'update')}
+            onChange={handleGlobalActionTypeChange}
             className="block w-full sm:w-auto rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm py-2 px-3"
           >
             <option value="crawl">Crawl</option>
@@ -222,7 +246,14 @@ const ConferenceSelectionStep: React.FC<ConferenceSelectionStepProps> = ({
           </select>
           <button
             type="button"
-            onClick={handleApplyGlobalActionType}
+            onClick={() => {
+              const selectedRows = table.getSelectedRowModel().rows.map(row => row.original);
+              if (selectedRows.length > 0) {
+                onUpdateActionTypeForSelected(globalActionType, selectedRows);
+              } else {
+                alert("Please select at least one conference to apply the action type.");
+              }
+            }}
             disabled={selectedCsvRowsCount === 0}
             className="inline-flex items-center justify-center rounded-md border border-transparent bg-indigo-600 px-3 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
           >
