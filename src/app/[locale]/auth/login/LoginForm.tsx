@@ -79,14 +79,14 @@ const LoginForm: React.FC<LoginFormProps> = (/* props: LoginFormProps */) => {
                   >
                     {t('Password')}
                   </label>
-                  <div className='text-sm'>
+                  {/* <div className='text-sm'>
                     <Link
                       href='/auth/forgot-password' // Make sure this path is correct with locale if needed
                       className='hover:text-button/80 font-medium text-button'
                     >
                       {t('Forgot_Password')}
                     </Link>
-                  </div>
+                  </div> */}
                 </div>
                 <div className='mt-1'>
                   <div className='relative'>
