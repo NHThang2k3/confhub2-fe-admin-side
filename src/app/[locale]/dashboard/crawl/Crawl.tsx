@@ -16,10 +16,12 @@ import CrawlerTools from './CrawlerTools';
 import LoadingScreen from '../logAnalysis/analysis/LoadingScreen';
 import ErrorScreen from '../logAnalysis/analysis/ErrorScreen';
 import NoDataDisplay from '../logAnalysis/analysis/NoDataDisplay';
+import { useTranslations } from 'next-intl'; 
 
 export type CrawlerType = 'conference' | 'journal';
 
 const Crawl: React.FC = () => {
+    const t = useTranslations('CrawlPage');
     const [timeFilterOption, setTimeFilterOption] = useState<string>('latest');
     const [filterStartTime, setFilterStartTime] = useState<number | undefined>(undefined);
     const [filterEndTime, setFilterEndTime] = useState<number | undefined>(undefined);
@@ -83,19 +85,19 @@ const Crawl: React.FC = () => {
 
     const getNoDataFoundMessage = useCallback((): string => {
         if (isDetailView && !hasOverallDataForDisplay) {
-            return `No analysis results found for Request ID: "${activeRequestIdFilter}".`;
+            return t('noDataForRequestId', { requestId: activeRequestIdFilter });
         }
         if (isListView && (!data?.analyzedRequestIds || data.analyzedRequestIds.length === 0)) {
-            return `No analysis requests found for the selected time period. Consider selecting "Latest" or uploading new logs.`;
+            return t('noRequestsForTimePeriod');
         }
         if (!loading && !hasOverallDataForDisplay && timeFilterOption !== 'latest' && !isDetailView) {
-            return `No analysis results found for the selected time period. Consider selecting "Latest".`;
+            return t('noResultsForTimePeriodSuggestLatest');
         }
         if (!loading && !hasOverallDataForDisplay && !isDetailView) {
-            return "No analysis results found. The log might be empty, processing is pending, or no data matches the current time filter.";
+            return t('noResultsGeneric');
         }
-        return "No specific data to display for the current view.";
-    }, [isDetailView, activeRequestIdFilter, isListView, data, hasOverallDataForDisplay, loading, timeFilterOption]);
+        return t('noSpecificData'); 
+    }, [isDetailView, activeRequestIdFilter, isListView, data, hasOverallDataForDisplay, loading, timeFilterOption, t]);
 
 
     if (loading && !data && !error) {
@@ -131,8 +133,8 @@ const Crawl: React.FC = () => {
             )}
             {!loading && data !== null && !isListView && !isDetailView && (
                 <NoDataDisplay
-                    message="Analysis data loaded, but current view criteria not met. Try adjusting filters or refreshing."
-                    subMessage={data.filterRequestId ? `Data is for: ${data.filterRequestId}` : "Data is general summary."}
+                    message={t('dataLoadedCriteriaNotMet')} // Thay đổi chuỗi tĩnh
+                    subMessage={data.filterRequestId ? t('dataIsForRequestId', { requestId: data.filterRequestId }) : t('dataIsGeneralSummary')} // Thay đổi chuỗi tĩnh
                 />
             )}
 
@@ -140,12 +142,12 @@ const Crawl: React.FC = () => {
             {loading && data && (
                 <div className="mt-6 text-center text-blue-600">
                     <FaSyncAlt className="inline mr-2 animate-spin" />
-                    {activeRequestIdFilter ? `Refreshing details for ${activeRequestIdFilter}...` : "Refreshing analysis data..."}
+                    {activeRequestIdFilter ? t('refreshingDetails', { requestId: activeRequestIdFilter }) : t('refreshingAnalysisData')}
                 </div>
             )}
             {error && data && (
                 <div className="mt-4 text-red-600 text-sm p-3 bg-red-50 rounded-md border border-red-200">
-                    <FaExclamationTriangle className="inline mr-1" /> Error refreshing data: {error}
+                    <FaExclamationTriangle className="inline mr-1" /> {t('errorRefreshingData', { error: error })}
                 </div>
             )}
         </div>

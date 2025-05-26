@@ -181,6 +181,15 @@ const UserDropdown: FC<Props> = ({
             {/* Menu Links - Already use t() for labels */}
             {/* Just need to ensure correct keys are used in message files */}
             <Link
+              href={{ pathname: `/dashboard/crawl` }}
+              locale={locale} // Pass locale
+              className='block px-2 py-2 text-sm  hover:bg-gray-100  dark:hover:bg-gray-700'
+              onClick={handleLinkClick} // Use the click handler
+            >
+               {/* Label - ALREADY uses t() for translation */}
+              {t('Crawl')} {/* <-- Already uses t() */}
+            </Link>
+            <Link
               href={{ pathname: `/dashboard/logAnalysis` }}
               locale={locale} // Pass locale
               className='block px-2 py-2 text-sm  hover:bg-gray-100  dark:hover:bg-gray-700'

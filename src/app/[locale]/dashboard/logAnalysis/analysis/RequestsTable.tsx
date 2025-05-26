@@ -1,6 +1,7 @@
 import React from 'react';
 import { FaExternalLinkAlt, FaLink, FaClock, FaStopwatch, FaInfoCircle, FaCheckCircle, FaTimesCircle, FaQuestionCircle, FaEllipsisH, FaListAlt, FaChartPie, FaExclamationTriangle } from 'react-icons/fa';
 import { RequestTimings } from '@/src/models/logAnalysis';
+import { useTranslations } from 'next-intl'; // Import useTranslations
 
 interface RequestsTableProps {
     requestIds: string[];
@@ -17,6 +18,9 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
     formatDateTime,
     getStatusChipClass,
 }) => {
+    // Khởi tạo t với namespace 'RequestsTable'
+    const t = useTranslations('RequestsTable');
+
     if (!requestIds || requestIds.length === 0) {
         return null;
     }
@@ -70,45 +74,45 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
     return (
         <div className="overflow-x-auto border border-gray-200 rounded-lg shadow-sm">
             <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-5">
+                <thead className="bg-gray-50">
                     <tr>
                         <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             <div className="flex items-center">
-                                <FaListAlt className="mr-1.5 h-3.5 w-3.5 text-gray-400" /> Request ID
+                                <FaListAlt className="mr-1.5 h-3.5 w-3.5 text-gray-400" /> {t('tableHeaders.requestId')}
                             </div>
                         </th>
                         <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             <div className="flex items-center">
-                                <FaLink className="mr-1.5 h-3.5 w-3.5 text-gray-400" /> Original Request ID
+                                <FaLink className="mr-1.5 h-3.5 w-3.5 text-gray-400" /> {t('tableHeaders.originalRequestId')}
                             </div>
                         </th>
                         <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             <div className="flex items-center">
-                                <FaClock className="mr-1.5 h-3.5 w-3.5 text-gray-400" /> Start Time
+                                <FaClock className="mr-1.5 h-3.5 w-3.5 text-gray-400" /> {t('tableHeaders.startTime')}
                             </div>
                         </th>
                         <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             <div className="flex items-center">
-                                <FaClock className="mr-1.5 h-3.5 w-3.5 text-gray-400" /> End Time
+                                <FaClock className="mr-1.5 h-3.5 w-3.5 text-gray-400" /> {t('tableHeaders.endTime')}
                             </div>
                         </th>
                         <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             <div className="flex items-center">
-                                <FaStopwatch className="mr-1.5 h-3.5 w-3.5 text-gray-400" /> Duration
+                                <FaStopwatch className="mr-1.5 h-3.5 w-3.5 text-gray-400" /> {t('tableHeaders.duration')}
                             </div>
                         </th>
                         <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             <div className="flex items-center">
-                                <FaInfoCircle className="mr-1.5 h-3.5 w-3.5 text-gray-400" /> Status
+                                <FaInfoCircle className="mr-1.5 h-3.5 w-3.5 text-gray-400" /> {t('tableHeaders.status')}
                             </div>
                         </th>
                         <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             <div className="flex items-center">
-                                <FaChartPie className="mr-1.5 h-3.5 w-3.5 text-gray-400" /> Success Rate
+                                <FaChartPie className="mr-1.5 h-3.5 w-3.5 text-gray-400" /> {t('tableHeaders.successRate')}
                             </div>
                         </th>
                         <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Actions
+                            {t('tableHeaders.actions')}
                         </th>
                     </tr>
                 </thead>
@@ -123,11 +127,10 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
                             : 0;
                         const requestSuccessRateString = requestSuccessRateValue.toFixed(1);
 
-                        // Changed: Always use text-gray-700 or text-gray-900 for consistency
-                        const textColorForProgressBar = 'text-gray-700'; // Or 'text-gray-900' for darker
+                        const textColorForProgressBar = 'text-gray-700';
 
                         return (
-                            <tr key={reqId} className="hover:bg-gray-5 transition-colors duration-150">
+                            <tr key={reqId} className="hover:bg-gray-50 transition-colors duration-150">
                                 <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900 break-all">
                                     {reqId}
                                 </td>
@@ -136,8 +139,8 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
                                         <button
                                             onClick={() => onSelectRequest(details.originalRequestId!)}
                                             className="text-blue-600 hover:text-blue-800 hover:underline focus:outline-none flex items-center group"
-                                            title={`View details for original request: ${details.originalRequestId}`}
-                                            aria-label={`View details for original request ID ${details.originalRequestId}`}
+                                            title={t('viewDetailsForOriginalRequestTitle', { requestId: details.originalRequestId })}
+                                            aria-label={t('viewDetailsForOriginalRequestAriaLabel', { requestId: details.originalRequestId })}
                                         >
                                             <FaLink className="mr-1.5 h-3 w-3 text-blue-500 group-hover:text-blue-700 transition-colors duration-150" />
                                             {details.originalRequestId}
@@ -147,23 +150,23 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
                                     )}
                                 </td>
                                 <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">
-                                    {details ? formatDateTime(details.startTime) : 'N/A'}
+                                    {details ? formatDateTime(details.startTime) : t('common.na')}
                                 </td>
                                 <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">
-                                    {details ? formatDateTime(details.endTime) : 'N/A'}
+                                    {details ? formatDateTime(details.endTime) : t('common.na')}
                                 </td>
                                 <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">
-                                    {details && details.durationSeconds != null ? `${details.durationSeconds.toFixed(2)}s` : 'N/A'}
+                                    {details && details.durationSeconds != null ? `${details.durationSeconds.toFixed(2)}s` : t('common.na')}
                                 </td>
                                 <td className="px-4 py-3 whitespace-nowrap text-sm">
                                     {details && details.status ? (
                                         <span className={`px-2.5 py-1 rounded-full text-xs font-semibold flex items-center ${getStatusChipClass(details.status)}`}>
                                             {getStatusIcon(details.status)}
-                                            {details.status}
+                                            {t(`statusNames.${details.status.toLowerCase()}`)} {/* Dịch tên trạng thái */}
                                         </span>
                                     ) : (
                                         <span className={`px-2.5 py-1 rounded-full text-xs font-semibold flex items-center ${getStatusChipClass(null)}`}>
-                                            <FaQuestionCircle className="mr-1" /> Unknown
+                                            <FaQuestionCircle className="mr-1" /> {t('statusNames.unknown')}
                                         </span>
                                     )}
                                 </td>
@@ -180,16 +183,16 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
                                             </span>
                                         </div>
                                     ) : (
-                                        <span className="text-gray-400 text-xs">N/A</span>
+                                        <span className="text-gray-400 text-xs">{t('common.na')}</span>
                                     )}
                                 </td>
                                 <td className="px-4 py-3 whitespace-nowrap text-sm font-medium">
                                     <button
                                         onClick={() => onSelectRequest(reqId)}
                                         className="text-blue-600 hover:text-blue-800 hover:underline focus:outline-none flex items-center group"
-                                        aria-label={`View details for request ${reqId}`}
+                                        aria-label={t('viewDetailsForRequestAriaLabel', { requestId: reqId })}
                                     >
-                                        View Details <FaExternalLinkAlt className="ml-1.5 h-3 w-3 text-blue-500 group-hover:text-blue-700 transition-colors duration-150" />
+                                        {t('viewDetailsButton')} <FaExternalLinkAlt className="ml-1.5 h-3 w-3 text-blue-500 group-hover:text-blue-700 transition-colors duration-150" />
                                     </button>
                                 </td>
                             </tr>
@@ -198,12 +201,12 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
                 </tbody>
                 {/* Table Footer for overall success rate for this table */}
                 {totalConferencesOverallInput > 0 && (
-                    <tfoot className="bg-gray-5 border-t border-gray-200">
+                    <tfoot className="bg-gray-50 border-t border-gray-200">
                         <tr>
                             <td colSpan={6} className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
                                 <div className="flex items-center font-semibold">
                                     <FaChartPie className="mr-2 h-4 w-4 text-gray-600" />
-                                    Total Success Rate for Displayed Requests:
+                                    {t('tableFooter.totalSuccessRate')}:
                                 </div>
                             </td>
                             <td className="px-4 py-3 whitespace-nowrap text-sm font-bold text-gray-900">

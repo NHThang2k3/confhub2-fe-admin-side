@@ -12,9 +12,9 @@ const DesktopNavigation: FC<Props> = ({ locale }) => {
 
   return (
     <nav className='mr-2  gap-0 inline-flex lg:items-center lg:justify-center lg:gap-0  lg:text-sm lg:font-semibold'>
-      <div className=' font-semibold'>
+      {/* <div className=' font-semibold'>
         <ThemeSwitch />
-      </div>
+      </div> */}
       <div className='font-semibold'>
         <LangSwitcher />
       </div>

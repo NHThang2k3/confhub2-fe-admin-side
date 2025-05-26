@@ -5,10 +5,11 @@ import {
   getBarChartOption,
   getPieChartOption,
   BarChartData,
-  PieChartItem // << IMPORT PieChartItem
+  PieChartItem
 } from '../utils/chartUtils';
 import { GoogleSearchHealthData } from '@/src/models/logAnalysis';
-import { FaGoogle, FaBrain, FaShieldAlt, FaBroom } from 'react-icons/fa'; // Thêm icon
+import { FaGoogle, FaBrain, FaShieldAlt, FaBroom } from 'react-icons/fa';
+import { useTranslations } from 'next-intl'; // Import useTranslations
 
 interface ChartsSectionProps {
   // General
@@ -28,7 +29,7 @@ interface ChartsSectionProps {
   geminiConfigErrorsData: BarChartData;
   geminiCacheDetailedData: PieChartItem[];
   topGeminiErrorsData: BarChartData;
-  // Validation & Normalization << THÊM MỚI
+  // Validation & Normalization
   warningsByFieldData: BarChartData;
   warningsBySeverityData: PieChartItem[];
   topWarningMessagesData: BarChartData;
@@ -54,13 +55,16 @@ const ChartsSection: React.FC<ChartsSectionProps> = ({
   geminiConfigErrorsData,
   geminiCacheDetailedData,
   topGeminiErrorsData,
-  // Validation & Normalization << THÊM MỚI
+  // Validation & Normalization
   warningsByFieldData,
   warningsBySeverityData,
   topWarningMessagesData,
   normalizationsByFieldData,
   normalizationsByReasonData,
 }) => {
+  // Khởi tạo t với namespace 'ChartsSection'
+  const t = useTranslations('ChartsSection');
+
   const geminiPieColors = ['#80FFA5', '#FF6384', '#FFCD56', '#36A2EB', '#9966FF'];
   const geminiBarColors = ['#9A60B4', '#60B49A', '#B49A60', '#609AB4'];
   const validationPieColors = ['#FF6384', '#FF9F40', '#FFCD56']; // High, Medium, Low for warnings
@@ -77,23 +81,23 @@ const ChartsSection: React.FC<ChartsSectionProps> = ({
   return (
     <div className="space-y-8">
       {/* --- General Charts (Bao gồm Top Aggregated Errors) --- */}
-      <div className="pt-6"> {/* Removed border-t for the first section */}
-        <h3 className="text-xl font-semibold mb-4 text-gray-800">Overall Status & Errors</h3>
+      <div className="pt-6">
+        <h3 className="text-xl font-semibold mb-4 text-gray-800">{t('generalCharts.title')}</h3>
         <div className='grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3'>
           <ChartCard
-            option={getPieChartOption('Task Status Distribution', overallStatusData, ['#91cc75', '#5470c6', '#ee6666', '#fccb67', '#73c0de'])}
+            option={getPieChartOption(t('generalCharts.taskStatusDistribution'), overallStatusData, ['#91cc75', '#5470c6', '#ee6666', '#fccb67', '#73c0de'])}
             dataExists={overallStatusData.length > 0}
-            noDataMessage="No Task Status Data"
+            noDataMessage={t('generalCharts.noTaskStatusData')}
           />
           <ChartCard
-            option={getPieChartOption('Playwright Link Processing', playwrightLinkData, ['#91cc75', '#ee6666', '#73c0de'])}
+            option={getPieChartOption(t('generalCharts.playwrightLinkProcessing'), playwrightLinkData, ['#91cc75', '#ee6666', '#73c0de'])}
             dataExists={playwrightLinkData.length > 0}
-            noDataMessage="No Link Processing Data"
+            noDataMessage={t('generalCharts.noLinkProcessingData')}
           />
           <ChartCard
-            option={getBarChartOption('Top Aggregated Errors (All Sources)', topErrorsData.labels, topErrorsData.values, 'Count', '#ee6666')}
+            option={getBarChartOption(t('generalCharts.topAggregatedErrors'), topErrorsData.labels, topErrorsData.values, t('common.count'), '#ee6666')}
             dataExists={topErrorsData.labels.length > 0}
-            noDataMessage="No Aggregated Errors"
+            noDataMessage={t('generalCharts.noAggregatedErrors')}
           />
         </div>
       </div>
@@ -103,40 +107,40 @@ const ChartsSection: React.FC<ChartsSectionProps> = ({
       {(hasValidationData || hasNormalizationData) && (
         <div className="pt-6 border-t border-gray-200">
           <h3 className="text-xl font-semibold mb-4 text-gray-800 flex items-center">
-            <FaShieldAlt className="mr-2 text-orange-500" /> Data Validation & Quality
+            <FaShieldAlt className="mr-2 text-orange-500" /> {t('validationNormalizationCharts.title')}
           </h3>
           <div className='grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3'>
             <ChartCard
-                option={getBarChartOption('Validation Warnings by Field', warningsByFieldData.labels, warningsByFieldData.values, 'Warnings', '#f59e0b')}
+                option={getBarChartOption(t('validationNormalizationCharts.validationWarningsByField'), warningsByFieldData.labels, warningsByFieldData.values, t('common.warnings'), '#f59e0b')}
                 dataExists={warningsByFieldData.labels.length > 0}
-                noDataMessage="No Validation Warnings by Field"
+                noDataMessage={t('validationNormalizationCharts.noWarningsByField')}
             />
             <ChartCard
-                option={getPieChartOption('Validation Warnings by Severity', warningsBySeverityData, validationPieColors)}
+                option={getPieChartOption(t('validationNormalizationCharts.validationWarningsBySeverity'), warningsBySeverityData, validationPieColors)}
                 dataExists={warningsBySeverityData.length > 0}
-                noDataMessage="No Warnings by Severity"
+                noDataMessage={t('validationNormalizationCharts.noWarningsBySeverity')}
             />
              <ChartCard
-                option={getBarChartOption('Top Validation Messages', topWarningMessagesData.labels, topWarningMessagesData.values, 'Count', '#fdba74')}
+                option={getBarChartOption(t('validationNormalizationCharts.topValidationMessages'), topWarningMessagesData.labels, topWarningMessagesData.values, t('common.count'), '#fdba74')}
                 dataExists={topWarningMessagesData.labels.length > 0}
-                noDataMessage="No Top Warning Messages"
+                noDataMessage={t('validationNormalizationCharts.noTopWarningMessages')}
             />
           </div>
           {hasNormalizationData && (
             <>
               <h4 className="text-lg font-medium mt-8 mb-3 text-gray-700 flex items-center">
-                <FaBroom className="mr-2 text-sky-500" /> Data Normalizations
+                <FaBroom className="mr-2 text-sky-500" /> {t('validationNormalizationCharts.dataNormalizations')}
               </h4>
-              <div className='grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-2'> {/* Can adjust grid for normalizations */}
+              <div className='grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-2'>
                 <ChartCard
-                    option={getBarChartOption('Normalizations by Field', normalizationsByFieldData.labels, normalizationsByFieldData.values, 'Count', '#38bdf8')}
+                    option={getBarChartOption(t('validationNormalizationCharts.normalizationsByField'), normalizationsByFieldData.labels, normalizationsByFieldData.values, t('common.count'), '#38bdf8')}
                     dataExists={normalizationsByFieldData.labels.length > 0}
-                    noDataMessage="No Normalizations by Field"
+                    noDataMessage={t('validationNormalizationCharts.noNormalizationsByField')}
                 />
                 <ChartCard
-                    option={getPieChartOption('Normalizations by Reason', normalizationsByReasonData, normalizationPieColors)}
+                    option={getPieChartOption(t('validationNormalizationCharts.normalizationsByReason'), normalizationsByReasonData, normalizationPieColors)}
                     dataExists={normalizationsByReasonData.length > 0}
-                    noDataMessage="No Normalizations by Reason"
+                    noDataMessage={t('validationNormalizationCharts.noNormalizationsByReason')}
                 />
               </div>
             </>
@@ -146,90 +150,86 @@ const ChartsSection: React.FC<ChartsSectionProps> = ({
 
 
       {/* --- Gemini API Charts --- */}
-      {/* ... (Giữ nguyên, không thay đổi) ... */}
       {(geminiApiStatusData.length > 0 || geminiModelUsageDetailedData.labels.length > 0 || topGeminiErrorsData.labels.length > 0) && (
         <div className="pt-6 border-t border-gray-200">
           <h3 className="text-xl font-semibold mb-4 text-gray-800 flex items-center">
-            <FaBrain className="mr-2 text-purple-500" /> Gemini API Analysis
+            <FaBrain className="mr-2 text-purple-500" /> {t('geminiApiCharts.title')}
           </h3>
           <div className='grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3'>
             <ChartCard
-              option={getPieChartOption('Gemini API Call Status', geminiApiStatusData, geminiPieColors)}
+              option={getPieChartOption(t('geminiApiCharts.geminiApiCallStatus'), geminiApiStatusData, geminiPieColors)}
               dataExists={geminiApiStatusData.length > 0}
-              noDataMessage="No Gemini API Status Data"
+              noDataMessage={t('geminiApiCharts.noGeminiApiStatusData')}
             />
             <ChartCard
-              option={getPieChartOption('Gemini Cache Details', geminiCacheDetailedData, ['#3ba272', '#fc8452', '#ee6666', '#fac858'])}
+              option={getPieChartOption(t('geminiApiCharts.geminiCacheDetails'), geminiCacheDetailedData, ['#3ba272', '#fc8452', '#ee6666', '#fac858'])}
               dataExists={geminiCacheDetailedData.length > 0}
-              noDataMessage="No Gemini Cache Data"
+              noDataMessage={t('geminiApiCharts.noGeminiCacheData')}
             />
             <ChartCard
-              option={getPieChartOption('Gemini Fallback Success Rate', geminiFallbackSuccessRateData, ['#91cc75', '#ee6666'])}
+              option={getPieChartOption(t('geminiApiCharts.geminiFallbackSuccessRate'), geminiFallbackSuccessRateData, ['#91cc75', '#ee6666'])}
               dataExists={geminiFallbackSuccessRateData.length > 0 && geminiFallbackSuccessRateData.some(d => d.value > 0)}
-              noDataMessage="No Fallback Data or No Fallbacks Attempted"
+              noDataMessage={t('geminiApiCharts.noFallbackDataOrNoFallbacksAttempted')}
             />
             <ChartCard
-              option={getBarChartOption('Gemini Model Usage', geminiModelUsageDetailedData.labels, geminiModelUsageDetailedData.values, 'Total Attempts', geminiBarColors[0])}
+              option={getBarChartOption(t('geminiApiCharts.geminiModelUsage'), geminiModelUsageDetailedData.labels, geminiModelUsageDetailedData.values, t('common.totalAttempts'), geminiBarColors[0])}
               dataExists={geminiModelUsageDetailedData.labels.length > 0}
-              noDataMessage="No Gemini Model Usage Data"
+              noDataMessage={t('geminiApiCharts.noGeminiModelUsageData')}
               className="md:col-span-2 lg:col-span-3"
             />
              <ChartCard
-              option={getBarChartOption('Top Gemini API Errors', topGeminiErrorsData.labels, topGeminiErrorsData.values, 'Count', '#FF6384')}
+              option={getBarChartOption(t('geminiApiCharts.topGeminiApiErrors'), topGeminiErrorsData.labels, topGeminiErrorsData.values, t('common.count'), '#FF6384')}
               dataExists={topGeminiErrorsData.labels.length > 0}
-              noDataMessage="No Gemini API Error Data"
+              noDataMessage={t('geminiApiCharts.noGeminiApiErrorData')}
             />
             <ChartCard
-              option={getBarChartOption('Gemini Configuration Errors', geminiConfigErrorsData.labels, geminiConfigErrorsData.values, 'Count', '#FF9F40')}
+              option={getBarChartOption(t('geminiApiCharts.geminiConfigurationErrors'), geminiConfigErrorsData.labels, geminiConfigErrorsData.values, t('common.count'), '#FF9F40')}
               dataExists={geminiConfigErrorsData.labels.length > 0}
-              noDataMessage="No Gemini Configuration Errors"
+              noDataMessage={t('geminiApiCharts.noGeminiConfigurationErrors')}
             />
           </div>
         </div>
       )}
 
       {/* --- Google Search Charts --- */}
-      {/* ... (Giữ nguyên, không thay đổi) ... */}
       {(searchStatusData.length > 0 || apiKeyUsageData.labels.length > 0 || googleSearchErrorsData.labels.length > 0 || googleSearchAttemptIssuesData.labels.length > 0) && (
         <div className="pt-6 border-t border-gray-200">
           <h3 className="text-xl font-semibold mb-4 text-gray-800 flex items-center">
-            <FaGoogle className="mr-2 text-blue-500" /> Google Search Analysis
+            <FaGoogle className="mr-2 text-blue-500" /> {t('googleSearchCharts.title')}
           </h3>
           <div className='grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-2'>
             <ChartCard
               option={getPieChartOption(
-                'Google Search Status',
+                t('googleSearchCharts.googleSearchStatus'),
                 searchStatusData,
                 ['#91cc75', '#ee6666', '#fccb67', '#73c0de'],
                 googleSearchHealthData && googleSearchHealthData.successfulSearchesWithNoItems > 0
-                ? `Successful (No Items): ${googleSearchHealthData.successfulSearchesWithNoItems}`
+                ? t('googleSearchCharts.successfulNoItemsSubText', { count: googleSearchHealthData.successfulSearchesWithNoItems })
                 : undefined
               )}
               dataExists={searchStatusData.length > 0}
-              noDataMessage="No Search Status Data"
+              noDataMessage={t('googleSearchCharts.noSearchStatusData')}
             />
             <ChartCard
-              option={getBarChartOption('Google API Key Usage', apiKeyUsageData.labels, apiKeyUsageData.values, 'Requests', '#ea7ccc')}
+              option={getBarChartOption(t('googleSearchCharts.googleApiKeyUsage'), apiKeyUsageData.labels, apiKeyUsageData.values, t('common.requests'), '#ea7ccc')}
               dataExists={apiKeyUsageData.labels.length > 0}
-              noDataMessage="No Key Usage Data"
+              noDataMessage={t('googleSearchCharts.noKeyUsageData')}
             />
             <ChartCard
-              option={getBarChartOption('Top Google Search Errors', googleSearchErrorsData.labels, googleSearchErrorsData.values, 'Count', '#ff6384')}
+              option={getBarChartOption(t('googleSearchCharts.topGoogleSearchErrors'), googleSearchErrorsData.labels, googleSearchErrorsData.values, t('common.count'), '#ff6384')}
               dataExists={googleSearchErrorsData.labels.length > 0}
-              noDataMessage="No Google Search Error Data"
+              noDataMessage={t('googleSearchCharts.noGoogleSearchErrorData')}
               className="md:col-span-1"
             />
             <ChartCard
-              option={getBarChartOption('Top Google Search Attempt Issues', googleSearchAttemptIssuesData.labels, googleSearchAttemptIssuesData.values, 'Count', '#ff9f40')}
+              option={getBarChartOption(t('googleSearchCharts.topGoogleSearchAttemptIssues'), googleSearchAttemptIssuesData.labels, googleSearchAttemptIssuesData.values, t('common.count'), '#ff9f40')}
               dataExists={googleSearchAttemptIssuesData.labels.length > 0}
-              noDataMessage="No Google Search Attempt Issue Data"
+              noDataMessage={t('googleSearchCharts.noGoogleSearchAttemptIssueData')}
               className="md:col-span-1"
             />
           </div>
         </div>
       )}
-
-       {/* PHẦN AGGREGATED ERRORS ĐÃ ĐƯỢC CHUYỂN LÊN TRÊN CÙNG */}
     </div>
   );
 };

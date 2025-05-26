@@ -9,22 +9,37 @@ import ConferenceSelectionStep from './steps/ConferenceSelectionStep';
 import ConfigurationStep from './steps/ConfigurationStep';
 import ProcessingStep from './steps/ProcessingStep';
 import StepperNavigation from './steps/StepperNavigation'; // Optional: for visual steps
+import { useTranslations } from 'next-intl';
 
-const apiStepsForUploader: { name: ApiName; displayName: string }[] = [
-    { name: "determineLinks", displayName: "Determine Links Model" },
-    { name: "extractInfo", displayName: "Extract Information Model" },
-    { name: "extractCfp", displayName: "Extract CFP Model" },
-];
+// const apiStepsForUploader: { name: ApiName; displayName: string }[] = [
+//     { name: "determineLinks", displayName: "Determine Links Model" },
+//     { name: "extractInfo", displayName: "Extract Information Model" },
+//     { name: "extractCfp", displayName: "Extract CFP Model" },
+// ];
 
 
-const STEPS = [
-  { id: 1, name: 'Import CSV' },
-  { id: 2, name: 'Select Conferences' },
-  { id: 3, name: 'Configure Settings' }, // Đổi tên để rõ ràng hơn
-  { id: 4, name: 'Process & View Status' }, // Thêm bước 4
-];
+// const STEPS = [
+//   { id: 1, name: 'Import CSV' },
+//   { id: 2, name: 'Select Conferences' },
+//   { id: 3, name: 'Configure Settings' }, // Đổi tên để rõ ràng hơn
+//   { id: 4, name: 'Process & View Status' }, // Thêm bước 4
+// ];
 
 export const ConferenceCrawlUploader: React.FC = () => {
+  const t = useTranslations('ConferenceCrawlUploader');
+  const apiStepsForUploader: { name: ApiName; displayName: string }[] = useMemo(() => [
+      { name: "determineLinks", displayName: t('apiSteps.determineLinksModel') },
+      { name: "extractInfo", displayName: t('apiSteps.extractInfoModel') },
+      { name: "extractCfp", displayName: t('apiSteps.extractCfpModel') },
+  ], [t]); // Thêm t vào dependency array
+
+  const STEPS = useMemo(() => [
+    { id: 1, name: t('steps.importCsv') },
+    { id: 2, name: t('steps.selectConferences') },
+    { id: 3, name: t('steps.configureSettings') },
+    { id: 4, name: t('steps.processAndViewStatus') },
+  ], [t]); // Thêm t vào dependency array
+
   const crawlHook = useConferenceCrawl();
   const [currentStep, setCurrentStep] = useState(STEPS[0].id);
 
@@ -59,7 +74,7 @@ export const ConferenceCrawlUploader: React.FC = () => {
 
   const allModelsSelected = useMemo(() => {
     return apiStepsForUploader.every(step => apiModels[step.name] !== null);
-  }, [apiModels]);
+  }, [apiModels, apiStepsForUploader]);
 
   const canProceedToStep4 = useMemo(() => { // Logic mới cho việc chuyển sang bước 4
     return canProceedToStep3 && allModelsSelected; // Phải chọn đủ model để chuyển sang bước xử lý
@@ -99,7 +114,7 @@ export const ConferenceCrawlUploader: React.FC = () => {
   return (
     <div className='mx-auto rounded-lg border border-gray-200 bg-white p-4 shadow-lg md:p-6'>
       <h2 className='mb-6 border-b border-gray-300 pb-3 text-xl font-semibold text-gray-700'>
-        Process Conferences (Step by Step)
+        {t('title')}
       </h2>
 
       {/* Optional Stepper Navigation */}

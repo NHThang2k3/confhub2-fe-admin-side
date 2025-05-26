@@ -16,6 +16,7 @@ import {
   TableMeta,
 } from '@tanstack/react-table';
 import { ChevronUpIcon, ChevronDownIcon, ChevronsUpDown, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Search } from 'lucide-react';
+import { useTranslations } from 'next-intl'; // Import useTranslations
 
 interface ConferenceSelectionStepProps {
   parsedData: Conference[];
@@ -41,6 +42,9 @@ const ConferenceSelectionStep: React.FC<ConferenceSelectionStepProps> = ({
   canProceed,
   onUpdateActionTypeForSelected,
 }) => {
+  // Khởi tạo t với namespace 'ConferenceSelectionStep'
+  const t = useTranslations('ConferenceSelectionStep');
+
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
@@ -71,30 +75,22 @@ const ConferenceSelectionStep: React.FC<ConferenceSelectionStepProps> = ({
           className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
         />
       ),
-      cell: ({ row }) => (
-        <input
-          type="checkbox"
-          checked={row.getIsSelected()}
-          onChange={row.getToggleSelectedHandler()}
-          className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
-        />
-      ),
       enableSorting: false,
       enableHiding: false,
     },
     {
       accessorKey: 'acronym',
-      header: 'Acronym',
+      header: t('tableHeaders.acronym'), // Dùng t()
       cell: ({ row }) => <div className="font-medium">{row.getValue('acronym')}</div>,
     },
     {
       accessorKey: 'title',
-      header: 'Title',
+      header: t('tableHeaders.title'), // Dùng t()
       cell: ({ row }) => <div className="font-medium">{row.getValue('title')}</div>,
     },
     {
       accessorKey: 'crawlType',
-      header: 'Action Type',
+      header: t('tableHeaders.actionType'), // Dùng t()
       cell: ({ row }) => {
         const crawlType = row.getValue('crawlType') as 'crawl' | 'update';
         return (
@@ -110,31 +106,31 @@ const ConferenceSelectionStep: React.FC<ConferenceSelectionStepProps> = ({
               crawlType === 'crawl' ? 'text-blue-700' : 'text-green-700'
             } bg-transparent border-none focus:ring-0`}
           >
-            <option value="crawl">Crawl</option>
-            <option value="update">Update</option>
+            <option value="crawl">{t('actionType.crawl')}</option> {/* Dùng t() */}
+            <option value="update">{t('actionType.update')}</option> {/* Dùng t() */}
           </select>
         );
       },
     },
     {
       accessorKey: 'sources',
-      header: 'Sources',
+      header: t('tableHeaders.sources'), // Dùng t()
     },
     {
       accessorKey: 'ranks',
-      header: 'Ranks',
+      header: t('tableHeaders.ranks'), // Dùng t()
     },
     {
       accessorKey: 'researchFields',
-      header: 'Research Fields',
+      header: t('tableHeaders.researchFields'), // Dùng t()
     },
     {
       accessorKey: 'status',
-      header: 'Status',
+      header: t('tableHeaders.status'), // Dùng t()
     },
     {
       accessorKey: 'updatedAt',
-      header: 'Updated At',
+      header: t('tableHeaders.updatedAt'), // Dùng t()
       cell: ({ row }) => {
         const date = row.getValue('updatedAt');
         return date ? new Date(date as string).toLocaleString() : '';
@@ -142,7 +138,7 @@ const ConferenceSelectionStep: React.FC<ConferenceSelectionStepProps> = ({
     },
     {
       accessorKey: 'link',
-      header: 'Link (for Update)',
+      header: t('tableHeaders.linkForUpdate'), // Dùng t()
       cell: ({ row }) => {
         const crawlType = row.getValue('crawlType') as 'crawl' | 'update';
         return (
@@ -154,7 +150,7 @@ const ConferenceSelectionStep: React.FC<ConferenceSelectionStepProps> = ({
     },
     {
       accessorKey: 'impLink',
-      header: 'Imp Link (for Update)',
+      header: t('tableHeaders.impLinkForUpdate'), // Dùng t()
       cell: ({ row }) => {
         const crawlType = row.getValue('crawlType') as 'crawl' | 'update';
         return (
@@ -166,7 +162,7 @@ const ConferenceSelectionStep: React.FC<ConferenceSelectionStepProps> = ({
     },
     {
       accessorKey: 'cfpLink',
-      header: 'Cfp Link (for Update)',
+      header: t('tableHeaders.cfpLinkForUpdate'), // Dùng t()
       cell: ({ row }) => {
         const crawlType = row.getValue('crawlType') as 'crawl' | 'update';
         return (
@@ -176,7 +172,7 @@ const ConferenceSelectionStep: React.FC<ConferenceSelectionStepProps> = ({
         );
       },
     },
-  ], [onUpdateActionTypeForSelected]);
+  ], [onUpdateActionTypeForSelected, t]); // Thêm t vào dependency array
 
   const table = useReactTable({
     data: parsedData || [],
@@ -209,7 +205,7 @@ const ConferenceSelectionStep: React.FC<ConferenceSelectionStepProps> = ({
     const newValue = e.target.value as 'crawl' | 'update';
     if (newValue !== globalActionType) {
       setGlobalActionType(newValue);
-      
+
       const selectedRows = table.getSelectedRowModel().rows.map(row => row.original);
       if (selectedRows.length > 0) {
         onUpdateActionTypeForSelected(newValue, selectedRows);
@@ -226,16 +222,15 @@ const ConferenceSelectionStep: React.FC<ConferenceSelectionStepProps> = ({
 
   return (
     <div className="space-y-4 md:space-y-6 rounded-lg border border-gray-200 p-3 md:p-6 bg-white shadow">
-      <h3 className="text-base md:text-lg font-medium leading-6 text-gray-900">Step 2: Select Conferences and Action Type</h3>
+      <h3 className="text-base md:text-lg font-medium leading-6 text-gray-900">{t('title')}</h3> {/* Dùng t() */}
       <p className="text-xs md:text-sm text-gray-600">
-        Select conferences from the table below and specify the action type (Crawl or Update).
-        For &apos;Update&apos; actions, ensure the relevant link fields (Link, Imp Link, Cfp Link) are provided if needed.
+        {t('description')} {/* Dùng t() */}
       </p>
 
       {/* UI for global action type selection */}
-      <div className="my-4 flex flex-col sm:flex-row items-start sm:items-center gap-3 p-3 bg-gray-5 rounded-md border border-gray-200">
+      <div className="my-4 flex flex-col sm:flex-row items-start sm:items-center gap-3 p-3 bg-gray-50 rounded-md border border-gray-200">
         <label htmlFor="globalActionType" className="block text-sm font-medium text-gray-700 whitespace-nowrap">
-          Action Type for Selected:
+          {t('globalActionTypeLabel')} {/* Dùng t() */}
         </label>
         <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
           <select
@@ -245,8 +240,8 @@ const ConferenceSelectionStep: React.FC<ConferenceSelectionStepProps> = ({
             onChange={handleGlobalActionTypeChange}
             className="block w-full sm:w-auto rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm py-2 px-3"
           >
-            <option value="crawl">Crawl</option>
-            <option value="update">Update</option>
+            <option value="crawl">{t('actionType.crawl')}</option> {/* Dùng t() */}
+            <option value="update">{t('actionType.update')}</option> {/* Dùng t() */}
           </select>
           <button
             type="button"
@@ -255,13 +250,13 @@ const ConferenceSelectionStep: React.FC<ConferenceSelectionStepProps> = ({
               if (selectedRows.length > 0) {
                 onUpdateActionTypeForSelected(globalActionType, selectedRows);
               } else {
-                alert("Please select at least one conference to apply the action type.");
+                alert(t('alert.selectAtLeastOneConference')); // Dùng t()
               }
             }}
             disabled={selectedCsvRowsCount === 0}
             className="inline-flex items-center justify-center rounded-md border border-transparent bg-indigo-600 px-3 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
           >
-            Apply to {selectedCsvRowsCount} Selected
+            {t('applyToActionSelected', { count: selectedCsvRowsCount })} {/* Dùng t() với placeholder */}
           </button>
         </div>
       </div>
@@ -274,7 +269,7 @@ const ConferenceSelectionStep: React.FC<ConferenceSelectionStepProps> = ({
           </div>
           <input
             type="text"
-            placeholder="Filter by acronym..."
+            placeholder={t('filter.acronymPlaceholder')} // Dùng t()
             value={(table.getColumn('acronym')?.getFilterValue() as string) ?? ''}
             onChange={(e) => table.getColumn('acronym')?.setFilterValue(e.target.value)}
             className="block w-full rounded-md border-0 py-1.5 pl-10 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
@@ -286,7 +281,7 @@ const ConferenceSelectionStep: React.FC<ConferenceSelectionStepProps> = ({
           </div>
           <input
             type="text"
-            placeholder="Filter by title..."
+            placeholder={t('filter.titlePlaceholder')} // Dùng t()
             value={(table.getColumn('title')?.getFilterValue() as string) ?? ''}
             onChange={(e) => table.getColumn('title')?.setFilterValue(e.target.value)}
             className="block w-full rounded-md border-0 py-1.5 pl-10 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
@@ -298,7 +293,7 @@ const ConferenceSelectionStep: React.FC<ConferenceSelectionStepProps> = ({
           </div>
           <input
             type="text"
-            placeholder="Filter by status..."
+            placeholder={t('filter.statusPlaceholder')} // Dùng t()
             value={(table.getColumn('status')?.getFilterValue() as string) ?? ''}
             onChange={(e) => table.getColumn('status')?.setFilterValue(e.target.value)}
             className="block w-full rounded-md border-0 py-1.5 pl-10 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
@@ -382,9 +377,9 @@ const ConferenceSelectionStep: React.FC<ConferenceSelectionStepProps> = ({
             <ChevronLeft className="h-4 w-4" />
           </button>
           <span className="flex items-center gap-1 text-sm text-gray-700">
-            <div>Page</div>
+            <div>{t('pagination.page')}</div> {/* Dùng t() */}
             <strong className="text-gray-900">
-              {table.getState().pagination.pageIndex + 1} of{' '}
+              {table.getState().pagination.pageIndex + 1} {t('pagination.of')}{' '} {/* Dùng t() */}
               {table.getPageCount()}
             </strong>
           </span>
@@ -404,7 +399,7 @@ const ConferenceSelectionStep: React.FC<ConferenceSelectionStepProps> = ({
           </button>
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-sm text-gray-700">Rows per page</span>
+          <span className="text-sm text-gray-700">{t('pagination.rowsPerPage')}</span> {/* Dùng t() */}
           <select
             value={table.getState().pagination.pageSize}
             onChange={e => {
@@ -422,16 +417,16 @@ const ConferenceSelectionStep: React.FC<ConferenceSelectionStepProps> = ({
       </div>
 
       <p className="mt-2 text-xs md:text-sm text-gray-600">
-        Selected {selectedCsvRowsCount} conference(s).
+        {t('summary.selectedConferences', { count: selectedCsvRowsCount })} {/* Dùng t() với placeholder */}
       </p>
 
       <div className="mt-4 md:mt-6 flex flex-col sm:flex-row justify-between gap-3">
         <button
           type="button"
           onClick={onPrev}
-          className="w-full sm:w-auto rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-5 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+          className="w-full sm:w-auto rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
         >
-          Previous: Import File
+          {t('navigation.previousStep')} {/* Dùng t() */}
         </button>
         <button
           type="button"
@@ -439,7 +434,7 @@ const ConferenceSelectionStep: React.FC<ConferenceSelectionStepProps> = ({
           disabled={!canProceed}
           className="w-full sm:w-auto inline-flex items-center justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          Next: Configure & Process
+          {t('navigation.nextStep')} {/* Dùng t() */}
         </button>
       </div>
     </div>
