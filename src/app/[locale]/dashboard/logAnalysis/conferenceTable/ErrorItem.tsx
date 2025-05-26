@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { FaChevronDown, FaChevronUp, FaCheckCircle } from 'react-icons/fa';
 import { LogError } from '@/src/models/logAnalysis';
 import { getErrorDisplayProps } from './conferenceTableRowUtils';
+import { useTranslations } from 'next-intl'; // Import useTranslations
 
 interface ErrorItemProps {
   error: LogError;
@@ -12,6 +13,9 @@ interface ErrorItemProps {
 export const ErrorItem: React.FC<ErrorItemProps> = ({ error }) => {
   const [showDetails, setShowDetails] = useState(false);
   const { icon, textColor, bgColor, borderColor } = getErrorDisplayProps(error);
+
+  // Khai báo namespace 'ErrorItem' cho component này
+  const t = useTranslations('ErrorItem'); 
 
   return (
     <li className={`mb-2 p-2 border rounded ${bgColor} ${borderColor}`}>
@@ -24,12 +28,12 @@ export const ErrorItem: React.FC<ErrorItemProps> = ({ error }) => {
           </div>
           {error.errorCode && (
             <div className="text-xs text-gray-500 mt-0.5">
-              Error Code: <span className="font-mono">{error.errorCode}</span>
+              {t('errorCode')}: <span className="font-mono">{error.errorCode}</span> {/* Dịch "Error Code:" */}
             </div>
           )}
           {error.isRecovered && (
             <div className="text-xs text-green-700 mt-0.5 flex items-center font-semibold">
-              <FaCheckCircle className="mr-1" /> Recovered
+              <FaCheckCircle className="mr-1" /> {t('recovered')} {/* Dịch "Recovered" */}
             </div>
           )}
         </div>
@@ -37,7 +41,7 @@ export const ErrorItem: React.FC<ErrorItemProps> = ({ error }) => {
           <button
             onClick={() => setShowDetails(!showDetails)}
             className={`ml-2 px-2 py-1 text-xs rounded-full ${error.isRecovered ? 'bg-green-200 text-green-700 hover:bg-green-300' : 'bg-red-200 text-red-700 hover:bg-red-300'} transition-colors duration-150 flex-shrink-0`}
-            title={showDetails ? "Hide details" : "Show details"}
+            title={showDetails ? t('hideDetails') : t('showDetails')} // Dịch title button
           >
             {showDetails ? <FaChevronUp /> : <FaChevronDown />}
           </button>
@@ -48,7 +52,7 @@ export const ErrorItem: React.FC<ErrorItemProps> = ({ error }) => {
         <div className={`mt-2 p-2 border-t rounded-b-md ${error.isRecovered ? 'bg-green-100 border-green-200' : 'bg-red-150 border-red-200'}`}>
           {error.details && (
             <div className="mb-2">
-              <h5 className={`font-semibold ${error.isRecovered ? 'text-green-800' : 'text-red-800'} mb-1`}>Details:</h5>
+              <h5 className={`font-semibold ${error.isRecovered ? 'text-green-800' : 'text-red-800'} mb-1`}>{t('details')}:</h5> {/* Dịch "Details:" */}
               <pre className={`custom-scrollbar max-h-[150px] overflow-auto p-1 rounded text-xs break-words ${error.isRecovered ? 'bg-green-200 text-green-700' : 'bg-red-200 text-red-700'}`}>
                 {JSON.stringify(error.details, null, 2)}
               </pre>
@@ -56,7 +60,7 @@ export const ErrorItem: React.FC<ErrorItemProps> = ({ error }) => {
           )}
           {error.context && (
             <div>
-              <h5 className={`font-semibold ${error.isRecovered ? 'text-green-800' : 'text-red-800'} mb-1`}>Context:</h5>
+              <h5 className={`font-semibold ${error.isRecovered ? 'text-green-800' : 'text-red-800'} mb-1`}>{t('context')}:</h5> {/* Dịch "Context:" */}
               <pre className={`custom-scrollbar max-h-[150px] overflow-auto p-1 rounded text-xs break-words ${error.isRecovered ? 'bg-green-200 text-green-700' : 'bg-red-200 text-red-700'}`}>
                 {JSON.stringify(error.context, null, 2)}
               </pre>

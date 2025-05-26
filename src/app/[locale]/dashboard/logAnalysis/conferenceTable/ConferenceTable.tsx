@@ -9,6 +9,7 @@ import {
 } from '@/src/hooks/crawl/useConferenceTableManager';
 import { ConferenceTableHeader } from './ConferenceTableHeader';
 import { ConferenceTableRow } from './ConferenceTableRow';
+import { useTranslations } from 'next-intl'; // Import useTranslations
 
 interface ConferenceTableProps {
     data: ConferenceTableData[];
@@ -23,7 +24,6 @@ interface ConferenceTableProps {
     onSelectToggle: (uniqueRowId: string) => void;
     columnFilters: ColumnFiltersState;
     onColumnFilterChange: (column: keyof ColumnFiltersState, value: string) => void;
-    // Thêm prop để truyền tổng số hàng và số hàng được chọn cho checkbox "Select All"
     totalRowsCount: number;
     selectedRowsCount: number;
     onSelectAll: () => void;
@@ -42,10 +42,13 @@ export const ConferenceTable: React.FC<ConferenceTableProps> = ({
     onSelectToggle,
     columnFilters,
     onColumnFilterChange,
-    totalRowsCount, // Nhận prop
-    selectedRowsCount, // Nhận prop
-    onSelectAll, // Nhận prop
+    totalRowsCount,
+    selectedRowsCount,
+    onSelectAll,
 }) => {
+    // Khai báo namespace 'ConferenceTable' cho component này
+    const t = useTranslations('ConferenceTable');
+
     const shouldShowRequestIdColumn = data.some(d => d.requestId && d.requestId !== 'N/A');
     const baseColSpan = 14;
     const noDataColSpan = shouldShowRequestIdColumn ? baseColSpan + 1 : baseColSpan;
@@ -60,7 +63,6 @@ export const ConferenceTable: React.FC<ConferenceTableProps> = ({
                     isFilteredByRequest={shouldShowRequestIdColumn}
                     columnFilters={columnFilters}
                     onColumnFilterChange={onColumnFilterChange}
-                    // Truyền props cho checkbox "Select All"
                     totalRowsCount={totalRowsCount}
                     selectedRowsCount={selectedRowsCount}
                     onSelectAll={onSelectAll}
@@ -84,7 +86,7 @@ export const ConferenceTable: React.FC<ConferenceTableProps> = ({
                     {data.length === 0 && (
                         <tr>
                             <td colSpan={noDataColSpan} className="px-6 py-12 text-center text-gray-500">
-                                No conference data matches the current filters.
+                                {t('noDataMessage')} {/* Thay thế chuỗi cứng */}
                             </td>
                         </tr>
                     )}

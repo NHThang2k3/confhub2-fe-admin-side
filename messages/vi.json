@@ -4,47 +4,47 @@
   "Email": "Email",
   "Password": "Mật khẩu",
   "Forgot_Password": "Quên mật khẩu?",
-  "Email_Placeholder": "bạn@ví_dụ.com",
+  "Email_Placeholder": "bạn@example.com",
   "Password_Placeholder": "••••••••",
   "Signing_in": "Đang đăng nhập...",
   "Sign_In": "Đăng nhập",
-  "By_continuing_you_agree_to_our_Terms_of_Service_and_Privacy_Policy": "Bằng cách tiếp tục, bạn đồng ý với Điều khoản dịch vụ và Chính sách bảo mật của chúng tôi",
+  "By_continuing_you_agree_to_our_Terms_of_Service_and_Privacy_Policy": "Bằng việc tiếp tục, bạn đồng ý với Điều khoản dịch vụ và Chính sách bảo mật của chúng tôi",
   "ModerationPage": {
     "AuthStatus_Loading": "Đang tải trạng thái xác thực...",
     "AuthStatus_Redirecting": "Đang chuyển hướng đến trang đăng nhập..."
   },
   "Moderation": {
     "Moderation": "Kiểm duyệt",
-    "Error_BackendUrlNotConfigured": "URL backend chưa được cấu hình (NEXT_PUBLIC_DATABASE_URL)",
-    "Error_FailedToLoadData": "Không thể tải dữ liệu",
+    "Error_BackendUrlNotConfigured": "URL Backend chưa được cấu hình (NEXT_PUBLIC_DATABASE_URL)",
+    "Error_FailedToLoadData": "Tải dữ liệu thất bại",
     "Error_FailedToFetchRequests": "Không thể lấy yêu cầu! trạng thái: {status}, nội dung: {body}",
-    "Error_MissingConferenceId": "Thiếu ID Hội nghị",
+    "Error_MissingConferenceId": "Thiếu ID hội nghị",
     "Error_FailedToLoadDetailsStatus": "Không thể tải chi tiết: trạng thái {status}",
     "Error_LoadingDetailsNetwork": "Lỗi khi tải chi tiết: {message}",
-    "Error_FailedToUpdateStatus": "Không thể cập nhật trạng thái",
+    "Error_FailedToUpdateStatus": "Cập nhật trạng thái thất bại",
     "Error_UpdateFailedDetails": "Cập nhật thất bại: {details}",
     "Error_NetworkErrorUpdatingStatus": "Lỗi mạng khi cập nhật trạng thái: {message}",
     "Error_CommentRequired": "Bình luận là bắt buộc.",
     "Error_CommentRequiredForStatus": "Bình luận là bắt buộc cho trạng thái {status}.",
-    "Moderation_DefaultTitle": "Không có",
-    "Moderation_DefaultCreatorId": "Không có",
-    "ModerationPage_Title": "Kiểm duyệt danh sách hội nghị",
+    "Moderation_DefaultTitle": "N/A",
+    "Moderation_DefaultCreatorId": "N/A",
+    "ModerationPage_Title": "Kiểm duyệt danh sách Hội nghị",
     "ModerationPage_ListSectionTitle": "Danh sách Hội nghị",
-    "ModerationPage_LoadingInitial": "Đang tải hội nghị...",
+    "ModerationPage_LoadingInitial": "Đang tải danh sách hội nghị...",
     "ModerationPage_UpdatingList": "Đang cập nhật danh sách...",
     "Error_Generic": "Lỗi",
-    "ModerationPage_NoResultsSearch": "Không tìm thấy hội nghị nào phù hợp với từ khóa tìm kiếm.",
+    "ModerationPage_NoResultsSearch": "Không tìm thấy hội nghị nào khớp với từ khóa tìm kiếm.",
     "ModerationPage_NoRequestsFound": "Không tìm thấy yêu cầu hội nghị nào."
   },
   "ModerationControls": {
-    "FilterByStatus_Label": "Lọc theo Trạng thái",
+    "FilterByStatus_Label": "Lọc theo trạng thái",
     "Status_All": "Tất cả ({count})",
     "Status_Pending": "Đang chờ ({count})",
     "Status_Approved": "Đã duyệt ({count})",
     "Status_Rejected": "Đã từ chối ({count})",
-    "SearchByTitle_Label": "Tìm kiếm theo Tiêu đề",
+    "SearchByTitle_Label": "Tìm kiếm theo tiêu đề",
     "SearchByTitle_Placeholder": "Nhập tiêu đề hội nghị...",
-    "AddedDateRange_Label": "Khoảng thời gian thêm",
+    "AddedDateRange_Label": "Khoảng thời gian thêm vào",
     "DateRangeInput_Placeholder": "Chọn khoảng thời gian",
     "ClearDates_Button": "Xóa ngày",
     "SortBy_Label": "Sắp xếp theo",
@@ -57,36 +57,36 @@
     "SortDirection_NewestFirst": "(Mới nhất trước)"
   },
   "CommentModal": {
-    "ApproveModal_Title": "Duyệt yêu cầu Hội nghị",
-    "RejectModal_Title": "Từ chối yêu cầu Hội nghị",
+    "ApproveModal_Title": "Duyệt yêu cầu hội nghị",
+    "RejectModal_Title": "Từ chối yêu cầu hội nghị",
     "Comment_Label": "Bình luận / Lý do",
     "Comment_Placeholder": "Nhập bình luận của bạn...",
     "Submit_Button": "Gửi",
     "Cancel_Button": "Hủy",
-    "Title_Default": "Kiểm duyệt Hội nghị",
-    "Title_Approved": "Duyệt Hội nghị",
-    "Title_Rejected": "Từ chối Hội nghị",
-    "Title_Pending": "Đặt Hội nghị về trạng thái Đang chờ",
+    "Title_Default": "Kiểm duyệt hội nghị",
+    "Title_Approved": "Duyệt hội nghị",
+    "Title_Rejected": "Từ chối hội nghị",
+    "Title_Pending": "Đặt hội nghị thành Đang chờ",
     "Button_Submit_Default": "Gửi",
     "Button_Approve": "Duyệt",
     "Button_Reject": "Từ chối",
-    "Button_Pending": "Đặt trạng thái Đang chờ",
+    "Button_Pending": "Đặt Đang chờ",
     "ReasonRequired_Rejected_Label": "Vui lòng cung cấp lý do từ chối",
     "CommentRequired_Label": "Vui lòng cung cấp bình luận",
     "Placeholder_Rejected": "Nhập lý do từ chối tại đây...",
     "Placeholder_Generic": "Nhập bình luận tại đây...",
     "Button_Cancel": "Hủy"
   },
-  "Common_NA": "Không có",
+  "Common_NA": "N/A",
   "DateRange_Onwards": "trở đi",
   "DateRange_Until": "cho đến",
   "ConferenceList": {
-    "Common_NA": "Không có",
-    "Error_DetailsLoadFailed_Label": "Lỗi khi tải đầy đủ chi tiết",
+    "Common_NA": "N/A",
+    "Error_DetailsLoadFailed_Label": "Lỗi khi tải chi tiết đầy đủ",
     "Default_UntitledConference": "Hội nghị không có tiêu đề",
     "Requested_Label": "Đã yêu cầu",
     "LastUpdated_Label": "Cập nhật lần cuối",
-    "UserById_Label": "Bởi ID người dùng",
+    "UserById_Label": "Theo ID người dùng",
     "Status_PENDING": "Đang chờ",
     "Status_APPROVED": "Đã duyệt",
     "Status_REJECTED": "Đã từ chối",
@@ -99,7 +99,7 @@
     "ModerationComment_Label": "Bình luận kiểm duyệt",
     "Approve_Button": "Duyệt",
     "Reject_Button": "Từ chối",
-    "SetPending_Button": "Đặt về trạng thái Đang chờ"
+    "SetPending_Button": "Đặt thành Đang chờ"
   },
   "Invalid_Date": "Ngày không hợp lệ",
   "No_user_data_found_or_not_logged_in": "Không tìm thấy dữ liệu người dùng hoặc chưa đăng nhập.",
@@ -119,25 +119,25 @@
   "RequestAdminTab": {
     "AdminRequestManagement_Title": "Quản lý yêu cầu quản trị viên",
     "RequestList_SectionTitle": "Danh sách yêu cầu ({count})",
-    "EmptyState_NoRequests": "Chưa có yêu cầu người dùng nào được gửi.",
+    "EmptyState_NoRequests": "Chưa nhận được yêu cầu người dùng nào.",
     "Invalid_Date": "Ngày không hợp lệ",
     "Label_From": "từ",
     "Label_Sent": "Đã gửi",
     "Status_new": "Mới",
-    "Status_in-progress": "Đang tiến hành",
+    "Status_in-progress": "Đang xử lý",
     "Status_closed": "Đã đóng",
     "Type_report": "Báo cáo",
     "Type_contact": "Liên hệ",
-    "Button_MarkInProgress": "Đánh dấu là Đang tiến hành",
+    "Button_MarkInProgress": "Đánh dấu là Đang xử lý",
     "Button_MarkClosed": "Đánh dấu là Đã đóng",
     "Button_SetToNew": "Đặt thành Mới"
   },
   "Analysis": "Phân tích",
-  "Crawl": "Thu thập",
+  "Crawl": "Thu thập dữ liệu",
   "LogAnalysisPage": {
     "AuthStatus_Loading": "Đang tải trạng thái xác thực...",
     "Title": "Phân tích nhật ký",
-    "Subtitle": "Phân tích và quản lý nhật ký thu thập hội nghị",
+    "Subtitle": "Phân tích và quản lý nhật ký thu thập dữ liệu hội nghị",
     "Loading": "Đang tải dữ liệu phân tích nhật ký...",
     "NoLogsFound": "Không tìm thấy nhật ký nào cho khoảng thời gian đã chọn.",
     "ErrorFetchingLogs": "Lỗi khi lấy nhật ký: {error}",
@@ -147,7 +147,7 @@
   "Notifications": "Thông báo",
   "Profile": "Hồ sơ",
   "Request_Admin": "Yêu cầu quản trị viên",
-  "GlobalConferenceHub_Title": "Trung tâm Hội nghị Toàn cầu",
+  "GlobalConferenceHub_Title": "Global Conference Hub",
   "Dashboard_Loading": "Đang tải bảng điều khiển...",
   "Session_Expired_Redirect_Home": "Phiên của bạn đã hết hạn. Đang chuyển hướng về trang chủ trong 3 giây...",
   "Hello": "Xin chào",
@@ -155,14 +155,14 @@
   "Logout": "Đăng xuất",
   "Header_AriaLabel_CloseSidebar": "Đóng thanh bên",
   "Header_AriaLabel_OpenSidebar": "Mở thanh bên",
-  "Theme": "Giao diện",
-  "Theme_Switch_AriaLabel_Loading": "Đang tải bộ chuyển đổi giao diện",
-  "Theme_Switch_AriaLabel_ToggleDropdown": "Bật/tắt menu thả xuống giao diện",
-  "Theme_Switch_AriaLabel_SelectTheme": "Chọn giao diện {themeName}",
+  "Theme": "Chủ đề",
+  "Theme_Switch_AriaLabel_Loading": "Đang tải bộ chuyển đổi chủ đề",
+  "Theme_Switch_AriaLabel_ToggleDropdown": "Bật/tắt menu thả xuống chủ đề",
+  "Theme_Switch_AriaLabel_SelectTheme": "Chọn chủ đề {themeName}",
   "ThemeName_system": "Hệ thống",
   "ThemeName_light": "Sáng",
   "ThemeName_dark": "Tối",
-  "Mark All As Read": "Đánh dấu tất cả là đã đọc",
+  "Mark All As Read": "Đánh dấu tất cả đã đọc",
   "Loading": "Đang tải...",
   "No_new_notifications": "Không có thông báo mới",
   "NEW": "MỚI",
@@ -188,7 +188,7 @@
   "Mark_As_Important": "Đánh dấu là quan trọng",
   "Delete_Selected_aria_label": "Xóa các thông báo đã chọn",
   "Delete_Selected": "Xóa các mục đã chọn",
-  "You_have_no_notifications_matching_criteria": "Không có thông báo nào phù hợp với tiêu chí hiện tại của bạn.",
+  "You_have_no_notifications_matching_criteria": "Không có thông báo nào khớp với tiêu chí lọc hiện tại của bạn.",
   "NotificationType_Unknown": "Loại không xác định",
   "NotificationType_user_report": "Báo cáo người dùng",
   "NotificationType_system_alert": "Cảnh báo hệ thống",
@@ -213,11 +213,11 @@
     "ellipsis": "..."
   },
   "pagination": {
-    "perPage": "{count} trên mỗi trang",
-    "tenPerPage": "10 trên mỗi trang",
-    "twentyPerPage": "20 trên mỗi trang",
-    "fiftyPerPage": "50 trên mỗi trang",
-    "hundredPerPage": "100 trên mỗi trang",
+    "perPage": "{count} mỗi trang",
+    "tenPerPage": "10 mỗi trang",
+    "twentyPerPage": "20 mỗi trang",
+    "fiftyPerPage": "50 mỗi trang",
+    "hundredPerPage": "100 mỗi trang",
     "pageInfo": "Trang {currentPage} trên {totalPages}",
     "first": "Đầu tiên",
     "previous": "Trước",
@@ -237,12 +237,12 @@
     "allResearchFields": "Tất cả lĩnh vực nghiên cứu",
     "rankLabel": "Xếp hạng",
     "allRanks": "Tất cả xếp hạng",
-    "errorFetchingOptions": "Lỗi khi lấy các tùy chọn bộ lọc:",
+    "errorFetchingOptions": "Lỗi khi lấy tùy chọn bộ lọc:",
     "errorFetchingRanksForSource": "Lỗi khi lấy xếp hạng cho nguồn:"
   },
   "conferencesPage": {
     "pageTitle": "Quản lý Hội nghị",
-    "editHistoryTitle": "Sửa lịch sử Hội nghị",
+    "editHistoryTitle": "Chỉnh sửa lịch sử hội nghị",
     "common": {
       "cancelButton": "Hủy",
       "removeButton": "Xóa"
@@ -258,13 +258,13 @@
     },
     "viewHistoryButton": "Xem lịch sử",
     "modal": {
-      "historyTitle": "Lịch sử Hội nghị - {conferenceTitle}",
+      "historyTitle": "Lịch sử hội nghị - {conferenceTitle}",
       "organizationDetails": {
         "yearHeader": "Năm {year}",
         "accessType": "Loại truy cập:",
         "publisher": "Nhà xuất bản:",
         "summary": "Tóm tắt:",
-        "callForPaper": "Kêu gọi gửi bài:",
+        "callForPaper": "Kêu gọi bài báo:",
         "links": "Liên kết:",
         "mainLink": "Liên kết chính",
         "cfpLink": "Liên kết CFP",
@@ -278,7 +278,7 @@
       "deleteButton": "Xóa",
       "deleteConfirmation": "Bạn có chắc chắn muốn xóa lịch sử này không?",
       "editForm": {
-        "title": "Sửa lịch sử Hội nghị",
+        "title": "Chỉnh sửa lịch sử hội nghị",
         "cancel": "Hủy",
         "save": "Lưu",
         "saving": "Đang lưu...",
@@ -286,7 +286,7 @@
         "accessType": "Loại truy cập",
         "publisher": "Nhà xuất bản",
         "summary": "Tóm tắt",
-        "callForPaper": "Kêu gọi gửi bài",
+        "callForPaper": "Kêu gọi bài báo",
         "mainLink": "Liên kết chính",
         "cfpLink": "Liên kết CFP",
         "importantLink": "Liên kết quan trọng",
@@ -307,7 +307,7 @@
         "startDate": "Ngày bắt đầu",
         "endDate": "Ngày kết thúc",
         "fetchError": "Lỗi khi lấy chi tiết hội nghị",
-        "updateSuccess": "Đã cập nhật hội nghị thành công.",
+        "updateSuccess": "Hội nghị đã được cập nhật thành công.",
         "updateError": "Lỗi khi cập nhật hội nghị",
         "basicInfoTitle": "Thông tin cơ bản",
         "linksTitle": "Liên kết",
@@ -331,33 +331,33 @@
   },
   "CrawlPage": {
     "AuthStatus_Loading": "Đang tải trạng thái xác thực...",
-    "title": "Thu thập Hội nghị",
-    "description": "Nhập và thu thập dữ liệu hội nghị từ các nguồn khác nhau",
+    "title": "Thu thập dữ liệu hội nghị",
+    "description": "Nhập và thu thập dữ liệu hội nghị từ nhiều nguồn khác nhau",
     "steps": {
       "import": "Nhập tệp",
-      "select": "Chọn Hội nghị",
+      "select": "Chọn hội nghị",
       "configure": "Cấu hình & Xử lý"
     },
     "actions": {
       "next": "Tiếp theo",
       "previous": "Trước",
-      "start": "Bắt đầu thu thập",
+      "start": "Bắt đầu thu thập dữ liệu",
       "cancel": "Hủy"
     },
     "refreshingDetails": "Đang làm mới chi tiết cho {requestId}...",
     "refreshingAnalysisData": "Đang làm mới dữ liệu phân tích...",
-    "errorRefreshingData": "Lỗi khi làm mới dữ liệu: {error}",
+    "errorRefreshingData": "Lỗi làm mới dữ liệu: {error}",
     "noDataForRequestId": "Không tìm thấy kết quả phân tích cho ID yêu cầu: \"{requestId}\".",
-    "noRequestsForTimePeriod": "Không tìm thấy yêu cầu phân tích nào cho khoảng thời gian đã chọn. Hãy cân nhắc chọn \"Mới nhất\" hoặc tải lên nhật ký mới.",
+    "noRequestsForTimePeriod": "Không tìm thấy yêu cầu phân tích nào cho khoảng thời gian đã chọn. Hãy cân nhắc chọn \"Mới nhất\" hoặc tải nhật ký mới lên.",
     "noResultsForTimePeriodSuggestLatest": "Không tìm thấy kết quả phân tích nào cho khoảng thời gian đã chọn. Hãy cân nhắc chọn \"Mới nhất\".",
-    "noResultsGeneric": "Không tìm thấy kết quả phân tích. Nhật ký có thể trống, quá trình đang chờ xử lý hoặc không có dữ liệu nào khớp với bộ lọc thời gian hiện tại.",
+    "noResultsGeneric": "Không tìm thấy kết quả phân tích. Nhật ký có thể trống, quá trình xử lý đang chờ, hoặc không có dữ liệu nào khớp với bộ lọc thời gian hiện tại.",
     "noSpecificData": "Không có dữ liệu cụ thể để hiển thị cho chế độ xem hiện tại.",
-    "dataLoadedCriteriaNotMet": "Đã tải dữ liệu phân tích, nhưng tiêu chí hiển thị hiện tại không được đáp ứng. Hãy thử điều chỉnh bộ lọc hoặc làm mới.",
+    "dataLoadedCriteriaNotMet": "Dữ liệu phân tích đã tải, nhưng tiêu chí hiển thị hiện tại không được đáp ứng. Hãy thử điều chỉnh bộ lọc hoặc làm mới.",
     "dataIsForRequestId": "Dữ liệu dành cho: {requestId}",
     "dataIsGeneralSummary": "Dữ liệu là tóm tắt chung."
   },
   "ConferenceCrawlUploader": {
-    "title": "Xử lý Hội nghị (Từng bước)",
+    "title": "Xử lý hội nghị (Từng bước)",
     "apiSteps": {
       "determineLinksModel": "Xác định mô hình liên kết",
       "extractInfoModel": "Trích xuất mô hình thông tin",
@@ -365,34 +365,56 @@
     },
     "steps": {
       "importCsv": "Nhập CSV",
-      "selectConferences": "Chọn Hội nghị",
-      "configureSettings": "Cấu hình Cài đặt",
+      "selectConferences": "Chọn hội nghị",
+      "configureSettings": "Cấu hình cài đặt",
       "processAndViewStatus": "Xử lý & Xem trạng thái"
     }
   },
   "CrawlerTools": {
     "dataCrawlingToolsTitle": "Công cụ thu thập dữ liệu",
-    "collapseCrawlerToolsLabel": "Thu gọn Công cụ thu thập dữ liệu",
-    "expandCrawlerToolsLabel": "Mở rộng Công cụ thu thập dữ liệu",
-    "crawlConferencesButton": "Thu thập Hội nghị",
-    "crawlJournalsButton": "Thu thập Tạp chí"
+    "collapseCrawlerToolsLabel": "Thu gọn công cụ thu thập dữ liệu",
+    "expandCrawlerToolsLabel": "Mở rộng công cụ thu thập dữ liệu",
+    "crawlConferencesButton": "Thu thập dữ liệu hội nghị",
+    "crawlJournalsButton": "Thu thập dữ liệu tạp chí"
   },
   "ConferenceSelectionStep": {
-    "title": "Bước 2: Chọn Hội nghị và Loại hành động",
-    "description": "Chọn hội nghị từ bảng dưới đây và chỉ định loại hành động (Thu thập hoặc Cập nhật). Đối với hành động 'Cập nhật', đảm bảo các trường liên kết có liên quan (Liên kết, Liên kết quan trọng, Liên kết CFP) được cung cấp nếu cần.",
-    "globalActionTypeLabel": "Loại hành động cho mục đã chọn:",
+    "title": "Bước 2: Chọn hội nghị và loại hành động",
+    "description": "Chọn hội nghị từ bảng dưới đây và chỉ định loại hành động (Thu thập dữ liệu hoặc Cập nhật). Đối với hành động 'Cập nhật', đảm bảo các trường liên kết liên quan (Link, Imp Link, Cfp Link) được cung cấp nếu cần.",
+    "globalActions": {
+      "manageSelectionLabel": "Quản lý lựa chọn",
+      "selectAllDataTooltip": "Chọn tất cả {count} hội nghị từ dữ liệu đã tải lên.",
+      "deselectAllButton": "Bỏ chọn tất cả ({count})",
+      "deselectAllTooltip": "Bỏ chọn tất cả {count} hội nghị hiện đang được chọn.",
+      "actionForSelectedLabel": "Hành động cho các mục đã chọn:",
+      "crawlAction": "Thu thập dữ liệu",
+      "updateAction": "Cập nhật",
+      "applyToPageButton": "Áp dụng cho trang ({count})",
+      "applyToPageTooltip": "Áp dụng hành động cho {count} mục đã chọn trên trang này.",
+      "applyToAllSelectedButton": "Áp dụng cho tất cả các mục đã chọn ({count})",
+      "applyToAllSelectedTooltip": "Áp dụng hành động cho tất cả {count} hội nghị đã chọn trên tất cả các trang.",
+      "selectAllFilteredTooltip": "Chọn tất cả {count} hội nghị hiện đang được lọc",
+      "selectAllDataButton": "Chọn tất cả ({count})"
+    },
+    "selectionSummary": {
+      "total": "Tổng số đã chọn: {count} hội nghị.",
+      "onPage": "Trên trang này: {count} đã chọn."
+    },
     "actionType": {
-      "crawl": "Thu thập",
+      "crawl": "Thu thập dữ liệu",
       "update": "Cập nhật"
     },
     "applyToActionSelected": "Áp dụng cho {count} mục đã chọn",
-    "alert": {
-      "selectAtLeastOneConference": "Vui lòng chọn ít nhất một hội nghị để áp dụng loại hành động."
+    "alerts": {
+      "noConferenceSelectedForAction": "Vui lòng chọn ít nhất một hội nghị để áp dụng hành động.",
+      "noConferenceSelectedOnPage": "Vui lòng chọn ít nhất một hội nghị trên trang hiện tại để áp dụng hành động."
     },
-    "filter": {
-      "acronymPlaceholder": "Lọc theo từ viết tắt...",
-      "titlePlaceholder": "Lọc theo tiêu đề...",
-      "statusPlaceholder": "Lọc theo trạng thái..."
+    "filters": {
+      "filterByAcronym": "Lọc theo từ viết tắt...",
+      "filterByTitle": "Lọc theo tiêu đề...",
+      "allStatuses": "Tất cả trạng thái",
+      "notCrawled": "Chưa thu thập dữ liệu",
+      "crawled": "Đã thu thập dữ liệu",
+      "statusFilterLabel": "Lọc theo trạng thái"
     },
     "tableHeaders": {
       "acronym": "Từ viết tắt",
@@ -410,20 +432,20 @@
     "pagination": {
       "page": "Trang",
       "of": "của",
-      "rowsPerPage": "Số hàng trên mỗi trang"
+      "rowsPerPage": "Số hàng mỗi trang"
     },
     "summary": {
       "selectedConferences": "Đã chọn {count} hội nghị."
     },
     "navigation": {
       "previousStep": "Trước: Nhập tệp",
-      "nextStep": "Tiếp: Cấu hình & Xử lý"
+      "nextStep": "Tiếp theo: Cấu hình & Xử lý"
     }
   },
   "ConfigurationStep": {
     "header": {
-      "title": "Bước 3: Cấu hình Cài đặt Quy trình",
-      "description": "Điều chỉnh các cài đặt cho xử lý dữ liệu và lựa chọn mô hình API để tối ưu hóa quá trình thu thập và trích xuất."
+      "title": "Bước 3: Cấu hình cài đặt xử lý",
+      "description": "Điều chỉnh cài đặt xử lý dữ liệu và lựa chọn mô hình API để tối ưu hóa quá trình thu thập và trích xuất dữ liệu."
     },
     "chunking": {
       "title": "Cấu hình phân đoạn",
@@ -431,32 +453,32 @@
       "enableCheckbox": "Bật phân đoạn tài liệu",
       "enableDescription": "Chọn tùy chọn này để tự động chia tài liệu thành các đoạn nhỏ hơn.",
       "sizeLabel": "Kích thước đoạn ({min}-{max}):",
-      "sizeDescription": "Xác định số đơn vị văn bản tối đa trên mỗi đoạn. Các đoạn nhỏ hơn có thể làm tăng thời gian xử lý nhưng cải thiện độ chính xác."
+      "sizeDescription": "Xác định số đơn vị văn bản tối đa cho mỗi đoạn. Các đoạn nhỏ hơn có thể làm tăng thời gian xử lý nhưng cải thiện độ chính xác."
     },
     "apiSelection": {
-      "title": "Lựa chọn Mô hình API",
-      "description": "Chọn mô hình AI phù hợp cho mỗi bước API trích xuất và xử lý dữ liệu.",
-      "modelTypeHint": "Chọn giữa mô hình 'Chưa điều chỉnh' (mục đích chung) hoặc 'Đã điều chỉnh' (được tinh chỉnh cho các tác vụ cụ thể, nếu có).",
-      "temporarilyDisabled": "Tạm thời bị tắt",
+      "title": "Lựa chọn mô hình API",
+      "description": "Chọn mô hình AI phù hợp cho từng bước API trích xuất và xử lý dữ liệu.",
+      "modelTypeHint": "Chọn giữa các mô hình 'Chưa điều chỉnh' (mục đích chung) hoặc 'Đã điều chỉnh' (được tinh chỉnh cho các tác vụ cụ thể, nếu có).",
+      "temporarilyDisabled": "Tạm thời bị vô hiệu hóa",
       "cfpTunedUnavailable": "Mô hình đã điều chỉnh cho CFP tạm thời không khả dụng",
       "selectModelWarning": "Vui lòng chọn một mô hình cho {apiName}."
     },
     "modelDescriptions": {
-      "nonTuned": "Mô hình linh hoạt phù hợp cho nội dung chung. Cân bằng tốt giữa tốc độ và độ chính xác.",
-      "tuned": "Mô hình được tối ưu hóa cao, tinh chỉnh cho các mẫu cụ thể, mang lại độ chính xác vượt trội cho các tác vụ cụ thể."
+      "nonTuned": "Một mô hình linh hoạt phù hợp cho nội dung chung. Cân bằng tốt giữa tốc độ và độ chính xác.",
+      "tuned": "Một mô hình được tối ưu hóa cao, tinh chỉnh cho các mẫu cụ thể, mang lại độ chính xác vượt trội cho các tác vụ cụ thể."
     },
     "apiDescriptions": {
       "determineLinks": {
-        "name": "Xác định Liên kết chính",
-        "purpose": "API này phân tích nội dung đã thu thập để xác định và trích xuất các liên kết chính, chẳng hạn như những liên kết dẫn đến phần Kêu gọi gửi bài (CFP) và Ngày quan trọng (IMP)."
+        "name": "Xác định liên kết chính",
+        "purpose": "API này phân tích nội dung đã thu thập để xác định và trích xuất các liên kết chính, chẳng hạn như các liên kết dẫn đến phần Kêu gọi bài báo (CFP) và Ngày quan trọng (IMP)."
       },
       "extractInfo": {
-        "name": "Trích xuất Thông tin Hội nghị chung",
-        "purpose": "API này trích xuất các chi tiết cốt lõi của hội nghị bao gồm các ngày quan trọng (gửi bài, thông báo, ngày hội nghị), địa điểm và các chủ đề chính."
+        "name": "Trích xuất thông tin hội nghị chung",
+        "purpose": "API này trích xuất các chi tiết cốt lõi của hội nghị bao gồm các ngày quan trọng (nộp bài, thông báo, ngày hội nghị), địa điểm, chủ đề chính và người tổ chức."
       },
       "extractCfp": {
-        "name": "Trích xuất Nội dung Kêu gọi gửi bài (CFP)",
-        "purpose": "API này chuyên trích xuất toàn bộ văn bản và các yếu tố chính của Kêu gọi gửi bài, thường bao gồm tóm tắt các chủ đề, hướng dẫn và quy trình gửi bài."
+        "name": "Trích xuất nội dung Kêu gọi bài báo (CFP)",
+        "purpose": "API này chuyên trích xuất toàn bộ văn bản và các yếu tố chính của Kêu gọi bài báo, thường bao gồm tóm tắt các chủ đề, hướng dẫn và quy trình nộp bài."
       }
     },
     "modelValues": {
@@ -465,40 +487,40 @@
     },
     "details": {
       "hide": "Ẩn chi tiết",
-      "show": "Hiển thị chi tiết",
-      "modelCapabilities": "Khả năng mô hình"
+      "show": "Hiện chi tiết",
+      "modelCapabilities": "Khả năng của mô hình"
     },
     "warning": {
       "important": "Quan trọng",
-      "selectModelsBeforeProceeding": "Vui lòng chọn mô hình cho tất cả các bước API trước khi tiếp tục."
+      "selectModelsBeforeProceeding": "Vui lòng chọn một mô hình cho tất cả các bước API trước khi tiếp tục."
     },
     "navigation": {
-      "previousStep": "Trước: Chọn Hội nghị",
-      "nextStep": "Tiếp: Bắt đầu Xử lý"
+      "previousStep": "Trước: Chọn hội nghị",
+      "nextStep": "Tiếp theo: Bắt đầu xử lý"
     }
   },
   "FileUploadStep": {
     "header": {
       "title": "Bước 1: Nhập tệp CSV",
-      "description": "Chọn tệp CSV chứa dữ liệu hội nghị. Các cột bắt buộc: Tiêu đề, Từ viết tắt. Tùy chọn: link, cfpLink, impLink."
+      "description": "Chọn một tệp CSV chứa dữ liệu hội nghị. Các cột bắt buộc: Title, Acronym. Tùy chọn: link, cfpLink, impLink."
     },
     "button": {
-      "parsing": "Đang phân tích cú pháp...",
+      "parsing": "Đang phân tích...",
       "changeFile": "Thay đổi tệp",
       "chooseFile": "Chọn tệp"
     },
     "status": {
-      "parsedSuccess": "Đã phân tích cú pháp {count} hội nghị. Sẵn sàng tiếp tục.",
-      "noValidData": "Không thể tìm thấy dữ liệu hội nghị hợp lệ (Tiêu đề, Từ viết tắt) trong tệp đã chọn.",
+      "parsedSuccess": "Đã phân tích {count} hội nghị. Sẵn sàng tiếp tục.",
+      "noValidData": "Không tìm thấy dữ liệu hội nghị hợp lệ (Title, Acronym) trong tệp đã chọn.",
       "selectFilePrompt": "Vui lòng chọn một tệp để bắt đầu."
     },
     "navigation": {
-      "nextStep": "Tiếp: Chọn Hội nghị"
+      "nextStep": "Tiếp theo: Chọn hội nghị"
     }
   },
   "ProcessingStep": {
     "header": {
-      "title": "Thực thi & Trạng thái Quy trình",
+      "title": "Thực thi & Trạng thái quy trình",
       "description": "Theo dõi tiến độ và xem nhật ký chi tiết của quá trình xử lý."
     },
     "buttons": {
@@ -509,16 +531,16 @@
       "resetAll": "Đặt lại tất cả & Bắt đầu lại"
     },
     "statusLog": {
-      "title": "Trạng thái & Nhật ký Quy trình",
+      "title": "Trạng thái & Nhật ký quy trình",
       "processingChunk": "Đang xử lý đoạn {current} trên {total}",
       "percentageComplete": "{percentage}% Hoàn thành",
       "processingItems": "Đang xử lý các mục, vui lòng chờ...",
       "processingErrorLabel": "Lỗi xử lý",
-      "processCompletedSuccessfully": "Quy trình đã hoàn thành thành công!",
-      "processFailedOrStopped": "Quy trình thất bại hoặc đã dừng. Vui lòng xem lại nhật ký ở trên."
+      "processCompletedSuccessfully": "Quá trình hoàn thành thành công!",
+      "processFailedOrStopped": "Quá trình thất bại hoặc đã dừng. Vui lòng xem lại nhật ký ở trên."
     },
     "navigation": {
-      "previousStep": "Trước: Cấu hình Cài đặt"
+      "previousStep": "Trước: Cấu hình cài đặt"
     }
   },
   "StepperNavigation": {
@@ -529,34 +551,34 @@
   "AnalysisPage": {
     "noData": {
       "forRequestId": "Không tìm thấy kết quả phân tích cho ID yêu cầu: \"{requestId}\".",
-      "noRequestsForPeriod": "Không tìm thấy yêu cầu phân tích nào cho khoảng thời gian đã chọn. Hãy cân nhắc chọn \"Mới nhất\" hoặc tải lên nhật ký mới.",
+      "noRequestsForPeriod": "Không tìm thấy yêu cầu phân tích nào cho khoảng thời gian đã chọn. Hãy cân nhắc chọn \"Mới nhất\" hoặc tải nhật ký mới lên.",
       "noResultsForPeriod": "Không tìm thấy kết quả phân tích nào cho khoảng thời gian đã chọn. Hãy cân nhắc chọn \"Mới nhất\".",
-      "genericNoResults": "Không tìm thấy kết quả phân tích. Nhật ký có thể trống, quá trình đang chờ xử lý hoặc không có dữ liệu nào khớp với bộ lọc thời gian hiện tại.",
+      "genericNoResults": "Không tìm thấy kết quả phân tích. Nhật ký có thể trống, quá trình xử lý đang chờ, hoặc không có dữ liệu nào khớp với bộ lọc thời gian hiện tại.",
       "noSpecificData": "Không có dữ liệu cụ thể để hiển thị cho chế độ xem hiện tại."
     },
     "statusMessages": {
-      "dataLoadedCriteriaNotMet": "Đã tải dữ liệu phân tích, nhưng tiêu chí hiển thị hiện tại không được đáp ứng. Hãy thử điều chỉnh bộ lọc hoặc làm mới.",
+      "dataLoadedCriteriaNotMet": "Dữ liệu phân tích đã tải, nhưng tiêu chí hiển thị hiện tại không được đáp ứng. Hãy thử điều chỉnh bộ lọc hoặc làm mới.",
       "dataIsForRequestId": "Dữ liệu dành cho: {requestId}",
       "dataIsGeneralSummary": "Dữ liệu là tóm tắt chung."
     },
     "refreshing": {
       "details": "Đang làm mới chi tiết cho {requestId}...",
       "analysisData": "Đang làm mới dữ liệu phân tích...",
-      "error": "Lỗi khi làm mới dữ liệu: {error}"
+      "error": "Lỗi làm mới dữ liệu: {error}"
     }
   },
   "AnalysisHeader": {
     "headerText": {
       "loading": "Đang tải phân tích...",
-      "errorLoading": "Lỗi khi tải dữ liệu",
+      "errorLoading": "Lỗi tải dữ liệu",
       "noData": "Không có dữ liệu phân tích",
-      "analysisTitle": "Phân tích Quy trình Thu thập"
+      "analysisTitle": "Phân tích quy trình thu thập dữ liệu"
     },
     "common": {
-      "na": "Không có",
+      "na": "N/A",
       "unknown": "Không xác định"
     },
-    "lastAnalysis": "Phân tích lần cuối",
+    "lastAnalysis": "Phân tích cuối cùng",
     "errorLabel": "Lỗi",
     "logFile": "Tệp nhật ký",
     "filter": {
@@ -570,7 +592,7 @@
       "timeFilterTitle": "Lọc khoảng thời gian"
     },
     "timeOptions": {
-      "allTime": "Tất cả thời gian",
+      "allTime": "Mọi lúc",
       "lastHour": "Giờ trước",
       "last6Hours": "6 giờ trước",
       "last24Hours": "24 giờ trước",
@@ -589,7 +611,7 @@
     }
   },
   "ConferenceDetails": {
-    "title": "Phân tích chi tiết Hội nghị",
+    "title": "Phân tích chi tiết hội nghị",
     "collapseDetailsTitle": "Thu gọn chi tiết",
     "expandDetailsTitle": "Mở rộng chi tiết",
     "srOnly": {
@@ -603,7 +625,7 @@
     "retryButton": "Thử lại"
   },
   "LogRequestsList": {
-    "title": "Yêu cầu phân tích nhật ký khả dụng",
+    "title": "Các yêu cầu phân tích nhật ký khả dụng",
     "ariaLabel": {
       "collapse": "Thu gọn yêu cầu nhật ký",
       "expand": "Mở rộng yêu cầu nhật ký"
@@ -617,7 +639,7 @@
     "backToListButton": "Quay lại danh sách yêu cầu",
     "tabsAriaLabel": "Các tab phân tích",
     "tabs": {
-      "overallSummary": "Tóm tắt tổng quan",
+      "overallSummary": "Tóm tắt tổng thể",
       "conferenceDetails": "Chi tiết hội nghị"
     },
     "noDetailsMessage": "Không có chi tiết phân tích Hội nghị cụ thể nào cho yêu cầu này."
@@ -634,7 +656,7 @@
       "actions": "Hành động"
     },
     "common": {
-      "na": "Không có"
+      "na": "N/A"
     },
     "viewDetailsForOriginalRequestTitle": "Xem chi tiết cho yêu cầu gốc: {requestId}",
     "viewDetailsForOriginalRequestAriaLabel": "Xem chi tiết cho ID yêu cầu gốc {requestId}",
@@ -656,62 +678,63 @@
     }
   },
   "SummaryHeader": {
-    "collapseSummaryTitle": "Thu gọn Tóm tắt",
-    "expandSummaryTitle": "Mở rộng Tóm tắt",
-    "collapseSummaryAriaLabel": "Thu gọn Tóm tắt",
-    "expandSummaryAriaLabel": "Mở rộng Tóm tắt",
+    "title": "Tóm tắt phân tích",
+    "collapseSummaryTitle": "Thu gọn tóm tắt",
+    "expandSummaryTitle": "Mở rộng tóm tắt",
+    "collapseSummaryAriaLabel": "Thu gọn tóm tắt",
+    "expandSummaryAriaLabel": "Mở rộng tóm tắt",
     "srOnly": {
       "collapse": "Thu gọn",
       "expand": "Mở rộng"
     }
   },
   "NoDataMessage": {
-    "messageWithoutRequestId": "Không có dữ liệu tóm tắt cho bộ lọc hiện tại.",
-    "messageWithRequestId": "Không có dữ liệu tóm tắt cho bộ lọc hiện tại. (ID yêu cầu: {requestId})"
+    "messageWithoutRequestId": "Không có dữ liệu tóm tắt nào cho bộ lọc hiện tại.",
+    "messageWithRequestId": "Không có dữ liệu tóm tắt nào cho bộ lọc hiện tại. (ID yêu cầu: {requestId})"
   },
   "LogProcessingErrorsDisplay": {
-    "title": "Sự cố phân tích nhật ký ({parseErrors} lỗi / {totalLogEntries} mục nhật ký)",
-    "moreErrorsMessage": "... (và {count} lỗi khác)"
+    "title": "Sự cố phân tích nhật ký ({parseErrors} lỗi / {totalLogEntries} mục)",
+    "moreErrorsMessage": "... (và {count} nữa)"
   },
   "KpiSection": {
     "generalKpis": {
       "totalDuration": "Tổng thời lượng",
-      "tasksInRequest": "Số tác vụ trong yêu cầu",
-      "conferencesProcessed": "Số hội nghị đã xử lý",
-      "failedTasks": "Số tác vụ thất bại",
-      "geminiOps": "Thao tác Gemini (Gọi+Thử lại)"
+      "tasksInRequest": "Tác vụ trong yêu cầu",
+      "conferencesProcessed": "Hội nghị đã xử lý",
+      "failedTasks": "Tác vụ thất bại",
+      "geminiOps": "Hoạt động Gemini (Cuộc gọi+Thử lại)"
     },
     "geminiApiKpis": {
       "title": "Hiệu suất & Sức khỏe API Gemini",
       "serviceInits": "Khởi tạo dịch vụ",
-      "failedSubText": "{count} thất bại",
+      "failedSubText": "{count} Thất bại",
       "primaryCalls": "Cuộc gọi chính",
-      "successFailSubText": "{s} Thành công / {f} Thất bại",
+      "successFailSubText": "{s}T / {f}T",
       "fallbackCalls": "Cuộc gọi dự phòng",
       "safetyBlocks": "Khối an toàn",
       "totalTokensUsed": "Tổng số token đã sử dụng",
       "thousandSuffix": "k",
-      "cacheHits": "Lượt truy cập bộ nhớ cache",
-      "attemptedToUseCache": "Đã thử sử dụng bộ nhớ cache",
-      "configSetupErrors": "Lỗi cấu hình/thiết lập",
+      "cacheHits": "Lượt truy cập bộ nhớ đệm",
+      "attemptedToUseCache": "Đã cố gắng sử dụng bộ nhớ đệm",
+      "configSetupErrors": "Lỗi cấu hình/cài đặt",
       "intermediateErrors": "Lỗi trung gian",
       "responseProcIssues": "Sự cố xử lý phản hồi"
     },
     "googleSearchKpis": {
       "title": "Chỉ số tìm kiếm Google",
-      "totalRequests": "Tổng số yêu cầu GS",
-      "quotaErrors": "Lỗi hạn ngạch GS",
-      "keyRotations": "Thay đổi khóa GS",
-      "failedSubText": "{count} thất bại",
-      "allKeysExhausted": "Đã hết tất cả các khóa GS"
+      "totalRequests": "Tổng yêu cầu GS",
+      "quotaErrors": "Lỗi hạn mức GS",
+      "keyRotations": "Xoay khóa GS",
+      "failedSubText": "{count} Thất bại",
+      "allKeysExhausted": "Tất cả khóa GS đã hết"
     },
     "outputValidationKpis": {
-      "title": "Chất lượng Dữ liệu & Đầu ra",
-      "csvRecordsWritten": "Số bản ghi CSV đã ghi",
-      "pipelineFailsSubText": "{count} Lỗi đường ống",
+      "title": "Chất lượng đầu ra & dữ liệu",
+      "csvRecordsWritten": "Bản ghi CSV đã ghi",
+      "pipelineFailsSubText": "{count} Lỗi Pipeline",
       "validationWarnings": "Cảnh báo xác thực",
       "highSevWarnings": "Cảnh báo mức độ nghiêm trọng cao",
-      "dataNormalizations": "Chuẩn hóa dữ liệu"
+      "dataNormalizations": "Bình thường hóa dữ liệu"
     }
   },
   "CollapsibleContent": {
@@ -726,7 +749,7 @@
     },
     "chartTabsAriaLabel": "Các tab biểu đồ",
     "chartTabs": {
-      "general": "Tổng thể & Lỗi",
+      "general": "Tổng quan & Lỗi",
       "validation": "Xác thực & Chất lượng",
       "gemini": "API Gemini",
       "googleSearch": "Tìm kiếm Google"
@@ -754,21 +777,21 @@
       "noWarningsByField": "Không có cảnh báo xác thực theo trường",
       "validationWarningsBySeverity": "Cảnh báo xác thực theo mức độ nghiêm trọng",
       "noWarningsBySeverity": "Không có cảnh báo theo mức độ nghiêm trọng",
-      "topValidationMessages": "Các tin nhắn xác thực hàng đầu",
-      "noTopWarningMessages": "Không có tin nhắn cảnh báo hàng đầu",
-      "dataNormalizations": "Chuẩn hóa dữ liệu",
-      "normalizationsByField": "Chuẩn hóa theo trường",
-      "noNormalizationsByField": "Không có chuẩn hóa theo trường",
-      "normalizationsByReason": "Chuẩn hóa theo lý do",
-      "noNormalizationsByReason": "Không có chuẩn hóa theo lý do"
+      "topValidationMessages": "Các thông báo xác thực hàng đầu",
+      "noTopWarningMessages": "Không có thông báo cảnh báo hàng đầu",
+      "dataNormalizations": "Bình thường hóa dữ liệu",
+      "normalizationsByField": "Bình thường hóa theo trường",
+      "noNormalizationsByField": "Không có bình thường hóa theo trường",
+      "normalizationsByReason": "Bình thường hóa theo lý do",
+      "noNormalizationsByReason": "Không có bình thường hóa theo lý do"
     },
     "geminiApiCharts": {
       "title": "Phân tích API Gemini",
       "geminiApiCallStatus": "Trạng thái cuộc gọi API Gemini",
       "noGeminiApiStatusData": "Không có dữ liệu trạng thái API Gemini",
-      "geminiCacheDetails": "Chi tiết bộ nhớ cache Gemini",
-      "noGeminiCacheData": "Không có dữ liệu bộ nhớ cache Gemini",
-      "geminiFallbackSuccessRate": "Tỷ lệ thành công dự phòng Gemini",
+      "geminiCacheDetails": "Chi tiết bộ nhớ đệm Gemini",
+      "noGeminiCacheData": "Không có dữ liệu bộ nhớ đệm Gemini",
+      "geminiFallbackSuccessRate": "Tỷ lệ thành công dự phòng của Gemini",
       "noFallbackDataOrNoFallbacksAttempted": "Không có dữ liệu dự phòng hoặc không có nỗ lực dự phòng",
       "geminiModelUsage": "Sử dụng mô hình Gemini",
       "noGeminiModelUsageData": "Không có dữ liệu sử dụng mô hình Gemini",
@@ -786,8 +809,8 @@
       "noKeyUsageData": "Không có dữ liệu sử dụng khóa",
       "topGoogleSearchErrors": "Các lỗi tìm kiếm Google hàng đầu",
       "noGoogleSearchErrorData": "Không có dữ liệu lỗi tìm kiếm Google",
-      "topGoogleSearchAttemptIssues": "Các vấn đề thử tìm kiếm Google hàng đầu",
-      "noGoogleSearchAttemptIssueData": "Không có dữ liệu vấn đề thử tìm kiếm Google"
+      "topGoogleSearchAttemptIssues": "Các sự cố cố gắng tìm kiếm Google hàng đầu",
+      "noGoogleSearchAttemptIssueData": "Không có dữ liệu sự cố cố gắng tìm kiếm Google"
     }
   },
   "Common": {
@@ -804,19 +827,19 @@
       "noDataMessage": "Không có cảnh báo theo mức độ nghiêm trọng"
     },
     "topWarningMessages": {
-      "title": "Các tin nhắn xác thực hàng đầu",
-      "noDataMessage": "Không có tin nhắn cảnh báo hàng đầu"
+      "title": "Các thông báo xác thực hàng đầu",
+      "noDataMessage": "Không có thông báo cảnh báo hàng đầu"
     },
     "dataNormalizations": {
-      "title": "Chuẩn hóa dữ liệu"
+      "title": "Bình thường hóa dữ liệu"
     },
     "normalizationsByField": {
-      "title": "Chuẩn hóa theo trường",
-      "noDataMessage": "Không có chuẩn hóa theo trường"
+      "title": "Bình thường hóa theo trường",
+      "noDataMessage": "Không có bình thường hóa theo trường"
     },
     "normalizationsByReason": {
-      "title": "Chuẩn hóa theo lý do",
-      "noDataMessage": "Không có chuẩn hóa theo lý do"
+      "title": "Bình thường hóa theo lý do",
+      "noDataMessage": "Không có bình thường hóa theo lý do"
     }
   },
   "GeminiApiCharts": {
@@ -824,7 +847,7 @@
       "title": "Trạng thái cuộc gọi & Điều phối",
       "geminiApiCallStatusOverall": "Trạng thái cuộc gọi API Gemini (Tổng thể)",
       "noOverallApiStatusData": "Không có dữ liệu trạng thái API tổng thể",
-      "primaryVsFallbackOutcomes": "Kết quả chính so với dự phòng",
+      "primaryVsFallbackOutcomes": "Kết quả chính vs Dự phòng",
       "noOrchestrationData": "Không có dữ liệu điều phối",
       "fallbackModelSuccessRateStandalone": "Tỷ lệ thành công của mô hình dự phòng (Độc lập)",
       "noFallbackData": "Không có dữ liệu dự phòng hoặc không có nỗ lực dự phòng"
@@ -834,30 +857,50 @@
       "tableHeaders": {
         "apiType": "Loại API",
         "model": "Mô hình",
-        "calls": "Số cuộc gọi",
+        "calls": "Cuộc gọi",
         "successes": "Thành công",
         "failures": "Thất bại",
-        "retries": "Số lần thử lại",
+        "retries": "Thử lại",
         "tokens": "Token",
         "safetyBlocks": "Khối an toàn"
       },
       "tableFooters": {
-        "total": "Tổng"
+        "total": "Tổng cộng"
       }
     },
     "section3": {
       "title": "Lỗi & Sự cố cấu hình",
       "topGeminiApiErrors": "Các lỗi API Gemini hàng đầu",
       "noGeminiApiErrorData": "Không có dữ liệu lỗi API Gemini",
-      "geminiConfigurationSetupIssues": "Sự cố cấu hình & thiết lập Gemini",
+      "geminiConfigurationSetupIssues": "Sự cố cấu hình & cài đặt Gemini",
       "noGeminiConfigurationErrors": "Không có lỗi cấu hình Gemini"
     },
     "section4": {
-      "title": "Hiệu suất bộ nhớ cache & Xử lý phản hồi",
-      "geminiCacheDetails": "Chi tiết bộ nhớ cache Gemini",
-      "noGeminiCacheData": "Không có dữ liệu bộ nhớ cache Gemini",
-      "responseProcessingStepsIssues": "Các bước xử lý phản hồi/Sự cố",
+      "title": "Hiệu suất bộ nhớ đệm & Xử lý phản hồi",
+      "geminiCacheDetails": "Chi tiết bộ nhớ đệm Gemini",
+      "noGeminiCacheData": "Không có dữ liệu bộ nhớ đệm Gemini",
+      "responseProcessingStepsIssues": "Các bước/sự cố xử lý phản hồi",
       "noResponseProcessingData": "Không có dữ liệu xử lý phản hồi"
     }
+  },
+  "Pagination": {
+    "firstPage": "Đi đến trang đầu tiên",
+    "previousPage": "Đi đến trang trước",
+    "pageInfo": "Trang {current} trên tổng {total}",
+    "nextPage": "Đi đến trang kế tiếp",
+    "lastPage": "Đi đến trang cuối cùng",
+    "rowsPerPage": "Số hàng mỗi trang",
+    "selectRowsPerPage": "Chọn số hàng mỗi trang"
+  },
+  "ConferenceTable": {
+    "noDataMessage": "Không có dữ liệu hội nghị nào khớp với bộ lọc hiện tại."
+  },
+  "ErrorItem": {
+    "errorCode": "Mã lỗi",
+    "recovered": "Đã khôi phục",
+    "hideDetails": "Ẩn chi tiết",
+    "showDetails": "Hiện chi tiết",
+    "details": "Chi tiết",
+    "context": "Ngữ cảnh"
   }
 }

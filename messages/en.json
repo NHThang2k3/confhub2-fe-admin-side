@@ -678,6 +678,7 @@
     }
   },
   "SummaryHeader": {
+    "title": "Overall Summary",
     "collapseSummaryTitle": "Collapse Summary",
     "expandSummaryTitle": "Expand Summary",
     "collapseSummaryAriaLabel": "Collapse Summary",
@@ -881,5 +882,25 @@
       "responseProcessingStepsIssues": "Response Processing Steps/Issues",
       "noResponseProcessingData": "No Response Processing Data"
     }
+  },
+  "Pagination": {
+    "firstPage": "Go to first page",
+    "previousPage": "Go to previous page",
+    "pageInfo": "Page {current} of {total}",
+    "nextPage": "Go to next page",
+    "lastPage": "Go to last page",
+    "rowsPerPage": "Rows per page",
+    "selectRowsPerPage": "Select rows per page"
+  },
+  "ConferenceTable": {
+    "noDataMessage": "No conference data matches the current filters."
+  },
+  "ErrorItem": {
+    "errorCode": "Error Code",
+    "recovered": "Recovered",
+    "hideDetails": "Hide details",
+    "showDetails": "Show details",
+    "details": "Details",
+    "context": "Context"
   }
 }
