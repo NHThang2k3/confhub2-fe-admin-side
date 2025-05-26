@@ -133,6 +133,17 @@
     "Button_SetToNew": "Set to New"
   },
   "Analysis": "Analysis",
+  "Crawl": "Crawl",
+  "LogAnalysisPage": {
+    "AuthStatus_Loading": "Loading authentication status...",
+    "Title": "Log Analysis",
+    "Subtitle": "Analyze and manage conference crawl logs",
+    "Loading": "Loading log analysis data...",
+    "NoLogsFound": "No logs found for the selected time period.",
+    "ErrorFetchingLogs": "Error fetching logs: {error}",
+    "ViewDetails": "View Details",
+    "RefreshData": "Refresh Data"
+  },
   "Notifications": "Notifications",
   "Profile": "Profile",
   "Request_Admin": "Request Admin",
@@ -319,6 +330,7 @@
     "errorFetchingConferenceHistoryDetails": "Error fetching conference history details:"
   },
   "CrawlPage": {
+    "AuthStatus_Loading": "Loading authentication status...",
     "title": "Conference Crawl",
     "description": "Import and crawl conference data from various sources",
     "steps": {
@@ -331,6 +343,521 @@
       "previous": "Previous",
       "start": "Start Crawl",
       "cancel": "Cancel"
+    },
+    "refreshingDetails": "Refreshing details for {requestId}...",
+    "refreshingAnalysisData": "Refreshing analysis data...",
+    "errorRefreshingData": "Error refreshing data: {error}",
+    "noDataForRequestId": "No analysis results found for Request ID: \"{requestId}\".",
+    "noRequestsForTimePeriod": "No analysis requests found for the selected time period. Consider selecting \"Latest\" or uploading new logs.",
+    "noResultsForTimePeriodSuggestLatest": "No analysis results found for the selected time period. Consider selecting \"Latest\".",
+    "noResultsGeneric": "No analysis results found. The log might be empty, processing is pending, or no data matches the current time filter.",
+    "noSpecificData": "No specific data to display for the current view.",
+    "dataLoadedCriteriaNotMet": "Analysis data loaded, but current view criteria not met. Try adjusting filters or refreshing.",
+    "dataIsForRequestId": "Data is for: {requestId}",
+    "dataIsGeneralSummary": "Data is general summary."
+  },
+  "ConferenceCrawlUploader": {
+    "title": "Process Conferences (Step by Step)",
+    "apiSteps": {
+      "determineLinksModel": "Determine Links Model",
+      "extractInfoModel": "Extract Information Model",
+      "extractCfpModel": "Extract CFP Model"
+    },
+    "steps": {
+      "importCsv": "Import CSV",
+      "selectConferences": "Select Conferences",
+      "configureSettings": "Configure Settings",
+      "processAndViewStatus": "Process & View Status"
+    }
+  },
+  "CrawlerTools": {
+    "dataCrawlingToolsTitle": "Data Crawling Tools",
+    "collapseCrawlerToolsLabel": "Collapse Data Crawling Tools",
+    "expandCrawlerToolsLabel": "Expand Data Crawling Tools",
+    "crawlConferencesButton": "Crawl Conferences",
+    "crawlJournalsButton": "Crawl Journals"
+  },
+  "ConferenceSelectionStep": {
+    "title": "Step 2: Select Conferences and Action Type",
+    "description": "Select conferences from the table below and specify the action type (Crawl or Update). For 'Update' actions, ensure the relevant link fields (Link, Imp Link, Cfp Link) are provided if needed.",
+    "globalActionTypeLabel": "Action Type for Selected:",
+    "actionType": {
+      "crawl": "Crawl",
+      "update": "Update"
+    },
+    "applyToActionSelected": "Apply to {count} Selected",
+    "alert": {
+      "selectAtLeastOneConference": "Please select at least one conference to apply the action type."
+    },
+    "filter": {
+      "acronymPlaceholder": "Filter by acronym...",
+      "titlePlaceholder": "Filter by title...",
+      "statusPlaceholder": "Filter by status..."
+    },
+    "tableHeaders": {
+      "acronym": "Acronym",
+      "title": "Title",
+      "actionType": "Action Type",
+      "sources": "Sources",
+      "ranks": "Ranks",
+      "researchFields": "Research Fields",
+      "status": "Status",
+      "updatedAt": "Updated At",
+      "linkForUpdate": "Link (for Update)",
+      "impLinkForUpdate": "Imp Link (for Update)",
+      "cfpLinkForUpdate": "Cfp Link (for Update)"
+    },
+    "pagination": {
+      "page": "Page",
+      "of": "of",
+      "rowsPerPage": "Rows per page"
+    },
+    "summary": {
+      "selectedConferences": "Selected {count} conference(s)."
+    },
+    "navigation": {
+      "previousStep": "Previous: Import File",
+      "nextStep": "Next: Configure & Process"
+    }
+  },
+  "ConfigurationStep": {
+    "header": {
+      "title": "Step 3: Configure Process Settings",
+      "description": "Adjust the settings for data processing and API model selection to optimize the crawling and extraction process."
+    },
+    "chunking": {
+      "title": "Chunking Configuration",
+      "description": "Chunking helps break large documents into smaller, manageable pieces for more efficient processing and better API performance.",
+      "enableCheckbox": "Enable Document Chunking",
+      "enableDescription": "Select this option to automatically split documents into smaller chunks.",
+      "sizeLabel": "Chunk Size ({min}-{max}):",
+      "sizeDescription": "Defines the maximum number of text units per chunk. Smaller chunks may increase processing time but improve accuracy."
+    },
+    "apiSelection": {
+      "title": "API Model Selection",
+      "description": "Select the appropriate AI model for each data extraction and processing API step.",
+      "modelTypeHint": "Choose between 'Non-Tuned' (general purpose) or 'Tuned' (fine-tuned for specific tasks, if available) models.",
+      "temporarilyDisabled": "Temporarily disabled",
+      "cfpTunedUnavailable": "Tuned model for CFP is temporarily unavailable",
+      "selectModelWarning": "Please select a model for {apiName}."
+    },
+    "modelDescriptions": {
+      "nonTuned": "A versatile model suitable for general content. Good balance of speed and accuracy.",
+      "tuned": "A highly optimized model fine-tuned for specific patterns, offering superior accuracy for specific tasks."
+    },
+    "apiDescriptions": {
+      "determineLinks": {
+        "name": "Main Links Identification",
+        "purpose": "This API analyzes the crawled content to identify and extract primary links, such as those leading to Call for Papers (CFP) and Important Dates (IMP) sections."
+      },
+      "extractInfo": {
+        "name": "General Conference Information Extraction",
+        "purpose": "This API extracts core conference details including key dates (submission, notification, conference dates), location, main topics, and organizers."
+      },
+      "extractCfp": {
+        "name": "Call for Papers (CFP) Content Extraction",
+        "purpose": "This API specializes in extracting the full text and key elements of the Call for Papers, often including a summary of topics, guidelines, and submission procedures."
+      }
+    },
+    "modelValues": {
+      "non-tuned": "Non-Tuned",
+      "tuned": "Tuned"
+    },
+    "details": {
+      "hide": "Hide Details",
+      "show": "Show Details",
+      "modelCapabilities": "Model Capabilities"
+    },
+    "warning": {
+      "important": "Important",
+      "selectModelsBeforeProceeding": "Please select a model for all API steps before proceeding."
+    },
+    "navigation": {
+      "previousStep": "Previous: Select Conferences",
+      "nextStep": "Next: Start Processing"
+    }
+  },
+  "FileUploadStep": {
+    "header": {
+      "title": "Step 1: Import CSV File",
+      "description": "Select a CSV file containing conference data. Required columns: Title, Acronym. Optional: link, cfpLink, impLink."
+    },
+    "button": {
+      "parsing": "Parsing...",
+      "changeFile": "Change File",
+      "chooseFile": "Choose File"
+    },
+    "status": {
+      "parsedSuccess": "Parsed {count} conferences. Ready to proceed.",
+      "noValidData": "Could not find valid conference data (Title, Acronym) in the selected file.",
+      "selectFilePrompt": "Please select a file to begin."
+    },
+    "navigation": {
+      "nextStep": "Next: Select Conferences"
+    }
+  },
+  "ProcessingStep": {
+    "header": {
+      "title": "Process Execution & Status",
+      "description": "Monitor the progress and view detailed logs of the processing."
+    },
+    "buttons": {
+      "processingData": "Processing Data...",
+      "restartProcess": "Restart Process",
+      "startProcessing": "Start Processing",
+      "resetAllTitle": "Reset all configurations, data, and return to the first step",
+      "resetAll": "Reset All & Start Over"
+    },
+    "statusLog": {
+      "title": "Process Status & Log",
+      "processingChunk": "Processing Chunk {current} of {total}",
+      "percentageComplete": "{percentage}% Complete",
+      "processingItems": "Processing items, please wait...",
+      "processingErrorLabel": "Processing Error",
+      "processCompletedSuccessfully": "Process completed successfully!",
+      "processFailedOrStopped": "Process failed or was stopped. Please review the logs above."
+    },
+    "navigation": {
+      "previousStep": "Previous: Configure Settings"
+    }
+  },
+  "StepperNavigation": {
+    "ariaLabel": {
+      "progress": "Progress"
+    }
+  },
+  "AnalysisPage": {
+    "noData": {
+      "forRequestId": "No analysis results found for Request ID: \"{requestId}\".",
+      "noRequestsForPeriod": "No analysis requests found for the selected time period. Consider selecting \"Latest\" or uploading new logs.",
+      "noResultsForPeriod": "No analysis results found for the selected time period. Consider selecting \"Latest\".",
+      "genericNoResults": "No analysis results found. The log might be empty, processing is pending, or no data matches the current time filter.",
+      "noSpecificData": "No specific data to display for the current view."
+    },
+    "statusMessages": {
+      "dataLoadedCriteriaNotMet": "Analysis data loaded, but current view criteria not met. Try adjusting filters or refreshing.",
+      "dataIsForRequestId": "Data is for: {requestId}",
+      "dataIsGeneralSummary": "Data is general summary."
+    },
+    "refreshing": {
+      "details": "Refreshing details for {requestId}...",
+      "analysisData": "Refreshing analysis data...",
+      "error": "Error refreshing data: {error}"
+    }
+  },
+  "AnalysisHeader": {
+    "headerText": {
+      "loading": "Loading Analysis...",
+      "errorLoading": "Error Loading Data",
+      "noData": "No Analysis Data",
+      "analysisTitle": "Crawl Process Analysis"
+    },
+    "common": {
+      "na": "N/A",
+      "unknown": "Unknown"
+    },
+    "lastAnalysis": "Last Analysis",
+    "errorLabel": "Error",
+    "logFile": "Log File",
+    "filter": {
+      "requestIdFilterTitle": "Filter by Request ID",
+      "requestIdPlaceholder": "Filter by Request ID...",
+      "clearInputTitle": "Clear input",
+      "clearActiveFilterTitle": "Clear Active Request ID Filter",
+      "enterRequestIdTitle": "Enter a Request ID",
+      "applyFilterTitle": "Apply Filter",
+      "applyButton": "Apply",
+      "timeFilterTitle": "Filter Time Range"
+    },
+    "timeOptions": {
+      "allTime": "All Time",
+      "lastHour": "Last Hour",
+      "last6Hours": "Last 6 Hours",
+      "last24Hours": "Last 24 Hours",
+      "last7Days": "Last 7 Days"
+    },
+    "refreshButton": {
+      "refreshingTitle": "Refreshing...",
+      "refreshDataTitle": "Refresh data",
+      "refreshing": "Refreshing...",
+      "refreshNow": "Refresh Now"
+    },
+    "realtime": "Realtime",
+    "connectionStatus": {
+      "connected": "Connected",
+      "disconnected": "Disconnected"
+    }
+  },
+  "ConferenceDetails": {
+    "title": "Detailed Conference Analysis",
+    "collapseDetailsTitle": "Collapse Details",
+    "expandDetailsTitle": "Expand Details",
+    "srOnly": {
+      "collapse": "Collapse",
+      "expand": "Expand"
+    },
+    "noDataMessage": "No conference analysis data available."
+  },
+  "ErrorScreen": {
+    "errorMessagePrefix": "Error loading analysis data",
+    "retryButton": "Try Again"
+  },
+  "LogRequestsList": {
+    "title": "Available Log Analysis Requests",
+    "ariaLabel": {
+      "collapse": "Collapse Log Requests",
+      "expand": "Expand Log Requests"
+    },
+    "srOnly": {
+      "collapse": "Collapse",
+      "expand": "Expand"
+    }
+  },
+  "RequestDetailView": {
+    "backToListButton": "Back to List of Requests",
+    "tabsAriaLabel": "Analysis Tabs",
+    "tabs": {
+      "overallSummary": "Overall Summary",
+      "conferenceDetails": "Conference Details"
+    },
+    "noDetailsMessage": "No specific Conference analysis details available for this request."
+  },
+  "RequestsTable": {
+    "tableHeaders": {
+      "requestId": "Request ID",
+      "originalRequestId": "Original Request ID",
+      "startTime": "Start Time",
+      "endTime": "End Time",
+      "duration": "Duration",
+      "status": "Status",
+      "successRate": "Success Rate",
+      "actions": "Actions"
+    },
+    "common": {
+      "na": "N/A"
+    },
+    "viewDetailsForOriginalRequestTitle": "View details for original request: {requestId}",
+    "viewDetailsForOriginalRequestAriaLabel": "View details for original request ID {requestId}",
+    "statusNames": {
+      "completed": "Completed",
+      "completedwitherrors": "Completed with Errors",
+      "partiallycompleted": "Partially Completed",
+      "failed": "Failed",
+      "processing": "Processing",
+      "pending": "Pending",
+      "skipped": "Skipped",
+      "nodata": "No Data",
+      "unknown": "Unknown"
+    },
+    "viewDetailsButton": "View Details",
+    "viewDetailsForRequestAriaLabel": "View details for request {requestId}",
+    "tableFooter": {
+      "totalSuccessRate": "Total Success Rate for Displayed Requests"
+    }
+  },
+  "SummaryHeader": {
+    "collapseSummaryTitle": "Collapse Summary",
+    "expandSummaryTitle": "Expand Summary",
+    "collapseSummaryAriaLabel": "Collapse Summary",
+    "expandSummaryAriaLabel": "Expand Summary",
+    "srOnly": {
+      "collapse": "Collapse",
+      "expand": "Expand"
+    }
+  },
+  "NoDataMessage": {
+    "messageWithoutRequestId": "No summary data available for the current filter.",
+    "messageWithRequestId": "No summary data available for the current filter. (Request ID: {requestId})"
+  },
+  "LogProcessingErrorsDisplay": {
+    "title": "Log Parsing Issues ({parseErrors} errors / {totalLogEntries} entries)",
+    "moreErrorsMessage": "... (and {count} more)"
+  },
+  "KpiSection": {
+    "generalKpis": {
+      "totalDuration": "Total Duration",
+      "tasksInRequest": "Tasks in Request",
+      "conferencesProcessed": "Conferences Processed",
+      "failedTasks": "Failed Tasks",
+      "geminiOps": "Gemini Ops (Calls+Retries)"
+    },
+    "geminiApiKpis": {
+      "title": "Gemini API Health & Performance",
+      "serviceInits": "Service Inits",
+      "failedSubText": "{count} Failed",
+      "primaryCalls": "Primary Calls",
+      "successFailSubText": "{s}S / {f}F",
+      "fallbackCalls": "Fallback Calls",
+      "safetyBlocks": "Safety Blocks",
+      "totalTokensUsed": "Total Tokens Used",
+      "thousandSuffix": "k",
+      "cacheHits": "Cache Hits",
+      "attemptedToUseCache": "Attempted to Use Cache",
+      "configSetupErrors": "Config/Setup Errors",
+      "intermediateErrors": "Intermediate Errors",
+      "responseProcIssues": "Response Proc. Issues"
+    },
+    "googleSearchKpis": {
+      "title": "Google Search Metrics",
+      "totalRequests": "GS Total Requests",
+      "quotaErrors": "GS Quota Errors",
+      "keyRotations": "GS Key Rotations",
+      "failedSubText": "{count} Failed",
+      "allKeysExhausted": "GS All Keys Exhausted"
+    },
+    "outputValidationKpis": {
+      "title": "Output & Data Quality",
+      "csvRecordsWritten": "CSV Records Written",
+      "pipelineFailsSubText": "{count} Pipeline Fails",
+      "validationWarnings": "Validation Warnings",
+      "highSevWarnings": "High Sev. Warnings",
+      "dataNormalizations": "Data Normalizations"
+    }
+  },
+  "CollapsibleContent": {
+    "detailedStatisticsTitle": "Detailed Statistics",
+    "collapseDetailsTitle": "Collapse Details",
+    "expandDetailsTitle": "Expand Details",
+    "collapseDetailedStatisticsAriaLabel": "Collapse Detailed Statistics",
+    "expandDetailedStatisticsAriaLabel": "Expand Detailed Statistics",
+    "srOnly": {
+      "collapse": "Collapse",
+      "expand": "Expand"
+    },
+    "chartTabsAriaLabel": "Chart Tabs",
+    "chartTabs": {
+      "general": "Overall & Errors",
+      "validation": "Validation & Quality",
+      "gemini": "Gemini API",
+      "googleSearch": "Google Search"
+    }
+  },
+  "ChartsSection": {
+    "common": {
+      "count": "Count",
+      "warnings": "Warnings",
+      "totalAttempts": "Total Attempts",
+      "requests": "Requests"
+    },
+    "generalCharts": {
+      "title": "Overall Status & Errors",
+      "taskStatusDistribution": "Task Status Distribution",
+      "noTaskStatusData": "No Task Status Data",
+      "playwrightLinkProcessing": "Playwright Link Processing",
+      "noLinkProcessingData": "No Link Processing Data",
+      "topAggregatedErrors": "Top Aggregated Errors (All Sources)",
+      "noAggregatedErrors": "No Aggregated Errors"
+    },
+    "validationNormalizationCharts": {
+      "title": "Data Validation & Quality",
+      "validationWarningsByField": "Validation Warnings by Field",
+      "noWarningsByField": "No Validation Warnings by Field",
+      "validationWarningsBySeverity": "Validation Warnings by Severity",
+      "noWarningsBySeverity": "No Warnings by Severity",
+      "topValidationMessages": "Top Validation Messages",
+      "noTopWarningMessages": "No Top Warning Messages",
+      "dataNormalizations": "Data Normalizations",
+      "normalizationsByField": "Normalizations by Field",
+      "noNormalizationsByField": "No Normalizations by Field",
+      "normalizationsByReason": "Normalizations by Reason",
+      "noNormalizationsByReason": "No Normalizations by Reason"
+    },
+    "geminiApiCharts": {
+      "title": "Gemini API Analysis",
+      "geminiApiCallStatus": "Gemini API Call Status",
+      "noGeminiApiStatusData": "No Gemini API Status Data",
+      "geminiCacheDetails": "Gemini Cache Details",
+      "noGeminiCacheData": "No Gemini Cache Data",
+      "geminiFallbackSuccessRate": "Gemini Fallback Success Rate",
+      "noFallbackDataOrNoFallbacksAttempted": "No Fallback Data or No Fallbacks Attempted",
+      "geminiModelUsage": "Gemini Model Usage",
+      "noGeminiModelUsageData": "No Gemini Model Usage Data",
+      "topGeminiApiErrors": "Top Gemini API Errors",
+      "noGeminiApiErrorData": "No Gemini API Error Data",
+      "geminiConfigurationErrors": "Gemini Configuration Errors",
+      "noGeminiConfigurationErrors": "No Gemini Configuration Errors"
+    },
+    "googleSearchCharts": {
+      "title": "Google Search Analysis",
+      "googleSearchStatus": "Google Search Status",
+      "successfulNoItemsSubText": "Successful (No Items): {count}",
+      "noSearchStatusData": "No Search Status Data",
+      "googleApiKeyUsage": "Google API Key Usage",
+      "noKeyUsageData": "No Key Usage Data",
+      "topGoogleSearchErrors": "Top Google Search Errors",
+      "noGoogleSearchErrorData": "No Google Search Error Data",
+      "topGoogleSearchAttemptIssues": "Top Google Search Attempt Issues",
+      "noGoogleSearchAttemptIssueData": "No Google Search Attempt Issue Data"
+    }
+  },
+  "Common": {
+    "count": "Count",
+    "warnings": "Warnings"
+  },
+  "ValidationQualityCharts": {
+    "warningsByField": {
+      "title": "Validation Warnings by Field",
+      "noDataMessage": "No Validation Warnings by Field"
+    },
+    "warningsBySeverity": {
+      "title": "Validation Warnings by Severity",
+      "noDataMessage": "No Warnings by Severity"
+    },
+    "topWarningMessages": {
+      "title": "Top Validation Messages",
+      "noDataMessage": "No Top Warning Messages"
+    },
+    "dataNormalizations": {
+      "title": "Data Normalizations"
+    },
+    "normalizationsByField": {
+      "title": "Normalizations by Field",
+      "noDataMessage": "No Normalizations by Field"
+    },
+    "normalizationsByReason": {
+      "title": "Normalizations by Reason",
+      "noDataMessage": "No Normalizations by Reason"
+    }
+  },
+  "GeminiApiCharts": {
+    "section1": {
+      "title": "Call Status & Orchestration",
+      "geminiApiCallStatusOverall": "Gemini API Call Status (Overall)",
+      "noOverallApiStatusData": "No Overall API Status Data",
+      "primaryVsFallbackOutcomes": "Primary vs Fallback Outcomes",
+      "noOrchestrationData": "No Orchestration Data",
+      "fallbackModelSuccessRateStandalone": "Fallback Model Success Rate (Standalone)",
+      "noFallbackData": "No Fallback Data or No Fallbacks Attempted"
+    },
+    "section2": {
+      "title": "Model Usage Breakdown",
+      "tableHeaders": {
+        "apiType": "API Type",
+        "model": "Model",
+        "calls": "Calls",
+        "successes": "Successes",
+        "failures": "Failures",
+        "retries": "Retries",
+        "tokens": "Tokens",
+        "safetyBlocks": "Safety Blocks"
+      },
+      "tableFooters": {
+        "total": "Total"
+      }
+    },
+    "section3": {
+      "title": "Errors & Configuration Issues",
+      "topGeminiApiErrors": "Top Gemini API Errors",
+      "noGeminiApiErrorData": "No Gemini API Error Data",
+      "geminiConfigurationSetupIssues": "Gemini Configuration & Setup Issues",
+      "noGeminiConfigurationErrors": "No Gemini Configuration Errors"
+    },
+    "section4": {
+      "title": "Cache Performance & Response Handling",
+      "geminiCacheDetails": "Gemini Cache Details",
+      "noGeminiCacheData": "No Gemini Cache Data",
+      "responseProcessingStepsIssues": "Response Processing Steps/Issues",
+      "noResponseProcessingData": "No Response Processing Data"
     }
   }
 }

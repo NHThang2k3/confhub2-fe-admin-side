@@ -43,6 +43,9 @@ const ConferenceSelectionStep: React.FC<ConferenceSelectionStepProps> = ({
   canProceed,
   onUpdateActionTypeForSelected,
 }) => {
+  // Khởi tạo t với namespace 'ConferenceSelectionStep'
+  const t = useTranslations('ConferenceSelectionStep');
+
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
@@ -130,7 +133,7 @@ const ConferenceSelectionStep: React.FC<ConferenceSelectionStepProps> = ({
 
   return (
     <div className="space-y-4 md:space-y-6 rounded-lg border border-gray-200 p-3 md:p-6 bg-white shadow">
-      <h3 className="text-base md:text-lg font-medium leading-6 text-gray-900">Step 2: Select Conferences and Action Type</h3>
+      <h3 className="text-base md:text-lg font-medium leading-6 text-gray-900">{t('title')}</h3> {/* Dùng t() */}
       <p className="text-xs md:text-sm text-gray-600">
         Select conferences from the table below and specify the action type (Crawl or Update).
         Use "Apply to Page" for current page selections or "Apply to All" for all selections across pages.
@@ -229,8 +232,9 @@ const ConferenceSelectionStep: React.FC<ConferenceSelectionStepProps> = ({
           type="button"
           onClick={onPrev}
           className="w-full sm:w-auto rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+          className="w-full sm:w-auto rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
         >
-          Previous: Import File
+          {t('navigation.previousStep')} {/* Dùng t() */}
         </button>
         <button
           type="button"
@@ -238,7 +242,7 @@ const ConferenceSelectionStep: React.FC<ConferenceSelectionStepProps> = ({
           disabled={!canProceed || totalSelectedRowCount === 0}
           className="w-full sm:w-auto inline-flex items-center justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          Next: Configure & Process
+          {t('navigation.nextStep')} {/* Dùng t() */}
         </button>
       </div>
     </div>

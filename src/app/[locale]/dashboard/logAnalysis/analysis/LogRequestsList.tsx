@@ -3,6 +3,8 @@ import { FaListAlt, FaChevronUp, FaChevronDown, FaInfoCircle } from 'react-icons
 import RequestsTable from './RequestsTable'; // Import the new table component
 import NoDataDisplay from './NoDataDisplay';
 import { LogAnalysisResult, RequestTimings } from '@/src/models/logAnalysis';
+import { useTranslations } from 'next-intl'; // Import useTranslations
+
 interface LogRequestsListProps {
     isExpanded: boolean;
     onToggle: () => void;
@@ -13,7 +15,7 @@ interface LogRequestsListProps {
     OverallSummaryComponent: React.FC<any>; // Consider more specific props for OverallSummary
     isSummaryExpandedOverall: boolean;
     onToggleSummaryOverall: () => void;
-    getNoDataMessage: () => string;
+    getNoDataMessage: () => string; // This message is already localized in the parent
     hasOverallDataForDisplay: boolean;
 }
 
@@ -30,6 +32,9 @@ const LogRequestsList: React.FC<LogRequestsListProps> = ({
     getNoDataMessage,
     hasOverallDataForDisplay,
 }) => {
+    // Khởi tạo t với namespace 'LogRequestsList'
+    const t = useTranslations('LogRequestsList');
+
     const hasRequests = data.analyzedRequestIds && data.analyzedRequestIds.length > 0;
 
     return (
@@ -44,13 +49,14 @@ const LogRequestsList: React.FC<LogRequestsListProps> = ({
                 aria-controls="log-requests-content"
             >
                 <h2 className="text-xl font-semibold text-gray-800 mb-0 flex items-center">
-                    <FaListAlt className="mr-2 text-blue-600" /> Available Log Analysis Requests
+                    <FaListAlt className="mr-2 text-blue-600" /> {t('title')} 
                 </h2>
                 <button
                     className="text-gray-500 hover:text-blue-600 focus:outline-none p-1 rounded-full"
-                    aria-label={isExpanded ? "Collapse Log Requests" : "Expand Log Requests"}
+                    aria-label={isExpanded ? t('ariaLabel.collapse') : t('ariaLabel.expand')} 
                 >
                     {isExpanded ? <FaChevronUp size={18} /> : <FaChevronDown size={18} />}
+                    <span className='sr-only'>{isExpanded ? t('srOnly.collapse') : t('srOnly.expand')}</span> 
                 </button>
             </div>
 

@@ -1,5 +1,6 @@
 import React from 'react';
 import { FaCheck } from 'react-icons/fa';
+import { useTranslations } from 'next-intl'; // Import useTranslations
 
 interface Step {
   id: number;
@@ -12,15 +13,18 @@ interface StepperNavigationProps {
 }
 
 const StepperNavigation: React.FC<StepperNavigationProps> = ({ steps, currentStepId }) => {
+  // Khởi tạo t với namespace 'StepperNavigation'
+  const t = useTranslations('StepperNavigation');
+
   return (
-    <nav aria-label="Progress" className="mb-6"> {/* Reduced margin-bottom */}
-      <ol role="list" className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-6 md:space-x-10 lg:space-x-14"> {/* Reduced spacing */}
+    <nav aria-label={t('ariaLabel.progress')} className="mb-6"> {/* Sử dụng t() cho aria-label */}
+      <ol role="list" className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-6 md:space-x-10 lg:space-x-14">
         {steps.map((step, stepIdx) => (
           <React.Fragment key={step.name}>
             {stepIdx > 0 && (
               <div className="hidden sm:flex items-center">
                 <svg
-                  className={`h-4 w-4 md:h-5 md:w-5 ${ // Reduced icon size
+                  className={`h-4 w-4 md:h-5 md:w-5 ${
                     currentStepId > step.id ? 'text-blue-600' : 'text-gray-300'
                   }`}
                   viewBox="0 0 20 20"
@@ -38,7 +42,7 @@ const StepperNavigation: React.FC<StepperNavigationProps> = ({ steps, currentSte
             <li className="relative flex items-center w-full sm:w-auto">
               <div className="flex items-center w-full sm:w-auto">
                 <span
-                  className={`flex h-9 w-9 sm:h-10 sm:w-10 flex-shrink-0 items-center justify-center rounded-full border-2 transition-colors duration-200 ease-in-out ${ // Reduced size
+                  className={`flex h-9 w-9 sm:h-10 sm:w-10 flex-shrink-0 items-center justify-center rounded-full border-2 transition-colors duration-200 ease-in-out ${
                     currentStepId === step.id
                       ? 'border-blue-600 bg-blue-50'
                       : currentStepId > step.id
@@ -47,23 +51,23 @@ const StepperNavigation: React.FC<StepperNavigationProps> = ({ steps, currentSte
                   }`}
                 >
                   {currentStepId > step.id ? (
-                    <FaCheck className="h-5 w-5 text-white" aria-hidden="true" /> // Reduced icon size
+                    <FaCheck className="h-5 w-5 text-white" aria-hidden="true" />
                   ) : (
-                    <span className={`text-base sm:text-lg font-semibold ${currentStepId === step.id ? 'text-blue-600' : 'text-gray-500'}`}> {/* Reduced text size */}
+                    <span className={`text-base sm:text-lg font-semibold ${currentStepId === step.id ? 'text-blue-600' : 'text-gray-500'}`}>
                       {step.id}
                     </span>
                   )}
                 </span>
-                <span 
-                  className={`ml-3 text-sm sm:text-base font-medium ${ // Reduced margin, text size
-                    currentStepId === step.id 
-                      ? 'text-blue-600' 
-                      : currentStepId > step.id 
-                        ? 'text-gray-900' 
+                <span
+                  className={`ml-3 text-sm sm:text-base font-medium ${
+                    currentStepId === step.id
+                      ? 'text-blue-600'
+                      : currentStepId > step.id
+                        ? 'text-gray-900'
                         : 'text-gray-500'
                   }`}
                 >
-                  {step.name}
+                  {step.name} {/* step.name đã được quốc tế hóa từ component cha */}
                 </span>
               </div>
             </li>

@@ -4,6 +4,7 @@ import { useLogAnalysisData } from '../../../../hooks/logAnalysis/useLogAnalysis
 import {
     FaExclamationTriangle, FaSyncAlt
 } from 'react-icons/fa';
+import { useTranslations } from 'next-intl'; // Import useTranslations
 
 import AnalysisHeader from './analysis/AnalysisHeader';
 import OverallSummary from './OverallSummary';
@@ -18,7 +19,7 @@ import NoDataDisplay from './analysis/NoDataDisplay';
 
 export type CrawlerType = 'conference' | 'journal';
 
-// (formatDateTime function giữ nguyên)
+// (formatDateTime function giữ nguyên - vì nó xử lý định dạng ngày giờ, không phải chuỗi hiển thị)
 export const formatDateTime = (isoString: string | null | undefined): string => {
     if (!isoString) {
         return 'N/A';
@@ -46,6 +47,8 @@ export const formatDateTime = (isoString: string | null | undefined): string => 
 };
 
 // Helper function để lấy class màu cho status chip (giữ nguyên)
+// Lưu ý: Nếu bạn muốn dịch các trạng thái như 'Completed', 'Failed', bạn sẽ cần truyền t và dịch chúng ở đây.
+// Hiện tại, chúng ta chỉ dịch các chuỗi hiển thị, không phải giá trị của status.
 export const getStatusChipClass = (status: string | undefined | null): string => {
     if (!status) return 'bg-gray-100 text-gray-700';
     switch (status.toLowerCase()) {
@@ -65,6 +68,9 @@ export const getStatusChipClass = (status: string | undefined | null): string =>
 };
 
 const Analysis: React.FC = () => {
+    // Khởi tạo t với namespace 'AnalysisPage'
+    const t = useTranslations('AnalysisPage');
+
     const [timeFilterOption, setTimeFilterOption] = useState<string>('latest');
     const [filterStartTime, setFilterStartTime] = useState<number | undefined>(undefined);
     const [filterEndTime, setFilterEndTime] = useState<number | undefined>(undefined);
@@ -128,19 +134,19 @@ const Analysis: React.FC = () => {
 
     const getNoDataFoundMessage = useCallback((): string => {
         if (isDetailView && !hasOverallDataForDisplay) {
-            return `No analysis results found for Request ID: "${activeRequestIdFilter}".`;
+            return t('noData.forRequestId', { requestId: activeRequestIdFilter });
         }
         if (isListView && (!data?.analyzedRequestIds || data.analyzedRequestIds.length === 0)) {
-            return `No analysis requests found for the selected time period. Consider selecting "Latest" or uploading new logs.`;
+            return t('noData.noRequestsForPeriod');
         }
         if (!loading && !hasOverallDataForDisplay && timeFilterOption !== 'latest' && !isDetailView) {
-            return `No analysis results found for the selected time period. Consider selecting "Latest".`;
+            return t('noData.noResultsForPeriod');
         }
         if (!loading && !hasOverallDataForDisplay && !isDetailView) {
-            return "No analysis results found. The log might be empty, processing is pending, or no data matches the current time filter.";
+            return t('noData.genericNoResults');
         }
-        return "No specific data to display for the current view.";
-    }, [isDetailView, activeRequestIdFilter, isListView, data, hasOverallDataForDisplay, loading, timeFilterOption]);
+        return t('noData.noSpecificData');
+    }, [isDetailView, activeRequestIdFilter, isListView, data, hasOverallDataForDisplay, loading, timeFilterOption, t]);
 
 
     if (loading && !data && !error) {
@@ -230,8 +236,8 @@ const Analysis: React.FC = () => {
             )}
             {!loading && data !== null && !isListView && !isDetailView && (
                 <NoDataDisplay
-                    message="Analysis data loaded, but current view criteria not met. Try adjusting filters or refreshing."
-                    subMessage={data.filterRequestId ? `Data is for: ${data.filterRequestId}` : "Data is general summary."}
+                    message={t('statusMessages.dataLoadedCriteriaNotMet')}
+                    subMessage={data.filterRequestId ? t('statusMessages.dataIsForRequestId', { requestId: data.filterRequestId }) : t('statusMessages.dataIsGeneralSummary')}
                 />
             )}
 
@@ -239,12 +245,12 @@ const Analysis: React.FC = () => {
             {loading && data && (
                 <div className="mt-6 text-center text-blue-600">
                     <FaSyncAlt className="inline mr-2 animate-spin" />
-                    {activeRequestIdFilter ? `Refreshing details for ${activeRequestIdFilter}...` : "Refreshing analysis data..."}
+                    {activeRequestIdFilter ? t('refreshing.details', { requestId: activeRequestIdFilter }) : t('refreshing.analysisData')}
                 </div>
             )}
             {error && data && (
                 <div className="mt-4 text-red-600 text-sm p-3 bg-red-50 rounded-md border border-red-200">
-                    <FaExclamationTriangle className="inline mr-1" /> Error refreshing data: {error}
+                    <FaExclamationTriangle className="inline mr-1" /> {t('refreshing.error', { error: error })}
                 </div>
             )}
         </div>

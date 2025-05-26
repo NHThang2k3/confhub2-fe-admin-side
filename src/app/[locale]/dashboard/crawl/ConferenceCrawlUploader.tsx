@@ -24,6 +24,20 @@ const STEPS = [
 ];
 
 export const ConferenceCrawlUploader: React.FC = () => {
+  const t = useTranslations('ConferenceCrawlUploader');
+  const apiStepsForUploader: { name: ApiName; displayName: string }[] = useMemo(() => [
+      { name: "determineLinks", displayName: t('apiSteps.determineLinksModel') },
+      { name: "extractInfo", displayName: t('apiSteps.extractInfoModel') },
+      { name: "extractCfp", displayName: t('apiSteps.extractCfpModel') },
+  ], [t]); // Thêm t vào dependency array
+
+  const STEPS = useMemo(() => [
+    { id: 1, name: t('steps.importCsv') },
+    { id: 2, name: t('steps.selectConferences') },
+    { id: 3, name: t('steps.configureSettings') },
+    { id: 4, name: t('steps.processAndViewStatus') },
+  ], [t]); // Thêm t vào dependency array
+
   const crawlHook = useConferenceCrawl();
   const [currentStep, setCurrentStep] = useState(STEPS[0].id);
 
@@ -59,7 +73,7 @@ export const ConferenceCrawlUploader: React.FC = () => {
 
   const allModelsSelected = useMemo(() => {
     return apiStepsForUploader.every(step => apiModels[step.name] !== null);
-  }, [apiModels]);
+  }, [apiModels, apiStepsForUploader]);
 
   const canProceedToStep4 = useMemo(() => {
     return canProceedToStep3 && allModelsSelected;
@@ -97,7 +111,7 @@ export const ConferenceCrawlUploader: React.FC = () => {
   return (
     <div className='mx-auto rounded-lg border border-gray-200 bg-white p-4 shadow-lg md:p-6'>
       <h2 className='mb-6 border-b border-gray-300 pb-3 text-xl font-semibold text-gray-700'>
-        Process Conferences (Step by Step)
+        {t('title')}
       </h2>
 
       <StepperNavigation steps={STEPS} currentStepId={currentStep} />

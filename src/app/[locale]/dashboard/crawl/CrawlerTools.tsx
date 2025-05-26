@@ -1,6 +1,7 @@
 import React from 'react';
 import { FaTable, FaBookOpen, FaChevronUp, FaChevronDown } from 'react-icons/fa';
 import { CrawlerType } from '../logAnalysis/Analysis'; // Assuming CrawlerType is exported from Analysis.tsx
+import { useTranslations } from 'next-intl';
 
 interface CrawlerToolsProps {
     isExpanded: boolean;
@@ -19,6 +20,7 @@ const CrawlerTools: React.FC<CrawlerToolsProps> = ({
     ConferenceCrawlUploaderComponent,
     // JournalCrawlUploaderComponent
 }) => {
+    const t = useTranslations('CrawlerTools');
     return (
         <div className="bg-white rounded-lg shadow-md border border-gray-200">
             <div
@@ -30,10 +32,10 @@ const CrawlerTools: React.FC<CrawlerToolsProps> = ({
                 aria-expanded={isExpanded}
                 aria-controls="crawler-tools-content"
             >
-                <h2 className="text-lg font-semibold text-gray-800">Data Crawling Tools</h2>
+                <h2 className="text-lg font-semibold text-gray-800">{t('dataCrawlingToolsTitle')}</h2>
                 <button
                     className="text-gray-500 hover:text-blue-600 focus:outline-none p-1 rounded-full"
-                    aria-label={isExpanded ? "Collapse Crawler Tools" : "Expand Crawler Tools"}
+                    aria-label={isExpanded ? t('collapseCrawlerToolsLabel') : t('expandCrawlerToolsLabel')}
                 >
                     {isExpanded ? <FaChevronUp size={18} /> : <FaChevronDown size={18} />}
                 </button>
@@ -48,14 +50,14 @@ const CrawlerTools: React.FC<CrawlerToolsProps> = ({
                             onClick={() => onSetCrawler('conference')}
                             className={`flex items-center py-2 px-4 text-sm font-medium border-b-2 focus:outline-none transition-colors duration-150 ${activeCrawler === 'conference' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
                         >
-                            <FaTable className="mr-2" /> Crawl Conferences
+                            <FaTable className="mr-2" /> {t('crawlConferencesButton')}
                         </button>
-                        <button
+                        {/* <button
                             onClick={() => onSetCrawler('journal')}
                             className={`flex items-center py-2 px-4 text-sm font-medium border-b-2 focus:outline-none transition-colors duration-150 ${activeCrawler === 'journal' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
                         >
-                            <FaBookOpen className="mr-2" /> Crawl Journals
-                        </button>
+                            <FaBookOpen className="mr-2" /> {t('crawlJournalsButton')}
+                        </button> */}
                     </div>
                     <div>
                         {activeCrawler === 'conference' && <ConferenceCrawlUploaderComponent />}

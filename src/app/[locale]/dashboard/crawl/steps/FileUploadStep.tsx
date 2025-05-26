@@ -1,6 +1,7 @@
 // src/appp/[locale]/dashboard/logAnalysis/steps/FileUploadStep.tsx
 import React from 'react';
 import { FaFileUpload, FaSpinner, FaCheckCircle, FaTimesCircle, FaExclamationTriangle } from 'react-icons/fa';
+import { useTranslations } from 'next-intl'; // Import useTranslations
 
 interface FileUploadStepProps {
   file: File | null;
@@ -21,13 +22,16 @@ const FileUploadStep: React.FC<FileUploadStepProps> = ({
   onNext,
   canProceed,
 }) => {
+  // Khởi tạo t với namespace 'FileUploadStep'
+  const t = useTranslations('FileUploadStep');
+
   const hasData = parsedDataLength > 0;
 
   return (
     <div className="space-y-6 rounded-lg border border-gray-200 p-6 bg-white shadow">
-      <h3 className="text-lg font-medium leading-6 text-gray-900">Step 1: Import CSV File</h3>
+      <h3 className="text-lg font-medium leading-6 text-gray-900">{t('header.title')}</h3>
       <p className="text-sm text-gray-600">
-        Select a CSV file containing conference data. Required columns: Title, Acronym. Optional: link, cfpLink, impLink.
+        {t('header.description')}
       </p>
       <div className='flex items-center space-x-4'>
         <label
@@ -38,10 +42,10 @@ const FileUploadStep: React.FC<FileUploadStepProps> = ({
           />
           <span>
             {isParsing
-              ? 'Parsing...'
+              ? t('button.parsing')
               : file
-                ? 'Change File'
-                : 'Choose File'}
+                ? t('button.changeFile')
+                : t('button.chooseFile')}
           </span>
           <input
             type='file'
@@ -66,23 +70,21 @@ const FileUploadStep: React.FC<FileUploadStepProps> = ({
 
       {parseError && (
         <p className='mt-2 flex items-center text-sm text-red-600'>
-          <FaTimesCircle className='mr-1' /> {parseError}
+          <FaTimesCircle className='mr-1' /> {parseError} {/* parseError là string từ hook, không cần dịch trực tiếp */}
         </p>
       )}
       {hasData && !isParsing && !parseError && (
         <p className='mt-2 flex items-center text-sm text-green-600'>
-          <FaCheckCircle className='mr-1' /> Parsed {parsedDataLength}{' '}
-          conferences. Ready to proceed.
+          <FaCheckCircle className='mr-1' /> {t('status.parsedSuccess', { count: parsedDataLength })}
         </p>
       )}
       {!hasData && file && !isParsing && !parseError && (
         <p className='mt-2 flex items-center text-sm text-yellow-700'>
-          <FaExclamationTriangle className='mr-1' /> Could not find
-          valid conference data (Title, Acronym) in the selected file.
+          <FaExclamationTriangle className='mr-1' /> {t('status.noValidData')}
         </p>
       )}
        {!file && !isParsing && !parseError && (
-         <p className="mt-2 text-sm text-gray-500">Please select a file to begin.</p>
+         <p className="mt-2 text-sm text-gray-500">{t('status.selectFilePrompt')}</p>
        )}
 
 
@@ -93,7 +95,7 @@ const FileUploadStep: React.FC<FileUploadStepProps> = ({
           disabled={!canProceed}
           className="inline-flex items-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          Next: Select Conferences
+          {t('navigation.nextStep')}
         </button>
       </div>
     </div>

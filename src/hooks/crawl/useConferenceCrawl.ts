@@ -1,6 +1,6 @@
 // src/hooks/crawl/useConferenceCrawl.ts
 'use client';
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import axios, { AxiosError } from 'axios';
 import {
     Conference,
@@ -55,6 +55,7 @@ export interface UseConferenceCrawlReturn {
     crawlProgress: CrawlProgress;
     crawlMessages: string[];
     selectedCsvRows: ConferenceForAction[];
+    selectedCsvRowsCount: number;
     handleFileChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
     setEnableChunking: (enabled: boolean) => void;
     setChunkSize: (size: number) => void;
@@ -445,6 +446,8 @@ export const useConferenceCrawl = (): UseConferenceCrawlReturn => {
         onCsvSelectionChanged(selectedRows);
     }, [onCsvSelectionChanged]);
 
+    const selectedCsvRowsCount = useMemo(() => selectedCsvRows.length, [selectedCsvRows]);
+
     return {
         file,
         parsedData,
@@ -458,6 +461,7 @@ export const useConferenceCrawl = (): UseConferenceCrawlReturn => {
         crawlProgress,
         crawlMessages,
         selectedCsvRows,
+        selectedCsvRowsCount,
         handleFileChange,
         setEnableChunking,
         setChunkSize,
