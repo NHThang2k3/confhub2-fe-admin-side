@@ -95,7 +95,7 @@
     "Location_Label": "Location",
     "Topics_Label": "Topics",
     "Summary_Label": "Summary",
-    "UserMessage_Label": "User Message",
+    "UserMessage_Label": "Admin Message",
     "ModerationComment_Label": "Moderation Comment",
     "Approve_Button": "Approve",
     "Reject_Button": "Reject",
@@ -378,6 +378,7 @@
     "crawlJournalsButton": "Crawl Journals"
   },
   "ConferenceSelectionStep": {
+    "noDataMessage": "No conference data available.",
     "title": "Step 2: Select Conferences and Action Type",
     "description": "Select conferences from the table below and specify the action type (Crawl or Update). For 'Update' actions, ensure the relevant link fields (Link, Imp Link, Cfp Link) are provided if needed.",
     "globalActions": {

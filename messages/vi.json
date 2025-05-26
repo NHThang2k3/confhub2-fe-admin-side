@@ -95,7 +95,7 @@
     "Location_Label": "Địa điểm",
     "Topics_Label": "Chủ đề",
     "Summary_Label": "Tóm tắt",
-    "UserMessage_Label": "Tin nhắn người dùng",
+    "UserMessage_Label": "Tin nhắn admin",
     "ModerationComment_Label": "Bình luận kiểm duyệt",
     "Approve_Button": "Duyệt",
     "Reject_Button": "Từ chối",
@@ -378,6 +378,7 @@
     "crawlJournalsButton": "Thu thập dữ liệu tạp chí"
   },
   "ConferenceSelectionStep": {
+    "noDataMessage": "Không có dữ liệu hội nghị nào được tải lên.",
     "title": "Bước 2: Chọn hội nghị và loại hành động",
     "description": "Chọn hội nghị từ bảng dưới đây và chỉ định loại hành động (Thu thập dữ liệu hoặc Cập nhật). Đối với hành động 'Cập nhật', đảm bảo các trường liên kết liên quan (Link, Imp Link, Cfp Link) được cung cấp nếu cần.",
     "globalActions": {
