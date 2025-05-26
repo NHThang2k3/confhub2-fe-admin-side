@@ -13,6 +13,7 @@
   "dependencies": {
     "@hookform/resolvers": "^5.0.1",
     "@react-oauth/google": "^0.12.1",
+    "@tanstack/react-table": "^8.21.3",
     "ag-grid-community": "^33.2.4",
     "ag-grid-react": "^33.2.4",
     "antd": "^5.25.2",
