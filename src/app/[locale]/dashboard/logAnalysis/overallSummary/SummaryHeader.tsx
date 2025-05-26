@@ -15,7 +15,7 @@ const SummaryHeader: React.FC<SummaryHeaderProps> = ({ title, isExpanded, onTogg
 
   return (
     <div
-      className='flex items-center justify-between border-b border-gray-300 p-4 cursor-pointer hover:bg-gray-50'
+      className='flex items-center justify-between border-b border-gray-300 p-4 cursor-pointer hover:bg-gray-5'
       onClick={onToggle}
       role="button"
       tabIndex={0}

@@ -84,7 +84,7 @@ const ConfigurationStep: React.FC<ConfigurationStepProps> = ({
       <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
         {/* Column 1: Chunking Configuration */}
         <div>
-          <div className='rounded-md border border-gray-200 bg-gray-50 p-5 space-y-4 shadow-sm h-full'>
+          <div className='rounded-md border border-gray-200 bg-gray-5 p-5 space-y-4 shadow-sm h-full'>
             <h4 className='text-base font-semibold text-gray-800'>{t('chunking.title')}</h4>
             <p className="text-sm text-gray-600 mb-3">
               {t('chunking.description')}
@@ -146,7 +146,7 @@ const ConfigurationStep: React.FC<ConfigurationStepProps> = ({
 
         {/* Column 2: API Model Selection */}
         <div>
-          <div className="rounded-md border border-gray-200 bg-gray-50 p-5 space-y-4 shadow-sm h-full">
+          <div className="rounded-md border border-gray-200 bg-gray-5 p-5 space-y-4 shadow-sm h-full">
             <h4 className='text-base font-semibold text-gray-800'>{t('apiSelection.title')}</h4>
             <p className="text-sm font-medium text-gray-700 mb-3">
               {t('apiSelection.description')} <span className="text-red-500">*</span>
@@ -245,7 +245,7 @@ const ConfigurationStep: React.FC<ConfigurationStepProps> = ({
           type="button"
           onClick={onPrev}
           disabled={isCrawling}
-          className="inline-flex items-center px-5 py-2.5 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50
+          className="inline-flex items-center px-5 py-2.5 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-5
                      focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500
                      disabled:opacity-60 disabled:cursor-not-allowed disabled:shadow-none"
         >

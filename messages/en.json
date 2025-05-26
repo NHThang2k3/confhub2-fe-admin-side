@@ -380,19 +380,41 @@
   "ConferenceSelectionStep": {
     "title": "Step 2: Select Conferences and Action Type",
     "description": "Select conferences from the table below and specify the action type (Crawl or Update). For 'Update' actions, ensure the relevant link fields (Link, Imp Link, Cfp Link) are provided if needed.",
-    "globalActionTypeLabel": "Action Type for Selected:",
+    "globalActions": {
+      "manageSelectionLabel": "Manage Selection",
+      "selectAllDataTooltip": "Select all {count} conferences from the uploaded data.",
+      "deselectAllButton": "Deselect All ({count})",
+      "deselectAllTooltip": "Deselect all {count} currently selected conferences.",
+      "actionForSelectedLabel": "Action for Selected:",
+      "crawlAction": "Crawl",
+      "updateAction": "Update",
+      "applyToPageButton": "Apply to Page ({count})",
+      "applyToPageTooltip": "Apply action to {count} selected on this page.",
+      "applyToAllSelectedButton": "Apply to All Selected ({count})",
+      "applyToAllSelectedTooltip": "Apply action to all {count} selected conferences across all pages.",
+      "selectAllFilteredTooltip": "Select all {count} currently filtered conferences",
+      "selectAllDataButton": "Select All ({count})"
+    },
+    "selectionSummary": {
+      "total": "Total selected: {count} conference(s).",
+      "onPage": "On this page: {count} selected."
+    },
     "actionType": {
       "crawl": "Crawl",
       "update": "Update"
     },
     "applyToActionSelected": "Apply to {count} Selected",
-    "alert": {
-      "selectAtLeastOneConference": "Please select at least one conference to apply the action type."
+    "alerts": {
+      "noConferenceSelectedForAction": "Please select at least one conference to apply the action.",
+      "noConferenceSelectedOnPage": "Please select at least one conference on the current page to apply the action."
     },
-    "filter": {
-      "acronymPlaceholder": "Filter by acronym...",
-      "titlePlaceholder": "Filter by title...",
-      "statusPlaceholder": "Filter by status..."
+    "filters": {
+      "filterByAcronym": "Filter by acronym...",
+      "filterByTitle": "Filter by title...",
+      "allStatuses": "All Statuses",
+      "notCrawled": "Not Crawled",
+      "crawled": "Crawled",
+      "statusFilterLabel": "Filter by status"
     },
     "tableHeaders": {
       "acronym": "Acronym",

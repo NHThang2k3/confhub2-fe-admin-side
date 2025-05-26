@@ -68,7 +68,7 @@ const ProcessingStep: React.FC<ProcessingStepProps> = ({
         </button>
         <button
           onClick={onResetAll}
-          className='inline-flex items-center px-5 py-2.5 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50
+          className='inline-flex items-center px-5 py-2.5 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-5
                      focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 ease-in-out
                      disabled:opacity-60 disabled:cursor-not-allowed disabled:shadow-none'
           title={t('buttons.resetAllTitle')}
@@ -80,7 +80,7 @@ const ProcessingStep: React.FC<ProcessingStepProps> = ({
 
       {/* Status and Log Section */}
       {showStatusSection && (
-        <div className='mt-5 rounded-md border border-gray-200 p-5 bg-gray-50 shadow-sm'>
+        <div className='mt-5 rounded-md border border-gray-200 p-5 bg-gray-5 shadow-sm'>
           <h4 className='text-base mb-3 font-semibold text-gray-800'>
             {t('statusLog.title')}
           </h4>
@@ -159,7 +159,7 @@ const ProcessingStep: React.FC<ProcessingStepProps> = ({
           type="button"
           onClick={onPrev}
           disabled={isCrawling}
-          className="inline-flex items-center px-5 py-2.5 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50
+          className="inline-flex items-center px-5 py-2.5 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-5
                      focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500
                      disabled:opacity-60 disabled:cursor-not-allowed disabled:shadow-none"
         >

@@ -54,7 +54,7 @@ const CommentModal: React.FC<CommentModalProps> = ({
     } else if (targetStatus === 'PENDING') {
         modalTitle = t('Title_Pending'); // <-- Translate title
         submitButtonText = t('Button_Pending'); // <-- Translate button text
-        submitButtonColor = 'bg-gray-50 hover:bg-gray-600';
+        submitButtonColor = 'bg-gray-5 hover:bg-gray-600';
     }
 
     // Determine dynamic placeholder and prompt text

@@ -135,7 +135,7 @@ const CollapsibleContent: React.FC<CollapsibleContentProps> = (props) => {
         {showDetailedStatisticsSection && (
           <div className="my-6">
             <div
-              className="flex items-center justify-between border-b border-gray-200 pb-1 cursor-pointer hover:bg-gray-50 rounded-t-md px-2 pt-2"
+              className="flex items-center justify-between border-b border-gray-200 pb-1 cursor-pointer hover:bg-gray-5 rounded-t-md px-2 pt-2"
               onClick={toggleDetailedStatistics}
               role="button"
               tabIndex={0}

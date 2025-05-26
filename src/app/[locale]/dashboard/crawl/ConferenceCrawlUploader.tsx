@@ -1,7 +1,6 @@
 // src/components/crawl/ConferenceCrawlUploader.tsx
-import React, { useState, useMemo, useCallback } from 'react';
-import { useConferenceCrawl, ApiName, CrawlModelType } from '@/src/hooks/crawl/useConferenceCrawl';
-import { Conference } from '@/src/models/logAnalysis/importConferenceCrawl';
+import React, { useState, useMemo } from 'react';
+import { useConferenceCrawl, ApiName } from '@/src/hooks/crawl/useConferenceCrawl';
 
 // Import các component con cho từng bước
 import FileUploadStep from './steps/FileUploadStep';
@@ -10,18 +9,6 @@ import ConfigurationStep from './steps/ConfigurationStep';
 import ProcessingStep from './steps/ProcessingStep';
 import StepperNavigation from './steps/StepperNavigation';
 import { useTranslations } from 'next-intl';
-const apiStepsForUploader: { name: ApiName; displayName: string }[] = [
-  { name: "determineLinks", displayName: "Determine Links Model" },
-  { name: "extractInfo", displayName: "Extract Information Model" },
-  { name: "extractCfp", displayName: "Extract CFP Model" },
-];
-
-const STEPS = [
-  { id: 1, name: 'Import CSV' },
-  { id: 2, name: 'Select Conferences' },
-  { id: 3, name: 'Configure Settings' },
-  { id: 4, name: 'Process & View Status' },
-];
 
 export const ConferenceCrawlUploader: React.FC = () => {
   const t = useTranslations('ConferenceCrawlUploader');

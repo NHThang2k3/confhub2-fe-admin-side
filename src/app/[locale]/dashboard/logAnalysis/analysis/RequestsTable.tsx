@@ -74,7 +74,7 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
     return (
         <div className="overflow-x-auto border border-gray-200 rounded-lg shadow-sm">
             <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
+                <thead className="bg-gray-5">
                     <tr>
                         <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             <div className="flex items-center">
@@ -130,7 +130,7 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
                         const textColorForProgressBar = 'text-gray-700';
 
                         return (
-                            <tr key={reqId} className="hover:bg-gray-50 transition-colors duration-150">
+                            <tr key={reqId} className="hover:bg-gray-5 transition-colors duration-150">
                                 <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900 break-all">
                                     {reqId}
                                 </td>
@@ -201,7 +201,7 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
                 </tbody>
                 {/* Table Footer for overall success rate for this table */}
                 {totalConferencesOverallInput > 0 && (
-                    <tfoot className="bg-gray-50 border-t border-gray-200">
+                    <tfoot className="bg-gray-5 border-t border-gray-200">
                         <tr>
                             <td colSpan={6} className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
                                 <div className="flex items-center font-semibold">

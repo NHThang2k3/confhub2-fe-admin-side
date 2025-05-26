@@ -35,7 +35,7 @@ const ConferenceDetails: React.FC<ConferenceDetailsProps> = ({
 
   return (
     <>
-      <section className='bg-white shadow-xl rounded-lg p-4 md:p-6 border border-gray-200 mt-6 hover:bg-gray-50'>
+      <section className='bg-white shadow-xl rounded-lg p-4 md:p-6 border border-gray-200 mt-6 hover:bg-gray-5'>
         <div
           className='flex flex-wrap items-center justify-between mb-4 pb-2 border-b border-gray-300 gap-4 cursor-pointer'
           onClick={handleToggleExpand}
