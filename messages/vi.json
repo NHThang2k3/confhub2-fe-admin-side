@@ -458,9 +458,9 @@
     "apiSelection": {
       "title": "Lựa chọn mô hình API",
       "description": "Chọn mô hình AI phù hợp cho từng bước API trích xuất và xử lý dữ liệu.",
-      "modelTypeHint": "Chọn giữa các mô hình 'Chưa điều chỉnh' (mục đích chung) hoặc 'Đã điều chỉnh' (được tinh chỉnh cho các tác vụ cụ thể, nếu có).",
+      "modelTypeHint": "Chọn giữa các mô hình 'Chưa huấn luyện' (mục đích chung) hoặc 'Đã huấn luyện' (được tinh chỉnh cho các tác vụ cụ thể, nếu có).",
       "temporarilyDisabled": "Tạm thời bị vô hiệu hóa",
-      "cfpTunedUnavailable": "Mô hình đã điều chỉnh cho CFP tạm thời không khả dụng",
+      "cfpTunedUnavailable": "Mô hình Đã huấn luyện cho CFP tạm thời không khả dụng",
       "selectModelWarning": "Vui lòng chọn một mô hình cho {apiName}."
     },
     "modelDescriptions": {
@@ -482,8 +482,8 @@
       }
     },
     "modelValues": {
-      "non-tuned": "Chưa điều chỉnh",
-      "tuned": "Đã điều chỉnh"
+      "non-tuned": "Chưa huấn luyện",
+      "tuned": "Đã huấn luyện"
     },
     "details": {
       "hide": "Ẩn chi tiết",
