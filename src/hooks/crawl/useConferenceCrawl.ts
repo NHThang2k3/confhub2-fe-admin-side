@@ -118,7 +118,7 @@ export const useConferenceCrawl = (): UseConferenceCrawlReturn => {
             if (data.data && Array.isArray(data.data)) {
                 const conferencesWithDefaults: Conference[] = data.data.map((conf: any, index: number) => ({
                     ...conf,
-                    id: conf.id || `${conf.acronym || 'conf'}-${Date.now()}-${index}`,
+                    id: conf.id || `${conf.acronym || 'conf'}-${Date.now()}-${index}`, // This is good for getRowId
                     crawlType: 'crawl',
                 }));
                 setParsedData(conferencesWithDefaults);
@@ -175,29 +175,28 @@ export const useConferenceCrawl = (): UseConferenceCrawlReturn => {
 
     const updateActionTypeOfSelectedRows = useCallback((
         actionType: 'crawl' | 'update',
-        selectedRows: Conference[]
+        selectedRowsToUpdate: Conference[] // Renamed for clarity
     ) => {
-        if (selectedRows.length === 0) {
-            console.log("No rows selected to update action type.");
-            return;
-        }
+        if (selectedRowsToUpdate.length === 0) return;
 
-        const selectedIds = selectedRows.map(row => row.id);
+        const selectedIds = selectedRowsToUpdate.map(row => row.id); // Assuming row.id is the stable ID
         let updatedCount = 0;
 
         const newParsedData = parsedData?.map(conf => {
             if (selectedIds.includes(conf.id)) {
                 updatedCount++;
+                // Create a new object for the updated conference
                 return { ...conf, crawlType: actionType };
             }
-            return conf;
+            return conf; // Return the original object if not updated
         }) || null;
 
         if (newParsedData && updatedCount > 0) {
-            setParsedData(newParsedData);
+            setParsedData(newParsedData); // Update state with the new array
 
+            // Also update selectedCsvRows if it needs to reflect crawlType changes immediately
             const newSelectedCsvRows = selectedCsvRows.map(selRow => {
-                if (selectedIds.includes(selRow.id)) {
+                if (selectedIds.includes(selRow.id)) { // selRow should also have an id
                     return { ...selRow, crawlType: actionType };
                 }
                 return selRow;
@@ -209,7 +208,7 @@ export const useConferenceCrawl = (): UseConferenceCrawlReturn => {
         } else if (updatedCount === 0) {
             console.log("No matching conferences found in parsedData to update action type.");
         }
-    }, [parsedData, selectedCsvRows, setSelectedCsvRows, setParsedData, setCrawlMessages]);
+    }, [parsedData, selectedCsvRows, setParsedData, setSelectedCsvRows, setCrawlMessages]);
 
     const setApiModel = useCallback((apiName: ApiName, model: CrawlModelType) => {
         setApiModels(prev => ({ ...prev, [apiName]: model }));

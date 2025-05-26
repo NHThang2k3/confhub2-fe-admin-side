@@ -1,5 +1,5 @@
-// src/appp/[locale]/dashboard/logAnalysis/steps/ConferenceSelectionStep.tsx
-import React, { useMemo, useState, useRef, useCallback, useEffect } from 'react';
+// src/app/[locale]/dashboard/logAnalysis/steps/ConferenceSelectionStep.tsx
+import React, { useMemo, useState, useCallback, useEffect, useRef } from 'react';
 import { Conference } from '@/src/models/logAnalysis/importConferenceCrawl';
 import {
   useReactTable,
@@ -7,35 +7,37 @@ import {
   getSortedRowModel,
   getFilteredRowModel,
   getPaginationRowModel,
-  ColumnDef,
   flexRender,
   SortingState,
   ColumnFiltersState,
   RowSelectionState,
   PaginationState,
-  TableMeta,
 } from '@tanstack/react-table';
-import { ChevronUpIcon, ChevronDownIcon, ChevronsUpDown, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Search } from 'lucide-react';
+import { ChevronUpIcon, ChevronDownIcon, ChevronsUpDown } from 'lucide-react';
+
+import { getConferenceTableColumns } from './conferenceTable/conferenceTable.columns';
+import GlobalActionControls from './conferenceTable/GlobalActionControls';
+import TableFilters from './conferenceTable/TableFilters';
+import TablePagination from './conferenceTable/TablePagination';
 
 interface ConferenceSelectionStepProps {
   parsedData: Conference[];
   onSelectionChanged: (selectedRows: Conference[]) => void;
-  selectedCsvRowsCount: number;
+  // No selectedCsvRowsCount prop needed here
   onNext: () => void;
   onPrev: () => void;
   canProceed: boolean;
   onUpdateActionTypeForSelected: (actionType: 'crawl' | 'update', selectedRows: Conference[]) => void;
 }
 
-// Add type definition for table meta
-type TableMetaType = TableMeta<Conference> & {
-  updateData: (rowIndex: number, columnId: string, value: any) => void;
+// Ensure this ID is stable and unique for each conference
+const getConferenceRowId = (originalRow: Conference, index: number): string => {
+  return originalRow.id || originalRow.acronym || `row-${index}`; // Prefer a dedicated 'id' if available
 };
 
 const ConferenceSelectionStep: React.FC<ConferenceSelectionStepProps> = ({
   parsedData,
   onSelectionChanged,
-  selectedCsvRowsCount,
   onNext,
   onPrev,
   canProceed,
@@ -50,132 +52,19 @@ const ConferenceSelectionStep: React.FC<ConferenceSelectionStepProps> = ({
     pageSize: 10,
   });
 
-  // Memoize the selection change handler
-  const handleRowSelectionChange = useCallback((updater: RowSelectionState | ((old: RowSelectionState) => RowSelectionState)) => {
-    setRowSelection(updater);
-  }, []);
+  const handleUpdateActionTypeForRow = useCallback((actionType: 'crawl' | 'update', conference: Conference) => {
+    onUpdateActionTypeForSelected(actionType, [conference]);
+  }, [onUpdateActionTypeForSelected]);
 
-  // Memoize the columns to prevent unnecessary re-renders
-  const columns = useMemo<ColumnDef<Conference>[]>(() => [
-    {
-      id: 'select',
-      header: ({ table }) => (
-        <input
-          type="checkbox"
-          checked={table.getIsAllPageRowsSelected()}
-          onChange={table.getToggleAllPageRowsSelectedHandler()}
-          className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
-        />
-      ),
-      cell: ({ row }) => (
-        <input
-          type="checkbox"
-          checked={row.getIsSelected()}
-          onChange={row.getToggleSelectedHandler()}
-          className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
-        />
-      ),
-      enableSorting: false,
-      enableHiding: false,
-    },
-    {
-      accessorKey: 'acronym',
-      header: 'Acronym',
-      cell: ({ row }) => <div className="font-medium">{row.getValue('acronym')}</div>,
-    },
-    {
-      accessorKey: 'title',
-      header: 'Title',
-      cell: ({ row }) => <div className="font-medium">{row.getValue('title')}</div>,
-    },
-    {
-      accessorKey: 'crawlType',
-      header: 'Action Type',
-      cell: ({ row }) => {
-        const crawlType = row.getValue('crawlType') as 'crawl' | 'update';
-        return (
-          <select
-            value={crawlType}
-            onChange={(e) => {
-              const newValue = e.target.value as 'crawl' | 'update';
-              if (newValue !== crawlType) {
-                onUpdateActionTypeForSelected(newValue, [row.original]);
-              }
-            }}
-            className={`font-semibold ${
-              crawlType === 'crawl' ? 'text-blue-700' : 'text-green-700'
-            } bg-transparent border-none focus:ring-0`}
-          >
-            <option value="crawl">Crawl</option>
-            <option value="update">Update</option>
-          </select>
-        );
-      },
-    },
-    {
-      accessorKey: 'sources',
-      header: 'Sources',
-    },
-    {
-      accessorKey: 'ranks',
-      header: 'Ranks',
-    },
-    {
-      accessorKey: 'researchFields',
-      header: 'Research Fields',
-    },
-    {
-      accessorKey: 'status',
-      header: 'Status',
-    },
-    {
-      accessorKey: 'updatedAt',
-      header: 'Updated At',
-      cell: ({ row }) => {
-        const date = row.getValue('updatedAt');
-        return date ? new Date(date as string).toLocaleString() : '';
-      },
-    },
-    {
-      accessorKey: 'link',
-      header: 'Link (for Update)',
-      cell: ({ row }) => {
-        const crawlType = row.getValue('crawlType') as 'crawl' | 'update';
-        return (
-          <div className={crawlType === 'crawl' ? 'italic text-gray-500' : ''}>
-            {row.getValue('link')}
-          </div>
-        );
-      },
-    },
-    {
-      accessorKey: 'impLink',
-      header: 'Imp Link (for Update)',
-      cell: ({ row }) => {
-        const crawlType = row.getValue('crawlType') as 'crawl' | 'update';
-        return (
-          <div className={crawlType === 'crawl' ? 'italic text-gray-500' : ''}>
-            {row.getValue('impLink')}
-          </div>
-        );
-      },
-    },
-    {
-      accessorKey: 'cfpLink',
-      header: 'Cfp Link (for Update)',
-      cell: ({ row }) => {
-        const crawlType = row.getValue('crawlType') as 'crawl' | 'update';
-        return (
-          <div className={crawlType === 'crawl' ? 'italic text-gray-500' : ''}>
-            {row.getValue('cfpLink')}
-          </div>
-        );
-      },
-    },
-  ], [onUpdateActionTypeForSelected]);
+  const columns = useMemo(
+    () => getConferenceTableColumns(handleUpdateActionTypeForRow),
+    [handleUpdateActionTypeForRow]
+  );
+
+  const memoizedData = useMemo(() => parsedData || [], [parsedData]);
 
   const table = useReactTable({
-    data: parsedData || [],
+    data: memoizedData,
     columns,
     state: {
       sorting,
@@ -184,128 +73,85 @@ const ConferenceSelectionStep: React.FC<ConferenceSelectionStepProps> = ({
       pagination,
     },
     enableRowSelection: true,
-    onRowSelectionChange: handleRowSelectionChange,
-    onSortingChange: setSorting,
+    onRowSelectionChange: setRowSelection,
+    onSortingChange: setSorting, // Handles sorting state updates
     onColumnFiltersChange: setColumnFilters,
     onPaginationChange: setPagination,
     getCoreRowModel: getCoreRowModel(),
-    getSortedRowModel: getSortedRowModel(),
+    getSortedRowModel: getSortedRowModel(), // Enables client-side sorting
     getFilteredRowModel: getFilteredRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
-    pageCount: Math.ceil((parsedData?.length || 0) / pagination.pageSize),
+    getRowId: getConferenceRowId, // Crucial for stable row identity
+    manualPagination: false, // TanStack Table handles pagination
+    // No manualSorting: true, default is client-side sorting
   });
 
-  // Update parent component when selection changes
   useEffect(() => {
-    const selectedRows = table.getSelectedRowModel().rows.map(row => row.original);
-    onSelectionChanged(selectedRows);
-  }, [table, onSelectionChanged]);
+    const currentlySelectedOriginalRows = table.getSelectedRowModel().rows.map(row => row.original);
+    onSelectionChanged(currentlySelectedOriginalRows);
+  }, [rowSelection, table, onSelectionChanged]);
 
-  const handleGlobalActionTypeChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
-    const newValue = e.target.value as 'crawl' | 'update';
-    if (newValue !== globalActionType) {
-      setGlobalActionType(newValue);
-      
-      const selectedRows = table.getSelectedRowModel().rows.map(row => row.original);
-      if (selectedRows.length > 0) {
-        onUpdateActionTypeForSelected(newValue, selectedRows);
-      }
+  const handleApplyGlobalActionToAllSelected = useCallback(() => {
+    const selectedRowModels = table.getSelectedRowModel().rows;
+    if (selectedRowModels.length > 0) {
+      const conferencesToUpdate = selectedRowModels.map(row => row.original);
+      onUpdateActionTypeForSelected(globalActionType, conferencesToUpdate);
+    } else {
+      alert("Please select at least one conference to apply the action type to all.");
     }
-  }, [table, onUpdateActionTypeForSelected, globalActionType]);
+  }, [table, globalActionType, onUpdateActionTypeForSelected]);
 
-  // Reset selection when parsedData changes
+  const handleApplyGlobalActionToPageSelected = useCallback(() => {
+    const pageRows = table.getRowModel().rows;
+    const selectedOnPage = pageRows.filter(row => row.getIsSelected()).map(row => row.original);
+
+    if (selectedOnPage.length > 0) {
+      onUpdateActionTypeForSelected(globalActionType, selectedOnPage);
+    } else {
+      alert("Please select at least one conference on the current page to apply the action type.");
+    }
+  }, [table, globalActionType, onUpdateActionTypeForSelected]);
+
+  const prevParsedDataRef = useRef<Conference[]>();
   useEffect(() => {
-    if (parsedData) {
-      setRowSelection({});
+    if (prevParsedDataRef.current !== parsedData) {
+        if (!parsedData || parsedData.length === 0) {
+            setRowSelection({});
+            setPagination(prev => ({ ...prev, pageIndex: 0 }));
+        }
     }
+    prevParsedDataRef.current = parsedData;
   }, [parsedData]);
+
+  const totalSelectedRowCount = table.getSelectedRowModel().rows.length;
+  const pageRows = table.getRowModel().rows;
+  const pageSelectedRowCount = pageRows.filter(row => row.getIsSelected()).length;
+  const canApplyToPage = pageRows.length > 0;
 
   return (
     <div className="space-y-4 md:space-y-6 rounded-lg border border-gray-200 p-3 md:p-6 bg-white shadow">
       <h3 className="text-base md:text-lg font-medium leading-6 text-gray-900">Step 2: Select Conferences and Action Type</h3>
       <p className="text-xs md:text-sm text-gray-600">
         Select conferences from the table below and specify the action type (Crawl or Update).
-        For &apos;Update&apos; actions, ensure the relevant link fields (Link, Imp Link, Cfp Link) are provided if needed.
+        Use "Apply to Page" for current page selections or "Apply to All" for all selections across pages.
       </p>
 
-      {/* UI for global action type selection */}
-      <div className="my-4 flex flex-col sm:flex-row items-start sm:items-center gap-3 p-3 bg-gray-5 rounded-md border border-gray-200">
-        <label htmlFor="globalActionType" className="block text-sm font-medium text-gray-700 whitespace-nowrap">
-          Action Type for Selected:
-        </label>
-        <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-          <select
-            id="globalActionType"
-            name="globalActionType"
-            value={globalActionType}
-            onChange={handleGlobalActionTypeChange}
-            className="block w-full sm:w-auto rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm py-2 px-3"
-          >
-            <option value="crawl">Crawl</option>
-            <option value="update">Update</option>
-          </select>
-          <button
-            type="button"
-            onClick={() => {
-              const selectedRows = table.getSelectedRowModel().rows.map(row => row.original);
-              if (selectedRows.length > 0) {
-                onUpdateActionTypeForSelected(globalActionType, selectedRows);
-              } else {
-                alert("Please select at least one conference to apply the action type.");
-              }
-            }}
-            disabled={selectedCsvRowsCount === 0}
-            className="inline-flex items-center justify-center rounded-md border border-transparent bg-indigo-600 px-3 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
-          >
-            Apply to {selectedCsvRowsCount} Selected
-          </button>
-        </div>
-      </div>
+      <GlobalActionControls
+        globalActionType={globalActionType}
+        onGlobalActionTypeChange={setGlobalActionType}
+        onApplyGlobalActionToAllSelected={handleApplyGlobalActionToAllSelected}
+        onApplyGlobalActionToPageSelected={handleApplyGlobalActionToPageSelected}
+        totalSelectedRowCount={totalSelectedRowCount}
+        pageSelectedRowCount={pageSelectedRowCount}
+        canApplyToPage={canApplyToPage}
+      />
 
-      {/* Filters */}
-      <div className="mb-4 grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="relative">
-          <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-            <Search className="h-4 w-4 text-gray-400" />
-          </div>
-          <input
-            type="text"
-            placeholder="Filter by acronym..."
-            value={(table.getColumn('acronym')?.getFilterValue() as string) ?? ''}
-            onChange={(e) => table.getColumn('acronym')?.setFilterValue(e.target.value)}
-            className="block w-full rounded-md border-0 py-1.5 pl-10 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-          />
-        </div>
-        <div className="relative">
-          <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-            <Search className="h-4 w-4 text-gray-400" />
-          </div>
-          <input
-            type="text"
-            placeholder="Filter by title..."
-            value={(table.getColumn('title')?.getFilterValue() as string) ?? ''}
-            onChange={(e) => table.getColumn('title')?.setFilterValue(e.target.value)}
-            className="block w-full rounded-md border-0 py-1.5 pl-10 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-          />
-        </div>
-        <div className="relative">
-          <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-            <Search className="h-4 w-4 text-gray-400" />
-          </div>
-          <input
-            type="text"
-            placeholder="Filter by status..."
-            value={(table.getColumn('status')?.getFilterValue() as string) ?? ''}
-            onChange={(e) => table.getColumn('status')?.setFilterValue(e.target.value)}
-            className="block w-full rounded-md border-0 py-1.5 pl-10 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-          />
-        </div>
-      </div>
+      <TableFilters table={table} />
 
       <div className="w-full rounded-lg border border-gray-200">
         <div className="overflow-x-auto">
           <div className="inline-block min-w-full align-middle">
-            <div className="overflow-y-auto" style={{ maxHeight: 'calc(100vh - 300px)' }}>
+            <div className="overflow-y-auto" style={{ maxHeight: 'calc(100vh - 480px)' }}>
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-blue-50 sticky top-0 z-10">
                   {table.getHeaderGroups().map(headerGroup => (
@@ -313,14 +159,16 @@ const ConferenceSelectionStep: React.FC<ConferenceSelectionStepProps> = ({
                       {headerGroup.headers.map(header => (
                         <th
                           key={header.id}
+                          colSpan={header.colSpan}
                           className="border-b border-blue-100 px-4 py-3 text-left text-sm font-semibold text-blue-900 whitespace-nowrap"
+                          style={{ width: header.column.columnDef.size !== undefined ? header.column.columnDef.size : 'auto' }}
                         >
                           {header.isPlaceholder ? null : (
                             <div
                               {...{
                                 className: header.column.getCanSort()
                                   ? 'cursor-pointer select-none flex items-center gap-2 hover:text-blue-700 transition-colors'
-                                  : '',
+                                  : 'flex items-center gap-2',
                                 onClick: header.column.getToggleSortingHandler(),
                               }}
                             >
@@ -328,13 +176,15 @@ const ConferenceSelectionStep: React.FC<ConferenceSelectionStepProps> = ({
                                 header.column.columnDef.header,
                                 header.getContext()
                               )}
-                              {{
-                                asc: <ChevronUpIcon className="h-4 w-4 text-blue-600" />,
-                                desc: <ChevronDownIcon className="h-4 w-4 text-blue-600" />,
-                              }[header.column.getIsSorted() as string] ?? (
-                                header.column.getCanSort() ? (
-                                  <ChevronsUpDown className="h-4 w-4 text-blue-400" />
-                                ) : null
+                              {header.column.getCanSort() && (
+                                <>
+                                  {{
+                                    asc: <ChevronUpIcon className="h-4 w-4 text-blue-600" />,
+                                    desc: <ChevronDownIcon className="h-4 w-4 text-blue-600" />,
+                                  }[header.column.getIsSorted() as string] ?? (
+                                    <ChevronsUpDown className="h-4 w-4 text-blue-400 opacity-50" />
+                                  )}
+                                </>
                               )}
                             </div>
                           )}
@@ -344,95 +194,48 @@ const ConferenceSelectionStep: React.FC<ConferenceSelectionStepProps> = ({
                   ))}
                 </thead>
                 <tbody className="divide-y divide-gray-200 bg-white">
-                  {table.getRowModel().rows.map(row => (
-                    <tr key={row.id} className="hover:bg-gray-5 transition-colors">
-                      {row.getVisibleCells().map(cell => (
-                        <td key={cell.id} className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
-                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                  {table.getRowModel().rows.length > 0 ? (
+                    table.getRowModel().rows.map(row => (
+                      <tr key={row.id} className={`hover:bg-gray-50 transition-colors ${row.getIsSelected() ? 'bg-indigo-50' : ''}`}>
+                        {row.getVisibleCells().map(cell => (
+                          <td key={cell.id} className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap" style={{ width: cell.column.columnDef.size !== undefined ? cell.column.columnDef.size : 'auto' }}>
+                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                          </td>
+                        ))}
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                        <td colSpan={columns.length} className="text-center py-10 text-gray-500">
+                            No data available or matches your filters.
                         </td>
-                      ))}
                     </tr>
-                  ))}
+                  )}
                 </tbody>
               </table>
             </div>
           </div>
         </div>
       </div>
-
-      {/* Enhanced Pagination */}
-      <div className="flex items-center justify-between px-4 py-3 bg-white border-t border-gray-200">
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => table.setPageIndex(0)}
-            disabled={!table.getCanPreviousPage()}
-            className="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-2.5 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-5 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <ChevronsLeft className="h-4 w-4" />
-          </button>
-          <button
-            onClick={() => table.previousPage()}
-            disabled={!table.getCanPreviousPage()}
-            className="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-2.5 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-5 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </button>
-          <span className="flex items-center gap-1 text-sm text-gray-700">
-            <div>Page</div>
-            <strong className="text-gray-900">
-              {table.getState().pagination.pageIndex + 1} of{' '}
-              {table.getPageCount()}
-            </strong>
-          </span>
-          <button
-            onClick={() => table.nextPage()}
-            disabled={!table.getCanNextPage()}
-            className="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-2.5 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-5 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <ChevronRight className="h-4 w-4" />
-          </button>
-          <button
-            onClick={() => table.setPageIndex(table.getPageCount() - 1)}
-            disabled={!table.getCanNextPage()}
-            className="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-2.5 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-5 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <ChevronsRight className="h-4 w-4" />
-          </button>
-        </div>
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-gray-700">Rows per page</span>
-          <select
-            value={table.getState().pagination.pageSize}
-            onChange={e => {
-              table.setPageSize(Number(e.target.value));
-            }}
-            className="rounded-md border border-gray-300 bg-white px-2.5 py-1.5 text-sm font-medium text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-          >
-            {[10, 20, 50, 100].map(pageSize => (
-              <option key={pageSize} value={pageSize}>
-                {pageSize}
-              </option>
-            ))}
-          </select>
-        </div>
-      </div>
+      
+      {memoizedData && memoizedData.length > 0 && <TablePagination table={table} />}
 
       <p className="mt-2 text-xs md:text-sm text-gray-600">
-        Selected {selectedCsvRowsCount} conference(s).
+        Total selected: {totalSelectedRowCount} conference(s). On this page: {pageSelectedRowCount} selected.
       </p>
 
       <div className="mt-4 md:mt-6 flex flex-col sm:flex-row justify-between gap-3">
         <button
           type="button"
           onClick={onPrev}
-          className="w-full sm:w-auto rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-5 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+          className="w-full sm:w-auto rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
         >
           Previous: Import File
         </button>
         <button
           type="button"
           onClick={onNext}
-          disabled={!canProceed}
+          disabled={!canProceed || totalSelectedRowCount === 0}
           className="w-full sm:w-auto inline-flex items-center justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           Next: Configure & Process

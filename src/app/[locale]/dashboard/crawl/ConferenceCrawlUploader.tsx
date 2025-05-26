@@ -5,23 +5,22 @@ import { Conference } from '@/src/models/logAnalysis/importConferenceCrawl';
 
 // Import các component con cho từng bước
 import FileUploadStep from './steps/FileUploadStep';
-import ConferenceSelectionStep from './steps/ConferenceSelectionStep';
+import ConferenceSelectionStep from './steps/ConferenceSelectionStep'; // Correct path if it's in a subfolder of steps
 import ConfigurationStep from './steps/ConfigurationStep';
 import ProcessingStep from './steps/ProcessingStep';
-import StepperNavigation from './steps/StepperNavigation'; // Optional: for visual steps
+import StepperNavigation from './steps/StepperNavigation';
 
 const apiStepsForUploader: { name: ApiName; displayName: string }[] = [
-    { name: "determineLinks", displayName: "Determine Links Model" },
-    { name: "extractInfo", displayName: "Extract Information Model" },
-    { name: "extractCfp", displayName: "Extract CFP Model" },
+  { name: "determineLinks", displayName: "Determine Links Model" },
+  { name: "extractInfo", displayName: "Extract Information Model" },
+  { name: "extractCfp", displayName: "Extract CFP Model" },
 ];
-
 
 const STEPS = [
   { id: 1, name: 'Import CSV' },
   { id: 2, name: 'Select Conferences' },
-  { id: 3, name: 'Configure Settings' }, // Đổi tên để rõ ràng hơn
-  { id: 4, name: 'Process & View Status' }, // Thêm bước 4
+  { id: 3, name: 'Configure Settings' },
+  { id: 4, name: 'Process & View Status' },
 ];
 
 export const ConferenceCrawlUploader: React.FC = () => {
@@ -33,7 +32,7 @@ export const ConferenceCrawlUploader: React.FC = () => {
     parsedData,
     isParsing,
     parseError,
-    selectedCsvRows,
+    selectedCsvRows, // This is used for canProceedToStep3
     apiModels,
     isCrawling,
     startCrawlFromCsv,
@@ -53,6 +52,7 @@ export const ConferenceCrawlUploader: React.FC = () => {
     return !!parsedData && parsedData.length > 0 && !isParsing && !parseError;
   }, [parsedData, isParsing, parseError]);
 
+  // This logic correctly uses selectedCsvRows from the hook for global state
   const canProceedToStep3 = useMemo(() => {
     return selectedCsvRows && selectedCsvRows.length > 0;
   }, [selectedCsvRows]);
@@ -61,38 +61,36 @@ export const ConferenceCrawlUploader: React.FC = () => {
     return apiStepsForUploader.every(step => apiModels[step.name] !== null);
   }, [apiModels]);
 
-  const canProceedToStep4 = useMemo(() => { // Logic mới cho việc chuyển sang bước 4
-    return canProceedToStep3 && allModelsSelected; // Phải chọn đủ model để chuyển sang bước xử lý
+  const canProceedToStep4 = useMemo(() => {
+    return canProceedToStep3 && allModelsSelected;
   }, [canProceedToStep3, allModelsSelected]);
 
-  const canStartProcessing = useMemo(() => { // Logic giữ nguyên cho việc bắt đầu xử lý
+  const canStartProcessing = useMemo(() => {
     return canProceedToStep4 && !isCrawling;
   }, [canProceedToStep4, isCrawling]);
-
 
   const handleNextStep = () => {
     if (currentStep === 1 && canProceedToStep2) {
       setCurrentStep(2);
     } else if (currentStep === 2 && canProceedToStep3) {
       setCurrentStep(3);
-    } else if (currentStep === 3 && canProceedToStep4) { // Thêm logic cho bước 3 -> 4
-        setCurrentStep(4);
+    } else if (currentStep === 3 && canProceedToStep4) {
+      setCurrentStep(4);
     }
   };
 
   const handlePrevStep = () => {
-    if (currentStep === 4) { // Thêm logic cho bước 4 -> 3
-        setCurrentStep(3);
+    if (currentStep === 4) {
+      setCurrentStep(3);
     } else if (currentStep === 3) {
       setCurrentStep(2);
     } else if (currentStep === 2) {
-      // Optionally clear selections or keep them
       setCurrentStep(1);
     }
   };
 
   const handleReset = () => {
-    resetCrawl(); // This should also clear parsedData, file, etc. from the hook
+    resetCrawl();
     setCurrentStep(1);
   };
 
@@ -102,7 +100,6 @@ export const ConferenceCrawlUploader: React.FC = () => {
         Process Conferences (Step by Step)
       </h2>
 
-      {/* Optional Stepper Navigation */}
       <StepperNavigation steps={STEPS} currentStepId={currentStep} />
 
       <div className="mt-6">
@@ -118,11 +115,11 @@ export const ConferenceCrawlUploader: React.FC = () => {
           />
         )}
 
-          {currentStep === 2 && parsedData && (
+        {currentStep === 2 && parsedData && (
           <ConferenceSelectionStep
             parsedData={parsedData}
             onSelectionChanged={crawlHook.onCsvSelectionChanged}
-            selectedCsvRowsCount={selectedCsvRows.length}
+            // selectedCsvRowsCount={selectedCsvRows.length} // PROP REMOVED HERE
             onNext={handleNextStep}
             onPrev={handlePrevStep}
             canProceed={canProceedToStep3}
@@ -141,24 +138,24 @@ export const ConferenceCrawlUploader: React.FC = () => {
             apiStepsForUploader={apiStepsForUploader}
             isCrawling={isCrawling}
             allModelsSelected={allModelsSelected}
-            onNext={handleNextStep} // Thêm onNext và onPrev
+            onNext={handleNextStep}
             onPrev={handlePrevStep}
-            canProceed={canProceedToStep4} // Logic cho ConfigurationStep có thể tiến tới bước tiếp theo
+            canProceed={canProceedToStep4}
           />
         )}
 
-        {currentStep === 4 && ( // Hiển thị ProcessingStep ở bước 4
-            <ProcessingStep
-                isCrawling={isCrawling}
-                crawlError={crawlError}
-                crawlProgress={crawlProgress}
-                crawlMessages={crawlMessages}
-                enableChunking={enableChunking}
-                onStartProcess={startCrawlFromCsv}
-                onResetAll={handleReset}
-                canStartProcess={canStartProcessing}
-                onPrev={handlePrevStep} // Giữ nguyên onPrev
-            />
+        {currentStep === 4 && (
+          <ProcessingStep
+            isCrawling={isCrawling}
+            crawlError={crawlError}
+            crawlProgress={crawlProgress}
+            crawlMessages={crawlMessages}
+            enableChunking={enableChunking}
+            onStartProcess={startCrawlFromCsv}
+            onResetAll={handleReset}
+            canStartProcess={canStartProcessing}
+            onPrev={handlePrevStep}
+          />
         )}
       </div>
     </div>
