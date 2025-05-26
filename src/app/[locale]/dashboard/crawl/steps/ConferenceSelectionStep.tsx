@@ -14,7 +14,7 @@ import {
   PaginationState,
 } from '@tanstack/react-table';
 import { ChevronUpIcon, ChevronDownIcon, ChevronsUpDown } from 'lucide-react';
-
+import { useTranslations } from 'next-intl';
 import { getConferenceTableColumns } from './conferenceTable/conferenceTable.columns';
 import GlobalActionControls from './conferenceTable/GlobalActionControls';
 import TableFilters from './conferenceTable/TableFilters';
@@ -231,7 +231,6 @@ const ConferenceSelectionStep: React.FC<ConferenceSelectionStepProps> = ({
         <button
           type="button"
           onClick={onPrev}
-          className="w-full sm:w-auto rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
           className="w-full sm:w-auto rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
         >
           {t('navigation.previousStep')} {/* Dùng t() */}

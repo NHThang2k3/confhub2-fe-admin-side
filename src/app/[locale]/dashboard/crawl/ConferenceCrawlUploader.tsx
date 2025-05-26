@@ -9,7 +9,7 @@ import ConferenceSelectionStep from './steps/ConferenceSelectionStep'; // Correc
 import ConfigurationStep from './steps/ConfigurationStep';
 import ProcessingStep from './steps/ProcessingStep';
 import StepperNavigation from './steps/StepperNavigation';
-
+import { useTranslations } from 'next-intl';
 const apiStepsForUploader: { name: ApiName; displayName: string }[] = [
   { name: "determineLinks", displayName: "Determine Links Model" },
   { name: "extractInfo", displayName: "Extract Information Model" },
