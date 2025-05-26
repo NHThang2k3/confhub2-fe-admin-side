@@ -1,9 +1,9 @@
 // src/app/[locale]/dashboard/logAnalysis/overallSummary/CollapsibleContent.tsx
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react'; // Import useMemo
 import KpiSection from './KpiSection';
 import LogProcessingErrorsDisplay from './LogProcessingErrorsDisplay';
 import { BarChartData, PieChartItem } from '../utils/chartUtils';
-import { LogAnalysisResult, GoogleSearchHealthData, GeminiApiAnalysis } from '@/src/models/logAnalysis'; // Import GeminiApiAnalysis
+import { LogAnalysisResult, GoogleSearchHealthData, GeminiApiAnalysis } from '@/src/models/logAnalysis';
 
 import GeneralCharts from './chartTabs/GeneralCharts';
 import ValidationQualityCharts from './chartTabs/ValidationQualityCharts';
@@ -11,6 +11,7 @@ import GeminiApiCharts from './chartTabs/GeminiApiCharts';
 import GoogleSearchCharts from './chartTabs/GoogleSearchCharts';
 
 import { FaGoogle, FaBrain, FaShieldAlt, FaChartLine, FaListAlt, FaChevronUp, FaChevronDown } from 'react-icons/fa';
+import { useTranslations } from 'next-intl'; // Import useTranslations
 
 interface CollapsibleContentProps {
   isExpanded: boolean;
@@ -28,8 +29,7 @@ interface CollapsibleContentProps {
   // Gemini API - Thêm props mới
   geminiApiStatusData: PieChartItem[];
   totalGeminiCallsWithRetries: number;
-  // geminiModelUsageDetailedData: BarChartData; // Loại bỏ
-  geminiModelUsageRawData: GeminiApiAnalysis['modelUsageByApiType']; // THÊM prop mới
+  geminiModelUsageRawData: GeminiApiAnalysis['modelUsageByApiType'];
   geminiOrchestrationData: PieChartItem[];
   geminiFallbackSuccessRateData: PieChartItem[];
   geminiConfigErrorsData: BarChartData;
@@ -46,48 +46,10 @@ interface CollapsibleContentProps {
 
 type ChartTabKey = 'general' | 'validation' | 'gemini' | 'googleSearch';
 
-const chartTabs: { key: ChartTabKey; label: string; icon: React.ReactNode, dataExists: (props: CollapsibleContentProps) => boolean }[] = [
-  {
-    key: 'general',
-    label: 'Overall & Errors',
-    icon: <FaChartLine className="mr-2" />,
-    dataExists: (props) => props.overallStatusData.length > 0 || props.playwrightLinkData.length > 0 || props.topErrorsData.labels.length > 0,
-  },
-  {
-    key: 'validation',
-    label: 'Validation & Quality',
-    icon: <FaShieldAlt className="mr-2" />,
-    dataExists: (props) => props.warningsByFieldData.labels.length > 0 || props.warningsBySeverityData.length > 0 || props.topWarningMessagesData.labels.length > 0 || props.normalizationsByFieldData.labels.length > 0 || props.normalizationsByReasonData.length > 0,
-  },
-  {
-    key: 'gemini',
-    label: 'Gemini API',
-    icon: <FaBrain className="mr-2" />,
-    dataExists: (props) => {
-        const hasRawModelUsageData = Object.keys(props.geminiModelUsageRawData).some(apiType =>
-            Object.keys(props.geminiModelUsageRawData[apiType]).length > 0
-        );
-        return (
-            props.geminiApiStatusData.length > 0 ||
-            hasRawModelUsageData || // Cập nhật điều kiện kiểm tra dữ liệu
-            props.geminiOrchestrationData.length > 0 ||
-            props.geminiConfigErrorsData.labels.length > 0 ||
-            props.geminiCacheDetailedData.length > 0 ||
-            props.geminiResponseProcessingData.labels.length > 0 ||
-            props.topGeminiErrorsData.labels.length > 0
-        );
-    },
-  },
-  {
-    key: 'googleSearch',
-    label: 'Google Search',
-    icon: <FaGoogle className="mr-2" />,
-    dataExists: (props) => props.searchStatusData.length > 0 || props.apiKeyUsageData.labels.length > 0 || props.googleSearchErrorsData.labels.length > 0 || props.googleSearchAttemptIssuesData.labels.length > 0,
-  },
-];
-
-
 const CollapsibleContent: React.FC<CollapsibleContentProps> = (props) => {
+  // Khởi tạo t với namespace 'CollapsibleContent'
+  const t = useTranslations('CollapsibleContent');
+
   const {
     isExpanded, // Main expand state
     data,
@@ -95,8 +57,7 @@ const CollapsibleContent: React.FC<CollapsibleContentProps> = (props) => {
     searchStatusData, apiKeyUsageData, googleSearchHealthData, googleSearchErrorsData, googleSearchAttemptIssuesData,
     geminiApiStatusData,
     totalGeminiCallsWithRetries,
-    // geminiModelUsageDetailedData, // Loại bỏ
-    geminiModelUsageRawData, // Sử dụng prop mới
+    geminiModelUsageRawData,
     geminiOrchestrationData,
     geminiFallbackSuccessRateData,
     geminiConfigErrorsData,
@@ -107,14 +68,54 @@ const CollapsibleContent: React.FC<CollapsibleContentProps> = (props) => {
     warningsByFieldData, warningsBySeverityData, topWarningMessagesData, normalizationsByFieldData, normalizationsByReasonData,
   } = props;
 
+  // Di chuyển chartTabs vào trong component và sử dụng useMemo để có thể dùng t()
+  const chartTabs = useMemo(() => ([
+    {
+      key: 'general' as ChartTabKey,
+      label: t('chartTabs.general'),
+      icon: <FaChartLine className="mr-2" />,
+      dataExists: (currentProps: CollapsibleContentProps) => currentProps.overallStatusData.length > 0 || currentProps.playwrightLinkData.length > 0 || currentProps.topErrorsData.labels.length > 0,
+    },
+    {
+      key: 'validation' as ChartTabKey,
+      label: t('chartTabs.validation'),
+      icon: <FaShieldAlt className="mr-2" />,
+      dataExists: (currentProps: CollapsibleContentProps) => currentProps.warningsByFieldData.labels.length > 0 || currentProps.warningsBySeverityData.length > 0 || currentProps.topWarningMessagesData.labels.length > 0 || currentProps.normalizationsByFieldData.labels.length > 0 || currentProps.normalizationsByReasonData.length > 0,
+    },
+    {
+      key: 'gemini' as ChartTabKey,
+      label: t('chartTabs.gemini'),
+      icon: <FaBrain className="mr-2" />,
+      dataExists: (currentProps: CollapsibleContentProps) => {
+          const hasRawModelUsageData = Object.keys(currentProps.geminiModelUsageRawData).some(apiType =>
+              Object.keys(currentProps.geminiModelUsageRawData[apiType]).length > 0
+          );
+          return (
+              currentProps.geminiApiStatusData.length > 0 ||
+              hasRawModelUsageData ||
+              currentProps.geminiOrchestrationData.length > 0 ||
+              currentProps.geminiConfigErrorsData.labels.length > 0 ||
+              currentProps.geminiCacheDetailedData.length > 0 ||
+              currentProps.geminiResponseProcessingData.labels.length > 0 ||
+              currentProps.topGeminiErrorsData.labels.length > 0
+          );
+      },
+    },
+    {
+      key: 'googleSearch' as ChartTabKey,
+      label: t('chartTabs.googleSearch'),
+      icon: <FaGoogle className="mr-2" />,
+      dataExists: (currentProps: CollapsibleContentProps) => currentProps.searchStatusData.length > 0 || currentProps.apiKeyUsageData.labels.length > 0 || currentProps.googleSearchErrorsData.labels.length > 0 || currentProps.googleSearchAttemptIssuesData.labels.length > 0,
+    },
+  ]), [t]); // Thêm t vào dependency array của useMemo
+
   const availableTabs = chartTabs.filter(tab => tab.dataExists(props));
   const [activeTab, setActiveTab] = useState<ChartTabKey>(availableTabs.length > 0 ? availableTabs[0].key : 'general');
-  const [isDetailedStatisticsExpanded, setIsDetailedStatisticsExpanded] = useState(false); // Mặc định đóng
+  const [isDetailedStatisticsExpanded, setIsDetailedStatisticsExpanded] = useState(false);
   const toggleDetailedStatistics = () => {
     setIsDetailedStatisticsExpanded(prev => !prev);
   };
 
-  // Only show Detailed Statistics section if there are tabs with data
   const showDetailedStatisticsSection = availableTabs.length > 0;
 
   return (
@@ -134,7 +135,7 @@ const CollapsibleContent: React.FC<CollapsibleContentProps> = (props) => {
         {showDetailedStatisticsSection && (
           <div className="my-6">
             <div
-              className="flex items-center justify-between border-b border-gray-200 pb-1 cursor-pointer hover:bg-gray-5 rounded-t-md px-2 pt-2"
+              className="flex items-center justify-between border-b border-gray-200 pb-1 cursor-pointer hover:bg-gray-50 rounded-t-md px-2 pt-2"
               onClick={toggleDetailedStatistics}
               role="button"
               tabIndex={0}
@@ -143,16 +144,16 @@ const CollapsibleContent: React.FC<CollapsibleContentProps> = (props) => {
               aria-controls="detailed-statistics-content"
             >
               <h3 className="text-xl font-semibold text-gray-800 flex items-center">
-                <FaListAlt className="mr-2 text-gray-600" /> Detailed Statistics
+                <FaListAlt className="mr-2 text-gray-600" /> {t('detailedStatisticsTitle')}
               </h3>
               <button
                 className="rounded p-1 text-gray-500 hover:bg-gray-100 hover:text-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300"
-                title={isDetailedStatisticsExpanded ? 'Collapse Details' : 'Expand Details'}
-                aria-label={isDetailedStatisticsExpanded ? 'Collapse Detailed Statistics' : 'Expand Detailed Statistics'}
+                title={isDetailedStatisticsExpanded ? t('collapseDetailsTitle') : t('expandDetailsTitle')}
+                aria-label={isDetailedStatisticsExpanded ? t('collapseDetailedStatisticsAriaLabel') : t('expandDetailedStatisticsAriaLabel')}
                 onClick={(e) => { e.stopPropagation(); toggleDetailedStatistics(); }}
               >
                 {isDetailedStatisticsExpanded ? <FaChevronUp size={16} /> : <FaChevronDown size={16} />}
-                <span className="sr-only">{isDetailedStatisticsExpanded ? 'Collapse' : 'Expand'}</span>
+                <span className="sr-only">{isDetailedStatisticsExpanded ? t('srOnly.collapse') : t('srOnly.expand')}</span>
               </button>
             </div>
 
@@ -163,7 +164,7 @@ const CollapsibleContent: React.FC<CollapsibleContentProps> = (props) => {
                   : 'max-h-0 opacity-0 invisible pt-0'
                 }`}
             >
-              <nav className="flex flex-wrap -mb-px border-b border-gray-200" aria-label="Tabs">
+              <nav className="flex flex-wrap -mb-px border-b border-gray-200" aria-label={t('chartTabsAriaLabel')}>
                 {availableTabs.map((tab) => (
                   <button
                     key={tab.key}
@@ -210,8 +211,7 @@ const CollapsibleContent: React.FC<CollapsibleContentProps> = (props) => {
                 {activeTab === 'gemini' && (
                   <GeminiApiCharts
                     geminiApiStatusData={geminiApiStatusData}
-                    // geminiModelUsageDetailedData={geminiModelUsageDetailedData} // Loại bỏ
-                    geminiModelUsageRawData={geminiModelUsageRawData} // TRUYỀN DỮ LIỆU RAW
+                    geminiModelUsageRawData={geminiModelUsageRawData}
                     geminiOrchestrationData={geminiOrchestrationData}
                     geminiFallbackSuccessRateData={geminiFallbackSuccessRateData}
                     geminiConfigErrorsData={geminiConfigErrorsData}
