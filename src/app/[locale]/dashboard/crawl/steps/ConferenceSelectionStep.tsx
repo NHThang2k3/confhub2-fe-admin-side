@@ -53,7 +53,11 @@ const ConferenceSelectionStep: React.FC<ConferenceSelectionStepProps> = ({
   // Memoize the selection change handler
   const handleRowSelectionChange = useCallback((updater: RowSelectionState | ((old: RowSelectionState) => RowSelectionState)) => {
     setRowSelection(updater);
-  }, []);
+    // Immediately notify parent of selection changes
+    const newSelection = typeof updater === 'function' ? updater(rowSelection) : updater;
+    const selectedRows = parsedData.filter((_, index) => newSelection[index]);
+    onSelectionChanged(selectedRows);
+  }, [rowSelection, parsedData, onSelectionChanged]);
 
   // Memoize the columns to prevent unnecessary re-renders
   const columns = useMemo<ColumnDef<Conference>[]>(() => [
@@ -199,7 +203,7 @@ const ConferenceSelectionStep: React.FC<ConferenceSelectionStepProps> = ({
   useEffect(() => {
     const selectedRows = table.getSelectedRowModel().rows.map(row => row.original);
     onSelectionChanged(selectedRows);
-  }, [table, onSelectionChanged]);
+  }, [table, onSelectionChanged, rowSelection]);
 
   const handleGlobalActionTypeChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
     const newValue = e.target.value as 'crawl' | 'update';
