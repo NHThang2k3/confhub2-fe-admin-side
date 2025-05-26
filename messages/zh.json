@@ -95,7 +95,7 @@
     "Location_Label": "地点",
     "Topics_Label": "主题",
     "Summary_Label": "摘要",
-    "UserMessage_Label": "用户消息",
+    "UserMessage_Label": "管理员消息",
     "ModerationComment_Label": "审核评论",
     "Approve_Button": "批准",
     "Reject_Button": "拒绝",
@@ -378,6 +378,7 @@
     "crawlJournalsButton": "爬取期刊"
   },
   "ConferenceSelectionStep": {
+    "noDataMessage": "没有可用的会议数据。",
     "title": "步骤2: 选择会议和操作类型",
     "description": "从下表中选择会议并指定操作类型（爬取或更新）。对于“更新”操作，如果需要，请确保提供了相关链接字段（链接、重要链接、CFP链接）。",
     "globalActions": {
