@@ -43,7 +43,7 @@ const KpiSection: React.FC<KpiSectionProps> = ({
   const gSearchStats = data.googleSearch;
 
   const actualTotalGeminiCallsWithRetries = geminiApiData
-    ? (geminiApiData.totalCalls || 0) + (geminiApiData.totalRetries || 0)
+    ? (geminiApiData.totalCalls || 0) + (geminiApiData.fallbackModelStats.attempts || 0)
     : 0;
 
   const geminiInit = geminiApiData?.serviceInitialization;

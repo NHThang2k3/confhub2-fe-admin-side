@@ -91,7 +91,7 @@ const OverallSummary: React.FC<OverallSummaryProps> = ({
 
   const totalGeminiCallsWithRetries = useMemo(() => {
     if (!geminiApiData) return 0;
-    return (geminiApiData.totalCalls || 0) + (geminiApiData.totalRetries || 0);
+    return (geminiApiData.totalCalls || 0) + (geminiApiData.fallbackModelStats.attempts || 0);
   }, [geminiApiData]);
 
   // THÊM: Dữ liệu raw cho bảng Model Usage
