@@ -8,7 +8,7 @@ import { appConfig } from '@/src/middleware';
 
 // --- Helper: LocalStorage Management ---
 const LOCAL_STORAGE_KEYS = {
-  USER: 'user',
+  USER: 'admin',
   LOGIN_STATUS: 'loginStatus',
   TOKEN: 'admin-token',
   RETURN_URL: 'returnUrl',

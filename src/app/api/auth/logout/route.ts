@@ -24,7 +24,7 @@ export async function POST(request: Request) { // Changed to POST for simplicity
 
   // For demonstration, clearing the cookies you had:
   // Note: These might not be effective if they weren't HttpOnly and set by the server originally.
-  cookies().delete('user');
+  cookies().delete('admin');
   cookies().delete('loginStatus');
 
 

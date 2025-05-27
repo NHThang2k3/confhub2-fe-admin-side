@@ -89,7 +89,7 @@ export const useEditProfile = (
       // Nếu AuthProvider có cơ chế persist state (ví dụ: lưu vào localStorage khi user thay đổi),
       // thì việc gọi setAuthUser là đủ.
       // Nếu không, bạn cần cập nhật localStorage thủ công:
-      localStorage.setItem('user', JSON.stringify(updatedUserResponse));
+      localStorage.setItem('admin', JSON.stringify(updatedUserResponse));
       // localStorage.setItem('loginStatus', 'true'); // loginStatus không đổi
 
       setIsEditing(false);

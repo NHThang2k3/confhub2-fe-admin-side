@@ -52,7 +52,7 @@ const useNotifications = (): UseNotificationsReturn => {
     const [userId, setUserId] = useState<string>('');
 
     useEffect(() => {
-        const userData = localStorage.getItem('user');
+        const userData = localStorage.getItem('admin');
         if (userData) {
             try {
                 const user = JSON.parse(userData);

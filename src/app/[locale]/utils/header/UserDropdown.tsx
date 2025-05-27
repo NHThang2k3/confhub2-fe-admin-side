@@ -49,7 +49,7 @@ const UserDropdown: FC<Props> = ({
     // --- Read user JSON string from localStorage on component mount ---
     // No need to check and display errors here, checking will happen when clicking links
     try {
-      const storedUserJSON = localStorage.getItem('user');
+      const storedUserJSON = localStorage.getItem('admin');
       if (storedUserJSON) {
         const userData: UserData = JSON.parse(storedUserJSON);
         // Basic check if parsed data looks like a user object
@@ -59,7 +59,7 @@ const UserDropdown: FC<Props> = ({
         } else {
              // Log warning for developers, not user UI
              console.warn('Invalid user data structure found in localStorage upon mount.');
-             localStorage.removeItem('user'); // Clear invalid data on mount
+             localStorage.removeItem('admin'); // Clear invalid data on mount
         }
       }
     } catch (error) {
@@ -68,7 +68,7 @@ const UserDropdown: FC<Props> = ({
         'Error parsing user data from localStorage on mount:',
         error
       );
-      localStorage.removeItem('user'); // Clear corrupted data on mount
+      localStorage.removeItem('admin'); // Clear corrupted data on mount
     }
 
     // Cleanup function to clear timeout when component unmounts
@@ -82,7 +82,7 @@ const UserDropdown: FC<Props> = ({
 
   // Function to handle link click events
   const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
-    const userDataJSON = localStorage.getItem('user');
+    const userDataJSON = localStorage.getItem('admin');
     let isValidUser = false;
     let parsedUser: UserData | null = null;
 
@@ -98,7 +98,7 @@ const UserDropdown: FC<Props> = ({
             'Invalid user data found in localStorage (missing id or wrong format) on link click.'
           );
            // Clear invalid data
-          localStorage.removeItem('user');
+          localStorage.removeItem('admin');
         }
       } catch (parseError) {
         // Log parsing error for developers, not user UI
@@ -107,7 +107,7 @@ const UserDropdown: FC<Props> = ({
           parseError
         );
         // Data is not valid JSON, clear it
-        localStorage.removeItem('user');
+        localStorage.removeItem('admin');
       }
     } else {
       // Log warning for developers, not user UI
@@ -258,7 +258,7 @@ const UserDropdown: FC<Props> = ({
                 // if (socketRef.current) {
                 //   socketRef.current.disconnect();
                 // }
-                localStorage.removeItem('user'); // Clear user data on logout
+                localStorage.removeItem('admin'); // Clear user data on logout
                 setFirstName(null);
                 setLastName(null);
                 closeAllMenus();

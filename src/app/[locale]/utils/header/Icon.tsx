@@ -90,7 +90,7 @@ export const UserIcon: FC = () => {
   useEffect(() => {
     if (typeof window !== 'undefined') {
       try {
-        const localUser = localStorage.getItem('user');
+        const localUser = localStorage.getItem('admin');
         if (localUser) {
           const user = JSON.parse(localUser);
           if (user?.avatar) {

@@ -26,7 +26,7 @@ const useUserBlacklist = (): UseUserBlacklistResult => {
     setError(null); // Clear previous errors
 
     try {
-      const userData = localStorage.getItem('user');
+      const userData = localStorage.getItem('admin');
       const token = localStorage.getItem('admin-token');
 
       // Check if user data and token exist
