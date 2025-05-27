@@ -10,7 +10,7 @@ import { appConfig } from '@/src/middleware';
 const LOCAL_STORAGE_KEYS = {
   USER: 'user',
   LOGIN_STATUS: 'loginStatus',
-  TOKEN: 'token',
+  TOKEN: 'admin-token',
   RETURN_URL: 'returnUrl',
 };
 

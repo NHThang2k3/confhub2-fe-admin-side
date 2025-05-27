@@ -8,7 +8,7 @@ export const getNotifications = async (userId: string): Promise<Notification[] |
       {
         headers : {
           'Content-Type': 'application/json',
-          'Authorization' : `Bearer ${localStorage.getItem('token')}`, // Add userId to the headers
+          'Authorization' : `Bearer ${localStorage.getItem('admin-token')}`, // Add userId to the headers
         }
       }
     ); // Adjust the API endpoint as needed

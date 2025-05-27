@@ -232,7 +232,7 @@ const Moderation: React.FC = () => {
                 method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                    'Authorization': `Bearer ${localStorage.getItem('admin-token')}`,
                 },
                 body: JSON.stringify(updateBody),
             });

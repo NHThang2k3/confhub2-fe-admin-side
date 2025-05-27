@@ -14,7 +14,7 @@ async function updateNotifications( data: UpdateNotificationsData): Promise<void
       method: 'PUT', // Use PUT for updating existing resources
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('token')}`, // Ensure token is set correctly
+        'Authorization': `Bearer ${localStorage.getItem('admin-token')}`, // Ensure token is set correctly
       },
       body: JSON.stringify(data),
     });

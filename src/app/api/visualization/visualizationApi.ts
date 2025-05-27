@@ -3,7 +3,7 @@
 import { appConfig } from "@/src/middleware";
 import { ConferenceDetailsListResponse } from "@/src/models/response/conference.response";
 // Replace with your actual backend URL
-const API_BASE_URL = appConfig.NEXT_PUBLIC_DATABASE_URL || "http://confhub.engineer";
+const API_BASE_URL = appConfig.NEXT_PUBLIC_DATABASE_URL;
 
 export async function fetchVisualizationData(): Promise<ConferenceDetailsListResponse> {
     try {
