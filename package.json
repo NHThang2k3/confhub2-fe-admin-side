@@ -12,6 +12,10 @@
   },
   "dependencies": {
     "@hookform/resolvers": "^5.0.1",
+    "@radix-ui/react-label": "^2.1.7",
+    "@radix-ui/react-progress": "^1.1.7",
+    "@radix-ui/react-slot": "^1.2.3",
+    "@radix-ui/react-toast": "^1.2.14",
     "@react-oauth/google": "^0.12.1",
     "@tanstack/react-table": "^8.21.3",
     "ag-grid-community": "^33.2.4",
@@ -20,6 +24,7 @@
     "any-date-parser": "^2.1.0",
     "autoprefixer": "^10.4.21",
     "axios": "^1.8.4",
+    "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.0",
     "dayjs": "^1.11.13",
     "dompurify": "^3.2.4",
