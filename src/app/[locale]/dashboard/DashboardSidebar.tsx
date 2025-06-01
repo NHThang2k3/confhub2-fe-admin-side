@@ -14,7 +14,8 @@ import {
   FaChartBar, // Alternative for Analysis
   FaShieldAlt, // For Moderation
   FaBookOpen, // For Conferences (something related to documents/knowledge)
-  FaKey, // For Request_Admin
+  FaKey,
+  FaUser, // For Request_Admin
 } from 'react-icons/fa'; // Using Font Awesome icons from react-icons
 
 interface MenuItem {
@@ -62,6 +63,11 @@ export default function DashboardSidebar({ isSidebarOpen, locale, sidebarWidth, 
     //   icon: <FaKey className="h-5 w-5" />, // Icon for Request_Admin (key/access)
     //   hrefSegment: 'requestAdminTab'
     // },
+    {
+      label: t('Accounts'),
+      icon: <FaUser className="h-5 w-5" />, // Icon for Accounts (users/admins)
+      hrefSegment: 'accounts/users'
+    },
   ];
 
   const basePath = `/${locale}/dashboard`;
