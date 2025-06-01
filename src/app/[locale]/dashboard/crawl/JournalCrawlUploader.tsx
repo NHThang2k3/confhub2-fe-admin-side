@@ -15,84 +15,71 @@ import {
   FaRedo,
   FaTable
 } from 'react-icons/fa'
+import { AgGridReact } from 'ag-grid-react'
+import { ColDef, ValueFormatterParams, CellClassParams } from 'ag-grid-community'
+import { AllCommunityModule, ModuleRegistry} from 'ag-grid-community'
 
-// --- Simplified Journal Preview Table Component (Defined within or imported) ---
-const JournalPreviewTable: React.FC<{ data: Journal[] }> = ({ data }) => (
-  <div className='rounded-lg border border-gray-200 shadow-sm'>
-    {' '}
-    {/* Removed mt-6, spacing handled by parent column */}
-    <h3 className='text-md flex items-center rounded-t-lg border-b border-gray-200 bg-gray-5 p-3 font-semibold text-gray-700'>
-      <FaTable className='mr-2 text-gray-500' /> Preview Parsed Journals ({data.length} items)
-    </h3>
-    <div className='custom-scrollbar max-h-96 overflow-auto'>
-      <table className='min-w-full divide-y divide-gray-200'>
-        <thead className='sticky top-0 z-10 bg-gray-100'>
-          <tr>
-            <th scope='col' className='sticky left-0 z-20 bg-gray-100 px-3 py-2 text-left text-xs font-medium uppercase tracking-wider text-gray-600'>
-              Title
-            </th>
-            <th scope='col' className='px-3 py-2 text-left text-xs font-medium uppercase tracking-wider text-gray-600'>
-              ISSN
-            </th>
-            <th scope='col' className='px-3 py-2 text-left text-xs font-medium uppercase tracking-wider text-gray-600'>
-              Publisher
-            </th>
-            <th scope='col' className='px-3 py-2 text-left text-xs font-medium uppercase tracking-wider text-gray-600'>
-              Type
-            </th>
-          </tr>
-        </thead>
-        <tbody className='divide-y divide-gray-200 bg-white'>
-          {data.map((journal, index) => (
-            <tr key={index} className='hover:bg-gray-5'>
-              <td className='sticky left-0 z-10 whitespace-nowrap bg-white px-3 py-2 text-sm text-gray-900'>
-                {journal.Title ?? 'N/A'}
-              </td>
-              <td className='px-3 py-2 text-sm text-gray-500'>
-                {journal.Issn ?? 'N/A'}
-              </td>
-              <td className='px-3 py-2 text-sm text-gray-500'>
-                {journal.Publisher ?? 'N/A'}
-              </td>
-              <td className='px-3 py-2 text-sm text-gray-500'>
-                {journal.Type ?? 'N/A'}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-    {/* Message if no data */}
-    {data.length === 0 && (
-      <p className='p-4 text-center text-sm text-gray-500'>
-        No journals found in the preview data.
-      </p>
-    )}
-  </div>
-)
+ModuleRegistry.registerModules([AllCommunityModule]);
+
+// Extended Journal interface for the response data
+interface JournalWithStatus extends Journal {
+    lastUpdated: string | null;
+    message: string;
+}
 
 // --- Main Uploader Component ---
 export const JournalCrawlUploader: React.FC = () => {
   // Use the refactored journal hook
   const {
     file,
-    parsedDataForPreview, // Use this for the preview table
-    rawCsvContent, // Use this to determine if crawl can start
+    parsedData,
     isParsing,
     parseError,
     isCrawling,
     crawlError,
-    crawlProgress, // Simplified progress object
+    crawlProgress,
     crawlMessages,
     handleFileChange,
     startCrawl,
     resetCrawl
   } = useJournalCrawl()
 
-  // Determine if data is ready for preview
-  const hasPreviewData = parsedDataForPreview && parsedDataForPreview.length > 0
-  // Determine if data is ready to be sent (raw content exists and not busy)
-  const canStartCrawl = !!rawCsvContent && !isCrawling && !isParsing
+  // AG Grid column definitions
+  const columnDefs: ColDef<JournalWithStatus>[] = [
+    { field: 'Title', headerName: 'Title', flex: 2, minWidth: 200 },
+    { field: 'Issn', headerName: 'ISSN', flex: 1, minWidth: 100 },
+    { field: 'Publisher', headerName: 'Publisher', flex: 1, minWidth: 150 },
+    { 
+      field: 'Type', 
+      headerName: 'Status', 
+      flex: 1, 
+      minWidth: 120,
+      cellStyle: (params: CellClassParams<JournalWithStatus>) => ({
+        color: params.value === 'Crawled' ? 'green' : 'orange'
+      })
+    },
+    { 
+      field: 'lastUpdated', 
+      headerName: 'Last Updated', 
+      flex: 1, 
+      minWidth: 120,
+      valueFormatter: (params: ValueFormatterParams<JournalWithStatus>) => 
+        params.value ? new Date(params.value).toLocaleDateString() : 'N/A'
+    },
+    { 
+      field: 'message', 
+      headerName: 'Message', 
+      flex: 2, 
+      minWidth: 200,
+      cellStyle: (params: CellClassParams<JournalWithStatus>) => ({
+        color: params.value.includes('Error') ? 'red' : 'inherit'
+      })
+    }
+  ]
+  console.log(parsedData);
+
+  // Determine if data is ready to be sent
+  const canStartCrawl = !!file && !isCrawling && !isParsing
   // Condition to show the status section
   const showStatusSection =
     isCrawling ||
@@ -101,7 +88,7 @@ export const JournalCrawlUploader: React.FC = () => {
     crawlProgress.status !== 'idle'
 
   return (
-    <div className='max-w mx-auto rounded-lg border border-gray-200 bg-white p-4 shadow-lg md:p-6'>
+    <div className='mx-auto rounded-lg border border-gray-200 bg-white p-4 shadow-lg md:p-6'>
       {' '}
       {/* Increased max-width for two columns */}
       <h2 className='mb-4 border-b border-gray-300 pb-2 text-xl font-semibold text-gray-700'>
@@ -120,7 +107,7 @@ export const JournalCrawlUploader: React.FC = () => {
             {' '}
             {/* Wrap section for spacing */}
             <label className='mb-2 block text-sm font-medium text-gray-700'>
-              Select SCImago Journal CSV File (Semicolon-delimited ';')
+              Select SCImago Journal CSV File (Semicolon-delimited &apos;;&apos;)
             </label>
             <div className='flex items-center space-x-4'>
               {/* File Input Label */}
@@ -165,26 +152,6 @@ export const JournalCrawlUploader: React.FC = () => {
                 <FaTimesCircle className='mr-1' /> {parseError}
               </p>
             )}
-            {/* Success Message */}
-            {rawCsvContent && !isParsing && !parseError && (
-              <p className='mt-2 flex items-center text-sm text-green-600'>
-                <FaCheckCircle className='mr-1' /> File read successfully.{' '}
-                {hasPreviewData
-                  ? `${parsedDataForPreview.length} journals parsed for preview.`
-                  : 'Preview generation failed or no data found.'}{' '}
-                Ready to crawl.
-              </p>
-            )}
-            {/* Preview Warning */}
-            {rawCsvContent &&
-              !hasPreviewData &&
-              !isParsing &&
-              parseError?.includes('preview') && (
-                <p className='mt-2 flex items-center text-sm text-yellow-700'>
-                  <FaExclamationTriangle className='mr-1' /> Warning: Could not
-                  generate preview. Raw data is loaded and can be sent.
-                </p>
-              )}
           </div>
           {/* --- Action Buttons --- */}
           <div className='flex items-center space-x-4'>
@@ -242,14 +209,18 @@ export const JournalCrawlUploader: React.FC = () => {
               {!isCrawling && crawlProgress.status === 'success' && (
                 <div className='mb-4 rounded-md border border-green-200 bg-green-50 p-3'>
                   <h4 className='mb-2 font-medium text-green-800'>Summary</h4>
-                  <div className='grid grid-cols-2 gap-4 text-sm'>
+                  <div className='grid grid-cols-3 gap-4 text-sm'>
                     <div>
                       <span className='font-medium text-green-700'>Total Processed:</span>{' '}
-                      {crawlProgress.total ?? 0}
+                      {crawlProgress.totalProcessed ?? 0}
                     </div>
                     <div>
                       <span className='font-medium text-green-700'>Already Crawled:</span>{' '}
-                      {crawlProgress.current ?? 0}
+                      {crawlProgress.totalExists ?? 0}
+                    </div>
+                    <div>
+                      <span className='font-medium text-green-700'>New Journals:</span>{' '}
+                      {crawlProgress.totalNew ?? 0}
                     </div>
                   </div>
                 </div>
@@ -285,25 +256,27 @@ export const JournalCrawlUploader: React.FC = () => {
         {/* End Left Column */}
         {/* === Right Column === */}
         <div className='mt-6 flex flex-col space-y-4 md:mt-0 md:w-1/2'>
-          {' '}
-          {/* Right column, half width on md+, add margin top for mobile stacking */}
-          {/* --- Journal Preview Table Section --- */}
-          {hasPreviewData &&
-            !isParsing && ( // Show preview only if data was parsed successfully
-              <JournalPreviewTable data={parsedDataForPreview} />
-            )}
-          {/* Message when reading succeeded but no valid preview data was found */}
-          {rawCsvContent &&
-            !hasPreviewData &&
-            !isParsing &&
-            !parseError?.includes('preview') &&
-            !parseError?.includes('Error reading file') && (
-              <div className='rounded-lg border border-yellow-400 bg-yellow-100 p-4 text-center text-sm text-yellow-800'>
-                File read, but could not find valid journal data rows for
-                preview. Check file format (header, ';' delimiter) and content.
-                You can still attempt to send the raw data.
-              </div>
-            )}
+          {/* --- AG Grid Table Section --- */}
+          <div className="ag-theme-alpine" style={{ height: '500px', width: '100%' }}>
+            <AgGridReact<JournalWithStatus>
+              rowData={parsedData || []}
+              columnDefs={columnDefs}
+              defaultColDef={{
+                sortable: true,
+                filter: true,
+                resizable: true,
+                flex: 1,
+                minWidth: 100
+              }}
+              pagination={true}
+              paginationPageSize={10}
+              animateRows={true}
+              domLayout="normal"
+              suppressCellFocus={true}
+              enableCellTextSelection={true}
+              ensureDomOrder={true}
+            />
+          </div>
         </div>{' '}
         {/* End Right Column */}
       </div>{' '}
