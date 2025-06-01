@@ -22,40 +22,40 @@ const JournalPreviewTable: React.FC<{ data: Journal[] }> = ({ data }) => (
     {' '}
     {/* Removed mt-6, spacing handled by parent column */}
     <h3 className='text-md flex items-center rounded-t-lg border-b border-gray-200 bg-gray-5 p-3 font-semibold text-gray-700'>
-      <FaTable className='mr-2 text-gray-500' /> Preview Parsed Journals (
-      {data.length} items)
+      <FaTable className='mr-2 text-gray-500' /> Preview Parsed Journals ({data.length} items)
     </h3>
     <div className='custom-scrollbar max-h-96 overflow-auto'>
       <table className='min-w-full divide-y divide-gray-200'>
-        {/* Header: Only Rank and Title */}
         <thead className='sticky top-0 z-10 bg-gray-100'>
           <tr>
-            <th
-              scope='col'
-              className='sticky left-0 z-20 bg-gray-100 px-3 py-2 text-left text-xs font-medium uppercase tracking-wider text-gray-600'
-            >
-              Rank
-            </th>
-            <th
-              scope='col'
-              className='min-w-[300px] px-3 py-2 text-left text-xs font-medium uppercase tracking-wider text-gray-600'
-            >
+            <th scope='col' className='sticky left-0 z-20 bg-gray-100 px-3 py-2 text-left text-xs font-medium uppercase tracking-wider text-gray-600'>
               Title
+            </th>
+            <th scope='col' className='px-3 py-2 text-left text-xs font-medium uppercase tracking-wider text-gray-600'>
+              ISSN
+            </th>
+            <th scope='col' className='px-3 py-2 text-left text-xs font-medium uppercase tracking-wider text-gray-600'>
+              Publisher
+            </th>
+            <th scope='col' className='px-3 py-2 text-left text-xs font-medium uppercase tracking-wider text-gray-600'>
+              Type
             </th>
           </tr>
         </thead>
-        {/* Body: Only Rank and Title */}
         <tbody className='divide-y divide-gray-200 bg-white'>
           {data.map((journal, index) => (
-            <tr
-              key={journal.Sourceid ? `${journal.Sourceid}-${index}` : index}
-              className='hover:bg-gray-5'
-            >
-              <td className='sticky left-0 z-10 whitespace-nowrap bg-white px-3 py-2 text-sm text-gray-500'>
-                {journal.Rank ?? 'N/A'}
-              </td>
-              <td className='px-3 py-2 text-sm text-gray-900'>
+            <tr key={index} className='hover:bg-gray-5'>
+              <td className='sticky left-0 z-10 whitespace-nowrap bg-white px-3 py-2 text-sm text-gray-900'>
                 {journal.Title ?? 'N/A'}
+              </td>
+              <td className='px-3 py-2 text-sm text-gray-500'>
+                {journal.Issn ?? 'N/A'}
+              </td>
+              <td className='px-3 py-2 text-sm text-gray-500'>
+                {journal.Publisher ?? 'N/A'}
+              </td>
+              <td className='px-3 py-2 text-sm text-gray-500'>
+                {journal.Type ?? 'N/A'}
               </td>
             </tr>
           ))}
@@ -215,17 +215,16 @@ export const JournalCrawlUploader: React.FC = () => {
             </button>
           </div>
           {/* --- Progress and Results Section --- */}
-          {showStatusSection && ( // Conditionally render the entire status section
+          {showStatusSection && (
             <div className='rounded-md border border-gray-200 bg-gray-5 p-4'>
               <h3 className='text-md mb-3 font-semibold text-gray-700'>
-                Crawl Status & Log
+                Crawl Status & Results
               </h3>
 
               {/* Crawling indicator */}
               {isCrawling && crawlProgress.status === 'crawling' && (
                 <p className='mb-3 flex items-center text-sm text-blue-600'>
-                  <FaSpinner className='mr-2 animate-spin' /> Sending journal
-                  data to backend for processing... This may take a while.
+                  <FaSpinner className='mr-2 animate-spin' /> Checking journals in database...
                 </p>
               )}
 
@@ -239,39 +238,41 @@ export const JournalCrawlUploader: React.FC = () => {
                 </div>
               )}
 
-              {/* Final Status Messages */}
+              {/* Results Summary */}
               {!isCrawling && crawlProgress.status === 'success' && (
-                <p className='mb-3 flex items-center text-sm text-green-700'>
-                  <FaCheckCircle className='mr-1 text-green-600' />
-                  Backend request completed successfully. Check backend logs for
-                  processing details and results.
-                </p>
-              )}
-              {!isCrawling &&
-                crawlProgress.status === 'error' &&
-                !crawlError && (
-                  <p className='mb-3 flex items-center text-sm text-red-800'>
-                    <FaTimesCircle className='mr-1 text-red-600' />
-                    Backend request failed. Check logs for details.
-                  </p>
-                )}
-              {!isCrawling && crawlProgress.status === 'stopped' && (
-                <p className='mb-3 flex items-center text-sm text-yellow-800'>
-                  <FaStop className='mr-1 text-yellow-600' />
-                  Process stopped.
-                </p>
+                <div className='mb-4 rounded-md border border-green-200 bg-green-50 p-3'>
+                  <h4 className='mb-2 font-medium text-green-800'>Summary</h4>
+                  <div className='grid grid-cols-2 gap-4 text-sm'>
+                    <div>
+                      <span className='font-medium text-green-700'>Total Processed:</span>{' '}
+                      {crawlProgress.total ?? 0}
+                    </div>
+                    <div>
+                      <span className='font-medium text-green-700'>Already Crawled:</span>{' '}
+                      {crawlProgress.current ?? 0}
+                    </div>
+                  </div>
+                </div>
               )}
 
               {/* Messages Log */}
               {crawlMessages.length > 0 && (
                 <div className='custom-scrollbar max-h-60 space-y-1 overflow-y-auto rounded border border-gray-200 bg-white p-3 text-xs text-gray-700 shadow-inner'>
                   <h4 className='mb-1 text-xs font-semibold text-gray-500'>
-                    Log Messages:
+                    Detailed Results:
                   </h4>
                   {crawlMessages.map((msg, index) => (
                     <p
                       key={index}
-                      className={`break-words ${msg.startsWith('FAILED') ? 'font-medium text-red-600' : ''} ${msg.startsWith('Warning:') ? 'text-yellow-700' : ''} ${msg.startsWith('Successfully') ? 'text-green-600' : ''}`}
+                      className={`break-words ${
+                        msg.startsWith('CRAWLED')
+                          ? 'text-green-600'
+                          : msg.startsWith('NOT CRAWLED')
+                          ? 'text-yellow-600'
+                          : msg.startsWith('Error')
+                          ? 'text-red-600'
+                          : 'text-gray-600'
+                      }`}
                     >
                       {msg}
                     </p>
