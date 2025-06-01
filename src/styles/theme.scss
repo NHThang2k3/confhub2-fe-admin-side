@@ -1,0 +1,102 @@
+// Theme Colors
+$primary: #2563eb;
+$primary-dark: #1d4ed8;
+$primary-light: #60a5fa;
+
+// Text Colors
+$text-primary: #374151;
+$text-secondary: #6b7280;
+$text-light: #9ca3af;
+
+// Background Colors
+$bg-white: #ffffff;
+$bg-gray-50: #f9fafb;
+$bg-gray-100: #f3f4f6;
+$bg-gray-200: #e5e7eb;
+
+// Status Colors
+$status-success: #10b981;
+$status-success-light: #d1fae5;
+$status-error: #ef4444;
+$status-error-light: #fee2e2;
+$status-warning: #f59e0b;
+$status-warning-light: #fef3c7;
+
+// Border Colors
+$border-light: #e5e7eb;
+$border-dark: #d1d5db;
+
+// Focus/Hover States
+$focus-ring: $primary;
+$hover-bg: $bg-gray-100;
+$hover-text: $primary;
+
+// Button Colors
+$button-primary-bg: $primary;
+$button-primary-hover: $primary-dark;
+$button-outline-border: $border-light;
+$button-outline-hover-bg: $hover-bg;
+$button-outline-hover-text: $hover-text;
+
+// Input Colors
+$input-border: $border-light;
+$input-focus-border: $primary;
+$input-focus-ring: $primary;
+
+// Table Colors
+$table-header-bg: $bg-gray-50;
+$table-border: $border-light;
+$table-hover-bg: $bg-gray-50;
+
+// Dialog Colors
+$dialog-bg: $bg-white;
+$dialog-border: $border-light;
+$dialog-shadow: rgba(0, 0, 0, 0.1);
+
+// Export as CSS variables for use in Tailwind
+:root {
+  --color-primary: #{$primary};
+  --color-primary-dark: #{$primary-dark};
+  --color-primary-light: #{$primary-light};
+  
+  --color-text-primary: #{$text-primary};
+  --color-text-secondary: #{$text-secondary};
+  --color-text-light: #{$text-light};
+  
+  --color-bg-white: #{$bg-white};
+  --color-bg-gray-50: #{$bg-gray-50};
+  --color-bg-gray-100: #{$bg-gray-100};
+  --color-bg-gray-200: #{$bg-gray-200};
+  
+  --color-status-success: #{$status-success};
+  --color-status-success-light: #{$status-success-light};
+  --color-status-error: #{$status-error};
+  --color-status-error-light: #{$status-error-light};
+  --color-status-warning: #{$status-warning};
+  --color-status-warning-light: #{$status-warning-light};
+  
+  --color-border-light: #{$border-light};
+  --color-border-dark: #{$border-dark};
+  
+  --color-focus-ring: #{$focus-ring};
+  --color-hover-bg: #{$hover-bg};
+  --color-hover-text: #{$hover-text};
+  
+  --color-button-primary-bg: #{$button-primary-bg};
+  --color-button-primary-hover: #{$button-primary-hover};
+  --color-button-outline-border: #{$button-outline-border};
+  --color-button-outline-hover-bg: #{$button-outline-hover-bg};
+  --color-button-outline-hover-text: #{$button-outline-hover-text};
+  
+  --color-input-border: #{$input-border};
+  --color-input-focus-border: #{$input-focus-border};
+  --color-input-focus-ring: #{$input-focus-ring};
+  
+  --color-table-header-bg: #{$table-header-bg};
+  --color-table-border: #{$table-border};
+  --color-table-hover-bg: #{$table-hover-bg};
+  
+  --color-dialog-bg: #{$dialog-bg};
+  --color-dialog-border: #{$dialog-border};
+  --color-dialog-shadow: #{$dialog-shadow};
+} 
