@@ -20,7 +20,7 @@ interface CrawlerToolsProps {
     activeCrawler: CrawlerType;
     onSetCrawler: (crawler: CrawlerType) => void;
     ConferenceCrawlUploaderComponent: React.FC;
-    // JournalCrawlUploaderComponent: React.FC;
+    JournalCrawlUploaderComponent: React.FC;
 }
 
 const CrawlerTools: React.FC<CrawlerToolsProps> = ({
@@ -29,7 +29,7 @@ const CrawlerTools: React.FC<CrawlerToolsProps> = ({
     activeCrawler,
     onSetCrawler,
     ConferenceCrawlUploaderComponent,
-    // JournalCrawlUploaderComponent
+    JournalCrawlUploaderComponent
 }) => {
     const t = useTranslations('CrawlerTools');
     const { toast } = useToast();
@@ -141,16 +141,16 @@ const CrawlerTools: React.FC<CrawlerToolsProps> = ({
                         >
                             <FaTable className="mr-2" /> {t('crawlConferencesButton')}
                         </button>
-                        {/* <button
+                        <button
                             onClick={() => onSetCrawler('journal')}
                             className={`flex items-center py-2 px-4 text-sm font-medium border-b-2 focus:outline-none transition-colors duration-150 ${activeCrawler === 'journal' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
                         >
                             <FaBookOpen className="mr-2" /> {t('crawlJournalsButton')}
-                        </button> */}
+                        </button>
                     </div>
                     <div>
                         {activeCrawler === 'conference' && <ConferenceCrawlUploaderComponent />}
-                        {/* {activeCrawler === 'journal' && <JournalCrawlUploaderComponent />} */}
+                        {activeCrawler === 'journal' && <JournalCrawlUploaderComponent />}
                     </div>
                     <div className="mt-4">
                         <CronUpdateCard />
