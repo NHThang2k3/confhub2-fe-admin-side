@@ -33,7 +33,10 @@ const MainJournalRowCells: React.FC<MainJournalRowCellsProps> = ({
     durationSeconds, steps, errorCount
   } = journalData;
 
-  const statusDisplay = status ? t(`statusNames.${status.toLowerCase()}`, {}, { defaultValue: status }) : t('statusNames.unknown');
+  const statusDisplay = status
+    ? t(`statusNames.${status.toLowerCase()}`, { defaultValue: status }) // Thử truyền defaultValue trong object values
+    : t('statusNames.unknown');
+
 
   return (
     <>

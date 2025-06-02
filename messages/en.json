@@ -592,7 +592,8 @@
       "endTime": "End Time",
       "duration": "Duration",
       "status": "Status",
-      "successRate": "Success Rate",
+      "journalSuccessRate": "Success Rate",
+      "conferenceSuccessRate": "Success Rate",
       "actions": "Actions"
     },
     "common": {

@@ -106,7 +106,7 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
     const successRateColumnHeader = crawlerType === 'conference'
         ? t('tableHeaders.conferenceSuccessRate') // Key dịch mới
         : t('tableHeaders.journalSuccessRate');   // Key dịch mới
-        // Hoặc giữ chung: t('tableHeaders.successRate')
+    // Hoặc giữ chung: t('tableHeaders.successRate')
 
     return (
         <div className="overflow-x-auto border border-gray-200 rounded-lg shadow-sm">
@@ -216,7 +216,7 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
                                     {details && details.status ? (
                                         <span className={`px-2.5 py-1 rounded-full text-xs font-semibold flex items-center ${getStatusChipClass(details.status)}`}>
                                             {getStatusIcon(details.status)}
-                                            {t(`statusNames.${details.status.toLowerCase()}`, {}, { defaultValue: details.status })} {/* Dịch tên trạng thái, fallback về giá trị gốc */}
+                                            {t(`statusNames.${details.status.toLowerCase()}`, { defaultMessage: details.status })}
                                         </span>
                                     ) : (
                                         <span className={`px-2.5 py-1 rounded-full text-xs font-semibold flex items-center ${getStatusChipClass(null)}`}>

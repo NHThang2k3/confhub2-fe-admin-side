@@ -1,4 +1,4 @@
-// src/app/[locale]/dashboard/logAnalysis/journalOverallSummary/chartTabs/BioxbioCharts.tsx (File mới)
+// src/app/[locale]/dashboard/logAnalysis/journalOverallSummary/chartTabs/BioxbioCharts.tsx
 import React from 'react';
 import ChartCard from '../../overallSummary/ChartCard';
 import { getPieChartOption, getBarChartOption, BarChartData, PieChartItem } from '../../utils/chartUtils';

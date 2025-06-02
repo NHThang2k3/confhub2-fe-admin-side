@@ -1,4 +1,4 @@
-// src/app/[locale]/dashboard/logAnalysis/OverallSummary.tsx
+// src/app/[locale]/dashboard/logAnalysis/ConferenceOverallSummary.tsx
 import React, { useMemo } from 'react';
 import { ConferenceLogAnalysisResult, GoogleSearchHealthData, ValidationStats, GeminiApiAnalysis } from '../../../../../models/logAnalysis';
 import { transformRecordToBarChart, BarChartData, transformObjectToPieChartData, PieChartItem } from '../utils/chartUtils';
@@ -7,13 +7,13 @@ import SummaryHeaderComponent from './SummaryHeader';
 import NoDataMessage from './NoDataMessage';
 import CollapsibleContent from './CollapsibleContent';
 
-interface OverallSummaryProps {
+interface ConferenceOverallSummaryProps {
   data: ConferenceLogAnalysisResult;
   isExpanded: boolean;
   onToggle: () => void;
 }
 
-const OverallSummary: React.FC<OverallSummaryProps> = ({
+const ConferenceOverallSummary: React.FC<ConferenceOverallSummaryProps> = ({
   data,
   isExpanded,
   onToggle
@@ -264,4 +264,4 @@ const OverallSummary: React.FC<OverallSummaryProps> = ({
   );
 };
 
-export default OverallSummary;
+export default ConferenceOverallSummary;

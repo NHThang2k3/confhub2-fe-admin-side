@@ -9,14 +9,14 @@ import { useTranslations } from 'next-intl';
 interface ImageSearchChartsProps {
   // Dữ liệu được tính toán từ JournalOverallSummary.tsx
   searchStatusData: PieChartItem[];
-  apiKeyUsageData: BarChartData;
+  // apiKeyUsageData: BarChartData;
   errorsData: BarChartData;
   // googleSearchHealthData?: GoogleSearchHealthData | null; // Tùy chọn
 }
 
 const ImageSearchCharts: React.FC<ImageSearchChartsProps> = ({
   searchStatusData,
-  apiKeyUsageData,
+  // apiKeyUsageData,
   errorsData,
   // googleSearchHealthData
 }) => {
@@ -36,11 +36,11 @@ const ImageSearchCharts: React.FC<ImageSearchChartsProps> = ({
           dataExists={searchStatusData.length > 0}
           noDataMessage={t('noSearchStatusData')}
         />
-        <ChartCard
+        {/* <ChartCard
           option={getBarChartOption(t('apiKeyUsageTitle'), apiKeyUsageData.labels, apiKeyUsageData.values, t('common.requests'), '#ea7ccc')}
           dataExists={apiKeyUsageData.labels.length > 0}
           noDataMessage={t('noApiKeyUsageData')}
-        />
+        /> */}
         <ChartCard
           option={getBarChartOption(t('topErrorsTitle'), errorsData.labels, errorsData.values, t('common.count'), '#ff6384')}
           dataExists={errorsData.labels.length > 0}

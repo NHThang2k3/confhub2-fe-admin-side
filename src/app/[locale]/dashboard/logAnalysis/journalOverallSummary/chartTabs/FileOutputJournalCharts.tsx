@@ -1,7 +1,7 @@
-// src/app/[locale]/dashboard/logAnalysis/journalOverallSummary/chartTabs/FileOutputJournalCharts.tsx (File mới)
+// src/app/[locale]/dashboard/logAnalysis/journalOverallSummary/chartTabs/FileOutputJournalCharts.tsx
 import React from 'react';
 import ChartCard from '../../overallSummary/ChartCard';
-import { getPieChartOption, BarChartData, PieChartItem } from '../../utils/chartUtils'; // getBarChartOption nếu cần
+import { getPieChartOption, PieChartItem } from '../../utils/chartUtils';
 import { useTranslations } from 'next-intl';
 
 interface FileOutputJournalChartsProps {

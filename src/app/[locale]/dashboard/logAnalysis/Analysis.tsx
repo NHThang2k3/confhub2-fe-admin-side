@@ -11,10 +11,6 @@ import {
 import { useTranslations } from 'next-intl';
 
 import AnalysisHeader from './analysis/AnalysisHeader';
-import OverallSummary from './overallSummary/ConferenceOverallSummary';
-import ConferenceDetails from './analysis/ConferenceDetails';
-// *** THÊM: Import JournalDetails (hoặc placeholder) ***
-import JournalDetails from './analysis/JournalDetails'; // Giả sử bạn sẽ tạo file này
 
 // Import types từ models (nếu chưa có trong hook)
 import { ConferenceLogAnalysisResult } from '@/src/models/logAnalysis';
@@ -239,7 +235,7 @@ const Analysis: React.FC = () => {
     if (error && !currentData && !loading) {
         return (
             <ErrorScreen error={error} onRetry={refetchData}>
-                 <CrawlerTypeSelector />
+                <CrawlerTypeSelector />
                 <AnalysisHeader
                     loading={false} error={error} isConnected={isConnectedToSocket} data={null}
                     timeFilterOption={timeFilterOption} handleFilterChange={handleTimeFilterChange}
@@ -280,7 +276,6 @@ const Analysis: React.FC = () => {
                     onSelectRequest={handleSelectRequestFromList}
                     formatDateTime={formatDateTime}
                     getStatusChipClass={getStatusChipClass}
-                    OverallSummaryComponent={OverallSummary} // OverallSummary sẽ cần xử lý data union
                     isSummaryExpandedOverall={isSummaryExpanded}
                     onToggleSummaryOverall={handleToggleSummary}
                     getNoDataMessage={getNoDataFoundMessage}
@@ -294,7 +289,6 @@ const Analysis: React.FC = () => {
                     data={currentData} // Truyền currentData
                     activeRequestIdFilter={activeRequestIdFilter}
                     onClearFilter={clearActiveFilterAndGoToList}
-                    OverallSummaryComponent={OverallSummary} // OverallSummary sẽ cần xử lý data union
                     isSummaryExpandedOverall={isSummaryExpanded}
                     onToggleSummaryOverall={handleToggleSummary}
                     getNoDataMessage={getNoDataFoundMessage}

@@ -23,7 +23,7 @@ interface JournalCollapsibleContentProps {
   dataSourceDistributionData: PieChartItem[];
   playwrightJournalData: PieChartItem[]; // Giả sử có
   imageSearchStatusData: PieChartItem[];
-  imageSearchApiKeyUsageData: BarChartData;
+  // imageSearchApiKeyUsageData: BarChartData;
   imageSearchErrorsData: BarChartData;
   bioxbioFetchStatusData: PieChartItem[];
   bioxbioCacheData: PieChartItem[];
@@ -42,7 +42,7 @@ const JournalCollapsibleContent: React.FC<JournalCollapsibleContentProps> = (pro
   const {
     isExpanded, data,
     overallJournalStatusData, dataSourceDistributionData, playwrightJournalData,
-    imageSearchStatusData, imageSearchApiKeyUsageData, imageSearchErrorsData,
+    imageSearchStatusData, imageSearchErrorsData,
     bioxbioFetchStatusData, bioxbioCacheData, bioxbioErrorsData,
     scimagoDetailPageStatusData, scimagoErrorsData,
     jsonlWriteStatusData, clientCsvParseStatusData,
@@ -68,12 +68,12 @@ const JournalCollapsibleContent: React.FC<JournalCollapsibleContentProps> = (pro
       icon: <FaListAlt className="mr-2" />, // Thay icon phù hợp
       dataExists: (p: JournalCollapsibleContentProps) => p.scimagoDetailPageStatusData.length > 0 || p.scimagoErrorsData.labels.length > 0,
     },
-    {
-      key: 'imageSearch' as JournalChartTabKey,
-      label: t('chartTabs.imageSearch'), // "Image Search"
-      icon: <FaSearch className="mr-2" />,
-      dataExists: (p: JournalCollapsibleContentProps) => p.imageSearchStatusData.length > 0 || p.imageSearchApiKeyUsageData.labels.length > 0 || p.imageSearchErrorsData.labels.length > 0,
-    },
+    // {
+    //   key: 'imageSearch' as JournalChartTabKey,
+    //   label: t('chartTabs.imageSearch'), // "Image Search"
+    //   icon: <FaSearch className="mr-2" />,
+    //   dataExists: (p: JournalCollapsibleContentProps) => p.imageSearchStatusData.length > 0 || p.imageSearchApiKeyUsageData.labels.length > 0 || p.imageSearchErrorsData.labels.length > 0,
+    // },
     {
       key: 'fileOutput' as JournalChartTabKey,
       label: t('chartTabs.fileOutput'), // "File Output"
@@ -160,7 +160,7 @@ const JournalCollapsibleContent: React.FC<JournalCollapsibleContentProps> = (pro
                 {activeJournalTab === 'imageSearch' && (
                   <ImageSearchCharts // Hoặc một phiên bản tùy chỉnh của GoogleSearchCharts
                     searchStatusData={imageSearchStatusData}
-                    apiKeyUsageData={imageSearchApiKeyUsageData}
+                    // apiKeyUsageData={imageSearchApiKeyUsageData}
                     errorsData={imageSearchErrorsData}
                     // googleSearchHealthData có thể không liên quan trực tiếp đến image search
                   />

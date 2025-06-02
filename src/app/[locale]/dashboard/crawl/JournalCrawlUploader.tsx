@@ -4,7 +4,7 @@ import React from 'react'
 // Import the refactored hook and types
 import { useJournalCrawl } from '@/src/hooks/crawl/journal/useJournalCrawl' // Adjust path as needed
 import { useJournalTableManager } from '@/src/hooks/crawl/useJournalTableManager'
-import { JournalTable } from './journalTable/JournalTable'
+// import { JournalTable } from './journalTable/JournalTable'
 import { Button } from '@/src/components/ui/button'
 import { Input } from '@/src/components/ui/input'
 import {
@@ -21,6 +21,7 @@ import { ColDef, ValueFormatterParams, CellClassParams } from 'ag-grid-community
 import { AllCommunityModule, ModuleRegistry} from 'ag-grid-community'
 import JournalSelectionStep from './steps/JournalSelectionStep'
 import { useTranslations } from 'next-intl'
+import { Journal } from '@/src/models/logAnalysis/importJournalCrawl'
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
@@ -256,7 +257,7 @@ export const JournalCrawlUploader: React.FC = () => {
         </div>{' '}
         {/* End Left Column */}
         {/* === Right Column === */}
-        <div className='mt-6 flex flex-col space-y-4 md:mt-0 md:w-1/2'>
+        {/* <div className='mt-6 flex flex-col space-y-4 md:mt-0 md:w-1/2'>
           {parsedData && parsedData.length > 0 && (
             <JournalTable
               data={tableManager.data}
@@ -274,7 +275,7 @@ export const JournalCrawlUploader: React.FC = () => {
               onSelectAll={tableManager.onSelectAll}
             />
           )}
-        </div>{' '}
+        </div>{' '} */}
         {/* End Right Column */}
       </div>{' '}
       {/* End Flex Container */}

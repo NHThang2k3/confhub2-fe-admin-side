@@ -8,6 +8,10 @@ import NoDataDisplay from './NoDataDisplay';
 import { useTranslations } from 'next-intl';
 // *** THAY ĐỔI: Import LogAnalysisResultUnion và CrawlerType ***
 import { LogAnalysisResultUnion, CrawlerType } from '@/src/hooks/logAnalysis/useLogAnalysisData'; // Hoặc từ Analysis.tsx
+import ConferenceOverallSummary from '../overallSummary/ConferenceOverallSummary';
+import JournalOverallSummary from '../journalOverallSummary/JournalOverallSummary';
+import { ConferenceLogAnalysisResult } from '@/src/models/logAnalysis';
+import { JournalLogAnalysisResult } from '@/src/models/logAnalysis';
 
 interface LogRequestsListProps {
     isExpanded: boolean;
@@ -16,7 +20,6 @@ interface LogRequestsListProps {
     onSelectRequest: (requestId: string) => void;
     formatDateTime: (isoString: string | null | undefined) => string;
     getStatusChipClass: (status: string | undefined | null) => string;
-    OverallSummaryComponent: React.FC<any>; // OverallSummary sẽ nhận data union và crawlerType
     isSummaryExpandedOverall: boolean;
     onToggleSummaryOverall: () => void;
     getNoDataMessage: () => string;
@@ -31,7 +34,6 @@ const LogRequestsList: React.FC<LogRequestsListProps> = ({
     onSelectRequest,
     formatDateTime,
     getStatusChipClass,
-    OverallSummaryComponent,
     isSummaryExpandedOverall,
     onToggleSummaryOverall,
     getNoDataMessage,
@@ -87,17 +89,24 @@ const LogRequestsList: React.FC<LogRequestsListProps> = ({
                         crawlerType={crawlerType}
                     />
                 ) : (
-                     <NoDataDisplay message={getNoDataMessage()} icon={<FaInfoCircle size={20} className="mb-2 inline-block" />} />
+                    <NoDataDisplay message={getNoDataMessage()} icon={<FaInfoCircle size={20} className="mb-2 inline-block" />} />
                 )}
 
                 {hasOverallDataForDisplay && (
                     <div className="mt-6 border-t pt-4">
-                        <OverallSummaryComponent
-                            data={data} // Truyền data union
-                            isExpanded={isSummaryExpandedOverall}
-                            onToggle={onToggleSummaryOverall}
-                            crawlerType={crawlerType} // *** TRUYỀN crawlerType xuống OverallSummary ***
-                        />
+                        {crawlerType === 'conference' ? (
+                            <ConferenceOverallSummary
+                                data={data as ConferenceLogAnalysisResult}
+                                isExpanded={isSummaryExpandedOverall}
+                                onToggle={onToggleSummaryOverall}
+                            />
+                        ) : ( // crawlerType === 'journal'
+                            <JournalOverallSummary
+                                data={data as JournalLogAnalysisResult}
+                                isExpanded={isSummaryExpandedOverall}
+                                onToggle={onToggleSummaryOverall}
+                            />
+                        )}
                     </div>
                 )}
             </div>

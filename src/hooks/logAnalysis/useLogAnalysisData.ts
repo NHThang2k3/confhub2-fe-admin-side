@@ -50,30 +50,34 @@ if (typeof window !== 'undefined' && LOG_ANALYSIS_SERVICE_URL_CONFIG) {
 
 
 export const useLogAnalysisData = (
-    crawlerType: CrawlerType, // *** THÊM: crawlerType ***
+    crawlerType: CrawlerType,
     filterStartTime?: number,
     filterEndTime?: number,
     filterRequestId?: string
 ) => {
     const { isLoggedIn, isInitializing: isAuthInitializing, getToken } = useAuth();
-    // *** THAY ĐỔI: Kiểu dữ liệu của state data ***
     const [data, setData] = useState<LogAnalysisResultUnion | null>(null);
     const [loadingData, setLoadingData] = useState<boolean>(true);
     const [socketError, setSocketError] = useState<string | null>(null);
     const [isConnected, setIsConnected] = useState<boolean>(false);
     const [fetchError, setFetchError] = useState<string | null>(null);
     const isMountedRef = useRef(true);
-    const socketListenersRef = useRef<(() => void)[]>([]);
+    // const socketListenersRef = useRef<(() => void)[]>([]); // Không cần nữa nếu quản lý trong effect socket
     const initialFetchDoneRef = useRef(false);
+    const socketRef = useRef<Socket | null>(null); // Tham chiếu đến socket instance
 
     useEffect(() => {
         isMountedRef.current = true;
-        return () => { isMountedRef.current = false; };
+        return () => {
+            isMountedRef.current = false;
+            // Cân nhắc việc cleanup socket listeners ở đây nếu socketRef.current vẫn tồn tại
+            // và component unmount hoàn toàn. Tuy nhiên, việc disconnect khi logout đã xử lý.
+        };
     }, []);
 
-    const fetchData = useCallback(async (isManualRefresh = false) => {
+    const fetchData = useCallback(async (isManualRefresh = false, currentCrawlerType: CrawlerType) => {
         if (!isMountedRef.current) return;
-        console.log(`[useLogAnalysisData] Fetching for ${crawlerType}. Manual: ${isManualRefresh}, Start=${filterStartTime}, End=${filterEndTime}, ReqID=${filterRequestId}`);
+        console.log(`[useLogAnalysisData] Fetching for ${currentCrawlerType}. Manual: ${isManualRefresh}, Start=${filterStartTime}, End=${filterEndTime}, ReqID=${filterRequestId}`);
 
         setLoadingData(true);
         setFetchError(null);
@@ -83,17 +87,15 @@ export const useLogAnalysisData = (
             if (isMountedRef.current) {
                 setFetchError("Authentication required.");
                 setLoadingData(false);
-                setData(null);
+                setData(null); // Clear data khi không có token
             }
             return;
         }
         try {
             let result: LogAnalysisResultUnion | null = null;
-            // *** THAY ĐỔI: Gọi API fetch dựa trên crawlerType ***
-            if (crawlerType === 'conference') {
+            if (currentCrawlerType === 'conference') {
                 result = await apiFetchConferenceLogAnalysisData(filterStartTime, filterEndTime, filterRequestId);
-            } else if (crawlerType === 'journal') {
-                // Giả sử bạn đã tạo hàm này và import ở trên
+            } else if (currentCrawlerType === 'journal') {
                 result = await apiFetchJournalLogAnalysisData(filterStartTime, filterEndTime, filterRequestId);
             }
 
@@ -104,6 +106,7 @@ export const useLogAnalysisData = (
         } catch (err: any) {
             if (isMountedRef.current) {
                 setFetchError(err.message || 'Failed to fetch data');
+                // setData(null); // Cân nhắc clear data khi fetch lỗi
             }
         } finally {
             if (isMountedRef.current) {
@@ -113,54 +116,75 @@ export const useLogAnalysisData = (
                 }
             }
         }
-    }, [crawlerType, filterStartTime, filterEndTime, filterRequestId, getToken]); // *** THÊM: crawlerType vào dependencies ***
+    }, [filterStartTime, filterEndTime, filterRequestId, getToken]); // Bỏ crawlerType ra khỏi đây, sẽ truyền vào khi gọi
 
+    // Effect để fetch data khi filter, crawlerType, hoặc login status thay đổi
     useEffect(() => {
         if (isAuthInitializing) {
             if (isMountedRef.current) setLoadingData(true);
             return;
         }
-
         if (!isLoggedIn) {
             if (isMountedRef.current) {
-                setData(null);
+                setData(null); // Clear data khi logout
                 setLoadingData(false);
                 setFetchError(null);
-                setSocketError(null);
-                setIsConnected(false);
                 initialFetchDoneRef.current = false;
             }
-            disconnectSocket();
             return;
         }
+        // Chỉ fetch khi đã login và không còn initializing
+        console.log(`[useLogAnalysisData] Triggering fetchData (from data effect) for ${crawlerType}.`);
+        fetchData(false, crawlerType);
 
-        console.log(`[useLogAnalysisData] Triggering fetchData for ${crawlerType} due to dependency change (login/filter/crawlerType).`);
-        fetchData(false); // fetchData sẽ được gọi lại nếu crawlerType thay đổi
+    }, [isAuthInitializing, isLoggedIn, crawlerType, fetchData]); // fetchData ở đây thay đổi khi filter/token thay đổi
 
-        const currentToken = getToken();
-        const socket = getSocketInstance(currentToken);
-
-        const cleanupExistingSocketListeners = () => {
-            socketListenersRef.current.forEach(removeListener => removeListener());
-            socketListenersRef.current = [];
-        };
-
-        if (!socket) {
-            cleanupExistingSocketListeners();
-            if (isMountedRef.current) {
-                setIsConnected(false);
-                if (!socketError) {
-                    setSocketError("Socket instance not available (check config or token).");
+    // Effect riêng để quản lý vòng đời của socket
+    useEffect(() => {
+        if (isAuthInitializing || !isLoggedIn) {
+            // Nếu đang init auth hoặc chưa login, đảm bảo socket bị ngắt và cleanup
+            if (socketRef.current) {
+                console.log('[useLogAnalysisData SocketEffect] Disconnecting socket due to auth state change.');
+                // Không cần gọi disconnectSocket() từ utils nữa nếu quản lý instance ở đây
+                socketRef.current.disconnect();
+                socketRef.current = null; // Xóa tham chiếu
+                if (isMountedRef.current) {
+                    setIsConnected(false);
+                    setSocketError(null);
                 }
             }
             return;
         }
 
+        // Đã login và auth đã init xong
+        const currentToken = getToken();
+        if (!currentToken) { // Trường hợp hiếm, nhưng để an toàn
+            if (socketRef.current) socketRef.current.disconnect();
+            socketRef.current = null;
+            if (isMountedRef.current) setIsConnected(false);
+            return;
+        }
+
+        // Lấy hoặc tạo socket instance
+        // Việc getSocketInstance có thể cần được điều chỉnh để không tạo instance mới nếu đã có trong socketRef.current
+        // Hoặc, chúng ta sẽ quản lý instance hoàn toàn trong hook này.
+        // Để đơn giản, giả sử getSocketInstance từ utils vẫn hoạt động tốt và trả về cùng instance nếu token không đổi.
+        const socket = getSocketInstance(currentToken);
+        socketRef.current = socket; // Lưu tham chiếu
+
+        if (!socket) {
+            if (isMountedRef.current) {
+                setIsConnected(false);
+                if (!socketError) setSocketError("Socket instance not available (check config or token).");
+            }
+            return;
+        }
+
+        // Cập nhật trạng thái isConnected ban đầu
         if (isMountedRef.current && isConnected !== socket.connected) {
             setIsConnected(socket.connected);
         }
 
-        cleanupExistingSocketListeners();
 
         const handleConnect = () => {
             console.log('[Socket] Connected!');
@@ -197,23 +221,14 @@ export const useLogAnalysisData = (
             }
         };
 
-        // *** THAY ĐỔI: Xử lý update từ socket ***
-        // Cách 1: Backend gửi event riêng biệt
-        // const handleConferenceLogAnalysisUpdate = (updatedData: ConferenceLogAnalysisResult) => { ... };
-        // const handleJournalLogAnalysisUpdate = (updatedData: JournalLogAnalysisResult) => { ... };
-        // socket.on('conference_log_analysis_update', handleConferenceLogAnalysisUpdate);
-        // socket.on('journal_log_analysis_update', handleJournalLogAnalysisUpdate);
-
-        // Cách 2: Backend gửi event chung với trường crawlerType (giả sử cách này)
-        const handleGenericLogAnalysisUpdate = (updatedDataWithCrawlerType: LogAnalysisResultUnion & { crawlerType: CrawlerType }) => {
+         const handleGenericLogAnalysisUpdate = (updatedDataWithCrawlerType: LogAnalysisResultUnion & { crawlerType: CrawlerType }) => {
             console.log('[Socket] Generic Update received for crawler:', updatedDataWithCrawlerType.crawlerType);
             if (isMountedRef.current) {
-                // Chỉ cập nhật nếu crawlerType của update khớp với crawlerType hiện tại của hook
+                // QUAN TRỌNG: crawlerType ở đây là crawlerType hiện tại của hook instance này
                 if (updatedDataWithCrawlerType.crawlerType !== crawlerType) {
                     console.log(`[Socket Update] Ignored: CrawlerType mismatch. Hook for "${crawlerType}", Update for "${updatedDataWithCrawlerType.crawlerType}"`);
                     return;
                 }
-
                 const currentFilter = filterRequestId;
                 const updateMatchesFilter = (currentFilter === updatedDataWithCrawlerType.filterRequestId) || (!currentFilter && !updatedDataWithCrawlerType.filterRequestId);
 
@@ -222,45 +237,51 @@ export const useLogAnalysisData = (
                     return;
                 }
                 console.log('[Socket Update] Applying update.');
-                setData(updatedDataWithCrawlerType); // updatedDataWithCrawlerType đã là LogAnalysisResultUnion
+                setData(updatedDataWithCrawlerType);
                 setFetchError(null);
-                setLoadingData(false);
+                setLoadingData(false); // Dữ liệu đã được cập nhật, không còn loading
                 setSocketError(null);
             }
         };
-        // Giả sử backend gửi event 'log_analysis_update' với payload có trường 'crawlerType'
+
+        // Gắn listeners
+        socket.on('connect', handleConnect);
+        socket.on('disconnect', handleDisconnect);
+        socket.on('connect_error', handleConnectError);
+        socket.on('auth_error', handleAuthError);
         socket.on('log_analysis_update', handleGenericLogAnalysisUpdate);
 
-
-        socketListenersRef.current = [
-            () => socket.off('connect', handleConnect),
-            () => socket.off('disconnect', handleDisconnect),
-            () => socket.off('connect_error', handleConnectError),
-            () => socket.off('auth_error', handleAuthError),
-            // () => socket.off('conference_log_analysis_update', handleConferenceLogAnalysisUpdate), // Nếu dùng event riêng
-            // () => socket.off('journal_log_analysis_update', handleJournalLogAnalysisUpdate),       // Nếu dùng event riêng
-            () => socket.off('log_analysis_update', handleGenericLogAnalysisUpdate), // Nếu dùng event chung
-        ];
-
+        // Kết nối nếu chưa kết nối
         if (!socket.connected) {
-            console.log('[useLogAnalysisData] Attempting to connect socket.');
+            console.log('[useLogAnalysisData SocketEffect] Attempting to connect socket.');
             socket.connect();
         }
 
         return () => {
-            console.log('[useLogAnalysisData] Cleaning up socket listeners for this hook instance.');
-            cleanupExistingSocketListeners();
+            console.log('[useLogAnalysisData SocketEffect] Cleaning up socket listeners for this hook instance.');
+            // Gỡ listeners khi component unmount hoặc dependencies thay đổi
+            socket.off('connect', handleConnect);
+            socket.off('disconnect', handleDisconnect);
+            socket.off('connect_error', handleConnectError);
+            socket.off('auth_error', handleAuthError);
+            socket.off('log_analysis_update', handleGenericLogAnalysisUpdate);
+
+            // Không ngắt kết nối socket ở đây trừ khi logout (đã xử lý ở đầu effect)
+            // hoặc component unmount hoàn toàn (sẽ được xử lý bởi disconnectSocket() trong return của useEffect chính của component cha nếu cần)
+            // Việc giữ kết nối socket khi crawlerType thay đổi là mong muốn.
         };
-    }, [isAuthInitializing, isLoggedIn, fetchData, getToken, filterRequestId, crawlerType]); // *** THÊM: crawlerType vào dependencies ***
+        // Dependencies cho effect này: chỉ những gì liên quan trực tiếp đến việc thiết lập và quản lý socket.
+        // `crawlerType` và `filterRequestId` được thêm vào để `handleGenericLogAnalysisUpdate` luôn có giá trị closure đúng.
+    }, [isAuthInitializing, isLoggedIn, getToken, crawlerType, filterRequestId]); // Thêm crawlerType và filterRequestId
 
     const refetchDataAndTryReconnectSocket = useCallback(async () => {
-        await fetchData(true);
-        const socket = getSocketInstance(getToken());
-        if (socket && !socket.connected) {
+        await fetchData(true, crawlerType); // Truyền crawlerType hiện tại
+        // const socket = getSocketInstance(getToken()); // Lấy lại instance nếu cần
+        if (socketRef.current && !socketRef.current.connected) {
             console.log('[useLogAnalysisData] Manually attempting to connect socket.');
-            socket.connect();
+            socketRef.current.connect();
         }
-    }, [fetchData, getToken]);
+    }, [fetchData, getToken, crawlerType]); // Thêm crawlerType
 
     const overallLoading = isAuthInitializing || (!isAuthInitializing && isLoggedIn && loadingData);
     const combinedError = fetchError || socketError;

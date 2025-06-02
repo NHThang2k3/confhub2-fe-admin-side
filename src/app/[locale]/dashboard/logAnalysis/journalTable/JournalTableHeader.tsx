@@ -20,7 +20,7 @@ interface ThWithSortProps {
   currentSortDirection: SortDirection;
   onSort: (column: JournalSortableColumn) => void;
   className?: string;
-  t: (key: string) => string; // Pass translation function
+  t: (key: string, values?: Record<string, any>) => string; // Cho phép đối số thứ hai là optional object
 }
 
 const ThWithSort: React.FC<ThWithSortProps> = ({ column, title, currentSortColumn, currentSortDirection, onSort, className, t }) => (
@@ -60,7 +60,7 @@ interface CountFilterSelectProps {
   columnKey: 'errorCount'; // Chỉ có errorCount cho journal ban đầu
   value: CountFilterLevel | undefined;
   onChange: (column: keyof JournalColumnFiltersState, value: string) => void;
-  t: (key: string) => string;
+  t: (key: string, values?: Record<string, any>) => string;
 }
 const CountFilterSelect: React.FC<CountFilterSelectProps> = ({ columnKey, value, onChange, t }) => (
   <select

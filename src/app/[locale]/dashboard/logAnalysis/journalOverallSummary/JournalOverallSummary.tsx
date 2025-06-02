@@ -64,14 +64,24 @@ const JournalOverallSummary: React.FC<JournalOverallSummaryProps> = ({
     ].filter(item => item.value > 0);
   }, [data?.googleSearch]);
 
-  const imageSearchApiKeyUsageData = useMemo<BarChartData>(() => {
-    // Giả sử googleSearch.keyUsage tồn tại và có cấu trúc tương tự conference
-    return transformRecordToBarChart(data?.googleSearch?.keyUsage || {}, 0, false);
-  }, [data?.googleSearch?.keyUsage]);
+  // const imageSearchApiKeyUsageData = useMemo<BarChartData>(() => {
+  //   // Giả sử googleSearch.keyUsage tồn tại và có cấu trúc tương tự conference
+  //   return transformRecordToBarChart(data?.googleSearch?.keyUsage || {}, 0, false);
+  // }, [data?.googleSearch?.keyUsage]);
+
+  // Cho imageSearchErrorsData
+  const imageSearchErrorsFormatted = useMemo(() => {
+    if (!data?.googleSearch?.apiErrors) return {};
+    const formatted: Record<string, number> = {};
+    for (const key in data.googleSearch.apiErrors) {
+      formatted[key] = data.googleSearch.apiErrors[key].count;
+    }
+    return formatted;
+  }, [data?.googleSearch?.apiErrors]);
 
   const imageSearchErrorsData = useMemo<BarChartData>(() => {
-    return transformRecordToBarChart(data?.googleSearch?.apiErrors || {}, 5, true);
-  }, [data?.googleSearch?.apiErrors]);
+    return transformRecordToBarChart(imageSearchErrorsFormatted, 5, true);
+  }, [imageSearchErrorsFormatted]);
 
 
   // 5. Bioxbio
@@ -93,9 +103,19 @@ const JournalOverallSummary: React.FC<JournalOverallSummaryProps> = ({
     ].filter(item => item.value > 0);
   }, [data?.bioxbio]);
 
-  const bioxbioErrorsData = useMemo<BarChartData>(() => {
-    return transformRecordToBarChart(data?.bioxbio?.errorDetails || {}, 5, true);
+  // Tương tự cho bioxbioErrorsData
+  const bioxbioErrorsFormatted = useMemo(() => {
+    if (!data?.bioxbio?.errorDetails) return {};
+    const formatted: Record<string, number> = {};
+    for (const key in data.bioxbio.errorDetails) {
+      formatted[key] = data.bioxbio.errorDetails[key].count;
+    }
+    return formatted;
   }, [data?.bioxbio?.errorDetails]);
+
+  const bioxbioErrorsData = useMemo<BarChartData>(() => {
+    return transformRecordToBarChart(bioxbioErrorsFormatted, 5, true);
+  }, [bioxbioErrorsFormatted]);
 
 
   // 6. Scimago
@@ -109,10 +129,19 @@ const JournalOverallSummary: React.FC<JournalOverallSummaryProps> = ({
     ].filter(item => item.value > 0);
   }, [data?.scimago]);
 
-  const scimagoErrorsData = useMemo<BarChartData>(() => {
-    return transformRecordToBarChart(data?.scimago?.errorDetails || {}, 5, true);
+  // Tương tự cho scimagoErrorsData
+  const scimagoErrorsFormatted = useMemo(() => {
+    if (!data?.scimago?.errorDetails) return {};
+    const formatted: Record<string, number> = {};
+    for (const key in data.scimago.errorDetails) {
+      formatted[key] = data.scimago.errorDetails[key].count;
+    }
+    return formatted;
   }, [data?.scimago?.errorDetails]);
 
+  const scimagoErrorsData = useMemo<BarChartData>(() => {
+    return transformRecordToBarChart(scimagoErrorsFormatted, 5, true);
+  }, [scimagoErrorsFormatted]);
   // 7. File Output
   const jsonlWriteStatusData = useMemo<PieChartItem[]>(() => {
     if (!data?.fileOutput) return [];
@@ -126,7 +155,7 @@ const JournalOverallSummary: React.FC<JournalOverallSummaryProps> = ({
   const clientCsvParseStatusData = useMemo<PieChartItem[]>(() => {
     if (!data?.fileOutput) return [];
     const { clientCsvParseSuccess = 0, clientCsvParseFailed = 0 } = data.fileOutput;
-    if ( (clientCsvParseSuccess + clientCsvParseFailed) === 0) return []; // Chỉ hiển thị nếu có attempt
+    if ((clientCsvParseSuccess + clientCsvParseFailed) === 0) return []; // Chỉ hiển thị nếu có attempt
     return [
       { name: 'Client CSV Parse Success', value: clientCsvParseSuccess },
       { name: 'Client CSV Parse Failed', value: clientCsvParseFailed },
@@ -153,8 +182,8 @@ const JournalOverallSummary: React.FC<JournalOverallSummaryProps> = ({
       (data.overall.totalJournalsInput || 0) > 0 ||
       (data.overall.totalJournalsProcessed || 0) > 0
     )) || (data.errorLogCount || 0) > 0 ||
-       (data.bioxbio && data.bioxbio.totalFetchesAttempted > 0) ||
-       (data.scimago && data.scimago.scimagoDetailPagesAttempted > 0);
+      (data.bioxbio && data.bioxbio.totalFetchesAttempted > 0) ||
+      (data.scimago && data.scimago.scimagoDetailPagesAttempted > 0);
   }, [data]);
 
 
@@ -179,7 +208,7 @@ const JournalOverallSummary: React.FC<JournalOverallSummaryProps> = ({
           dataSourceDistributionData={dataSourceDistributionData}
           playwrightJournalData={playwrightJournalData}
           imageSearchStatusData={imageSearchStatusData}
-          imageSearchApiKeyUsageData={imageSearchApiKeyUsageData}
+          // imageSearchApiKeyUsageData={imageSearchApiKeyUsageData}
           imageSearchErrorsData={imageSearchErrorsData}
           bioxbioFetchStatusData={bioxbioFetchStatusData}
           bioxbioCacheData={bioxbioCacheData}
