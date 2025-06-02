@@ -1,6 +1,6 @@
 // src/app/[locale]/dashboard/logAnalysis/ConferenceTableRow.tsx
 import React from 'react';
-import { ConferenceTableData, RowSaveStatus } from '@/src/hooks/crawl/useConferenceTableManager';
+import { ConferenceTableData, RowSaveStatus } from '@/src/hooks/crawl/conference/useConferenceTableManager';
 import { ExpandedRowContent } from './ExpandedRowContent';
 import { MainRowCells } from './MainRowCells';
 

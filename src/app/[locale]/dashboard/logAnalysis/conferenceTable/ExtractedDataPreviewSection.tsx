@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { FaLink, FaExternalLinkAlt } from 'react-icons/fa';
-import { ConferenceTableData } from '@/src/hooks/crawl/useConferenceTableManager';
+import { ConferenceTableData } from '@/src/hooks/crawl/conference/useConferenceTableManager';
 
 interface ExtractedDataPreviewSectionProps {
   confData: ConferenceTableData;

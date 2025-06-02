@@ -7,7 +7,7 @@ import {
 } from 'react-icons/fa';
 import KpiCard from './KpiCard';
 import {
-  LogAnalysisResult,
+  ConferenceLogAnalysisResult,
   GoogleSearchHealthData,
   GeminiApiAnalysis,
   ValidationStats
@@ -22,7 +22,7 @@ const KpiIcon: React.FC<{ bgColor: string; textColor: string; children: React.Re
 );
 
 interface KpiSectionProps {
-  data: LogAnalysisResult;
+  data: ConferenceLogAnalysisResult;
   googleSearchHealthData: GoogleSearchHealthData | null;
   geminiApiData: GeminiApiAnalysis | undefined;
   validationStats?: ValidationStats;

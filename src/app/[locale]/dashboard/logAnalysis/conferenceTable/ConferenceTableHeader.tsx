@@ -3,8 +3,8 @@
 // src/app/[locale]/dashboard/logAnalysis/ConferenceTableHeader.tsx
 import React from 'react';
 import { FaArrowUp, FaArrowDown } from 'react-icons/fa';
-import { SortableColumn, SortDirection, ColumnFiltersState } from '@/src/hooks/crawl/useConferenceTableManager';
-import { SeverityFilterLevel } from '@/src/hooks/crawl/useConferenceTableManager';
+import { SortableColumn, SortDirection, ColumnFiltersState } from '@/src/hooks/crawl/conference/useConferenceTableManager';
+import { SeverityFilterLevel } from '@/src/hooks/crawl/conference/useConferenceTableManager';
 
 
 interface ConferenceTableHeaderProps {

@@ -1,7 +1,7 @@
 // src/app/[locale]/dashboard/logAnalysis/ErrorAndLinkFailuresSection.tsx
 import React from 'react';
 import { FaTimesCircle, FaLink, FaExclamationTriangle, FaExternalLinkAlt } from 'react-icons/fa';
-import { ConferenceTableData } from '@/src/hooks/crawl/useConferenceTableManager';
+import { ConferenceTableData } from '@/src/hooks/crawl/conference/useConferenceTableManager';
 import { ErrorItem } from './ErrorItem';
 import { parseLinkError } from './conferenceTableRowUtils';
 

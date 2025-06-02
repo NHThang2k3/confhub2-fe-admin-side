@@ -1,14 +1,14 @@
 // src/app/[locale]/dashboard/logAnalysis/OverallSummary.tsx
 import React, { useMemo } from 'react';
-import { LogAnalysisResult, GoogleSearchHealthData, ValidationStats, GeminiApiAnalysis } from '../../../../models/logAnalysis';
-import { transformRecordToBarChart, BarChartData, transformObjectToPieChartData, PieChartItem } from './utils/chartUtils';
+import { ConferenceLogAnalysisResult, GoogleSearchHealthData, ValidationStats, GeminiApiAnalysis } from '../../../../../models/logAnalysis';
+import { transformRecordToBarChart, BarChartData, transformObjectToPieChartData, PieChartItem } from '../utils/chartUtils';
 
-import SummaryHeaderComponent from './overallSummary/SummaryHeader';
-import NoDataMessage from './overallSummary/NoDataMessage';
-import CollapsibleContent from './overallSummary/CollapsibleContent';
+import SummaryHeaderComponent from './SummaryHeader';
+import NoDataMessage from './NoDataMessage';
+import CollapsibleContent from './CollapsibleContent';
 
 interface OverallSummaryProps {
-  data: LogAnalysisResult;
+  data: ConferenceLogAnalysisResult;
   isExpanded: boolean;
   onToggle: () => void;
 }

@@ -1,22 +1,27 @@
+// src/app/[locale]/dashboard/logAnalysis/analysis/LogRequestsList.tsx
 import React from 'react';
 import { FaListAlt, FaChevronUp, FaChevronDown, FaInfoCircle } from 'react-icons/fa';
-import RequestsTable from './RequestsTable'; // Import the new table component
+import RequestsTable from './RequestsTable';
 import NoDataDisplay from './NoDataDisplay';
-import { LogAnalysisResult, RequestTimings } from '@/src/models/logAnalysis';
-import { useTranslations } from 'next-intl'; // Import useTranslations
+// *** THAY ĐỔI: Import RequestTimings từ LogAnalysisResultUnion nếu cần, hoặc để data.requests as ... ***
+// import { RequestTimings } from '@/src/models/logAnalysis'; // Có thể không cần nếu ép kiểu trực tiếp
+import { useTranslations } from 'next-intl';
+// *** THAY ĐỔI: Import LogAnalysisResultUnion và CrawlerType ***
+import { LogAnalysisResultUnion, CrawlerType } from '@/src/hooks/logAnalysis/useLogAnalysisData'; // Hoặc từ Analysis.tsx
 
 interface LogRequestsListProps {
     isExpanded: boolean;
     onToggle: () => void;
-    data: LogAnalysisResult;
+    data: LogAnalysisResultUnion; // Đã là union type
     onSelectRequest: (requestId: string) => void;
     formatDateTime: (isoString: string | null | undefined) => string;
     getStatusChipClass: (status: string | undefined | null) => string;
-    OverallSummaryComponent: React.FC<any>; // Consider more specific props for OverallSummary
+    OverallSummaryComponent: React.FC<any>; // OverallSummary sẽ nhận data union và crawlerType
     isSummaryExpandedOverall: boolean;
     onToggleSummaryOverall: () => void;
-    getNoDataMessage: () => string; // This message is already localized in the parent
+    getNoDataMessage: () => string;
     hasOverallDataForDisplay: boolean;
+    crawlerType: CrawlerType; // *** THÊM: Prop crawlerType ***
 }
 
 const LogRequestsList: React.FC<LogRequestsListProps> = ({
@@ -31,11 +36,19 @@ const LogRequestsList: React.FC<LogRequestsListProps> = ({
     onToggleSummaryOverall,
     getNoDataMessage,
     hasOverallDataForDisplay,
+    crawlerType, // *** NHẬN prop crawlerType ***
 }) => {
-    // Khởi tạo t với namespace 'LogRequestsList'
     const t = useTranslations('LogRequestsList');
 
     const hasRequests = data.analyzedRequestIds && data.analyzedRequestIds.length > 0;
+
+    // data.requests có thể là ConferenceLogAnalysisResult['requests'] hoặc JournalLogAnalysisResult['requests']
+    // Cả hai đều có cấu trúc { [key: string]: RequestSummaryType }, RequestSummaryType có thể khác nhau một chút
+    // nhưng các trường cơ bản cho RequestsTable (startTime, endTime, status, durationSeconds) nên giống nhau.
+    // Nếu RequestTimings là một type chung cho cả hai, thì không cần ép kiểu phức tạp.
+    // Giả sử RequestTimings là type chung hoặc các trường cần thiết có ở cả hai.
+    const requestsDataForTable = data.requests as { [key: string]: { startTime: string | null; endTime: string | null; status: string | undefined | null; durationSeconds: number | null; /* các trường khác nếu RequestsTable cần */ } };
+
 
     return (
         <div className="bg-white rounded-lg shadow-md border border-gray-200">
@@ -49,14 +62,14 @@ const LogRequestsList: React.FC<LogRequestsListProps> = ({
                 aria-controls="log-requests-content"
             >
                 <h2 className="text-xl font-semibold text-gray-800 mb-0 flex items-center">
-                    <FaListAlt className="mr-2 text-blue-600" /> {t('title')} 
+                    <FaListAlt className="mr-2 text-blue-600" /> {t('title')}
                 </h2>
                 <button
                     className="text-gray-500 hover:text-blue-600 focus:outline-none p-1 rounded-full"
-                    aria-label={isExpanded ? t('ariaLabel.collapse') : t('ariaLabel.expand')} 
+                    aria-label={isExpanded ? t('ariaLabel.collapse') : t('ariaLabel.expand')}
                 >
                     {isExpanded ? <FaChevronUp size={18} /> : <FaChevronDown size={18} />}
-                    <span className='sr-only'>{isExpanded ? t('srOnly.collapse') : t('srOnly.expand')}</span> 
+                    <span className='sr-only'>{isExpanded ? t('srOnly.collapse') : t('srOnly.expand')}</span>
                 </button>
             </div>
 
@@ -67,21 +80,23 @@ const LogRequestsList: React.FC<LogRequestsListProps> = ({
                 {hasRequests ? (
                     <RequestsTable
                         requestIds={data.analyzedRequestIds}
-                        requestsData={data.requests as { [key: string]: RequestTimings }} // Type assertion if needed
+                        requestsData={requestsDataForTable} // Sử dụng biến đã ép kiểu (hoặc type an toàn hơn)
                         onSelectRequest={onSelectRequest}
                         formatDateTime={formatDateTime}
                         getStatusChipClass={getStatusChipClass}
+                        crawlerType={crawlerType}
                     />
                 ) : (
                      <NoDataDisplay message={getNoDataMessage()} icon={<FaInfoCircle size={20} className="mb-2 inline-block" />} />
                 )}
 
-                {hasOverallDataForDisplay && ( // Show overall summary if there's overall data, even if no specific requests in current time filter
+                {hasOverallDataForDisplay && (
                     <div className="mt-6 border-t pt-4">
                         <OverallSummaryComponent
-                            data={data}
+                            data={data} // Truyền data union
                             isExpanded={isSummaryExpandedOverall}
                             onToggle={onToggleSummaryOverall}
+                            crawlerType={crawlerType} // *** TRUYỀN crawlerType xuống OverallSummary ***
                         />
                     </div>
                 )}

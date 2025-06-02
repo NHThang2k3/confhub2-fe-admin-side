@@ -2,7 +2,7 @@
 
 import React from 'react'
 // Import the refactored hook and types
-import { useJournalCrawl } from '../../../../hooks/crawl/useJournalCrawl' // Adjust path as needed
+import { useJournalCrawl } from '../../../../hooks/crawl/journal/useJournalCrawl' // Adjust path as needed
 import { Journal } from '@/src/models/logAnalysis/importJournalCrawl' // Adjust path as needed
 import {
   FaFileUpload,

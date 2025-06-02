@@ -1,16 +1,16 @@
 // src/services/logAnalysisApi.ts
-import { LogAnalysisResult } from '../../../models/logAnalysis';
+import { JournalLogAnalysisResult } from '../../../models/logAnalysis';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 
-export const fetchLogAnalysisData = async (
+export const fetchJournalLogAnalysisData = async (
     filterStartTime?: number, // Milliseconds
     filterEndTime?: number,   // Milliseconds
     requestId?: string // <<< NEW
 
-): Promise<LogAnalysisResult> => {
+): Promise<JournalLogAnalysisResult> => {
     // Xây dựng URL với các tham số query nếu chúng tồn tại
-    const url = new URL(`${API_BASE_URL}/api/v1/logs/analysis/latest`);
+    const url = new URL(`${API_BASE_URL}/api/v1/logs/analysis/journal/latest`);
     if (filterStartTime !== undefined) { url.searchParams.append('filterStartTime', filterStartTime.toString()); }
     if (filterEndTime !== undefined) { url.searchParams.append('filterEndTime', filterEndTime.toString()); }
     if (requestId !== undefined) url.searchParams.append('requestId', requestId); // <<< NEW
@@ -31,6 +31,6 @@ export const fetchLogAnalysisData = async (
         throw new Error(errorData?.message || `HTTP error! status: ${response.status}`);
     }
 
-    const data: LogAnalysisResult = await response.json();
+    const data: JournalLogAnalysisResult = await response.json();
     return data;
 };

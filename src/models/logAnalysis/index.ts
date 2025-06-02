@@ -16,3 +16,5 @@ export * from './validation.types';
 
 // Initializer functions for creating default analysis objects
 export * from './initializers';
+
+export * from './logAnalysisJournal.types'

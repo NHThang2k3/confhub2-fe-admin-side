@@ -7,7 +7,7 @@ import {
   SortDirection,
   SeverityFilterLevel,
   ColumnFiltersState
-} from '../crawl/useConferenceTableManager'; // Import types
+} from './useConferenceTableManager'; // Import types
 
 interface UseTableSortingAndFilteringProps {
   data: ConferenceTableData[];

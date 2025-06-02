@@ -4,7 +4,7 @@ import { useState, useCallback } from 'react';
 import axios, { AxiosError } from 'axios';
 import Papa from 'papaparse';
 // Keep Journal type for preview, but add state for raw content
-import { Journal, ApiCrawlResponse, CrawlProgress } from '../../models/logAnalysis/importJournalCrawl';
+import { Journal, ApiCrawlResponse, CrawlProgress } from '../../../models/logAnalysis/importJournalCrawl';
 import { appConfig } from '@/src/middleware';
 
 // --- Configuration ---

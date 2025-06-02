@@ -1,14 +1,16 @@
-// src/app/[locale]/logAnalysis/AnalysisHeader.tsx
+// src/app/[locale]/dashboard/logAnalysis/analysis/AnalysisHeader.tsx
 import React from 'react';
 import { FaFilter, FaSyncAlt, FaExclamationTriangle, FaSearch, FaTimes } from 'react-icons/fa';
-import { LogAnalysisResult } from '../../../../../models/logAnalysis'; // Adjust path
-import { useTranslations } from 'next-intl'; // Import useTranslations
+// *** THAY ĐỔI: Import LogAnalysisResultUnion và CrawlerType ***
+import { LogAnalysisResultUnion, CrawlerType } from '@/src/hooks/logAnalysis/useLogAnalysisData'; // Hoặc từ nơi bạn định nghĩa chung
+import { useTranslations } from 'next-intl';
 
 interface AnalysisHeaderProps {
     loading: boolean;
     error: string | null;
     isConnected: boolean;
-    data: LogAnalysisResult | null;
+    // *** THAY ĐỔI: Type của data ***
+    data: LogAnalysisResultUnion | null;
     timeFilterOption: string;
     handleFilterChange: (event: React.ChangeEvent<HTMLSelectElement>) => void;
     refetchData: () => void;
@@ -16,13 +18,15 @@ interface AnalysisHeaderProps {
     setRequestIdFilterInput: (value: string) => void;
     applyRequestIdFilter: () => void;
     clearRequestIdFilter: () => void;
+    // *** THÊM: Prop crawlerType ***
+    crawlerType: CrawlerType;
 }
 
 const AnalysisHeader: React.FC<AnalysisHeaderProps> = ({
     loading, error, isConnected, data, timeFilterOption, handleFilterChange, refetchData,
-    requestIdFilterInput, setRequestIdFilterInput, applyRequestIdFilter, clearRequestIdFilter
+    requestIdFilterInput, setRequestIdFilterInput, applyRequestIdFilter, clearRequestIdFilter,
+    crawlerType // *** NHẬN prop crawlerType ***
 }) => {
-    // Khởi tạo t với namespace 'AnalysisHeader'
     const t = useTranslations('AnalysisHeader');
 
     const isLoadingInitial = loading && !data;
@@ -31,7 +35,14 @@ const AnalysisHeader: React.FC<AnalysisHeaderProps> = ({
         if (isLoadingInitial) return t('headerText.loading');
         if (error && !data) return t('headerText.errorLoading');
         if (!data && !loading) return t('headerText.noData');
-        return t('headerText.analysisTitle');
+
+        // *** THAY ĐỔI: Chọn tiêu đề dựa trên crawlerType ***
+        if (crawlerType === 'conference') {
+            return t('headerText.analysisTitleConference'); // Key dịch mới
+        } else if (crawlerType === 'journal') {
+            return t('headerText.analysisTitleJournal'); // Key dịch mới
+        }
+        return t('headerText.analysisTitle'); // Fallback
     };
 
     const getLastAnalysisText = () => !data?.analysisTimestamp || isLoadingInitial ? t('common.na') : new Date(data.analysisTimestamp).toLocaleString();
@@ -45,26 +56,25 @@ const AnalysisHeader: React.FC<AnalysisHeaderProps> = ({
     const handleRequestIdInputChange = (event: React.ChangeEvent<HTMLInputElement>) => setRequestIdFilterInput(event.target.value);
     const handleRequestIdKeyPress = (event: React.KeyboardEvent<HTMLInputElement>) => { if (event.key === 'Enter') applyRequestIdFilter(); };
 
-    // Calculate the right offset for buttons based on whether clear filter button is present
-    // Logic này không cần thay đổi cho i18n
     const clearInputRightOffset = data?.filterRequestId ? 'right-10' : 'right-3';
 
     return (
         <header className={`flex flex-col md:flex-row items-start md:items-center justify-between mb-6 bg-white p-5 rounded-lg shadow-lg border-l-4 ${headerBorderColor} gap-y-4 md:gap-y-0`}>
             <div className="flex-grow min-w-0">
+                {/* Tiêu đề được cập nhật bởi getHeaderText() */}
                 <h1 className="text-xl md:text-xl font-extrabold text-gray-900 truncate">{getHeaderText()}</h1>
-                <div className="text-sm  mt-1 flex items-center flex-wrap gap-x-4 gap-y-1">
-                    <span className="flex items-center gap-1"><FaSyncAlt className="" /> {t('lastAnalysis')}: {getLastAnalysisText()}</span>
+                <div className="text-sm mt-1 flex items-center flex-wrap gap-x-4 gap-y-1">
+                    <span className="flex items-center gap-1"><FaSyncAlt /> {t('lastAnalysis')}: {getLastAnalysisText()}</span>
                     {error && !isLoadingInitial && <span className="text-red-600 text-xs flex items-center gap-1" title={error}><FaExclamationTriangle /> {t('errorLabel')}: {error}</span>}
                 </div>
-                <p className="text-xs  mt-1 truncate" title={getLogFilePathText()}>{t('logFile')}: <span className="font-mono">{getLogFilePathText()}</span></p>
+                <p className="text-xs mt-1 truncate" title={getLogFilePathText()}>{t('logFile')}: <span className="font-mono">{getLogFilePathText()}</span></p>
             </div>
 
             {!(isLoadingInitial || (error && !data)) && (
                  <div className="flex flex-col xl:flex-row items-start xl:items-center gap-3 mt-4 md:mt-0 shrink-0 w-full xl:w-auto">
                     {/* Request ID Filter Group */}
                     <div className="flex items-center gap-2 w-full sm:w-auto relative">
-                        <FaSearch className=" absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" title={t('filter.requestIdFilterTitle')} />
+                        <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" title={t('filter.requestIdFilterTitle')} />
                         <input
                             type="text"
                             placeholder={t('filter.requestIdPlaceholder')}
@@ -72,19 +82,17 @@ const AnalysisHeader: React.FC<AnalysisHeaderProps> = ({
                             onChange={handleRequestIdInputChange}
                             onKeyPress={handleRequestIdKeyPress}
                             disabled={loading}
-                            className={`p-2 pl-10 border border-gray-300 rounded-md bg-white shadow-sm text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-full sm:w-64 md:w-80 lg:w-96 ${loading ? 'cursor-not-allowed bg-gray-100 ' : 'text-gray-700'}`}
+                            className={`p-2 pl-10 border border-gray-300 rounded-md bg-white shadow-sm text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-full sm:w-64 md:w-80 lg:w-96 ${loading ? 'cursor-not-allowed bg-gray-100' : 'text-gray-700'}`}
                         />
-                        {/* Clear Input Button */}
                         {requestIdFilterInput && !loading && (
                              <button
                                 onClick={() => { setRequestIdFilterInput(''); if(data?.filterRequestId) clearRequestIdFilter(); }}
-                                className={`absolute ${clearInputRightOffset} top-1/2 -translate-y-1/2 p-1  hover: focus:outline-none`}
+                                className={`absolute ${clearInputRightOffset} top-1/2 -translate-y-1/2 p-1 hover:text-gray-700 focus:outline-none`}
                                 title={t('filter.clearInputTitle')}
                             >
                                 <FaTimes className="h-3 w-3" />
                             </button>
                         )}
-                         {/* Clear Active Filter Button */}
                          {data?.filterRequestId && !loading && (
                             <button
                                 onClick={clearRequestIdFilter}
@@ -94,7 +102,6 @@ const AnalysisHeader: React.FC<AnalysisHeaderProps> = ({
                                 <FaTimes className="h-3 w-3" />
                             </button>
                         )}
-                         {/* Apply Button */}
                          {!data?.filterRequestId && requestIdFilterInput.trim() && (
                             <button
                                 onClick={applyRequestIdFilter}
@@ -108,9 +115,9 @@ const AnalysisHeader: React.FC<AnalysisHeaderProps> = ({
                     </div>
                     {/* Time Filter */}
                     <div className="flex items-center gap-2">
-                        <FaFilter className="" title={t('filter.timeFilterTitle')} />
+                        <FaFilter className="text-gray-500" title={t('filter.timeFilterTitle')} />
                         <select value={timeFilterOption} onChange={handleFilterChange} disabled={loading}
-                            className={`p-2 border border-gray-300 rounded-md bg-white shadow-sm text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${loading ? 'cursor-not-allowed bg-gray-100 ' : 'text-gray-700'}`}>
+                            className={`p-2 border border-gray-300 rounded-md bg-white shadow-sm text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${loading ? 'cursor-not-allowed bg-gray-100' : 'text-gray-700'}`}>
                             <option value="latest">{t('timeOptions.allTime')}</option>
                             <option value="last_hour">{t('timeOptions.lastHour')}</option>
                             <option value="last_6h">{t('timeOptions.last6Hours')}</option>

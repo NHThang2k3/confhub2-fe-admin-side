@@ -5,10 +5,10 @@ import {
   ConferenceTableData,
   MainSavingStatus,
   RowSaveStatus
-} from '../crawl/useConferenceTableManager'; // Import types
-import { ApiModels, useConferenceCrawl } from '../crawl/useConferenceCrawl'; // Import useConferenceCrawl và types liên quan
-import { saveConferenceToJson } from '../../app/api/logAnalysis/saveConferences';
-import { persistConferenceSaveStatus, PersistSaveStatusPayload } from '../../app/api/logAnalysis/persistSaveStatus';
+} from './useConferenceTableManager'; // Import types
+import { ApiModels, useConferenceCrawl } from './useConferenceCrawl'; // Import useConferenceCrawl và types liên quan
+import { saveConferenceToJson } from '@/src/app/api/logAnalysis/saveConferences';
+import { persistConferenceSaveStatus, PersistSaveStatusPayload } from '@/src/app/api/logAnalysis/persistSaveStatus';
 import { ConferenceForAction } from '@/src/models/logAnalysis/importConferenceCrawl';
 
 interface UseTableActionsProps {

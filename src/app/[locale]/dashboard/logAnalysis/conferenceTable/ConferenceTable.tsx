@@ -6,7 +6,7 @@ import {
     SortDirection,
     RowSaveStatus,
     ColumnFiltersState
-} from '@/src/hooks/crawl/useConferenceTableManager';
+} from '@/src/hooks/crawl/conference/useConferenceTableManager';
 import { ConferenceTableHeader } from './ConferenceTableHeader';
 import { ConferenceTableRow } from './ConferenceTableRow';
 import { useTranslations } from 'next-intl'; // Import useTranslations
