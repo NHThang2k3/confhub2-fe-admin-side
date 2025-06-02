@@ -1,15 +1,16 @@
-// src/app/[locale]/dashboard/logAnalysis/JournalCrawlUpoader.tsx
+// src/app/[locale]/dashboard/crawl/JournalCrawlUploader.tsx
 
 import React from 'react'
 // Import the refactored hook and types
-import { useJournalCrawl } from '../../../../hooks/crawl/useJournalCrawl' // Adjust path as needed
-import { Journal } from '@/src/models/logAnalysis/importJournalCrawl' // Adjust path as needed
+import { useJournalCrawl } from '@/src/hooks/crawl/useJournalCrawl' // Adjust path as needed
+import { useJournalTableManager } from '@/src/hooks/crawl/useJournalTableManager'
+import { JournalTable } from './journalTable/JournalTable'
+import { Button } from '@/src/components/ui/button'
+import { Input } from '@/src/components/ui/input'
 import {
   FaFileUpload,
   FaSpinner,
   FaPlay,
-  FaStop,
-  FaCheckCircle,
   FaTimesCircle,
   FaExclamationTriangle,
   FaRedo,
@@ -18,6 +19,8 @@ import {
 import { AgGridReact } from 'ag-grid-react'
 import { ColDef, ValueFormatterParams, CellClassParams } from 'ag-grid-community'
 import { AllCommunityModule, ModuleRegistry} from 'ag-grid-community'
+import JournalSelectionStep from './steps/JournalSelectionStep'
+import { useTranslations } from 'next-intl'
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
@@ -29,6 +32,7 @@ interface JournalWithStatus extends Journal {
 
 // --- Main Uploader Component ---
 export const JournalCrawlUploader: React.FC = () => {
+  const t = useTranslations('JournalCrawl')
   // Use the refactored journal hook
   const {
     file,
@@ -43,6 +47,8 @@ export const JournalCrawlUploader: React.FC = () => {
     startCrawl,
     resetCrawl
   } = useJournalCrawl()
+
+  const tableManager = useJournalTableManager(parsedData || [])
 
   // AG Grid column definitions
   const columnDefs: ColDef<JournalWithStatus>[] = [
@@ -92,7 +98,7 @@ export const JournalCrawlUploader: React.FC = () => {
       {' '}
       {/* Increased max-width for two columns */}
       <h2 className='mb-4 border-b border-gray-300 pb-2 text-xl font-semibold text-gray-700'>
-        Crawl Journals from SCImago CSV
+        {t('title')}
       </h2>
       {/* --- Main Content Area with Columns --- */}
       <div className='flex flex-col md:flex-row md:space-x-6'>
@@ -107,7 +113,7 @@ export const JournalCrawlUploader: React.FC = () => {
             {' '}
             {/* Wrap section for spacing */}
             <label className='mb-2 block text-sm font-medium text-gray-700'>
-              Select SCImago Journal CSV File (Semicolon-delimited &apos;;&apos;)
+              {t('fileLabel')}
             </label>
             <div className='flex items-center space-x-4'>
               {/* File Input Label */}
@@ -118,11 +124,7 @@ export const JournalCrawlUploader: React.FC = () => {
                   className={`mr-2 ${isParsing ? 'animate-spin' : ''}`}
                 />
                 <span>
-                  {isParsing
-                    ? 'Reading...'
-                    : file
-                      ? 'Change File'
-                      : 'Choose File'}
+                  {isParsing ? t('reading') : file ? t('changeFile') : t('chooseFile')}
                 </span>
                 <input
                   type='file'
@@ -149,16 +151,16 @@ export const JournalCrawlUploader: React.FC = () => {
             {/* Parsing Error Message */}
             {parseError && (
               <p className='mt-2 flex items-center text-sm text-red-600'>
-                <FaTimesCircle className='mr-1' /> {parseError}
+                <FaSpinner className='mr-1' /> {parseError}
               </p>
             )}
           </div>
           {/* --- Action Buttons --- */}
           <div className='flex items-center space-x-4'>
-            <button
+            <Button
               onClick={startCrawl}
               disabled={!canStartCrawl}
-              className={`inline-flex items-center rounded-md border border-transparent px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors duration-150 ${canStartCrawl ? 'bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2' : 'cursor-not-allowed bg-gray-400'}`}
+              className={canStartCrawl ? 'bg-blue-600 hover:bg-blue-700' : 'bg-gray-400'}
             >
               {isCrawling ? (
                 <FaSpinner className='-ml-1 mr-2 h-5 w-5 animate-spin' />
@@ -166,41 +168,40 @@ export const JournalCrawlUploader: React.FC = () => {
                 <FaPlay className='-ml-1 mr-2 h-5 w-5' />
               )}
               {isCrawling
-                ? 'Sending Data...'
+                ? t('sendingData')
                 : crawlProgress.status !== 'idle' &&
                     crawlProgress.status !== 'crawling'
-                  ? 'Send Again'
-                  : 'Start Journal Crawl'}
-            </button>
-            <button
+                  ? t('sendAgain')
+                  : t('startCrawl')}
+            </Button>
+            <Button
               onClick={resetCrawl}
-              className='inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm transition-colors duration-150 hover:bg-gray-5 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2'
-              title='Clear selection and results'
+              variant='outline'
               disabled={isCrawling || isParsing}
             >
-              <FaRedo className='mr-2' /> Reset
-            </button>
+              <FaRedo className='mr-2' /> {t('reset')}
+            </Button>
           </div>
           {/* --- Progress and Results Section --- */}
           {showStatusSection && (
             <div className='rounded-md border border-gray-200 bg-gray-5 p-4'>
               <h3 className='text-md mb-3 font-semibold text-gray-700'>
-                Crawl Status & Results
+                {t('statusAndResults')}
               </h3>
 
               {/* Crawling indicator */}
               {isCrawling && crawlProgress.status === 'crawling' && (
                 <p className='mb-3 flex items-center text-sm text-blue-600'>
-                  <FaSpinner className='mr-2 animate-spin' /> Checking journals in database...
+                  <FaSpinner className='mr-2 animate-spin' /> {t('checkingJournals')}
                 </p>
               )}
 
               {/* Error Display */}
               {crawlError && (
                 <div className='mb-3 flex items-start rounded-md border border-red-300 bg-red-100 p-3 text-sm text-red-800'>
-                  <FaExclamationTriangle className='mr-2 mt-0.5 flex-shrink-0 text-red-600' />
+                  <FaSpinner className='mr-2 mt-0.5 flex-shrink-0 text-red-600' />
                   <span className='break-words'>
-                    <b>Error:</b> {crawlError}
+                    <b>{t('error')}:</b> {crawlError}
                   </span>
                 </div>
               )}
@@ -208,18 +209,18 @@ export const JournalCrawlUploader: React.FC = () => {
               {/* Results Summary */}
               {!isCrawling && crawlProgress.status === 'success' && (
                 <div className='mb-4 rounded-md border border-green-200 bg-green-50 p-3'>
-                  <h4 className='mb-2 font-medium text-green-800'>Summary</h4>
+                  <h4 className='mb-2 font-medium text-green-800'>{t('summary')}</h4>
                   <div className='grid grid-cols-3 gap-4 text-sm'>
                     <div>
-                      <span className='font-medium text-green-700'>Total Processed:</span>{' '}
+                      <span className='font-medium text-green-700'>{t('totalProcessed')}:</span>{' '}
                       {crawlProgress.totalProcessed ?? 0}
                     </div>
                     <div>
-                      <span className='font-medium text-green-700'>Already Crawled:</span>{' '}
+                      <span className='font-medium text-green-700'>{t('alreadyCrawled')}:</span>{' '}
                       {crawlProgress.totalExists ?? 0}
                     </div>
                     <div>
-                      <span className='font-medium text-green-700'>New Journals:</span>{' '}
+                      <span className='font-medium text-green-700'>{t('newJournals')}:</span>{' '}
                       {crawlProgress.totalNew ?? 0}
                     </div>
                   </div>
@@ -230,7 +231,7 @@ export const JournalCrawlUploader: React.FC = () => {
               {crawlMessages.length > 0 && (
                 <div className='custom-scrollbar max-h-60 space-y-1 overflow-y-auto rounded border border-gray-200 bg-white p-3 text-xs text-gray-700 shadow-inner'>
                   <h4 className='mb-1 text-xs font-semibold text-gray-500'>
-                    Detailed Results:
+                    {t('detailedResults')}:
                   </h4>
                   {crawlMessages.map((msg, index) => (
                     <p
@@ -256,27 +257,23 @@ export const JournalCrawlUploader: React.FC = () => {
         {/* End Left Column */}
         {/* === Right Column === */}
         <div className='mt-6 flex flex-col space-y-4 md:mt-0 md:w-1/2'>
-          {/* --- AG Grid Table Section --- */}
-          <div className="ag-theme-alpine" style={{ height: '500px', width: '100%' }}>
-            <AgGridReact<JournalWithStatus>
-              rowData={parsedData || []}
-              columnDefs={columnDefs}
-              defaultColDef={{
-                sortable: true,
-                filter: true,
-                resizable: true,
-                flex: 1,
-                minWidth: 100
-              }}
-              pagination={true}
-              paginationPageSize={10}
-              animateRows={true}
-              domLayout="normal"
-              suppressCellFocus={true}
-              enableCellTextSelection={true}
-              ensureDomOrder={true}
+          {parsedData && parsedData.length > 0 && (
+            <JournalTable
+              data={tableManager.data}
+              selectedRows={tableManager.selectedRows}
+              expandedRowUniqueId={tableManager.expandedRowUniqueId}
+              sortColumn={tableManager.sortColumn}
+              sortDirection={tableManager.sortDirection}
+              onSort={tableManager.onSort}
+              onToggleExpand={tableManager.onToggleExpand}
+              onSelectToggle={tableManager.onSelectToggle}
+              columnFilters={tableManager.columnFilters}
+              onColumnFilterChange={tableManager.onColumnFilterChange}
+              totalRowsCount={tableManager.totalRowsCount}
+              selectedRowsCount={tableManager.selectedRowsCount}
+              onSelectAll={tableManager.onSelectAll}
             />
-          </div>
+          )}
         </div>{' '}
         {/* End Right Column */}
       </div>{' '}

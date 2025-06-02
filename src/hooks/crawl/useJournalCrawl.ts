@@ -6,7 +6,7 @@ import { Journal, JournalCsvImportResponse } from '@/src/models/logAnalysis/impo
 import { appConfig } from '@/src/middleware';
 
 // Extended Journal interface for the response data
-interface JournalWithStatus extends Journal {
+export interface JournalWithStatus extends Journal {
     lastUpdated: string | null;
     message: string;
 }
@@ -113,8 +113,6 @@ export const useJournalCrawl = (): UseJournalCrawlReturn => {
         }
 
         parseCSV(selectedFile);
-
-
         setFile(selectedFile);
         setIsParsing(true);
         setParseError(null);
