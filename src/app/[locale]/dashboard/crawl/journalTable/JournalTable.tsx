@@ -1,5 +1,5 @@
 import React from 'react';
-import { JournalWithStatus } from '@/src/hooks/crawl/useJournalCrawl';
+import { JournalWithStatus } from '@/src/hooks/crawl/journal/useJournalCrawl';
 import { JournalTableHeader } from './JournalTableHeader';
 import { JournalTableRow } from './JournalTableRow';
 import { useTranslations } from 'next-intl';
