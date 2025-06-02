@@ -1,15 +1,13 @@
 // src/app/[locale]/dashboard/logAnalysis/analysis/AnalysisHeader.tsx
 import React from 'react';
 import { FaFilter, FaSyncAlt, FaExclamationTriangle, FaSearch, FaTimes } from 'react-icons/fa';
-// *** THAY ĐỔI: Import LogAnalysisResultUnion và CrawlerType ***
-import { LogAnalysisResultUnion, CrawlerType } from '@/src/hooks/logAnalysis/useLogAnalysisData'; // Hoặc từ nơi bạn định nghĩa chung
+import { LogAnalysisResultUnion, CrawlerType } from '@/src/hooks/logAnalysis/useLogAnalysisData';
 import { useTranslations } from 'next-intl';
 
 interface AnalysisHeaderProps {
     loading: boolean;
     error: string | null;
     isConnected: boolean;
-    // *** THAY ĐỔI: Type của data ***
     data: LogAnalysisResultUnion | null;
     timeFilterOption: string;
     handleFilterChange: (event: React.ChangeEvent<HTMLSelectElement>) => void;
@@ -18,14 +16,13 @@ interface AnalysisHeaderProps {
     setRequestIdFilterInput: (value: string) => void;
     applyRequestIdFilter: () => void;
     clearRequestIdFilter: () => void;
-    // *** THÊM: Prop crawlerType ***
     crawlerType: CrawlerType;
 }
 
 const AnalysisHeader: React.FC<AnalysisHeaderProps> = ({
     loading, error, isConnected, data, timeFilterOption, handleFilterChange, refetchData,
     requestIdFilterInput, setRequestIdFilterInput, applyRequestIdFilter, clearRequestIdFilter,
-    crawlerType // *** NHẬN prop crawlerType ***
+    crawlerType
 }) => {
     const t = useTranslations('AnalysisHeader');
 
@@ -36,13 +33,12 @@ const AnalysisHeader: React.FC<AnalysisHeaderProps> = ({
         if (error && !data) return t('headerText.errorLoading');
         if (!data && !loading) return t('headerText.noData');
 
-        // *** THAY ĐỔI: Chọn tiêu đề dựa trên crawlerType ***
         if (crawlerType === 'conference') {
-            return t('headerText.analysisTitleConference'); // Key dịch mới
+            return t('headerText.analysisTitleConference');
         } else if (crawlerType === 'journal') {
-            return t('headerText.analysisTitleJournal'); // Key dịch mới
+            return t('headerText.analysisTitleJournal');
         }
-        return t('headerText.analysisTitle'); // Fallback
+        return t('headerText.analysisTitle');
     };
 
     const getLastAnalysisText = () => !data?.analysisTimestamp || isLoadingInitial ? t('common.na') : new Date(data.analysisTimestamp).toLocaleString();
@@ -59,19 +55,39 @@ const AnalysisHeader: React.FC<AnalysisHeaderProps> = ({
     const clearInputRightOffset = data?.filterRequestId ? 'right-10' : 'right-3';
 
     return (
-        <header className={`flex flex-col md:flex-row items-start md:items-center justify-between mb-6 bg-white p-5 rounded-lg shadow-lg border-l-4 ${headerBorderColor} gap-y-4 md:gap-y-0`}>
-            <div className="flex-grow min-w-0">
-                {/* Tiêu đề được cập nhật bởi getHeaderText() */}
-                <h1 className="text-xl md:text-xl font-extrabold text-gray-900 truncate">{getHeaderText()}</h1>
-                <div className="text-sm mt-1 flex items-center flex-wrap gap-x-4 gap-y-1">
-                    <span className="flex items-center gap-1"><FaSyncAlt /> {t('lastAnalysis')}: {getLastAnalysisText()}</span>
-                    {error && !isLoadingInitial && <span className="text-red-600 text-xs flex items-center gap-1" title={error}><FaExclamationTriangle /> {t('errorLabel')}: {error}</span>}
+        <header className={`flex flex-col mb-6 bg-white p-4 rounded-lg shadow-lg border-l-4 ${headerBorderColor} `}>
+            {/* Hàng trên cùng: Tiêu đề và Connection Status */}
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between w-full gap-y-3 md:gap-y-0">
+                <div className="flex-grow min-w-0">
+                    {/* Tiêu đề được cập nhật bởi getHeaderText() */}
+                    <h1 className="text-xl md:text-xl font-extrabold text-gray-900 truncate">{getHeaderText()}</h1>
+                    {/* Các thông tin phụ "Last Analysis" và "Log File Path" đã được di chuyển xuống */}
                 </div>
-                <p className="text-xs mt-1 truncate" title={getLogFilePathText()}>{t('logFile')}: <span className="font-mono">{getLogFilePathText()}</span></p>
+
+                {!(isLoadingInitial || (error && !data)) && (
+                    <div className={`text-xs px-3 py-1.5 rounded-full font-semibold flex items-center gap-2 shrink-0 whitespace-nowrap ${connectionBgColor} mt-3 md:mt-0`}>
+                        <span className="relative flex h-2.5 w-2.5">
+                            <span className={`absolute inline-flex h-full w-full rounded-full ${connectionPingClass}`}></span>
+                            <span className={`relative inline-flex rounded-full h-2.5 w-2.5 ${connectionDotClass}`}></span>
+                        </span>
+                        {t('realtime')}: <span className="font-bold">{isConnected ? t('connectionStatus.connected') : t('connectionStatus.disconnected')}</span>
+                    </div>
+                )}
             </div>
 
+            {/* Hàng dưới: Thông tin phụ, các bộ lọc và nút Refresh */}
             {!(isLoadingInitial || (error && !data)) && (
-                 <div className="flex flex-col xl:flex-row items-start xl:items-center gap-3 mt-4 md:mt-0 shrink-0 w-full xl:w-auto">
+                 <div className="flex flex-col xl:flex-row items-start xl:items-center gap-3 mt-4 shrink-0 w-full xl:w-auto">
+                    {/* Thông tin Last Analysis và Log File Path */}
+                    {/* ĐÃ CHỈNH SỬA: Luôn xếp theo cột */}
+                    <div className="flex flex-col gap-y-1 shrink-0 text-sm">
+                        <div className="flex items-center flex-wrap gap-x-4 gap-y-1">
+                            <span className="flex items-center gap-1"><FaSyncAlt /> {t('lastAnalysis')}: {getLastAnalysisText()}</span>
+                            {error && !isLoadingInitial && <span className="text-red-600 text-xs flex items-center gap-1" title={error}><FaExclamationTriangle /> {t('errorLabel')}: {error}</span>}
+                        </div>
+                        <p className="text-xs truncate" title={getLogFilePathText()}>{t('logFile')}: <span className="font-mono">{getLogFilePathText()}</span></p>
+                    </div>
+
                     {/* Request ID Filter Group */}
                     <div className="flex items-center gap-2 w-full sm:w-auto relative">
                         <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" title={t('filter.requestIdFilterTitle')} />
@@ -82,7 +98,7 @@ const AnalysisHeader: React.FC<AnalysisHeaderProps> = ({
                             onChange={handleRequestIdInputChange}
                             onKeyPress={handleRequestIdKeyPress}
                             disabled={loading}
-                            className={`p-2 pl-10 border border-gray-300 rounded-md bg-white shadow-sm text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-full sm:w-64 md:w-80 lg:w-96 ${loading ? 'cursor-not-allowed bg-gray-100' : 'text-gray-700'}`}
+                            className={`p-2 pl-10 border border-gray-300 rounded-md bg-white shadow-sm text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-full sm:w-64 md:w-72 lg:w-80 ${loading ? 'cursor-not-allowed bg-gray-100' : 'text-gray-700'}`}
                         />
                         {requestIdFilterInput && !loading && (
                              <button
@@ -133,11 +149,6 @@ const AnalysisHeader: React.FC<AnalysisHeaderProps> = ({
                             <FaSyncAlt className={`mr-2 h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
                             {loading ? t('refreshButton.refreshing') : t('refreshButton.refreshNow')}
                         </button>
-                    </div>
-                    {/* Connection Status */}
-                    <div className={`text-xs px-3 py-1.5 rounded-full font-semibold flex items-center gap-2 shrink-0 whitespace-nowrap ${connectionBgColor}`}>
-                        <span className="relative flex h-2.5 w-2.5"><span className={`absolute inline-flex h-full w-full rounded-full ${connectionPingClass}`}></span><span className={`relative inline-flex rounded-full h-2.5 w-2.5 ${connectionDotClass}`}></span></span>
-                        {t('realtime')}: <span className="font-bold">{isConnected ? t('connectionStatus.connected') : t('connectionStatus.disconnected')}</span>
                     </div>
                 </div>
             )}

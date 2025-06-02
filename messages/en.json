@@ -550,68 +550,6 @@
       "progress": "Progress"
     }
   },
-  "AnalysisPage": {
-    "noData": {
-      "forRequestId": "No analysis results found for Request ID: \"{requestId}\".",
-      "noRequestsForPeriod": "No analysis requests found for the selected time period. Consider selecting \"Latest\" or uploading new logs.",
-      "noResultsForPeriod": "No analysis results found for the selected time period. Consider selecting \"Latest\".",
-      "genericNoResults": "No analysis results found. The log might be empty, processing is pending, or no data matches the current time filter.",
-      "noSpecificData": "No specific data to display for the current view."
-    },
-    "statusMessages": {
-      "dataLoadedCriteriaNotMet": "Analysis data loaded, but current view criteria not met. Try adjusting filters or refreshing.",
-      "dataIsForRequestId": "Data is for: {requestId}",
-      "dataIsGeneralSummary": "Data is general summary."
-    },
-    "refreshing": {
-      "details": "Refreshing details for {requestId}...",
-      "analysisData": "Refreshing analysis data...",
-      "error": "Error refreshing data: {error}"
-    }
-  },
-  "AnalysisHeader": {
-    "headerText": {
-      "loading": "Loading Analysis...",
-      "errorLoading": "Error Loading Data",
-      "noData": "No Analysis Data",
-      "analysisTitle": "Crawl Process Analysis"
-    },
-    "common": {
-      "na": "N/A",
-      "unknown": "Unknown"
-    },
-    "lastAnalysis": "Last Analysis",
-    "errorLabel": "Error",
-    "logFile": "Log File",
-    "filter": {
-      "requestIdFilterTitle": "Filter by Request ID",
-      "requestIdPlaceholder": "Filter by Request ID...",
-      "clearInputTitle": "Clear input",
-      "clearActiveFilterTitle": "Clear Active Request ID Filter",
-      "enterRequestIdTitle": "Enter a Request ID",
-      "applyFilterTitle": "Apply Filter",
-      "applyButton": "Apply",
-      "timeFilterTitle": "Filter Time Range"
-    },
-    "timeOptions": {
-      "allTime": "All Time",
-      "lastHour": "Last Hour",
-      "last6Hours": "Last 6 Hours",
-      "last24Hours": "Last 24 Hours",
-      "last7Days": "Last 7 Days"
-    },
-    "refreshButton": {
-      "refreshingTitle": "Refreshing...",
-      "refreshDataTitle": "Refresh data",
-      "refreshing": "Refreshing...",
-      "refreshNow": "Refresh Now"
-    },
-    "realtime": "Realtime",
-    "connectionStatus": {
-      "connected": "Connected",
-      "disconnected": "Disconnected"
-    }
-  },
   "ConferenceDetails": {
     "title": "Detailed Conference Analysis",
     "collapseDetailsTitle": "Collapse Details",
@@ -907,7 +845,7 @@
   },
   "JournalTableHeader": {
     "columnTitles": {
-      "select": "Sel",
+      "select": "Select",
       "journalTitle": "Journal Title",
       "sourceId": "Source ID",
       "batchRequestId": "Request ID",
@@ -921,7 +859,19 @@
       "errors": "Errors"
     },
     "sortTooltip": "Sort by {column}",
-    "filterPlaceholder": "Filter {column}..."
+    "filterPlaceholder": "Filter {column}...",
+    "filterByCountLevelTitle": "Filter by {{field}} count level",
+    "filterByDataSourceTitle": "Filter by data source",
+    "filterOptions": {
+      "all": "All",
+      "any": "Any",
+      "none": "None"
+    },
+    "dataSourceOptions": {
+      "scimago": "Scimago",
+      "client": "Client"
+    },
+    "selectAllTooltip": "Select/Deselect all visible rows"
   },
   "JournalTableRow": {
     "selectRowAria": "Select journal {title}",
@@ -945,6 +895,14 @@
       "yes": "Yes",
       "no": "No",
       "na": "N/A"
+    },
+    "statusNames": {
+      "completed": "Completed",
+      "failed": "Failed",
+      "processing": "Processing",
+      "pending": "Pending",
+      "skipped": "Skipped",
+      "unknown": "Unknown"
     }
   },
   "ScimagoCharts": {
@@ -970,11 +928,190 @@
       "count": "Count"
     }
   },
-   "FileOutputJournalCharts": {
+  "FileOutputJournalCharts": {
     "jsonlWriteStatusTitle": "JSONL Write Status",
     "noJsonlWriteStatusData": "No JSONL write status data.",
     "clientCsvParseStatusTitle": "Client CSV Parse Status",
     "noClientCsvParseStatusData": "No client CSV parse status data."
-   
-  }
+  },
+  "JournalCollapsibleContent": {
+    "chartTabs": {
+      "general": "General",
+      "bioxbio": "Bioxbio",
+      "scimago": "Scimago",
+      "imageSearch": "Image Search",
+      "fileOutput": "File Output"
+    },
+    "detailedStatisticsTitle": "Detailed Statistics",
+    "collapseDetailsTitle": "Collapse details",
+    "expandDetailsTitle": "Expand details",
+    "collapseDetailedStatisticsAriaLabel": "Collapse detailed statistics section",
+    "expandDetailedStatisticsAriaLabel": "Expand detailed statistics section",
+    "srOnly": {
+      "collapse": "Collapse",
+      "expand": "Expand"
+    },
+    "chartTabsAriaLabel": "Journal chart tabs"
+  },
+  "JournalKpiSection": {
+    "generalKpis": {
+      "totalDuration": "Total Duration",
+      "journalsProcessed": "Journals Processed",
+      "failedJournals": "Failed Journals",
+      "requestsAnalyzed": "Requests Analyzed"
+    },
+    "bioxbioKpis": {
+      "title": "Bioxbio Data Fetching",
+      "fetchesAttempted": "Fetches Attempted",
+      "fetchesSucceeded": "Fetches Succeeded",
+      "failedSubText": "{{count}} Failed",
+      "cacheHits": "Cache Hits"
+    },
+    "scimagoKpis": {
+      "title": "Scimago Detail Page Fetching",
+      "detailPagesAttempted": "Detail Pages Attempted",
+      "detailPagesSucceeded": "Detail Pages Succeeded",
+      "failedSubText": "{{count}} Failed",
+      "detailPagesSkipped": "Detail Pages Skipped (Null URL)"
+    },
+    "imageSearchKpis": {
+      "title": "Image Search (Google) Operations",
+      "searchesAttempted": "Searches Attempted",
+      "searchesSucceeded": "Searches Succeeded",
+      "failedSubText": "{{count}} Failed after retries",
+      "apiKeyRotations": "API Key Rotations",
+      "exhaustedSubText": "{{count}} Exhausted"
+    },
+    "fileOutputKpis": {
+      "title": "File Output Operations",
+      "jsonlWritten": "JSONL Records Written",
+      "errorsSubText": "{{count}} Errors",
+      "clientCsvParsed": "Client CSV Parsed"
+    }
+  },
+  "JournalTable": {
+    "noDataMessage": "No data available."
+  },
+  "JournalTableControls": {
+    "searchPlaceholder": "Search journals (title, source ID...)",
+    "selectAllTitle": "Select All",
+    "selectNoErrorTitle": "Select All Journals with No Errors",
+    "selectErrorTitle": "Select All Journals with Errors",
+    "deselectAllTitle": "Deselect All",
+    "reCrawlDisabledTitle": "Select journals to re-crawl",
+    "reCrawlSelectedTitle": "Re-crawl {{count}} selected journals",
+    "reCrawlButtonText": "Re-crawl Selected"
+  },
+  "JournalCrawl": {
+    "title": "Journal Crawl & Update",
+    "fileLabel": "Upload Journal List (CSV)",
+    "reading": "Reading file...",
+    "changeFile": "Change File",
+    "chooseFile": "Choose File",
+    "sendingData": "Sending data...",
+    "sendAgain": "Send Again",
+    "startCrawl": "Start Crawl",
+    "reset": "Reset",
+    "statusAndResults": "Crawl Status & Results",
+    "checkingJournals": "Checking journals and initiating crawl...",
+    "error": "Error",
+    "summary": "Summary",
+    "totalProcessed": "Total Processed",
+    "alreadyCrawled": "Already Crawled",
+    "newJournals": "New Journals",
+    "detailedResults": "Detailed Results"
+  },
+  "AnalysisHeader": {
+    "headerText": {
+      "loading": "Loading Log Analysis Data...",
+      "errorLoading": "Error Loading Log Analysis Data",
+      "noData": "No Log Analysis Data Available",
+      "analysisTitleConference": "Conference Log Analysis Overview",
+      "analysisTitleJournal": "Journal Log Analysis Overview",
+      "analysisTitle": "Log Analysis Overview"
+    },
+    "common": {
+      "na": "N/A",
+      "unknown": "Unknown"
+    },
+    "lastAnalysis": "Last Analysis",
+    "errorLabel": "Error",
+    "logFile": "Log File",
+    "filter": {
+      "requestIdFilterTitle": "Filter by Request ID",
+      "requestIdPlaceholder": "Filter by Request ID (e.g., batch-request-123)",
+      "clearInputTitle": "Clear input",
+      "clearActiveFilterTitle": "Clear active filter",
+      "enterRequestIdTitle": "Enter a request ID to apply filter",
+      "applyFilterTitle": "Apply filter to request ID",
+      "applyButton": "Apply",
+      "timeFilterTitle": "Filter by time range"
+    },
+    "timeOptions": {
+      "allTime": "All Time",
+      "lastHour": "Last Hour",
+      "last6Hours": "Last 6 Hours",
+      "last24Hours": "Last 24 Hours",
+      "last7Days": "Last 7 Days"
+    },
+    "refreshButton": {
+      "refreshingTitle": "Refreshing data...",
+      "refreshDataTitle": "Refresh Data",
+      "refreshing": "Refreshing...",
+      "refreshNow": "Refresh Now"
+    },
+    "realtime": "Real-time",
+    "connectionStatus": {
+      "connected": "Connected",
+      "disconnected": "Disconnected"
+    }
+  },
+  "AnalysisPage": {
+    "crawlerTypes": {
+      "conference": "Conference",
+      "journal": "Journal"
+    },
+    "noData": {
+      "forRequestId": "No data found for Request ID: \"{{requestId}}\". Please check the ID or adjust time filters.",
+      "noRequestsForPeriod": "No log requests found for the selected time period.",
+      "noResultsForPeriod": "No analysis results available for the selected time period.",
+      "genericNoResults": "No analysis results available.",
+      "noSpecificData": "No specific data to display based on current filters."
+    },
+    "statusMessages": {
+      "dataLoadedCriteriaNotMet": "Data loaded, but current view criteria not met.",
+      "dataIsForRequestId": "The data displayed is for Request ID: {{requestId}}.",
+      "dataIsGeneralSummary": "The data displayed is a general summary."
+    },
+    "refreshing": {
+      "details": "Refreshing details for Request ID: {{requestId}}...",
+      "analysisData": "Refreshing log analysis data...",
+      "error": "Error during refresh: {{error}}"
+    },
+    "statusNames": {
+      "completed": "Completed",
+      "failed": "Failed",
+      "processing": "Processing",
+      "partiallycompleted": "Partially Completed",
+      "completedwitherrors": "Completed with Errors",
+      "unknown": "Unknown"
+    }
+  },
+  "UsersPage": {
+    "AuthStatus_Loading": "Loading authentication status...",
+    "title": "User Accounts",
+    "searchPlaceholder": "Search by name or email...",
+    "statusAll": "All Statuses",
+    "statusActive": "Active",
+    "statusBanned": "Banned",
+    "loading": "Loading users...",
+    "name": "Name",
+    "email": "Email",
+    "status": "Status",
+    "createdAt": "Created At",
+    "actions": "Actions",
+    "unban": "Unban",
+    "ban": "Ban"
+  },
+  "Accounts": "Accounts"
 }
