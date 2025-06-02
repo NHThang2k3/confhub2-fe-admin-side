@@ -2,7 +2,7 @@
 
 import React from 'react'
 // Import the refactored hook and types
-import { useJournalCrawl } from '@/src/hooks/crawl/useJournalCrawl' // Adjust path as needed
+import { useJournalCrawl } from '@/src/hooks/crawl/journal/useJournalCrawl' // Adjust path as needed
 import { useJournalTableManager } from '@/src/hooks/crawl/useJournalTableManager'
 import { JournalTable } from './journalTable/JournalTable'
 import { Button } from '@/src/components/ui/button'

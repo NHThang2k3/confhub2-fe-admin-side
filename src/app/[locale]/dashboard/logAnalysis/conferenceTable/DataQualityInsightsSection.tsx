@@ -1,7 +1,7 @@
 // src/app/[locale]/dashboard/logAnalysis/DataQualityInsightsSection.tsx
 import React from 'react';
 import { FaInfoCircle } from 'react-icons/fa';
-import { ConferenceTableData } from '@/src/hooks/crawl/useConferenceTableManager';
+import { ConferenceTableData } from '@/src/hooks/crawl/conference/useConferenceTableManager';
 import { getInsightIcon, getSeverityClass } from './conferenceTableRowUtils';
 
 interface DataQualityInsightsSectionProps {

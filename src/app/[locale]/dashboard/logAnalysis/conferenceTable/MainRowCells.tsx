@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { FaChevronDown, FaChevronUp, FaLink, FaCogs, FaInfoCircle, FaTimesCircle, FaCheckCircle } from 'react-icons/fa';
-import { ConferenceTableData, RowSaveStatus } from '@/src/hooks/crawl/useConferenceTableManager';
+import { ConferenceTableData, RowSaveStatus } from '@/src/hooks/crawl/conference/useConferenceTableManager';
 import { StatusIcon } from '../StatusIcon';
 import { formatDuration } from '../utils/commonUtils';
 interface MainRowCellsProps {

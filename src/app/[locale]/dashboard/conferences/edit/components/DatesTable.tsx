@@ -188,7 +188,7 @@ export default function DatesTable({ control, watch, name, onRefetch }: DatesTab
             type="button"
             onClick={handleCancel}
             disabled={isLoading}
-            className="px-3 py-1 bg-gray-50 text-white rounded hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-3 py-1 bg-gray-5 text-white rounded hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isLoading ? t('modal.editForm.loading') : t('modal.editForm.cancel')}
           </button>

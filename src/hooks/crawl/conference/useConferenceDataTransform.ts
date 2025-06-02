@@ -3,18 +3,18 @@
 import { useMemo, useEffect } from 'react';
 import {
   ConferenceAnalysisDetail,
-  LogAnalysisResult,
+  ConferenceLogAnalysisResult,
   DataQualityInsight,
   LogError
 } from '@/src/models/logAnalysis';
-import { ConferenceTableData } from '../crawl/useConferenceTableManager'; // Import type
+import { ConferenceTableData } from './useConferenceTableManager';
 
 interface UseConferenceDataTransformProps {
-  logAnalysisResult: LogAnalysisResult | null | undefined;
+  logAnalysisResult: ConferenceLogAnalysisResult | null | undefined;
 }
 
 /**
- * Hook để chuyển đổi dữ liệu thô từ LogAnalysisResult thành ConferenceTableData
+ * Hook để chuyển đổi dữ liệu thô từ ConferenceLogAnalysisResult thành ConferenceTableData
  * và tính toán các thuộc tính phái sinh.
  */
 export const useConferenceDataTransform = ({

@@ -113,7 +113,7 @@ export interface ConferenceAnalysisDetail {
  * The comprehensive result structure for a complete log analysis operation.
  * Aggregates all insights from various components of the crawl pipeline.
  */
-export interface LogAnalysisResult {
+export interface ConferenceLogAnalysisResult {
     /** ISO timestamp when this analysis was generated. */
     analysisTimestamp: string;
     /** The file path of the log file(s) that were analyzed. */

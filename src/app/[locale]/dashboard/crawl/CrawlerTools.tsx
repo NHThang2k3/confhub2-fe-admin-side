@@ -1,6 +1,7 @@
+// src/app/[locale]/dashboard/crawl/CrawlerTools.tsx
 import React from 'react';
 import { FaTable, FaBookOpen, FaChevronUp, FaChevronDown } from 'react-icons/fa';
-import { CrawlerType } from '../logAnalysis/Analysis'; // Assuming CrawlerType is exported from Analysis.tsx
+import { CrawlerType } from '@/src/hooks/logAnalysis/useLogAnalysisData';
 import { useTranslations } from 'next-intl';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -269,7 +270,7 @@ const CronUpdateCard = () => {
                                 className={`${
                                     cycleType === 'daily' 
                                     ? 'bg-blue-600 hover:bg-blue-700 text-white' 
-                                    : 'border-gray-300 text-gray-700 hover:bg-gray-50'
+                                    : 'border-gray-300 text-gray-700 hover:bg-gray-5'
                                 }`}
                             >
                                 Daily
@@ -280,7 +281,7 @@ const CronUpdateCard = () => {
                                 className={`${
                                     cycleType === 'monthly' 
                                     ? 'bg-blue-600 hover:bg-blue-700 text-white' 
-                                    : 'border-gray-300 text-gray-700 hover:bg-gray-50'
+                                    : 'border-gray-300 text-gray-700 hover:bg-gray-5'
                                 }`}
                             >
                                 Monthly
@@ -328,7 +329,7 @@ const CronUpdateCard = () => {
                 </div>
 
                 {cronStatus && (
-                    <Alert className="border-gray-200 bg-gray-50">
+                    <Alert className="border-gray-200 bg-gray-5">
                         <AlertTitle className="text-gray-700">Current Status</AlertTitle>
                         <AlertDescription>
                             <div className="space-y-2 text-gray-600">

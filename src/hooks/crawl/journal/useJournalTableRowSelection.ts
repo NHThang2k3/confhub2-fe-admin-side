@@ -1,23 +1,19 @@
-// src/hooks/useTableRowSelection.ts
+// src/hooks/logAnalysis/useJournalTableRowSelection.ts (File mới)
 
 import { useState, useMemo, useCallback, useEffect } from 'react';
-import { ConferenceTableData } from '../crawl/useConferenceTableManager'; // Import type
+import { JournalTableData } from './journalTableManagerTypes'; // Import type từ file mới
 
-interface UseTableRowSelectionProps {
-  data: ConferenceTableData[]; // Dữ liệu đã được lọc và sắp xếp
-  resetDependencies?: any[]; // Để reset state khi logAnalysisResult thay đổi
+interface UseJournalTableRowSelectionProps {
+  data: JournalTableData[]; // Dữ liệu đã được lọc và sắp xếp
+  resetDependencies?: any[];
 }
 
-/**
- * Hook để quản lý trạng thái lựa chọn hàng trong bảng.
- */
-export const useTableRowSelection = ({
+export const useJournalTableRowSelection = ({
   data,
   resetDependencies = []
-}: UseTableRowSelectionProps) => {
+}: UseJournalTableRowSelectionProps) => {
   const [selectedRows, setSelectedRows] = useState<Record<string, boolean>>({});
 
-  // Reset state khi dependencies thay đổi (ví dụ: logAnalysisResult mới)
   useEffect(() => {
     setSelectedRows({});
   }, resetDependencies);
@@ -34,49 +30,40 @@ export const useTableRowSelection = ({
 
   const handleSelectAll = useCallback(() => {
     const newSelection: Record<string, boolean> = {};
-    data.forEach(conf => {
-      newSelection[conf.uniqueRowId] = true;
+    data.forEach(journal => {
+      newSelection[journal.uniqueRowId] = true;
     });
     setSelectedRows(newSelection);
   }, [data]);
 
   const handleDeselectAll = useCallback(() => setSelectedRows({}), []);
 
+  // Các hàm select theo điều kiện có thể cần điều chỉnh cho journal
   const handleSelectNoError = useCallback(() => {
     const newSelection: Record<string, boolean> = {};
-    data.forEach(conf => {
-      if (conf.unrecoveredErrorCount === 0) newSelection[conf.uniqueRowId] = true;
+    data.forEach(journal => {
+      if (journal.errorCount === 0) newSelection[journal.uniqueRowId] = true;
     });
     setSelectedRows(newSelection);
   }, [data]);
 
   const handleSelectError = useCallback(() => {
     const newSelection: Record<string, boolean> = {};
-    data.forEach(conf => {
-      if (conf.unrecoveredErrorCount > 0) newSelection[conf.uniqueRowId] = true;
+    data.forEach(journal => {
+      if (journal.errorCount > 0) newSelection[journal.uniqueRowId] = true;
     });
     setSelectedRows(newSelection);
   }, [data]);
 
-  const handleSelectWarning = useCallback(() => {
+  // Ví dụ: Select các journal đã fetch Bioxbio thành công
+  const handleSelectBioxbioSuccess = useCallback(() => {
     const newSelection: Record<string, boolean> = {};
-    data.forEach(conf => {
-      if (conf.dataQualityInsightCount > 0) {
-        newSelection[conf.uniqueRowId] = true;
-      }
+    data.forEach(journal => {
+      if (journal.bioxbioSuccess === true) newSelection[journal.uniqueRowId] = true;
     });
     setSelectedRows(newSelection);
   }, [data]);
 
-  const handleSelectWithoutWarningsOrErrors = useCallback(() => {
-    const newSelection: Record<string, boolean> = {};
-    data.forEach(conf => {
-      if (conf.unrecoveredErrorCount === 0 && conf.dataQualityInsightCount === 0) {
-        newSelection[conf.uniqueRowId] = true;
-      }
-    });
-    setSelectedRows(newSelection);
-  }, [data]);
 
   const selectedRowsCount = selectedRowIds.length;
   const anyRowsSelected = selectedRowsCount > 0;
@@ -89,8 +76,8 @@ export const useTableRowSelection = ({
     handleDeselectAll,
     handleSelectNoError,
     handleSelectError,
-    handleSelectWarning,
-    handleSelectWithoutWarningsOrErrors,
+    handleSelectBioxbioSuccess, // Ví dụ hàm select mới
+    // Thêm các hàm select khác nếu cần
     selectedRowsCount,
     anyRowsSelected,
   };

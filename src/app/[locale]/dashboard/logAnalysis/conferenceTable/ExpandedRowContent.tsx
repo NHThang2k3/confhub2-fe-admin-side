@@ -1,7 +1,7 @@
 // src/app/[locale]/dashboard/logAnalysis/ExpandedRowContent.tsx
 
 import React from 'react';
-import { ConferenceTableData } from '@/src/hooks/crawl/useConferenceTableManager';
+import { ConferenceTableData } from '@/src/hooks/crawl/conference/useConferenceTableManager';
 import { ExtractedDataPreviewSection } from './ExtractedDataPreviewSection';
 import { ErrorAndLinkFailuresSection } from './ErrorAndLinkFailuresSection';
 import { DataQualityInsightsSection } from './DataQualityInsightsSection';

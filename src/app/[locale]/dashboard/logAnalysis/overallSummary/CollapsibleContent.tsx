@@ -3,7 +3,7 @@ import React, { useState, useMemo } from 'react'; // Import useMemo
 import KpiSection from './KpiSection';
 import LogProcessingErrorsDisplay from './LogProcessingErrorsDisplay';
 import { BarChartData, PieChartItem } from '../utils/chartUtils';
-import { LogAnalysisResult, GoogleSearchHealthData, GeminiApiAnalysis } from '@/src/models/logAnalysis';
+import { ConferenceLogAnalysisResult, GoogleSearchHealthData, GeminiApiAnalysis } from '@/src/models/logAnalysis';
 
 import GeneralCharts from './chartTabs/GeneralCharts';
 import ValidationQualityCharts from './chartTabs/ValidationQualityCharts';
@@ -15,7 +15,7 @@ import { useTranslations } from 'next-intl'; // Import useTranslations
 
 interface CollapsibleContentProps {
   isExpanded: boolean;
-  data: LogAnalysisResult;
+  data: ConferenceLogAnalysisResult;
   // General
   overallStatusData: PieChartItem[];
   playwrightLinkData: PieChartItem[];

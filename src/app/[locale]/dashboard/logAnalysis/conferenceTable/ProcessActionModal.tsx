@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { CrawlModelType, ApiModels, ApiName } from '@/src/hooks/crawl/useConferenceCrawl';
+import { CrawlModelType, ApiModels, ApiName } from '@/src/hooks/crawl/conference/useConferenceCrawl';
 import { ConferenceForAction } from '@/src/models/logAnalysis/importConferenceCrawl'; // Import ConferenceForAction
 
 interface ProcessActionModalProps {

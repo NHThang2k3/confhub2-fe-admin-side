@@ -1,7 +1,7 @@
 // src/app/[locale]/dashboard/logAnalysis/StepDetailsSection.tsx
 
 import React from 'react';
-import { ConferenceTableData } from '@/src/hooks/crawl/useConferenceTableManager';
+import { ConferenceTableData } from '@/src/hooks/crawl/conference/useConferenceTableManager';
 
 interface StepDetailsSectionProps {
   confData: ConferenceTableData;

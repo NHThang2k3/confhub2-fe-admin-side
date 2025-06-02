@@ -904,5 +904,77 @@
     "showDetails": "Show details",
     "details": "Details",
     "context": "Context"
+  },
+  "JournalTableHeader": {
+    "columnTitles": {
+      "select": "Sel",
+      "journalTitle": "Journal Title",
+      "sourceId": "Source ID",
+      "batchRequestId": "Request ID",
+      "dataSource": "Data Source",
+      "status": "Status",
+      "duration": "Duration",
+      "bioxbio": "Bioxbio",
+      "scimagoDetails": "Scimago Det.",
+      "imageSearch": "Image",
+      "jsonlWrite": "JSONL",
+      "errors": "Errors"
+    },
+    "sortTooltip": "Sort by {column}",
+    "filterPlaceholder": "Filter {column}..."
+  },
+  "JournalTableRow": {
+    "selectRowAria": "Select journal {title}",
+    "expandRowTooltip": "{action} details for {title}",
+    "collapse": "Collapse",
+    "expand": "Expand",
+    "errorCountTooltip": "{count, plural, =0 {No errors} one {# error} other {# errors}}",
+    "expanded": {
+      "basicInfoTitle": "Basic Information",
+      "startTimeLabel": "Start Time",
+      "endTimeLabel": "End Time",
+      "originalInputLabel": "Original Input",
+      "stepsTitle": "Processing Steps",
+      "bioxbioAttempted": "Bioxbio Fetch Attempted",
+      "success": "Success",
+      "cacheUsed": "Cache Used",
+      "scimagoDetailsAttempted": "Scimago Details Attempted",
+      "imageSearchAttempted": "Image Search Attempted",
+      "jsonlWriteSuccess": "JSONL Write Success",
+      "errorsTitle": "Errors ({count})",
+      "yes": "Yes",
+      "no": "No",
+      "na": "N/A"
+    }
+  },
+  "ScimagoCharts": {
+    "detailPageStatusTitle": "Scimago Detail Page Status",
+    "noDetailPageStatusData": "No Scimago detail page status data.",
+    "listPageStatusTitle": "Scimago List Page Processing",
+    "noListPageStatusData": "No Scimago list page processing data.",
+    "topErrorsTitle": "Top Scimago Errors",
+    "noErrorsData": "No Scimago error data.",
+    "common": {
+      "count": "Count"
+    }
+  },
+  "ImageSearchCharts": {
+    "searchStatusTitle": "Image Search Status",
+    "noSearchStatusData": "No image search status data.",
+    "apiKeyUsageTitle": "Image Search API Key Usage",
+    "noApiKeyUsageData": "No API key usage data for image search.",
+    "topErrorsTitle": "Top Image Search Errors",
+    "noErrorsData": "No image search error data.",
+    "common": {
+      "requests": "Requests",
+      "count": "Count"
+    }
+  },
+   "FileOutputJournalCharts": {
+    "jsonlWriteStatusTitle": "JSONL Write Status",
+    "noJsonlWriteStatusData": "No JSONL write status data.",
+    "clientCsvParseStatusTitle": "Client CSV Parse Status",
+    "noClientCsvParseStatusData": "No client CSV parse status data."
+   
   }
 }

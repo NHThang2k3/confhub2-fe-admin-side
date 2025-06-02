@@ -1,14 +1,24 @@
 // src/app/[locale]/dashboard/logAnalysis/Analysis.tsx
-import React, { useState, useEffect, useCallback } from 'react';
-import { useLogAnalysisData } from '../../../../hooks/logAnalysis/useLogAnalysisData';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
-    FaExclamationTriangle, FaSyncAlt
+    useLogAnalysisData,
+    CrawlerType, // Import CrawlerType từ hook
+    LogAnalysisResultUnion // Import LogAnalysisResultUnion từ hook
+} from '../../../../hooks/logAnalysis/useLogAnalysisData'; // Adjust path
+import {
+    FaExclamationTriangle, FaSyncAlt, FaBookOpen, FaUsers // Icons for tabs
 } from 'react-icons/fa';
-import { useTranslations } from 'next-intl'; // Import useTranslations
+import { useTranslations } from 'next-intl';
 
 import AnalysisHeader from './analysis/AnalysisHeader';
-import OverallSummary from './OverallSummary';
+import OverallSummary from './overallSummary/ConferenceOverallSummary';
 import ConferenceDetails from './analysis/ConferenceDetails';
+// *** THÊM: Import JournalDetails (hoặc placeholder) ***
+import JournalDetails from './analysis/JournalDetails'; // Giả sử bạn sẽ tạo file này
+
+// Import types từ models (nếu chưa có trong hook)
+import { ConferenceLogAnalysisResult } from '@/src/models/logAnalysis';
+import { JournalLogAnalysisResult } from '@/src/models/logAnalysis/logAnalysisJournal.types';
 
 // New Child Components
 import LogRequestsList from './analysis/LogRequestsList';
@@ -17,9 +27,8 @@ import LoadingScreen from './analysis/LoadingScreen';
 import ErrorScreen from './analysis/ErrorScreen';
 import NoDataDisplay from './analysis/NoDataDisplay';
 
-export type CrawlerType = 'conference' | 'journal';
+// formatDateTime và getStatusChipClass giữ nguyên như bạn đã cung cấp
 
-// (formatDateTime function giữ nguyên - vì nó xử lý định dạng ngày giờ, không phải chuỗi hiển thị)
 export const formatDateTime = (isoString: string | null | undefined): string => {
     if (!isoString) {
         return 'N/A';
@@ -46,9 +55,6 @@ export const formatDateTime = (isoString: string | null | undefined): string => 
     }
 };
 
-// Helper function để lấy class màu cho status chip (giữ nguyên)
-// Lưu ý: Nếu bạn muốn dịch các trạng thái như 'Completed', 'Failed', bạn sẽ cần truyền t và dịch chúng ở đây.
-// Hiện tại, chúng ta chỉ dịch các chuỗi hiển thị, không phải giá trị của status.
 export const getStatusChipClass = (status: string | undefined | null): string => {
     if (!status) return 'bg-gray-100 text-gray-700';
     switch (status.toLowerCase()) {
@@ -59,6 +65,7 @@ export const getStatusChipClass = (status: string | undefined | null): string =>
         case 'processing':
             return 'bg-blue-100 text-blue-700';
         case 'partiallycompleted':
+        case 'completedwitherrors': // Thêm completedwitherrors
             return 'bg-yellow-100 text-yellow-700';
         case 'unknown':
             return 'bg-gray-200 text-gray-600';
@@ -67,8 +74,8 @@ export const getStatusChipClass = (status: string | undefined | null): string =>
     }
 };
 
+
 const Analysis: React.FC = () => {
-    // Khởi tạo t với namespace 'AnalysisPage'
     const t = useTranslations('AnalysisPage');
 
     const [timeFilterOption, setTimeFilterOption] = useState<string>('latest');
@@ -78,8 +85,9 @@ const Analysis: React.FC = () => {
     const [activeRequestIdFilter, setActiveRequestIdFilter] = useState<string | undefined>(undefined);
 
     const [isSummaryExpanded, setIsSummaryExpanded] = useState(false);
+    // *** THAY ĐỔI: activeCrawler được quản lý ở đây ***
     const [activeCrawler, setActiveCrawler] = useState<CrawlerType>('conference');
-    const [isCrawlerSectionExpanded, setIsCrawlerSectionExpanded] = useState(false);
+    // const [isCrawlerSectionExpanded, setIsCrawlerSectionExpanded] = useState(false); // Có thể không cần nữa nếu dùng tabs
     const [isLogRequestsExpanded, setIsLogRequestsExpanded] = useState(true);
 
     useEffect(() => {
@@ -98,7 +106,9 @@ const Analysis: React.FC = () => {
         setFilterEndTime(end);
     }, [timeFilterOption]);
 
+    // *** THAY ĐỔI: Truyền activeCrawler vào useLogAnalysisData ***
     const { data, loading, error, isConnectedToSocket, refetchData } = useLogAnalysisData(
+        activeCrawler, // Truyền crawler type hiện tại
         filterStartTime,
         filterEndTime,
         activeRequestIdFilter
@@ -124,19 +134,48 @@ const Analysis: React.FC = () => {
     };
 
     const handleToggleSummary = () => setIsSummaryExpanded(prev => !prev);
-    const handleToggleCrawlerSection = () => setIsCrawlerSectionExpanded(prev => !prev);
+    // const handleToggleCrawlerSection = () => setIsCrawlerSectionExpanded(prev => !prev); // Không cần nữa
     const handleToggleLogRequests = () => setIsLogRequestsExpanded(prev => !prev);
 
+    // *** THAY ĐỔI: activeCrawler được dùng để xác định view và data type ***
     const isDetailView = !!activeRequestIdFilter && !!data && data.filterRequestId === activeRequestIdFilter;
     const isListView = !activeRequestIdFilter && !!data && !data.filterRequestId;
-    const hasOverallDataForDisplay = !!data?.overall && data.overall.processedConferencesCount > 0;
-    const hasConferenceDetailsForDisplay = !!data?.conferenceAnalysis && Object.keys(data.conferenceAnalysis).length > 0;
+
+    const currentData = data as LogAnalysisResultUnion | null;
+
+    const hasOverallDataForDisplay = useMemo(() => {
+        if (!currentData?.overall) return false;
+        if (activeCrawler === 'conference') {
+            const confData = currentData as ConferenceLogAnalysisResult;
+            // Điều kiện cho conference, ví dụ:
+            return (confData.overall.processedConferencesCount || 0) > 0 || (confData.overall.totalConferencesInput || 0) > 0;
+        }
+        if (activeCrawler === 'journal') {
+            const journalData = currentData as JournalLogAnalysisResult;
+            // Điều kiện cho journal, ví dụ:
+            return (journalData.overall.totalJournalsProcessed || 0) > 0 || (journalData.overall.totalJournalsInput || 0) > 0;
+        }
+        return false;
+    }, [currentData, activeCrawler]);
+
+    const hasItemDetailsForDisplay = useMemo(() => {
+        if (!currentData) return false;
+        if (activeCrawler === 'conference') {
+            const confData = currentData as ConferenceLogAnalysisResult;
+            return !!confData.conferenceAnalysis && Object.keys(confData.conferenceAnalysis).length > 0;
+        }
+        if (activeCrawler === 'journal') {
+            const journalData = currentData as JournalLogAnalysisResult;
+            return !!journalData.journalAnalysis && Object.keys(journalData.journalAnalysis).length > 0;
+        }
+        return false;
+    }, [currentData, activeCrawler]);
 
     const getNoDataFoundMessage = useCallback((): string => {
         if (isDetailView && !hasOverallDataForDisplay) {
             return t('noData.forRequestId', { requestId: activeRequestIdFilter });
         }
-        if (isListView && (!data?.analyzedRequestIds || data.analyzedRequestIds.length === 0)) {
+        if (isListView && (!currentData?.analyzedRequestIds || currentData.analyzedRequestIds.length === 0)) {
             return t('noData.noRequestsForPeriod');
         }
         if (!loading && !hasOverallDataForDisplay && timeFilterOption !== 'latest' && !isDetailView) {
@@ -146,12 +185,43 @@ const Analysis: React.FC = () => {
             return t('noData.genericNoResults');
         }
         return t('noData.noSpecificData');
-    }, [isDetailView, activeRequestIdFilter, isListView, data, hasOverallDataForDisplay, loading, timeFilterOption, t]);
+    }, [isDetailView, activeRequestIdFilter, isListView, currentData, hasOverallDataForDisplay, loading, timeFilterOption, t]);
+
+    // UI chọn Crawler Type
+    const CrawlerTypeSelector = () => (
+        <div className="mb-6 flex justify-center">
+            <div className="inline-flex rounded-md shadow-sm bg-white border border-gray-300" role="group">
+                <button
+                    type="button"
+                    onClick={() => setActiveCrawler('conference')}
+                    className={`px-6 py-3 text-sm font-medium rounded-l-md focus:z-10 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-150 ease-in-out
+                        ${activeCrawler === 'conference'
+                            ? 'bg-blue-600 text-white border-blue-600'
+                            : 'text-gray-700 hover:bg-gray-100 border-gray-300'
+                        }`}
+                >
+                    <FaUsers className="inline mr-2" /> {t('crawlerTypes.conference')}
+                </button>
+                <button
+                    type="button"
+                    onClick={() => setActiveCrawler('journal')}
+                    className={`px-6 py-3 text-sm font-medium rounded-r-md focus:z-10 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-150 ease-in-out
+                        ${activeCrawler === 'journal'
+                            ? 'bg-blue-600 text-white border-blue-600'
+                            : 'text-gray-700 hover:bg-gray-100 border-gray-300'
+                        }`}
+                >
+                    <FaBookOpen className="inline mr-2" /> {t('crawlerTypes.journal')}
+                </button>
+            </div>
+        </div>
+    );
 
 
-    if (loading && !data && !error) {
+    if (loading && !currentData && !error) {
         return (
             <LoadingScreen>
+                <CrawlerTypeSelector />
                 <AnalysisHeader
                     loading={true} error={null} isConnected={isConnectedToSocket} data={null}
                     timeFilterOption={timeFilterOption} handleFilterChange={handleTimeFilterChange}
@@ -160,14 +230,16 @@ const Analysis: React.FC = () => {
                     setRequestIdFilterInput={setRequestIdFilterInput}
                     applyRequestIdFilter={applyRequestIdFilterFromInput}
                     clearRequestIdFilter={clearActiveFilterAndGoToList}
+                    crawlerType={activeCrawler} // Truyền crawlerType
                 />
             </LoadingScreen>
         );
     }
 
-    if (error && !data && !loading) {
+    if (error && !currentData && !loading) {
         return (
             <ErrorScreen error={error} onRetry={refetchData}>
+                 <CrawlerTypeSelector />
                 <AnalysisHeader
                     loading={false} error={error} isConnected={isConnectedToSocket} data={null}
                     timeFilterOption={timeFilterOption} handleFilterChange={handleTimeFilterChange}
@@ -176,6 +248,7 @@ const Analysis: React.FC = () => {
                     setRequestIdFilterInput={setRequestIdFilterInput}
                     applyRequestIdFilter={applyRequestIdFilterFromInput}
                     clearRequestIdFilter={clearActiveFilterAndGoToList}
+                    crawlerType={activeCrawler} // Truyền crawlerType
                 />
             </ErrorScreen>
         );
@@ -183,11 +256,12 @@ const Analysis: React.FC = () => {
 
     return (
         <div className="p-2 bg-gradient-to-br from-gray-100 to-blue-50 min-h-screen font-sans space-y-6">
+            <CrawlerTypeSelector /> {/* Thêm UI chọn crawler type */}
             <AnalysisHeader
-                loading={loading && !!data} // Show loading on header if data exists but is refreshing
-                error={(error && data) ? error : null} // Show error on header if data exists and refresh failed
+                loading={loading && !!currentData}
+                error={(error && currentData) ? error : null}
                 isConnected={isConnectedToSocket}
-                data={data}
+                data={currentData} // Truyền currentData (union type)
                 timeFilterOption={timeFilterOption}
                 handleFilterChange={handleTimeFilterChange}
                 refetchData={refetchData}
@@ -195,60 +269,61 @@ const Analysis: React.FC = () => {
                 setRequestIdFilterInput={setRequestIdFilterInput}
                 applyRequestIdFilter={applyRequestIdFilterFromInput}
                 clearRequestIdFilter={clearActiveFilterAndGoToList}
+                crawlerType={activeCrawler} // Truyền crawlerType
             />
 
-            {isListView && data && (
+            {isListView && currentData && (
                 <LogRequestsList
                     isExpanded={isLogRequestsExpanded}
                     onToggle={handleToggleLogRequests}
-                    data={data}
+                    data={currentData} // Truyền currentData
                     onSelectRequest={handleSelectRequestFromList}
                     formatDateTime={formatDateTime}
                     getStatusChipClass={getStatusChipClass}
-                    OverallSummaryComponent={OverallSummary}
+                    OverallSummaryComponent={OverallSummary} // OverallSummary sẽ cần xử lý data union
                     isSummaryExpandedOverall={isSummaryExpanded}
                     onToggleSummaryOverall={handleToggleSummary}
                     getNoDataMessage={getNoDataFoundMessage}
                     hasOverallDataForDisplay={hasOverallDataForDisplay}
+                    crawlerType={activeCrawler} // Truyền crawlerType cho OverallSummary
                 />
             )}
 
-            {isDetailView && data && (
+            {isDetailView && currentData && (
                 <RequestDetailView
-                    data={data}
+                    data={currentData} // Truyền currentData
                     activeRequestIdFilter={activeRequestIdFilter}
                     onClearFilter={clearActiveFilterAndGoToList}
-                    OverallSummaryComponent={OverallSummary}
+                    OverallSummaryComponent={OverallSummary} // OverallSummary sẽ cần xử lý data union
                     isSummaryExpandedOverall={isSummaryExpanded}
                     onToggleSummaryOverall={handleToggleSummary}
-                    ConferenceDetailsComponent={ConferenceDetails}
                     getNoDataMessage={getNoDataFoundMessage}
                     hasOverallDataForDisplay={hasOverallDataForDisplay}
-                    hasConferenceDetailsForDisplay={hasConferenceDetailsForDisplay}
+                    hasItemDetailsForDisplay={hasItemDetailsForDisplay} // Sử dụng hasItemDetailsForDisplay
                     loading={loading}
-                // activeCrawler={activeCrawler} // Pass if JournalDetails is re-enabled and needs this
+                    activeCrawler={activeCrawler} // Truyền activeCrawler
                 />
             )}
 
             {/* Fallback No Data / Status Messages */}
-            {!loading && data === null && !error && (
+            {!loading && currentData === null && !error && (
                 <NoDataDisplay message={getNoDataFoundMessage()} />
             )}
-            {!loading && data !== null && !isListView && !isDetailView && (
+            {!loading && currentData !== null && !isListView && !isDetailView && (
                 <NoDataDisplay
                     message={t('statusMessages.dataLoadedCriteriaNotMet')}
-                    subMessage={data.filterRequestId ? t('statusMessages.dataIsForRequestId', { requestId: data.filterRequestId }) : t('statusMessages.dataIsGeneralSummary')}
+                    subMessage={currentData.filterRequestId ? t('statusMessages.dataIsForRequestId', { requestId: currentData.filterRequestId }) : t('statusMessages.dataIsGeneralSummary')}
                 />
             )}
 
             {/* Refreshing/Error states when data already exists */}
-            {loading && data && (
+            {loading && currentData && (
                 <div className="mt-6 text-center text-blue-600">
                     <FaSyncAlt className="inline mr-2 animate-spin" />
                     {activeRequestIdFilter ? t('refreshing.details', { requestId: activeRequestIdFilter }) : t('refreshing.analysisData')}
                 </div>
             )}
-            {error && data && (
+            {error && currentData && (
                 <div className="mt-4 text-red-600 text-sm p-3 bg-red-50 rounded-md border border-red-200">
                     <FaExclamationTriangle className="inline mr-1" /> {t('refreshing.error', { error: error })}
                 </div>

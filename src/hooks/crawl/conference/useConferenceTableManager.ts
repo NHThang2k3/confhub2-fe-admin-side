@@ -1,6 +1,6 @@
 // src/hooks/crawl/useConferenceTableManager.ts
 
-import { ConferenceAnalysisDetail, LogAnalysisResult, DataQualityInsight } from '@/src/models/logAnalysis';
+import { ConferenceAnalysisDetail, ConferenceLogAnalysisResult, DataQualityInsight } from '@/src/models/logAnalysis';
 // Import các sub-hooks mới
 import { useConferenceDataTransform } from './useConferenceDataTransform';
 import { useTableSortingAndFiltering } from './useTableSortingAndFiltering';
@@ -54,7 +54,7 @@ export interface ConferenceTableData extends Omit<ConferenceAnalysisDetail, 'dat
 }
 
 export interface UseConferenceTableManagerProps {
-  logAnalysisResult: LogAnalysisResult | null | undefined;
+  logAnalysisResult: ConferenceLogAnalysisResult | null | undefined;
 }
 
 /**

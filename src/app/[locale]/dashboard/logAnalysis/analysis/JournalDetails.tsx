@@ -1,37 +1,31 @@
-// src/app/[locale]/dashboard/logAnalysis/analysis/ConferenceDetails.tsx
+// src/app/[locale]/dashboard/logAnalysis/analysis/JournalDetails.tsx (File mới)
 import React, { useState } from 'react';
 import { FaChevronUp, FaChevronDown } from 'react-icons/fa';
-import { ConferenceLogAnalysisResult } from '@/src/models/logAnalysis';
-import { useConferenceTableManager } from '@/src/hooks/crawl/conference/useConferenceTableManager';
-import { ConferenceTableControls } from '../conferenceTable/ConferenceTableControls';
-import { ConferenceTable } from '../conferenceTable/ConferenceTable';
-import { useConferenceCrawl } from '@/src/hooks/crawl/conference/useConferenceCrawl';
-import ProcessActionModal from '../conferenceTable/ProcessActionModal';
-import { useTranslations } from 'next-intl'; // Import useTranslations
+import { JournalLogAnalysisResult } from '@/src/models/logAnalysis/logAnalysisJournal.types'; // Adjust path
+import { useJournalTableManager } from '@/src/hooks/crawl/journal/useJournalTableManager';
+import { JournalTableControls } from '../journalTable/JournalTableControls';
+import { JournalTable } from '../journalTable/JournalTable';         // Component mới
+import { useTranslations } from 'next-intl';
 
-interface ConferenceDetailsProps {
-  logAnalysisResult: ConferenceLogAnalysisResult | null | undefined;
+interface JournalDetailsProps {
+  logAnalysisResult: JournalLogAnalysisResult | null | undefined;
 }
 
-const ConferenceDetails: React.FC<ConferenceDetailsProps> = ({
+const JournalDetails: React.FC<JournalDetailsProps> = ({
   logAnalysisResult
 }) => {
-  // Khởi tạo t với namespace 'ConferenceDetails'
-  const t = useTranslations('ConferenceDetails');
-
+  const t = useTranslations('JournalDetailsPage'); // Namespace mới cho i18n
   const [isExpanded, setIsExpanded] = useState(true);
-  const { isCrawling: isGlobalProcessing } = useConferenceCrawl();
 
   const handleToggleExpand = () => {
     setIsExpanded(prev => !prev);
   };
 
-  const tableManager = useConferenceTableManager({ logAnalysisResult });
-  const hasData = tableManager.sortedData && tableManager.sortedData.length > 0;
-  const rowSaveErrorsCount = Object.keys(tableManager.rowSaveErrors).length;
+  const tableManager = useJournalTableManager({ logAnalysisResult }); // Sử dụng hook quản lý bảng journal
 
-  // Kiểm tra xem có filter cột nào đang được áp dụng không
+  const hasData = tableManager.sortedData && tableManager.sortedData.length > 0;
   const hasActiveColumnFilters = Object.values(tableManager.columnFilters).some(value => value && typeof value === 'string' && value.trim() !== '');
+
 
   return (
     <>
@@ -41,56 +35,51 @@ const ConferenceDetails: React.FC<ConferenceDetailsProps> = ({
           onClick={handleToggleExpand}
         >
           <h2 className='text-xl font-semibold text-gray-800 whitespace-nowrap'>
-            {t('title')} {/* Sử dụng t() */}
+            {t('title')} {/* Ví dụ: "Journal Crawl Details" */}
           </h2>
           <button
             className='rounded p-1 text-gray-500 hover:bg-gray-100 hover:text-blue-600 focus:outline-none'
             aria-expanded={isExpanded}
-            aria-controls='conference-details-content'
-            title={isExpanded ? t('collapseDetailsTitle') : t('expandDetailsTitle')} 
+            aria-controls='journal-details-content'
+            title={isExpanded ? t('collapseDetailsTitle') : t('expandDetailsTitle')}
             onClick={e => {
               e.stopPropagation();
               handleToggleExpand();
             }}
           >
             {isExpanded ? <FaChevronUp size={18} /> : <FaChevronDown size={18} />}
-            <span className='sr-only'>{isExpanded ? t('srOnly.collapse') : t('srOnly.expand')}</span> {/* Sử dụng t() */}
+            <span className='sr-only'>{isExpanded ? t('srOnly.collapse') : t('srOnly.expand')}</span>
           </button>
         </div>
 
         {isExpanded && (
-          <div id='conference-details-content'>
-            {!logAnalysisResult?.conferenceAnalysis || Object.keys(logAnalysisResult.conferenceAnalysis).length === 0 ? (
+          <div id='journal-details-content'>
+            {/* Kiểm tra dữ liệu journalAnalysis */}
+            {!logAnalysisResult?.journalAnalysis || Object.keys(logAnalysisResult.journalAnalysis).length === 0 ? (
               <p className='text-center text-gray-500 py-8'>
-                {t('noDataMessage')} {/* Sử dụng t() */}
+                {t('noDataMessage')} {/* Ví dụ: "No journal analysis data found." */}
               </p>
             ) : !hasData && (tableManager.searchQuery || hasActiveColumnFilters) ? (
+              // Trường hợp có filter/search nhưng không có kết quả
               <>
-                <ConferenceTableControls
+                <JournalTableControls
                   selectedCount={tableManager.selectedRowIds.length}
-                  isSaveEnabled={tableManager.isSaveEnabled}
-                  mainSaveStatus={tableManager.mainSaveStatus}
-                  rowSaveErrorsCount={rowSaveErrorsCount}
-                  onSave={tableManager.handleBulkSave}
-                  onProcessAgain={tableManager.handleProcessAgainClick}
-                  isProcessing={isGlobalProcessing}
                   onSelectAll={tableManager.handleSelectAll}
                   onSelectNoError={tableManager.handleSelectNoError}
                   onSelectError={tableManager.handleSelectError}
-                  onSelectWithoutWarningsOrErrors={tableManager.onSelectWithoutWarningsOrErrors}
-                  onSelectWarning={tableManager.handleSelectWarning}
                   onDeselectAll={tableManager.handleDeselectAll}
                   searchTerm={tableManager.searchQuery}
                   onSearchChange={tableManager.setSearchQuery}
+                  // Các props khác cho controls nếu có (ví dụ: re-crawl)
+                  onReCrawlSelected={tableManager.handleReCrawlSelectedClick}
+                  isReCrawlDisabled={tableManager.selectedRowIds.length === 0} // Ví dụ
                 />
-                 <ConferenceTable
-                  data={[]}
+                <JournalTable
+                  data={[]} // Không có data để hiển thị
                   selectedRows={{}}
                   expandedRowUniqueId={null}
                   sortColumn={tableManager.sortColumn}
                   sortDirection={tableManager.sortDirection}
-                  rowSaveStatus={{}}
-                  rowSaveErrors={{}}
                   onSort={tableManager.handleSort}
                   onToggleExpand={tableManager.toggleExpand}
                   onSelectToggle={tableManager.handleRowSelectToggle}
@@ -99,35 +88,30 @@ const ConferenceDetails: React.FC<ConferenceDetailsProps> = ({
                   totalRowsCount={tableManager.totalRowsCount}
                   selectedRowsCount={tableManager.selectedRowsCount}
                   onSelectAll={tableManager.handleSelectAll}
+                  formatDateTime={ (isoString) => isoString ? new Date(isoString).toLocaleString() : 'N/A' } // Cung cấp hàm formatDateTime
+                  getStatusChipClass={ (status) => status ? 'bg-gray-200' : 'bg-gray-100' } // Cung cấp hàm getStatusChipClass
                 />
               </>
             ) : (
+              // Trường hợp có dữ liệu để hiển thị
               <>
-                <ConferenceTableControls
+                <JournalTableControls
                   selectedCount={tableManager.selectedRowIds.length}
-                  isSaveEnabled={tableManager.isSaveEnabled}
-                  mainSaveStatus={tableManager.mainSaveStatus}
-                  rowSaveErrorsCount={rowSaveErrorsCount}
-                  onSave={tableManager.handleBulkSave}
-                  onProcessAgain={tableManager.handleProcessAgainClick}
-                  isProcessing={isGlobalProcessing}
                   onSelectAll={tableManager.handleSelectAll}
                   onSelectNoError={tableManager.handleSelectNoError}
                   onSelectError={tableManager.handleSelectError}
-                  onSelectWithoutWarningsOrErrors={tableManager.onSelectWithoutWarningsOrErrors}
-                  onSelectWarning={tableManager.handleSelectWarning}
                   onDeselectAll={tableManager.handleDeselectAll}
                   searchTerm={tableManager.searchQuery}
                   onSearchChange={tableManager.setSearchQuery}
+                  onReCrawlSelected={tableManager.handleReCrawlSelectedClick}
+                  isReCrawlDisabled={tableManager.selectedRowIds.length === 0}
                 />
-                <ConferenceTable
+                <JournalTable
                   data={tableManager.sortedData}
                   selectedRows={tableManager.selectedRows}
                   expandedRowUniqueId={tableManager.expandedRow}
                   sortColumn={tableManager.sortColumn}
                   sortDirection={tableManager.sortDirection}
-                  rowSaveStatus={tableManager.rowSaveStatus}
-                  rowSaveErrors={tableManager.rowSaveErrors}
                   onSort={tableManager.handleSort}
                   onToggleExpand={tableManager.toggleExpand}
                   onSelectToggle={tableManager.handleRowSelectToggle}
@@ -136,6 +120,8 @@ const ConferenceDetails: React.FC<ConferenceDetailsProps> = ({
                   totalRowsCount={tableManager.totalRowsCount}
                   selectedRowsCount={tableManager.selectedRowsCount}
                   onSelectAll={tableManager.handleSelectAll}
+                  formatDateTime={ (isoString) => isoString ? new Date(isoString).toLocaleString() : 'N/A' }
+                  getStatusChipClass={ (status) => status ? 'bg-gray-200' : 'bg-gray-100' }
                 />
               </>
             )}
@@ -143,14 +129,15 @@ const ConferenceDetails: React.FC<ConferenceDetailsProps> = ({
         )}
       </section>
 
-      <ProcessActionModal
-        isOpen={tableManager.isProcessModalOpen}
-        onClose={() => tableManager.setIsProcessModalOpen(false)}
-        onConfirm={tableManager.handleConfirmProcessWithActionAndModels}
-        itemsToProcess={tableManager.itemsToProcessFromTable}
-      />
+      {/* Modal cho action re-crawl (nếu có) */}
+      {/* <ReCrawlJournalModal
+        isOpen={tableManager.isReCrawlModalOpen}
+        onClose={() => tableManager.setIsReCrawlModalOpen(false)}
+        onConfirm={tableManager.handleConfirmReCrawl}
+        itemsToProcess={tableManager.itemsToReCrawl}
+      /> */}
     </>
   );
 };
 
-export default ConferenceDetails;
+export default JournalDetails;

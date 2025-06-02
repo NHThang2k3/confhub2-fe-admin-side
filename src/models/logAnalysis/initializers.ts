@@ -1,5 +1,5 @@
 // src/types/initializers.ts
-import { OverallAnalysis, LogAnalysisResult, ConferenceAnalysisDetail } from './analysis.types';
+import { OverallAnalysis, ConferenceLogAnalysisResult, ConferenceAnalysisDetail } from './analysis.types';
 import { GoogleSearchAnalysis, GoogleSearchHealthData } from './search.types';
 import { GeminiApiAnalysis } from './gemini.types';
 import { PlaywrightAnalysis } from './playwright.types';
@@ -295,11 +295,11 @@ export const getInitialValidationStats = (): ValidationStats => ({
 });
 
 /**
- * Initializes a complete `LogAnalysisResult` object with default values for all its components.
+ * Initializes a complete `ConferenceLogAnalysisResult` object with default values for all its components.
  * @param {string} logFilePath - The path to the log file being analyzed (defaults to "N/A").
- * @returns {LogAnalysisResult} A new `LogAnalysisResult` instance.
+ * @returns {ConferenceLogAnalysisResult} A new `ConferenceLogAnalysisResult` instance.
  */
-export const getInitialLogAnalysisResult = (logFilePath: string = "N/A"): LogAnalysisResult => ({
+export const getInitialLogAnalysisResult = (logFilePath: string = "N/A"): ConferenceLogAnalysisResult => ({
     analysisTimestamp: new Date().toISOString(),
     logFilePath: logFilePath,
     status: 'Processing',

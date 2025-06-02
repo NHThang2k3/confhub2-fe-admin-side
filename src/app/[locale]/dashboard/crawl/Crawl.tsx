@@ -1,155 +1,39 @@
-// src/app/[locale]/dashboard/logAnalysis/Analysis.tsx
-import React, { useState, useEffect, useCallback } from 'react';
-import { useLogAnalysisData } from '../../../../hooks/logAnalysis/useLogAnalysisData';
+// src/app/[locale]/dashboard/crawl/Crawl.tsx
+import React, { useState } from 'react';
+// *** THAY ĐỔI: Import types từ hook hoặc nơi định nghĩa chung ***
 import {
-    FaExclamationTriangle, FaSyncAlt
-} from 'react-icons/fa';
+    CrawlerType, // Import CrawlerType từ hook
+} from '../../../../hooks/logAnalysis/useLogAnalysisData'; // Adjust path
 
-import ConferenceCrawlUploader from './ConferenceCrawlUploader';
-import JournalCrawlUploader from './JournalCrawlUploader';
+import ConferenceCrawlUploader from './ConferenceCrawlUploader'; // Component để upload file conference
+import JournalCrawlUploader from './JournalCrawlUploader';   // Component để upload file journal
 
-// New Child Components
-import CrawlerTools from './CrawlerTools';
+import CrawlerTools from './CrawlerTools'; // Component chứa UI chọn crawler và uploader
 
-// import LogRequestsList from './analysis/LogRequestsList';
-// import RequestDetailView from './analysis/RequestDetailView';
-import LoadingScreen from '../logAnalysis/analysis/LoadingScreen';
-import ErrorScreen from '../logAnalysis/analysis/ErrorScreen';
-import NoDataDisplay from '../logAnalysis/analysis/NoDataDisplay';
-import { useTranslations } from 'next-intl'; 
-
-export type CrawlerType = 'conference' | 'journal';
+import { useTranslations } from 'next-intl';
 
 const Crawl: React.FC = () => {
-    const t = useTranslations('CrawlPage');
-    const [timeFilterOption, setTimeFilterOption] = useState<string>('latest');
-    const [filterStartTime, setFilterStartTime] = useState<number | undefined>(undefined);
-    const [filterEndTime, setFilterEndTime] = useState<number | undefined>(undefined);
-    const [requestIdFilterInput, setRequestIdFilterInput] = useState<string>('');
-    const [activeRequestIdFilter, setActiveRequestIdFilter] = useState<string | undefined>(undefined);
+    const t = useTranslations('CrawlPage'); // Namespace cho trang Crawl
 
-    const [isSummaryExpanded, setIsSummaryExpanded] = useState(false);
+    // State cho việc chọn loại crawler
     const [activeCrawler, setActiveCrawler] = useState<CrawlerType>('conference');
-    const [isCrawlerSectionExpanded, setIsCrawlerSectionExpanded] = useState(false);
-    const [isLogRequestsExpanded, setIsLogRequestsExpanded] = useState(true);
-
-    useEffect(() => {
-        const now = Date.now();
-        let start: number | undefined = undefined;
-        let end: number | undefined = undefined;
-
-        switch (timeFilterOption) {
-            case 'last_hour': start = now - 60 * 60 * 1000; end = now; break;
-            case 'last_6h': start = now - 6 * 60 * 60 * 1000; end = now; break;
-            case 'last_24h': start = now - 24 * 60 * 60 * 1000; end = now; break;
-            case 'last_7d': start = now - 7 * 24 * 60 * 60 * 1000; end = now; break;
-            case 'latest': default: break;
-        }
-        setFilterStartTime(start);
-        setFilterEndTime(end);
-    }, [timeFilterOption]);
-
-    const { data, loading, error, isConnectedToSocket, refetchData } = useLogAnalysisData(
-        filterStartTime,
-        filterEndTime,
-        activeRequestIdFilter
-    );
-
-    const handleTimeFilterChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-        setTimeFilterOption(event.target.value);
-    };
-
-    const applyRequestIdFilterFromInput = useCallback(() => {
-        const trimmedInput = requestIdFilterInput.trim();
-        setActiveRequestIdFilter(trimmedInput || undefined);
-    }, [requestIdFilterInput]);
-
-    const clearActiveFilterAndGoToList = useCallback(() => {
-        setRequestIdFilterInput('');
-        setActiveRequestIdFilter(undefined);
-    }, []);
-
-    const handleSelectRequestFromList = (reqId: string) => {
-        setRequestIdFilterInput(reqId);
-        setActiveRequestIdFilter(reqId);
-    };
-
-    const handleToggleSummary = () => setIsSummaryExpanded(prev => !prev);
-    const handleToggleCrawlerSection = () => setIsCrawlerSectionExpanded(prev => !prev);
-    const handleToggleLogRequests = () => setIsLogRequestsExpanded(prev => !prev);
-
-    const isDetailView = !!activeRequestIdFilter && !!data && data.filterRequestId === activeRequestIdFilter;
-    const isListView = !activeRequestIdFilter && !!data && !data.filterRequestId;
-    const hasOverallDataForDisplay = !!data?.overall && data.overall.processedConferencesCount > 0;
-    const hasConferenceDetailsForDisplay = !!data?.conferenceAnalysis && Object.keys(data.conferenceAnalysis).length > 0;
-
-    const getNoDataFoundMessage = useCallback((): string => {
-        if (isDetailView && !hasOverallDataForDisplay) {
-            return t('noDataForRequestId', { requestId: activeRequestIdFilter });
-        }
-        if (isListView && (!data?.analyzedRequestIds || data.analyzedRequestIds.length === 0)) {
-            return t('noRequestsForTimePeriod');
-        }
-        if (!loading && !hasOverallDataForDisplay && timeFilterOption !== 'latest' && !isDetailView) {
-            return t('noResultsForTimePeriodSuggestLatest');
-        }
-        if (!loading && !hasOverallDataForDisplay && !isDetailView) {
-            return t('noResultsGeneric');
-        }
-        return t('noSpecificData'); 
-    }, [isDetailView, activeRequestIdFilter, isListView, data, hasOverallDataForDisplay, loading, timeFilterOption, t]);
 
 
-    if (loading && !data && !error) {
-        return (
-            <LoadingScreen>
-            </LoadingScreen>
-        );
-    }
 
-    if (error && !data && !loading) {
-        return (
-            <ErrorScreen error={error} onRetry={refetchData}>
-            </ErrorScreen>
-        );
-    }
 
     return (
-        <div className="p-2 bg-gradient-to-br from-gray-100 to-blue-50 min-h-screen font-sans space-y-6">
-            {!isDetailView && (
-                <CrawlerTools
-                    isExpanded={isCrawlerSectionExpanded}
-                    onToggle={handleToggleCrawlerSection}
-                    activeCrawler={activeCrawler}
-                    onSetCrawler={setActiveCrawler}
-                    ConferenceCrawlUploaderComponent={ConferenceCrawlUploader}
-                    JournalCrawlUploaderComponent={JournalCrawlUploader}
-                />
-            )}
+        <div className="p-4 md:p-6 bg-gradient-to-br from-gray-100 to-blue-50 min-h-screen font-sans space-y-6">
+            <CrawlerTools
+                // isExpanded và onToggle có thể không cần nếu CrawlerTools luôn mở
+                isExpanded={true}
+                onToggle={() => {}}
+                activeCrawler={activeCrawler}
+                onSetCrawler={setActiveCrawler} // Hàm để thay đổi activeCrawler
+                ConferenceCrawlUploaderComponent={ConferenceCrawlUploader}
+                JournalCrawlUploaderComponent={JournalCrawlUploader}
+            />
 
-            {/* Fallback No Data / Status Messages */}
-            {!loading && data === null && !error && (
-                <NoDataDisplay message={getNoDataFoundMessage()} />
-            )}
-            {!loading && data !== null && !isListView && !isDetailView && (
-                <NoDataDisplay
-                    message={t('dataLoadedCriteriaNotMet')} // Thay đổi chuỗi tĩnh
-                    subMessage={data.filterRequestId ? t('dataIsForRequestId', { requestId: data.filterRequestId }) : t('dataIsGeneralSummary')} // Thay đổi chuỗi tĩnh
-                />
-            )}
-
-            {/* Refreshing/Error states when data already exists */}
-            {loading && data && (
-                <div className="mt-6 text-center text-blue-600">
-                    <FaSyncAlt className="inline mr-2 animate-spin" />
-                    {activeRequestIdFilter ? t('refreshingDetails', { requestId: activeRequestIdFilter }) : t('refreshingAnalysisData')}
-                </div>
-            )}
-            {error && data && (
-                <div className="mt-4 text-red-600 text-sm p-3 bg-red-50 rounded-md border border-red-200">
-                    <FaExclamationTriangle className="inline mr-1" /> {t('errorRefreshingData', { error: error })}
-                </div>
-            )}
+    
         </div>
     );
 };
