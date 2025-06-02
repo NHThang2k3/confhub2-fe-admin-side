@@ -11,6 +11,8 @@ import { appConfig } from '@/src/middleware';
 export interface JournalWithStatus extends Journal {
     lastUpdated: string | null;
     message: string;
+    actionType?: 'crawl' | 'update';
+    crawled: boolean;
 }
 
 // --- Configuration ---
@@ -88,7 +90,8 @@ export const useJournalCrawl = (): UseJournalCrawlReturn => {
                     Country: journal.country || '',
                     Region: journal.region || '',
                     lastUpdated: journal.lastUpdated,
-                    message: journal.message
+                    message: journal.message,
+                    crawled: journal.crawled
                 }));
                 setParsedData(journalsWithStatus);
                 setCrawlMessages([`File uploaded and parsed successfully. ${journalsWithStatus.length} records found.`]);
@@ -170,7 +173,8 @@ export const useJournalCrawl = (): UseJournalCrawlReturn => {
                 Country: '', // Required by Journal interface
                 Region: '', // Required by Journal interface
                 lastUpdated: result.lastUpdated,
-                message: result.message
+                message: result.message,
+                crawled: result.crawled
             })));
 
         } catch (error) {
