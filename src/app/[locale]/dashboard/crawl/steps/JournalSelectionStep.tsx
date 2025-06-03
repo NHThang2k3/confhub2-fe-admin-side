@@ -242,28 +242,28 @@ const JournalSelectionStep: React.FC<JournalSelectionStepProps> = ({
           <Button
             variant="outline"
             onClick={handleSelectAll}
-            className="border-gray-300 text-gray-700 hover:bg-gray-50"
+            className="border-gray-300 text-gray-700 hover:bg-gray-10"
           >
             Select All
           </Button>
           <Button
             variant="outline"
             onClick={handleDeselectAll}
-            className="border-gray-300 text-gray-700 hover:bg-gray-50"
+            className="border-gray-300 text-gray-700 hover:bg-gray-10"
           >
             Deselect All
           </Button>
           <Button
             variant="outline"
             onClick={handleSelectCrawled}
-            className="border-gray-300 text-gray-700 hover:bg-gray-50"
+            className="border-gray-300 text-gray-700 hover:bg-gray-10"
           >
             Select Crawled
           </Button>
           <Button
             variant="outline"
             onClick={handleSelectNotCrawled}
-            className="border-gray-300 text-gray-700 hover:bg-gray-50"
+            className="border-gray-300 text-gray-700 hover:bg-gray-10"
           >
             Select Not Crawled
           </Button>
@@ -320,7 +320,7 @@ const JournalSelectionStep: React.FC<JournalSelectionStepProps> = ({
                     table.getRowModel().rows.map(row => (
                       <tr 
                         key={row.id} 
-                        className={`hover:bg-gray-50 transition-colors ${selectedRows[row.id] ? 'bg-blue-50' : ''}`}
+                        className={`hover:bg-gray-10 transition-colors ${selectedRows[row.id] ? 'bg-blue-50' : ''}`}
                       >
                         {row.getVisibleCells().map(cell => (
                           <td
@@ -355,7 +355,7 @@ const JournalSelectionStep: React.FC<JournalSelectionStepProps> = ({
           <Button
             variant="outline"
             onClick={onPrev}
-            className="border-gray-300 text-gray-700 hover:bg-gray-50"
+            className="border-gray-300 text-gray-700 hover:bg-gray-10"
           >
             Previous
           </Button>

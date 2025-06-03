@@ -56,7 +56,7 @@ const JournalDetails: React.FC<JournalDetailsProps> = ({
     <>
       <section className='bg-white shadow-xl rounded-lg p-4 md:p-6 border border-gray-200 mt-6'>
         <div
-          className='flex flex-wrap items-center justify-between mb-4 pb-2 border-b border-gray-300 gap-4 hover:bg-gray-50 cursor-pointer' // Added hover:bg-gray-50
+          className='flex flex-wrap items-center justify-between mb-4 pb-2 border-b border-gray-300 gap-4 hover:bg-gray-10 cursor-pointer' // Added hover:bg-gray-10
           onClick={handleToggleExpand}
         >
           <h2 className='text-xl font-semibold text-gray-800 whitespace-nowrap'>

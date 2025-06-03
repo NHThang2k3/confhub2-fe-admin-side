@@ -179,7 +179,7 @@ export const JournalCrawlUploader: React.FC = () => {
                 <p className='text-sm text-gray-600'>{t('selectedJournalsCount', { count: selectedJournals.length })}</p>
                 <div className='mt-2 max-h-60 overflow-y-auto rounded border border-gray-200'>
                   <table className='min-w-full divide-y divide-gray-200'>
-                    <thead className='bg-gray-50'>
+                    <thead className='bg-gray-10'>
                       <tr>
                         <th className='px-4 py-2 text-left text-xs font-medium text-gray-500'>{t('title')}</th>
                         <th className='px-4 py-2 text-left text-xs font-medium text-gray-500'>{t('issn')}</th>

@@ -79,7 +79,7 @@ export const JournalTableRow: React.FC<JournalTableRowProps> = ({
             </tr>
             {isExpanded && (
                 <tr>
-                    <td colSpan={7} className="px-6 py-4 bg-gray-50">
+                    <td colSpan={7} className="px-6 py-4 bg-gray-10">
                         <div className="text-sm text-gray-500">
                             {/* Add expanded content here if needed */}
                         </div>

@@ -189,7 +189,7 @@ export const JournalTableRow: React.FC<JournalTableRowProps> = ({
   const t = useTranslations('JournalTableRow');
   const { status, errorCount, persistedSaveStatus, uniqueRowId } = journalData;
 
-  let rowBgClass = 'hover:bg-gray-50'; // Default hover
+  let rowBgClass = 'hover:bg-gray-10'; // Default hover
 
   if (saveStatus === 'saving') {
     rowBgClass = isSelected ? 'bg-blue-200 hover:bg-blue-300 animate-pulse' : 'bg-blue-100 hover:bg-blue-200 animate-pulse';
@@ -209,7 +209,7 @@ export const JournalTableRow: React.FC<JournalTableRowProps> = ({
     if (status === 'failed') rowBgClass = 'bg-red-50 hover:bg-red-100';
     else if (status === 'processing') rowBgClass = 'bg-blue-50 hover:bg-blue-100 animate-pulse';
     else if (status === 'completed') rowBgClass = 'bg-white hover:bg-green-50';
-    else rowBgClass = 'bg-white hover:bg-gray-50'; // Ensure default has hover
+    else rowBgClass = 'bg-white hover:bg-gray-10'; // Ensure default has hover
   }
 
   return (
