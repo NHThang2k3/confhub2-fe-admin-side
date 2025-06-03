@@ -7,7 +7,7 @@ import {
   RowSaveStatus
 } from './useConferenceTableManager'; // Import types
 import { ApiModels, useConferenceCrawl } from './useConferenceCrawl'; // Import useConferenceCrawl và types liên quan
-import { saveConferenceToJson } from '@/src/app/api/logAnalysis/saveConferences';
+import { saveConferenceToDB } from '@/src/app/api/logAnalysis/saveConferences';
 import { persistConferenceSaveStatus, PersistSaveStatusPayload } from '@/src/app/api/logAnalysis/persistSaveStatus';
 import { ConferenceForAction } from '@/src/models/logAnalysis/importConferenceCrawl';
 
@@ -84,7 +84,7 @@ export const useTableActions = ({
 
     const results = await Promise.allSettled(
       itemsToSave.map(conf =>
-        saveConferenceToJson(
+        saveConferenceToDB(
           conf.acronym,
           conf.title,
           conf.finalResultPreview || conf.finalResult
@@ -131,7 +131,7 @@ export const useTableActions = ({
         }
       } else {
         overallSuccess = false;
-        console.error("Unexpected rejection in saveConferenceToJson promise:", settledResult.reason);
+        console.error("Unexpected rejection in saveConferenceToDB promise:", settledResult.reason);
       }
     });
 

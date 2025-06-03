@@ -1,29 +1,19 @@
-// src/hooks/logAnalysis/useJournalTableManager.ts (File mới)
-
-import { JournalLogAnalysisResult } from '@/src/models/logAnalysis/logAnalysisJournal.types'; // Adjust path
+// src/hooks/logAnalysis/useJournalTableManager.ts (MODIFIED)
 import { useJournalDataTransform } from './useJournalDataTransform';
 import { useJournalTableSortingAndFiltering } from './useJournalTableSortingAndFiltering';
 import { useJournalTableRowSelection } from './useJournalTableRowSelection';
 import { useJournalTableActions } from './useJournalTableActions';
 import { useJournalRowExpansion } from './useJournalRowExpansion';
-import { UseJournalTableManagerProps } from './journalTableManagerTypes'; // Import types
-
-// Export lại các type cần thiết từ journalTableManagerTypes.ts
 export * from './journalTableManagerTypes';
+import { UseJournalTableManagerProps } from './journalTableManagerTypes';
 
-
-/**
- * Hook tổng hợp quản lý toàn bộ logic cho bảng Journal Analysis.
- */
 export const useJournalTableManager = ({
   logAnalysisResult
 }: UseJournalTableManagerProps) => {
   const resetDependencies = [logAnalysisResult];
 
-  // 1. Chuyển đổi và tính toán dữ liệu
   const { journalDataArray } = useJournalDataTransform({ logAnalysisResult });
 
-  // 2. Sắp xếp và lọc
   const {
     sortedData,
     sortColumn,
@@ -36,34 +26,41 @@ export const useJournalTableManager = ({
     totalRowsCount,
   } = useJournalTableSortingAndFiltering({ data: journalDataArray, resetDependencies });
 
-  // 3. Lựa chọn hàng
   const {
-    selectedRows,
+    selectedRows, // <<< Ensure this is returned from useJournalTableRowSelection
     selectedRowIds,
     handleRowSelectToggle,
     handleSelectAll,
     handleDeselectAll,
-    handleSelectNoError, // Select journals with 0 errors
-    handleSelectError,   // Select journals with >0 errors
-    handleSelectBioxbioSuccess, // Ví dụ
+    handleSelectNoError,
+    handleSelectError,
+    handleSelectBioxbioSuccess,
     selectedRowsCount,
+    // anyRowsSelected, // You might want to return this too
   } = useJournalTableRowSelection({ data: sortedData, resetDependencies });
 
-  // 4. Hành động (Có thể đơn giản hơn cho journal)
   const {
+    mainSaveStatus,
+    rowSaveStatus,
+    rowSaveErrors,
+    isSaveEnabled,
+    handleBulkSave,
     isReCrawlModalOpen,
     setIsReCrawlModalOpen,
     handleReCrawlSelectedClick,
     handleConfirmReCrawl,
     itemsToReCrawl,
   } = useJournalTableActions({
-    selectedRowIds,
+    selectedRowIds, // useJournalTableActions uses the array of IDs
     allJournalData: journalDataArray,
     resetDependencies
   });
 
-  // 5. Mở rộng hàng
   const { expandedRow, toggleExpand } = useJournalRowExpansion({ resetDependencies });
+
+  const handleBulkSaveAndDeselect = async () => {
+    await handleBulkSave(handleDeselectAll);
+  };
 
   return {
     // Data & Sorting & Filtering
@@ -78,7 +75,7 @@ export const useJournalTableManager = ({
     totalRowsCount,
 
     // Selection
-    selectedRows,
+    selectedRows, // <<< Now returning the object map
     selectedRowIds,
     handleRowSelectToggle,
     handleSelectAll,
@@ -87,12 +84,18 @@ export const useJournalTableManager = ({
     handleSelectError,
     handleSelectBioxbioSuccess,
     selectedRowsCount,
+    // anyRowsSelected,
 
     // Expansion
     expandedRow,
     toggleExpand,
 
     // Actions
+    mainSaveStatus,
+    rowSaveStatus,
+    rowSaveErrors,
+    isSaveEnabled,
+    handleBulkSave: handleBulkSaveAndDeselect,
     isReCrawlModalOpen,
     setIsReCrawlModalOpen,
     handleReCrawlSelectedClick,

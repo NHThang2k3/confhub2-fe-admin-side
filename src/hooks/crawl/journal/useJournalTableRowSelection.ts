@@ -1,4 +1,4 @@
-// src/hooks/logAnalysis/useJournalTableRowSelection.ts (File mới)
+// src/hooks/logAnalysis/useJournalTableRowSelection.ts (CORRECTED)
 
 import { useState, useMemo, useCallback, useEffect } from 'react';
 import { JournalTableData } from './journalTableManagerTypes'; // Import type từ file mới
@@ -30,37 +30,46 @@ export const useJournalTableRowSelection = ({
 
   const handleSelectAll = useCallback(() => {
     const newSelection: Record<string, boolean> = {};
-    data.forEach(journal => {
-      newSelection[journal.uniqueRowId] = true;
-    });
+    if (data) { // Add a check for data availability
+        data.forEach(journal => {
+          newSelection[journal.uniqueRowId] = true;
+        });
+    }
     setSelectedRows(newSelection);
   }, [data]);
 
   const handleDeselectAll = useCallback(() => setSelectedRows({}), []);
 
-  // Các hàm select theo điều kiện có thể cần điều chỉnh cho journal
   const handleSelectNoError = useCallback(() => {
     const newSelection: Record<string, boolean> = {};
-    data.forEach(journal => {
-      if (journal.errorCount === 0) newSelection[journal.uniqueRowId] = true;
-    });
+    if (data) { // Add a check for data availability
+        data.forEach(journal => {
+          if (journal.errorCount === 0) newSelection[journal.uniqueRowId] = true;
+        });
+    }
     setSelectedRows(newSelection);
   }, [data]);
 
   const handleSelectError = useCallback(() => {
     const newSelection: Record<string, boolean> = {};
-    data.forEach(journal => {
-      if (journal.errorCount > 0) newSelection[journal.uniqueRowId] = true;
-    });
+    if (data) { // Add a check for data availability
+        data.forEach(journal => {
+          if (journal.errorCount > 0) newSelection[journal.uniqueRowId] = true;
+        });
+    }
     setSelectedRows(newSelection);
   }, [data]);
 
-  // Ví dụ: Select các journal đã fetch Bioxbio thành công
   const handleSelectBioxbioSuccess = useCallback(() => {
     const newSelection: Record<string, boolean> = {};
-    data.forEach(journal => {
-      if (journal.bioxbioSuccess === true) newSelection[journal.uniqueRowId] = true;
-    });
+    if (data) { // Add a check for data availability
+        data.forEach(journal => {
+          // Access bioxbio_success via the steps object
+          if (journal.steps && journal.steps.bioxbio_success === true) {
+            newSelection[journal.uniqueRowId] = true;
+          }
+        });
+    }
     setSelectedRows(newSelection);
   }, [data]);
 
@@ -76,8 +85,7 @@ export const useJournalTableRowSelection = ({
     handleDeselectAll,
     handleSelectNoError,
     handleSelectError,
-    handleSelectBioxbioSuccess, // Ví dụ hàm select mới
-    // Thêm các hàm select khác nếu cần
+    handleSelectBioxbioSuccess,
     selectedRowsCount,
     anyRowsSelected,
   };

@@ -1,5 +1,5 @@
 import { ColumnDef } from '@tanstack/react-table';
-import { JournalWithStatus } from '@/src/hooks/crawl/useJournalCrawl';
+import { JournalWithStatus } from '@/src/hooks/crawl/journal/useJournalCrawl';
 import { Checkbox } from '@/src/components/ui/checkbox';
 
 export const getJournalTableColumns = (): ColumnDef<JournalWithStatus>[] => [

@@ -26,7 +26,7 @@ export interface SaveConferenceResult {
  * @returns A promise that resolves with SaveConferenceResult.
  *          The promise will always resolve, success/failure is indicated in the result object.
  */
-export const saveConferenceToJson = async (
+export const saveConferenceToDB = async (
     acronym: string,
     title: string, // Đảm bảo title là string
     extractedData?: any

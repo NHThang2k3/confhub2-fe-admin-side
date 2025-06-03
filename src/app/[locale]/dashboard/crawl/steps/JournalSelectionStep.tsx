@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useCallback, useEffect, useRef } from 'react';
-import { JournalWithStatus } from '@/src/hooks/crawl/useJournalCrawl';
+import { JournalWithStatus } from '@/src/hooks/crawl/journal/useJournalCrawl';
 import {
   useReactTable,
   getCoreRowModel,

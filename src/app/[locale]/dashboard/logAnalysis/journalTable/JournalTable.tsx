@@ -1,18 +1,19 @@
-// src/app/[locale]/dashboard/logAnalysis/journalTable/JournalTable.tsx (File mới)
+// src/app/[locale]/dashboard/logAnalysis/journalTable/JournalTable.tsx (ADJUSTED)
 import React from 'react';
 import {
   JournalTableData,
   JournalSortableColumn,
   SortDirection,
-  JournalColumnFiltersState
-} from '@/src/hooks/crawl/journal/useJournalTableManager'; // Import types từ hook journal
-import { JournalTableHeader } from './JournalTableHeader'; // Component mới
-import { JournalTableRow } from './JournalTableRow';     // Component mới
+  JournalColumnFiltersState,
+  RowSaveStatus, // Import RowSaveStatus
+} from '@/src/hooks/crawl/journal/useJournalTableManager';
+import { JournalTableHeader } from './JournalTableHeader';
+import { JournalTableRow } from './JournalTableRow';
 import { useTranslations } from 'next-intl';
 
 interface JournalTableProps {
   data: JournalTableData[];
-  selectedRows: Record<string, boolean>;
+  selectedRows: Record<string, boolean>; // Assuming this is a map of uniqueRowId to boolean
   expandedRowUniqueId: string | null;
   sortColumn: JournalSortableColumn | null;
   sortDirection: SortDirection;
@@ -24,9 +25,12 @@ interface JournalTableProps {
   totalRowsCount: number;
   selectedRowsCount: number;
   onSelectAll: () => void;
-  // Thêm các props tiện ích nếu cần, ví dụ:
   formatDateTime: (isoString: string | null | undefined) => string;
   getStatusChipClass: (status: string | undefined | null) => string;
+
+  // Props for save status
+  rowSaveStatus: Record<string, RowSaveStatus>;
+  rowSaveErrors: Record<string, string>;
 }
 
 export const JournalTable: React.FC<JournalTableProps> = ({
@@ -43,14 +47,16 @@ export const JournalTable: React.FC<JournalTableProps> = ({
   totalRowsCount,
   selectedRowsCount,
   onSelectAll,
-  formatDateTime, // Nhận hàm format
-  getStatusChipClass, // Nhận hàm get class
+  formatDateTime,
+  getStatusChipClass,
+  rowSaveStatus, // Destructure
+  rowSaveErrors,  // Destructure
 }) => {
-  const t = useTranslations('JournalTable'); // Namespace mới
+  const t = useTranslations('JournalTable');
 
-  // Xác định số cột dựa trên cấu hình header (sẽ làm ở JournalTableHeader)
-  // Tạm thời đặt một giá trị cố định, sau này sẽ lấy từ columnsConfig.length
-  const noDataColSpan = 10; // Điều chỉnh cho phù hợp với số cột thực tế
+  // The number of columns defined in JournalTableHeader.tsx is 12
+  // (Sel, Title, SourceID, DataSource, Status, Duration, Bioxbio, Scimago, Image, JSONL, Errors, Save)
+  const noDataColSpan = 12;
 
   return (
     <div className="bg-white shadow-lg rounded-lg overflow-x-auto border border-gray-200">
@@ -78,6 +84,8 @@ export const JournalTable: React.FC<JournalTableProps> = ({
                 onToggleExpand={onToggleExpand}
                 formatDateTime={formatDateTime}
                 getStatusChipClass={getStatusChipClass}
+                saveStatus={rowSaveStatus[uniqueId] || 'idle'} // Pass save status for the row
+                saveError={rowSaveErrors[uniqueId]}         // Pass save error for the row
               />
             );
           })}

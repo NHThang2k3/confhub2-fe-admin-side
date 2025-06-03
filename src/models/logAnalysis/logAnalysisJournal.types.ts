@@ -28,7 +28,7 @@ export interface JournalAnalysisDetailSteps {
 export interface JournalAnalysisDetail {
     batchRequestId: string;
     journalTitle: string; // Primary identifier
-    sourceId?: string; // Secondary identifier, if available
+    sourceId: string; // Secondary identifier, if available
     dataSource: 'scimago' | 'client' | 'unknown';
     originalInput?: string; // URL for scimago, or part of CSV row for client
 
