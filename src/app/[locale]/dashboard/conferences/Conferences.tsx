@@ -132,17 +132,64 @@ const PaginationControls = ({
   const t = useTranslations('pagination');
   const tCommon = useTranslations('common');
 
+  const [goToPageInput, setGoToPageInput] = useState(''); // State cho input số trang
   const pageNumbers = [];
   const maxVisiblePages = 5;
   let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
   let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
 
-  if (endPage - startPage + 1 < maxVisiblePages) {
+  if (totalPages > 0 && endPage - startPage + 1 < maxVisiblePages) {
     startPage = Math.max(1, endPage - maxVisiblePages + 1);
   }
 
-  for (let i = startPage; i <= endPage; i++) {
-    pageNumbers.push(i);
+  if (totalPages > 0) {
+    for (let i = startPage; i <= endPage; i++) {
+      pageNumbers.push(i);
+    }
+  }
+
+  const handleGoToPage = () => {
+    const pageNum = parseInt(goToPageInput, 10);
+    if (!isNaN(pageNum) && pageNum >= 1 && pageNum <= totalPages) {
+      onPageChange(pageNum);
+      setGoToPageInput(''); // Xóa input sau khi nhảy trang
+    } else {
+      // Bạn có thể thêm thông báo lỗi ở đây nếu muốn
+      alert(t('invalidPageNumber', { totalPages }));
+      setGoToPageInput('');
+    }
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setGoToPageInput(e.target.value);
+  };
+
+  const handleInputKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      handleGoToPage();
+    }
+  };
+
+  if (totalPages === 0) {
+    return (
+      <div className="flex items-center justify-between mt-4">
+        <div className="flex items-center gap-2">
+          <select
+            value={pageSize}
+            onChange={(e) => onPageSizeChange(Number(e.target.value))}
+            className="border rounded px-2 py-1"
+          >
+            <option value={10}>{t('tenPerPage')}</option>
+            <option value={20}>{t('twentyPerPage')}</option>
+            <option value={50}>{t('fiftyPerPage')}</option>
+            <option value={100}>{t('hundredPerPage')}</option>
+          </select>
+          <span className="text-sm ">
+            {t('noResults')}
+          </span>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -209,6 +256,31 @@ const PaginationControls = ({
             </button>
           </>
         )}
+
+        {/* === THÊM MỚI: Input và nút Go to Page === */}
+        <div className="flex items-center gap-1 mx-2">
+          <input
+            type="number"
+            value={goToPageInput}
+            onChange={handleInputChange}
+            onKeyDown={handleInputKeyPress}
+            className="w-24 px-2 py-1 border rounded text-left"
+            placeholder={t('page')}
+            min="1"
+
+            max={totalPages}
+            disabled={totalPages <= 1}
+          />
+          <button
+            onClick={handleGoToPage}
+            className="px-3 py-1 border rounded bg-gray-100 hover:bg-gray-200 disabled:opacity-50"
+            disabled={!goToPageInput || totalPages <= 1}
+          >
+            {t('goTo')}
+          </button>
+        </div>
+        {/* === KẾT THÚC THÊM MỚI === */}
+
         <button
           onClick={() => onPageChange(currentPage + 1)}
           disabled={currentPage === totalPages}

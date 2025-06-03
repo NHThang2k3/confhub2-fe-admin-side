@@ -222,7 +222,11 @@
     "first": "First",
     "previous": "Previous",
     "next": "Next",
-    "last": "Last"
+    "last": "Last",
+    "goTo": "Go to",
+    "noResults": "No results",
+    "page": "Page",
+    "invalidPageNumber": "Invalid page number"
   },
   "filters": {
     "title": "Filters",
