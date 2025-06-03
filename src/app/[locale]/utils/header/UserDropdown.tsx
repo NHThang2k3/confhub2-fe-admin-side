@@ -178,16 +178,13 @@ const UserDropdown: FC<Props> = ({
           )}
 
           <div className='flex flex-col py-1'>
-            {/* Menu Links - Already use t() for labels */}
-            {/* Just need to ensure correct keys are used in message files */}
-            <Link
+            {/* <Link
               href={{ pathname: `/dashboard/crawl` }}
               locale={locale} // Pass locale
               className='block px-2 py-2 text-sm  hover:bg-gray-100  dark:hover:bg-gray-700'
               onClick={handleLinkClick} // Use the click handler
             >
-               {/* Label - ALREADY uses t() for translation */}
-              {t('Crawl')} {/* <-- Already uses t() */}
+              {t('Crawl')} 
             </Link>
             <Link
               href={{ pathname: `/dashboard/logAnalysis` }}
@@ -195,8 +192,7 @@ const UserDropdown: FC<Props> = ({
               className='block px-2 py-2 text-sm  hover:bg-gray-100  dark:hover:bg-gray-700'
               onClick={handleLinkClick} // Use the click handler
             >
-               {/* Label - ALREADY uses t() for translation */}
-              {t('Analysis')} {/* <-- Already uses t() */}
+              {t('Analysis')}
             </Link>
             <Link
               href={{ pathname: `/dashboard/moderation`}}
@@ -204,8 +200,7 @@ const UserDropdown: FC<Props> = ({
               className='block px-2 py-2 text-sm  hover:bg-gray-100  dark:hover:bg-gray-700'
               onClick={handleLinkClick} // Use the click handler
             >
-              {/* Label - ALREADY uses t() for translation */}
-              {t('Moderation.Moderation')} {/* <-- Already uses t() */}
+              {t('Moderation.Moderation')} 
             </Link>
             <Link
               href={{ pathname: `/dashboard/conferences` }}
@@ -213,9 +208,8 @@ const UserDropdown: FC<Props> = ({
               className='block px-2 py-2 text-sm  hover:bg-gray-100  dark:hover:bg-gray-700'
               onClick={handleLinkClick} // Use the click handler
             >
-              {/* Label - ALREADY uses t() for translation */}
-              {t('Conferences')} {/* <-- Already uses t() */}
-            </Link>
+              {t('Conferences')} 
+            </Link> */}
             {/* <Link
               href={{
                 pathname: `/dashboard`,
@@ -249,7 +243,7 @@ const UserDropdown: FC<Props> = ({
             </Link> */}
 
 
-            <hr className='my-1 border-gray-200 dark:border-gray-700' />
+            {/* <hr className='my-1 border-gray-200 dark:border-gray-700' /> */}
 
             {/* Logout Button - ALREADY uses t() for translation */}
             <button
