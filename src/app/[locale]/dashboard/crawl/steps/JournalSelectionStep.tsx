@@ -1,5 +1,6 @@
-import React, { useMemo, useState, useCallback, useEffect, useRef } from 'react';
+import React, { useMemo, useState, useCallback, useEffect } from 'react';
 import { JournalWithStatus } from '@/src/hooks/crawl/journal/useJournalCrawl';
+import { useJournalTableSelection } from '@/src/hooks/crawl/journal/useJournalTableSelection';
 import {
   useReactTable,
   getCoreRowModel,
@@ -9,15 +10,12 @@ import {
   flexRender,
   SortingState,
   ColumnFiltersState,
-  RowSelectionState,
   PaginationState,
   Table,
+  ColumnDef,
 } from '@tanstack/react-table';
-import { ChevronUpIcon, ChevronDownIcon, ChevronsUpDown } from 'lucide-react';
-import { useTranslations } from 'next-intl';
-import { getJournalTableColumns } from './journalTable/journalTable.columns';
-import TableFilters from './journalTable/TableFilters';
-import TablePagination from './journalTable/TablePagination';
+import { ChevronUpIcon, ChevronDownIcon, ChevronsUpDown, Search } from 'lucide-react';
+import { Button } from '@/src/components/ui/button';
 
 interface JournalSelectionStepProps {
   parsedData: JournalWithStatus[];
@@ -25,10 +23,59 @@ interface JournalSelectionStepProps {
   onNext: () => void;
   onPrev: () => void;
   canProceed: boolean;
+  onUpdateActionTypeForSelected: (actionType: 'crawl' | 'update', selectedRows: JournalWithStatus[]) => void;
 }
 
 const getJournalRowId = (originalRow: JournalWithStatus, index: number): string => {
   return originalRow.Issn || `row-${index}`;
+};
+
+const FilterInput: React.FC<{
+  columnId: string;
+  placeholder: string;
+  table: Table<JournalWithStatus>;
+}> = ({ columnId, placeholder, table }) => {
+  const column = table.getColumn(columnId);
+  if (!column) return null;
+
+  return (
+    <div className="relative">
+      <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+        <Search className="h-4 w-4 text-gray-400" />
+      </div>
+      <input
+        type="text"
+        placeholder={placeholder}
+        value={(column.getFilterValue() as string) ?? ''}
+        onChange={(e) => column.setFilterValue(e.target.value)}
+        className="block w-full rounded-md border-0 py-1.5 pl-10 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+      />
+    </div>
+  );
+};
+
+const CrawledFilterDropdown: React.FC<{ table: Table<JournalWithStatus> }> = ({ table }) => {
+  const column = table.getColumn('crawled');
+  if (!column) return null;
+
+  const currentFilterValue = (column.getFilterValue() as string) ?? "";
+
+  return (
+    <div className="relative">
+      <select
+        value={currentFilterValue}
+        onChange={(e) => {
+          const value = e.target.value;
+          column.setFilterValue(value === "" ? undefined : value === "true");
+        }}
+        className="block w-full rounded-md border-0 py-1.5 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+      >
+        <option value="">All</option>
+        <option value="true">Crawled</option>
+        <option value="false">Not Crawled</option>
+      </select>
+    </div>
+  );
 };
 
 const JournalSelectionStep: React.FC<JournalSelectionStepProps> = ({
@@ -37,18 +84,115 @@ const JournalSelectionStep: React.FC<JournalSelectionStepProps> = ({
   onNext,
   onPrev,
   canProceed,
+  onUpdateActionTypeForSelected,
 }) => {
-  const t = useTranslations('JournalSelectionStep');
-
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-  const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
     pageSize: 10,
   });
 
-  const columns = useMemo(() => getJournalTableColumns(), []);
+  const {
+    selectedRows,
+    handleRowSelectToggle,
+    handleSelectAll,
+    handleDeselectAll,
+    handleSelectCrawled,
+    handleSelectNotCrawled,
+    selectedRowsCount,
+  } = useJournalTableSelection({
+    data: parsedData || [],
+    resetDependencies: [parsedData],
+  });
+
+  const columns = useMemo<ColumnDef<JournalWithStatus>[]>(() => [
+    {
+      id: 'select',
+      header: () => {
+        const allSelected = parsedData.length > 0 && parsedData.every(journal => 
+          selectedRows[journal.Issn || `row-${parsedData.indexOf(journal)}`]
+        );
+        const someSelected = parsedData.some(journal => 
+          selectedRows[journal.Issn || `row-${parsedData.indexOf(journal)}`]
+        );
+
+        return (
+          <div className="flex items-center justify-center">
+            <input
+              type="checkbox"
+              checked={allSelected}
+              ref={input => {
+                if (input) {
+                  input.indeterminate = someSelected && !allSelected;
+                }
+              }}
+              onChange={() => {
+                if (allSelected) {
+                  handleDeselectAll();
+                } else {
+                  handleSelectAll();
+                }
+              }}
+              className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+              aria-label="Select all rows"
+            />
+          </div>
+        );
+      },
+      cell: ({ row }) => (
+        <div className="flex items-center justify-center">
+          <input
+            type="checkbox"
+            checked={selectedRows[row.id]}
+            onChange={() => handleRowSelectToggle(row.id)}
+            className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+            aria-label={`Select row ${row.id}`}
+            onClick={(e) => e.stopPropagation()}
+          />
+        </div>
+      ),
+      enableSorting: false,
+      enableHiding: false,
+      size: 60,
+    },
+    {
+      accessorKey: 'Title',
+      header: 'Title',
+      cell: ({ row }) => <div className="font-medium text-gray-900">{row.original.Title}</div>,
+      size: 300,
+      filterFn: 'includesString',
+    },
+    {
+      accessorKey: 'Issn',
+      header: 'ISSN',
+      cell: ({ row }) => <div className="text-gray-700">{row.original.Issn}</div>,
+      size: 150,
+      filterFn: 'includesString',
+    },
+    {
+      accessorKey: 'crawled',
+      header: 'Crawled',
+      cell: ({ row }) => (
+        <div className={`font-medium ${row.original.crawled ? 'text-green-600' : 'text-yellow-600'}`}>
+          {row.original.crawled ? 'Yes' : 'No'}
+        </div>
+      ),
+      size: 100,
+      filterFn: (row, id, value) => {
+        if (value === undefined) return true;
+        return row.original.crawled === value;
+      },
+    },
+    {
+      accessorKey: 'lastUpdated',
+      header: 'Last Updated',
+      cell: ({ row }) => (
+        <div className="text-gray-700">{row.original.lastUpdated ? new Date(row.original.lastUpdated).toLocaleDateString() : 'N/A'}</div>
+      ),
+      size: 150,
+    },
+  ], [selectedRows, handleRowSelectToggle, handleSelectAll, handleDeselectAll, parsedData]);
 
   const memoizedData = useMemo(() => parsedData || [], [parsedData]);
 
@@ -58,11 +202,8 @@ const JournalSelectionStep: React.FC<JournalSelectionStepProps> = ({
     state: {
       sorting,
       columnFilters,
-      rowSelection,
       pagination,
     },
-    enableRowSelection: true,
-    onRowSelectionChange: setRowSelection,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     onPaginationChange: setPagination,
@@ -71,71 +212,63 @@ const JournalSelectionStep: React.FC<JournalSelectionStepProps> = ({
     getFilteredRowModel: getFilteredRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getRowId: getJournalRowId,
+    manualPagination: false,
   });
 
   useEffect(() => {
-    const currentlySelectedOriginalRows = table.getSelectedRowModel().rows.map(row => row.original);
-    onSelectionChanged(currentlySelectedOriginalRows);
-  }, [rowSelection, table, onSelectionChanged]);
+    const selectedJournals = memoizedData.filter(journal => 
+      selectedRows[journal.Issn || `row-${memoizedData.indexOf(journal)}`]
+    );
+    onSelectionChanged(selectedJournals);
+  }, [selectedRows, memoizedData, onSelectionChanged]);
 
-  const handleSelectAllFilteredRows = useCallback(() => {
-    const filteredRowIds = table.getFilteredRowModel().rows.reduce((acc, row) => {
-      acc[row.id] = true;
-      return acc;
-    }, {} as RowSelectionState);
-    table.setRowSelection(filteredRowIds);
-  }, [table]);
-
-  const handleDeselectAllDataRows = useCallback(() => {
-    table.setRowSelection({});
-  }, [table]);
-
-  const prevParsedDataRef = useRef<JournalWithStatus[]>();
-  useEffect(() => {
-    if (prevParsedDataRef.current !== parsedData) {
-      if (!parsedData || parsedData.length === 0) {
-        setRowSelection({});
-        setPagination(prev => ({ ...prev, pageIndex: 0 }));
-      }
-    }
-    prevParsedDataRef.current = parsedData;
-  }, [parsedData]);
-
-  const totalSelectedRowCount = table.getSelectedRowModel().rows.length;
-  const pageRows = table.getRowModel().rows;
-  const pageSelectedRowCount = pageRows.filter(row => row.getIsSelected()).length;
-  const filteredRows = table.getFilteredRowModel().rows;
-  const filteredRowCount = filteredRows.length;
-  const isAllFilteredDataSelected = filteredRowCount > 0 && filteredRows.every(row => row.getIsSelected());
+  const filteredRowCount = table.getFilteredRowModel().rows.length;
 
   return (
     <div className="space-y-4 md:space-y-6 rounded-lg border border-gray-200 p-3 md:p-6 bg-white shadow">
-      <h3 className="text-base md:text-lg font-medium leading-6 text-gray-900">{t('title')}</h3>
+      <h3 className="text-base md:text-lg font-medium leading-6 text-gray-900">Journal Selection</h3>
       <p className="text-xs md:text-sm text-gray-600">
-        {t('description')}
+        Select the journals you want to crawl or update. You can filter by title or ISSN.
       </p>
 
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <button
-            onClick={handleSelectAllFilteredRows}
-            className="text-sm text-blue-600 hover:text-blue-800"
-          >
-            Select All
-          </button>
-          <button
-            onClick={handleDeselectAllDataRows}
-            className="text-sm text-blue-600 hover:text-blue-800"
-          >
-            Deselect All
-          </button>
-        </div>
-        <div className="text-sm text-gray-600">
-          {totalSelectedRowCount} of {filteredRowCount} selected
-        </div>
+      <div className="mb-4 grid grid-cols-1 md:grid-cols-3 gap-4">
+        <FilterInput columnId="Title" placeholder="Filter by title..." table={table} />
+        <FilterInput columnId="Issn" placeholder="Filter by ISSN..." table={table} />
+        <CrawledFilterDropdown table={table} />
       </div>
 
-      <TableFilters table={table} />
+      <div className="flex items-center justify-between space-x-4">
+        <div className="flex items-center space-x-2">
+          <Button
+            variant="outline"
+            onClick={handleSelectAll}
+            className="border-gray-300 text-gray-700 hover:bg-gray-50"
+          >
+            Select All
+          </Button>
+          <Button
+            variant="outline"
+            onClick={handleDeselectAll}
+            className="border-gray-300 text-gray-700 hover:bg-gray-50"
+          >
+            Deselect All
+          </Button>
+          <Button
+            variant="outline"
+            onClick={handleSelectCrawled}
+            className="border-gray-300 text-gray-700 hover:bg-gray-50"
+          >
+            Select Crawled
+          </Button>
+          <Button
+            variant="outline"
+            onClick={handleSelectNotCrawled}
+            className="border-gray-300 text-gray-700 hover:bg-gray-50"
+          >
+            Select Not Crawled
+          </Button>
+        </div>
+      </div>
 
       <div className="w-full rounded-lg border border-gray-200">
         <div className="overflow-x-auto">
@@ -158,7 +291,7 @@ const JournalSelectionStep: React.FC<JournalSelectionStepProps> = ({
                                 className: header.column.getCanSort()
                                   ? 'cursor-pointer select-none flex items-center gap-2 hover:text-blue-700 transition-colors'
                                   : 'flex items-center gap-2',
-                                onClick: header.column.getToggleSortingHandler(),
+                                onClick: header.column.getCanSort() ? header.column.getToggleSortingHandler() : undefined,
                               }}
                             >
                               {flexRender(
@@ -185,7 +318,10 @@ const JournalSelectionStep: React.FC<JournalSelectionStepProps> = ({
                 <tbody className="divide-y divide-gray-200 bg-white">
                   {table.getRowModel().rows.length > 0 ? (
                     table.getRowModel().rows.map(row => (
-                      <tr key={row.id} className={`hover:bg-gray-5 transition-colors ${row.getIsSelected() ? 'bg-indigo-50' : ''}`}>
+                      <tr 
+                        key={row.id} 
+                        className={`hover:bg-gray-50 transition-colors ${selectedRows[row.id] ? 'bg-blue-50' : ''}`}
+                      >
                         {row.getVisibleCells().map(cell => (
                           <td
                             key={cell.id}
@@ -200,7 +336,7 @@ const JournalSelectionStep: React.FC<JournalSelectionStepProps> = ({
                   ) : (
                     <tr>
                       <td colSpan={columns.length} className="text-center py-10 text-gray-500">
-                        {t('noDataMessage')}
+                        No data available
                       </td>
                     </tr>
                   )}
@@ -211,24 +347,26 @@ const JournalSelectionStep: React.FC<JournalSelectionStepProps> = ({
         </div>
       </div>
 
-      {memoizedData && memoizedData.length > 0 && <TablePagination table={table} />}
-
-      <div className="mt-4 md:mt-6 flex flex-col sm:flex-row justify-between gap-3">
-        <button
-          type="button"
-          onClick={onPrev}
-          className="w-full sm:w-auto rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-5 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-        >
-          {t('navigation.previousStep')}
-        </button>
-        <button
-          type="button"
-          onClick={onNext}
-          disabled={!canProceed || totalSelectedRowCount === 0}
-          className="w-full sm:w-auto inline-flex items-center justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {t('navigation.nextStep')}
-        </button>
+      <div className="flex items-center justify-between">
+        <div className="text-sm text-gray-700">
+          {selectedRowsCount} of {filteredRowCount} rows selected
+        </div>
+        <div className="flex items-center space-x-2">
+          <Button
+            variant="outline"
+            onClick={onPrev}
+            className="border-gray-300 text-gray-700 hover:bg-gray-50"
+          >
+            Previous
+          </Button>
+          <Button
+            onClick={onNext}
+            disabled={!canProceed || selectedRowsCount === 0}
+            className="bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Next
+          </Button>
+        </div>
       </div>
     </div>
   );
