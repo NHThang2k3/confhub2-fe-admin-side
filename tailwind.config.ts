@@ -24,7 +24,8 @@ const config = {
       colors: {
         background: 'var(--background)',
         primary: {
-          DEFAULT: 'var(--primary)'
+          DEFAULT: 'var(--primary)',
+          foreground: "var(--button-text)", // Sử dụng --button-text cho màu chữ
         },
         neutral: {
           DEFAULT: 'var(--neutral)',
