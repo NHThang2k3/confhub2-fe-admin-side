@@ -3,124 +3,197 @@ import axios, { AxiosError } from 'axios';
 
 const API_SAVE_ENDPOINT = `${process.env.NEXT_PUBLIC_DATABASE_URL}/api/v1/admin/conferences/import`;
 
-// Kiểu dữ liệu cho payload gửi lên API (có thể cần điều chỉnh dựa trên backend)
-interface ConferenceImportPayload {
+// Data for a single conference to be saved in the batch
+export interface ConferenceToSavePayload {
     acronym: string;
     title: string;
+    // uniqueRowId: string; // Client-side ID to map results back, if not relying on acronym/title matching
     extractedData?: any; // Dữ liệu trích xuất từ finalResult
 }
 
-// Kiểu dữ liệu kết quả trả về từ hàm này (và có thể từ API)
-export interface SaveConferenceResult {
-    // identifier: string; // Có thể là acronym, title, hoặc một ID duy nhất
+// Expected structure of an individual item in the backend's response `data` array
+export interface ConferenceSaveDBResponseItem {
+    id: string;
+    title: string;
+    acronym: string;
+    creatorId: string | null;
+    adminId: string | null;
+    createdAt: string;
+    updatedAt: string;
+    status: "SAVED" | "ERROR" | "DUPLICATE" | string; // Backend status for this item
+    message?: string; // Optional message from backend for this specific item
+}
+
+// Result for a single conference item after the batch save attempt
+export interface BatchSaveConferenceItemResult {
+    acronym: string;
+    title: string;
+    // uniqueRowId: string; // To map back to the UI row
     success: boolean;
     message: string;
-    // details?: any; // Thông tin chi tiết thêm từ backend nếu có
+    dbId?: string; // ID from the database if saved
+    dbStatus?: string; // Status from the database
+}
+
+// Overall result for the batch save operation
+export interface BatchSaveConferencesResult {
+    overallSuccess: boolean; // True if the API call was made and a response (even with partial failures) was received
+    overallMessage: string; // General message for the batch operation
+    itemResults: BatchSaveConferenceItemResult[];
 }
 
 /**
- * Saves a single conference's data via the API.
- * @param acronym - The conference acronym.
- * @param title - The conference title.
- * @param extractedData - Optional data to be saved along with the conference.
- * @returns A promise that resolves with SaveConferenceResult.
- *          The promise will always resolve, success/failure is indicated in the result object.
+ * Saves a batch of conferences' data via the API.
+ * @param conferences - An array of conference data to save.
+ * @returns A promise that resolves with BatchSaveConferencesResult.
  */
-export const saveConferenceToDB = async (
-    acronym: string,
-    title: string, // Đảm bảo title là string
-    extractedData?: any
-): Promise<SaveConferenceResult> => {
-    const identifier = `${acronym} - ${title}`; // Hoặc chỉ acronym nếu nó đủ duy nhất
-    console.log(`identifier`, extractedData)
-    if (!acronym || !title) {
-        const errorMsg = `Acronym ('${acronym}') or Title ('${title}') is missing. Cannot save.`;
-        console.error("Save Validation Error:", errorMsg);
-        return { // Luôn resolve, không reject ở đây để Promise.allSettled dễ xử lý
-            // identifier,
-            success: false,
-            message: errorMsg
+export const saveConferencesToDB = async (
+    conferences: ConferenceToSavePayload[]
+): Promise<BatchSaveConferencesResult> => {
+    if (!conferences || conferences.length === 0) {
+        return {
+            overallSuccess: true,
+            overallMessage: "No conferences to save.",
+            itemResults: []
         };
     }
 
-    const payload: ConferenceImportPayload[] = [{ ...extractedData }];
+    // Validate input conferences (basic check)
+    const invalidItems = conferences.filter(c => !c.acronym || !c.title);
+    if (invalidItems.length > 0) {
+        const errorMsg = `Some conferences have missing Acronym or Title. Cannot save batch. Problematic items: ${invalidItems.map(i => `${i.acronym}-${i.title}`).join(', ')}`;
+        console.error("Batch Save Validation Error:", errorMsg);
+        // Create error results for all items if we decide to fail the whole batch here
+        const itemResults: BatchSaveConferenceItemResult[] = conferences.map(conf => ({
+            acronym: conf.acronym,
+            title: conf.title,
+            success: false,
+            message: (!conf.acronym || !conf.title) ? "Missing Acronym or Title." : "Batch validation failed before sending.",
+        }));
+        return {
+            overallSuccess: false,
+            overallMessage: errorMsg,
+            itemResults,
+        };
+    }
 
-    console.log(`API Call: Saving ${identifier}`, payload);
-``
+    // Backend expects an array of objects, where each object is the conference data.
+    // The `extractedData` should contain all necessary fields for the backend.
+    // If `acronym` and `title` are part of `extractedData`, this is fine.
+    // Otherwise, construct the payload items explicitly.
+    const payload = conferences.map(conf => ({
+        acronym: conf.acronym,
+        title: conf.title,
+        ...(conf.extractedData || {}) // Spread extractedData, ensure acronym & title are top-level
+    }));
+
+    console.log(`API Call: Saving ${conferences.length} conferences in batch.`, payload);
+
     try {
-        // Giả sử API trả về một object có cấu trúc tương tự SaveConferenceResult hoặc một mảng các kết quả
-        // Hoặc một cấu trúc đơn giản hơn như { success: boolean; message: string; data?: any }
         const response = await axios.post<{
-            success: boolean; // Cờ chung cho request batch
-            message: string;  // Thông báo chung
-            results?: Array<{ // Nếu API xử lý từng item và trả về kết quả cho từng item
-                acronym: string;
-                title: string;
-                success: boolean;
-                message: string;
-                // id?: string; // ID của record đã lưu/cập nhật
-            }>;
-            // Hoặc nếu API chỉ trả về trạng thái cho item duy nhất được gửi:
-            // id?: string;
-            // data?: any;
+            success: boolean; // Overall success of the batch request by the API
+            data: ConferenceSaveDBResponseItem[]; // Array of results for each conference
+            message?: string; // Overall message from the API for the batch
         }>(
             API_SAVE_ENDPOINT,
-            payload // Gửi dưới dạng mảng, ngay cả khi chỉ có một item
+            payload
         );
 
-        console.log(`Full API response`, response)
-        console.log(`API Response for ${identifier}:`, response.data);
+        console.log(`Batch Save API Full Response:`, response);
+        console.log(`Batch Save API Response Data:`, response.data);
 
-        // Xử lý response từ backend
-        // Kịch bản 1: API trả về trạng thái chung cho cả batch (nếu gửi nhiều)
-        // hoặc cho item duy nhất.
-        if (response.data.results && response.data.results.length > 0) {
-            // Nếu API trả về kết quả cho từng item trong mảng (dù chỉ gửi 1)
-            const itemResult = response.data.results[0];
+        const itemResults: BatchSaveConferenceItemResult[] = [];
+
+        if (response.data && response.data.data) {
+            // Map backend results back to original items.
+            // This assumes the backend returns results that can be matched (e.g., by acronym/title)
+            // or are in the same order.
+            response.data.data.forEach(dbItem => {
+                // Try to find the original item. This is important if order is not guaranteed
+                // or if not all items sent result in a response item.
+                const originalConf = conferences.find(c => c.acronym === dbItem.acronym && c.title === dbItem.title);
+                const success = dbItem.status === "SAVED";
+
+                itemResults.push({
+                    acronym: dbItem.acronym,
+                    title: dbItem.title,
+                    success: success,
+                    message: dbItem.message || (success ? 'Saved successfully to DB.' : `DB processing status: ${dbItem.status}`),
+                    dbId: dbItem.id,
+                    dbStatus: dbItem.status,
+                });
+            });
+
+            // Check for any conferences sent but not found in the response (edge case)
+            conferences.forEach(sentConf => {
+                if (!itemResults.some(r => r.acronym === sentConf.acronym && r.title === sentConf.title)) {
+                    itemResults.push({
+                        acronym: sentConf.acronym,
+                        title: sentConf.title,
+                        success: false,
+                        message: "Conference not found in API response data. Saving may have been skipped or failed silently on backend.",
+                    });
+                }
+            });
+
             return {
-                // identifier: `${itemResult.acronym} - ${itemResult.title}`,
-                success: itemResult.success,
-                message: itemResult.message || (itemResult.success ? 'Saved successfully (backend).' : 'Save failed (backend logic).'),
-                // details: itemResult // Có thể bao gồm ID từ DB
+                overallSuccess: response.data.success, // Reflects backend's view of the batch
+                overallMessage: response.data.message || (response.data.success ? "Batch processed by DB." : "Batch processing by DB reported issues."),
+                itemResults,
             };
+
         } else {
-            // Nếu API trả về trạng thái chung cho request
+            // Fallback if response.data.data is not as expected, treat all as failed
+            const errorMessage = response.data?.message || 'Batch save failed: Invalid response structure from backend.';
+            conferences.forEach(conf => {
+                itemResults.push({
+                    acronym: conf.acronym,
+                    title: conf.title,
+                    success: false,
+                    message: errorMessage,
+                });
+            });
             return {
-                // identifier,
-                success: response.data.success,
-                message: response.data.message || (response.data.success ? 'Saved successfully (backend).' : 'Save failed (backend logic).'),
-                // details: response.data // Có thể bao gồm ID từ DB hoặc dữ liệu đã lưu
+                overallSuccess: false,
+                overallMessage: errorMessage,
+                itemResults,
             };
         }
 
     } catch (err) {
-        const error = err as AxiosError<{ message?: string; errors?: any[] }>; // Mở rộng để bắt lỗi validation chi tiết
-        console.error(`API Request Error saving ${identifier}:`, error.isAxiosError ? {
+        const error = err as AxiosError<{ message?: string; errors?: any[] }>;
+        console.error(`API Request Error saving batch of conferences:`, error.isAxiosError ? {
             message: error.message,
             status: error.response?.status,
             data: error.response?.data
         } : err);
 
-        let errorMessage = 'An unknown network or server error occurred.';
+        let errorMessage = 'An unknown network or server error occurred during batch save.';
         if (error.response) {
-            // Ưu tiên message từ response.data
-            const responseData = error.response.data;
+            const responseData = error.response.data as any; // Type assertion
             if (responseData && typeof responseData === 'object' && 'message' in responseData && typeof responseData.message === 'string') {
                 errorMessage = responseData.message;
             } else if (error.response.statusText) {
                 errorMessage = `Server error: ${error.response.status} ${error.response.statusText}`;
             }
         } else if (error.request) {
-            errorMessage = 'No response received from server. Check network connection.';
-        } else {
+            errorMessage = 'No response received from server for batch save. Check network connection.';
+        } else if (error.message) {
             errorMessage = error.message;
         }
 
-        return { // Luôn resolve
-            // identifier,
+        // Create error results for all items in the batch
+        const itemResults: BatchSaveConferenceItemResult[] = conferences.map(conf => ({
+            acronym: conf.acronym,
+            title: conf.title,
             success: false,
-            message: errorMessage,
-            // details: error.response?.data // Gửi thêm chi tiết lỗi từ backend nếu có
+            message: errorMessage, // Apply the general error to all items in this case
+        }));
+
+        return {
+            overallSuccess: false,
+            overallMessage: errorMessage,
+            itemResults,
         };
     }
 };

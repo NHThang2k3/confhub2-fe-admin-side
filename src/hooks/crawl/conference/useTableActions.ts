@@ -5,21 +5,31 @@ import {
   ConferenceTableData,
   MainSavingStatus,
   RowSaveStatus
-} from './useConferenceTableManager'; // Import types
-import { ApiModels, useConferenceCrawl } from './useConferenceCrawl'; // Import useConferenceCrawl và types liên quan
-import { saveConferenceToDB } from '@/src/app/api/logAnalysis/saveConferences';
-import { persistConferenceSaveStatus, PersistSaveStatusPayload } from '@/src/app/api/logAnalysis/persistSaveStatus';
+} from './useConferenceTableManager';
+import { ApiModels, useConferenceCrawl } from './useConferenceCrawl';
+import {
+    saveConferencesToDB, // Updated import
+    ConferenceToSavePayload,
+    BatchSaveConferenceItemResult
+} from '@/src/app/api/logAnalysis/saveConferences';
+import {
+    persistBatchConferenceSaveStatus, // Updated import
+    persistSingleConferenceSaveStatus, // Keep for fallback or if backend not ready for batch
+    PersistSaveStatusPayload,
+    BatchPersistItemResult
+} from '@/src/app/api/logAnalysis/persistSaveStatus';
 import { ConferenceForAction } from '@/src/models/logAnalysis/importConferenceCrawl';
+
+// A flag to control whether to use batch persistence.
+// Set this to false if your backend /api/v1/log/conference-save-event doesn't support batch yet.
+const USE_BATCH_PERSISTENCE = true; // <<<< IMPORTANT: Configure this
 
 interface UseTableActionsProps {
   selectedRowIds: string[];
-  allConferenceData: ConferenceTableData[]; // Dữ liệu gốc, không phải đã lọc/sắp xếp
-  resetDependencies?: any[]; // Để reset state khi logAnalysisResult thay đổi
+  allConferenceData: ConferenceTableData[];
+  resetDependencies?: any[];
 }
 
-/**
- * Hook để quản lý các hành động trên bảng như lưu trữ và xử lý lại.
- */
 export const useTableActions = ({
   selectedRowIds,
   allConferenceData,
@@ -34,7 +44,6 @@ export const useTableActions = ({
 
   const { startCrawlItems } = useConferenceCrawl();
 
-  // Reset state khi dependencies thay đổi (ví dụ: logAnalysisResult mới)
   useEffect(() => {
     setMainSaveStatus('idle');
     setRowSaveStatus({});
@@ -59,7 +68,6 @@ export const useTableActions = ({
     }
     const selectedConfs = allConferenceData.filter(conf => selectedRowIds.includes(conf.uniqueRowId));
     const anySelectedAlreadyPersisted = selectedConfs.some(conf => conf.persistedSaveStatus === 'SAVED_TO_DATABASE');
-
     return !isSelectedWithProblem && !anySelectedAlreadyPersisted;
   }, [selectedRowIds, isSelectedWithProblem, mainSaveStatus, allConferenceData]);
 
@@ -67,90 +75,109 @@ export const useTableActions = ({
   const handleBulkSave = useCallback(async (onSaveSuccess?: () => void) => {
     if (!isSaveEnabled) return;
     setMainSaveStatus('saving');
-    const nextRowStatus = { ...rowSaveStatus };
-    const nextRowErrors = { ...rowSaveErrors };
+    const initialRowStatus: Record<string, RowSaveStatus> = {};
     selectedRowIds.forEach(id => {
-      nextRowStatus[id] = 'idle';
-      delete nextRowErrors[id];
+      initialRowStatus[id] = 'idle'; // Mark as pending/processing for UI
     });
-    setRowSaveStatus(nextRowStatus);
-    setRowSaveErrors(nextRowErrors);
+    setRowSaveStatus(initialRowStatus);
+    setRowSaveErrors({}); // Clear previous errors
 
-    const itemsToSave = allConferenceData.filter(
+    const conferencesToSave = allConferenceData.filter(
       conf => selectedRowIds.includes(conf.uniqueRowId)
     );
 
-    const persistStatusPromises: Promise<any>[] = [];
+    const conferencePayloads: ConferenceToSavePayload[] = conferencesToSave.map(conf => ({
+      acronym: conf.acronym,
+      title: conf.title,
+      // uniqueRowId: conf.uniqueRowId, // Pass if saveConferencesToDB uses it for mapping
+      extractedData: conf.finalResultPreview || conf.finalResult,
+    }));
 
-    const results = await Promise.allSettled(
-      itemsToSave.map(conf =>
-        saveConferenceToDB(
-          conf.acronym,
-          conf.title,
-          conf.finalResultPreview || conf.finalResult
-        ).then(dbSaveResult => ({
-          conf,
-          dbSaveResult
-        }))
-      )
-    );
+    const dbSaveBatchResult = await saveConferencesToDB(conferencePayloads);
 
     const finalRowStatusUpdate: Record<string, RowSaveStatus> = {};
     const finalRowErrorsUpdate: Record<string, string> = {};
-    let overallSuccess = true;
+    let overallSuccess = dbSaveBatchResult.overallSuccess; // Start with API call success
+    const successfullySavedItemsForPersistence: PersistSaveStatusPayload[] = [];
 
-    results.forEach(settledResult => {
-      if (settledResult.status === 'fulfilled') {
-        const { conf, dbSaveResult } = settledResult.value;
-        const rowId = conf.uniqueRowId;
+    // Process results from saveConferencesToDB
+    dbSaveBatchResult.itemResults.forEach(itemResult => {
+      // Find the original conference to get its uniqueRowId
+      const originalConf = conferencesToSave.find(
+        c => c.acronym === itemResult.acronym && c.title === itemResult.title
+      );
+      if (!originalConf) {
+        console.warn("Could not map DB save result back to a table row:", itemResult);
+        // This shouldn't happen if mapping logic in saveConferencesToDB is correct
+        return;
+      }
+      const rowId = originalConf.uniqueRowId;
 
-        if (dbSaveResult.success) {
-          finalRowStatusUpdate[rowId] = 'success';
-
-          const persistPayload: PersistSaveStatusPayload = {
-            batchRequestId: conf.requestId,
-            acronym: conf.acronym,
-            title: conf.title,
-            status: 'SAVED_TO_DATABASE',
-            clientTimestamp: new Date().toISOString(),
-          };
-          const persistPromise = persistConferenceSaveStatus(persistPayload)
-            .then(persistResult => {
-              if (!persistResult.success) {
-                console.warn(`Failed to persist save status for ${conf.acronym}: ${persistResult.message}`);
-              } else {
-                console.log(`Successfully persisted save status for ${conf.acronym}`);
-              }
-            });
-          persistStatusPromises.push(persistPromise);
-
-        } else {
-          overallSuccess = false;
-          finalRowStatusUpdate[rowId] = 'error';
-          finalRowErrorsUpdate[rowId] = dbSaveResult.message || 'Save failed (unknown reason).';
-        }
+      if (itemResult.success) {
+        finalRowStatusUpdate[rowId] = 'success';
+        successfullySavedItemsForPersistence.push({
+          batchRequestId: originalConf.requestId, // Assuming requestId is the batchRequestId
+          acronym: itemResult.acronym,
+          title: itemResult.title,
+          status: 'SAVED_TO_DATABASE',
+          clientTimestamp: new Date().toISOString(),
+        });
       } else {
-        overallSuccess = false;
-        console.error("Unexpected rejection in saveConferenceToDB promise:", settledResult.reason);
+        overallSuccess = false; // If any item fails, the overall batch operation is not fully successful
+        finalRowStatusUpdate[rowId] = 'error';
+        finalRowErrorsUpdate[rowId] = itemResult.message || 'Save failed (unknown reason).';
       }
     });
 
     setRowSaveStatus(prev => ({ ...prev, ...finalRowStatusUpdate }));
     setRowSaveErrors(prev => ({ ...prev, ...finalRowErrorsUpdate }));
-    setMainSaveStatus(overallSuccess ? 'success' : 'error');
 
-    if (overallSuccess && onSaveSuccess) {
-      // Trigger callback to deselect all if save is successful
-      onSaveSuccess();
+    // Persist save statuses
+    if (successfullySavedItemsForPersistence.length > 0) {
+      console.log(`Attempting to persist status for ${successfullySavedItemsForPersistence.length} items.`);
+      if (USE_BATCH_PERSISTENCE) {
+        const persistBatchResult = await persistBatchConferenceSaveStatus(successfullySavedItemsForPersistence);
+        if (!persistBatchResult.overallSuccess) {
+          console.warn("Batch persistence of save statuses reported an overall failure:", persistBatchResult.overallMessage);
+        }
+        persistBatchResult.itemResults.forEach(itemPersistResult => {
+          if (!itemPersistResult.success) {
+            console.warn(`Failed to persist save status for ${itemPersistResult.acronym} - ${itemPersistResult.title}: ${itemPersistResult.message}`);
+            // Optionally, update row status or add a specific warning if persistence fails
+            // For now, we just log it. The main save status is already set.
+          } else {
+            console.log(`Successfully persisted save status for ${itemPersistResult.acronym} - ${itemPersistResult.title}`);
+          }
+        });
+      } else {
+        // Fallback to single persistence calls if batch is not enabled/ready
+        console.log("Using single persistence calls as fallback.");
+        const persistPromises = successfullySavedItemsForPersistence.map(payload =>
+          persistSingleConferenceSaveStatus(payload).then(result => {
+            if (!result.success) {
+              console.warn(`Failed to persist save status for ${result.acronym}: ${result.message}`);
+            } else {
+              console.log(`Successfully persisted save status for ${result.acronym}`);
+            }
+          })
+        );
+        await Promise.allSettled(persistPromises);
+      }
     }
 
-    Promise.all(persistStatusPromises).then(() => {
-      console.log("All persist save status calls have completed.");
-    }).catch(err => {
-      console.error("Error during persisting save statuses:", err);
-    });
-  }, [isSaveEnabled, selectedRowIds, allConferenceData, rowSaveStatus, rowSaveErrors]);
+    // Determine final mainSaveStatus
+    // If dbSaveBatchResult.overallSuccess is false, it means the API call itself failed, so it's an error.
+    // If true, then check if all individual items were successful.
+    const allItemsSucceeded = dbSaveBatchResult.itemResults.every(item => item.success);
+    setMainSaveStatus(dbSaveBatchResult.overallSuccess && allItemsSucceeded ? 'success' : 'error');
 
+    if (dbSaveBatchResult.overallSuccess && allItemsSucceeded && onSaveSuccess) {
+      onSaveSuccess(); // e.g., deselect rows
+    }
+
+  }, [isSaveEnabled, selectedRowIds, allConferenceData, /* rowSaveStatus, rowSaveErrors removed as they are set inside */]);
+
+  // ... rest of the hook (handleProcessAgainClick, etc.) remains the same
   const handleProcessAgainClick = useCallback(() => {
     if (selectedRowIds.length === 0) {
       alert("No items selected to re-process.");
