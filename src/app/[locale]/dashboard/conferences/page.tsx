@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/src/contexts/AuthContext'; // Import useAuth
 import { useTranslations } from 'next-intl'; // Import useTranslations
 import Conferences from './Conferences'; // Import component UI đã tách ra
+import ConferenceEvaluateUploader from './ConferenceEvaluateUploader';
 
 // Component Page cho route /dashboard/conferences/[locale]
 export default function ConferencesPage({ params: { locale } }: { params: { locale: string } }) {
@@ -54,5 +55,10 @@ export default function ConferencesPage({ params: { locale } }: { params: { loca
     // Nếu KHÔNG đang khởi tạo VÀ ĐÃ đăng nhập, render component Conferences đã tách
     // Truyền locale xuống nếu component con cần nó (useTranslations không cần,
     // nhưng có thể các logic khác cần)
-    return <Conferences locale={locale} />;
+    return (
+        <>
+            <Conferences locale={locale} />
+            <ConferenceEvaluateUploader />
+        </>
+    );
 }
