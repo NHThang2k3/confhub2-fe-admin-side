@@ -316,7 +316,7 @@ export interface ConferenceLogAnalysisResult {
     /**
      * @property {{[compositeKey: string]: ConferenceAnalysisDetail}} conferenceAnalysis - Một từ điển các đối tượng `ConferenceAnalysisDetail`, được lập chỉ mục bởi một khóa tổng hợp (ví dụ: `batchRequestId-conferenceTitle`).
      */
-    conferenceAnalysis: {
+    conferenceAnalysis?: {
         [compositeKey: string]: ConferenceAnalysisDetail;
     };
 }

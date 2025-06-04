@@ -202,7 +202,7 @@ export interface JournalLogAnalysisResult {
 
     errorsAggregated: { [normalizedErrorKey: string]: number };
     logProcessingErrors: string[]; // Errors from the log analysis process itself
-    journalAnalysis: { [compositeKey: string]: JournalAnalysisDetail }; // Key: batchRequestId-journalTitle
+    journalAnalysis?: { [compositeKey: string]: JournalAnalysisDetail }; // Key: batchRequestId-journalTitle
 }
 
 

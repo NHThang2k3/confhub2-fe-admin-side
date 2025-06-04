@@ -11,7 +11,7 @@ import { LogAnalysisResultUnion, CrawlerType } from '@/src/hooks/logAnalysis/use
 import ConferenceOverallSummary from '../overallSummary/ConferenceOverallSummary';
 import JournalOverallSummary from '../journalOverallSummary/JournalOverallSummary';
 import { ConferenceLogAnalysisResult } from '@/src/models/logAnalysis';
-import { JournalLogAnalysisResult } from '@/src/models/logAnalysis';
+import { JournalLogAnalysisResult } from '@/src/models/logAnalysis/logAnalysisJournal.types';
 
 interface LogRequestsListProps {
     isExpanded: boolean;
