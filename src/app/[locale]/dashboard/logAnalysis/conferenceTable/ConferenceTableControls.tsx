@@ -60,7 +60,7 @@ export const ConferenceTableControls: React.FC<
       let icon = <FaSave className='mr-2' />
       let text = `Save Selected (${selectedCount})`
       let buttonClass = 'bg-blue-600 hover:bg-blue-700 text-white'
-      let titleAttr = 'Save all selected conferences without errors or warnings'
+      let titleAttr = 'Save all selected conferences without errors, warnings and not saved'
       let disabled = !isSaveEnabled
 
       switch (mainSaveStatus) {
@@ -92,7 +92,7 @@ export const ConferenceTableControls: React.FC<
             disabled = true
           } else if (!isSaveEnabled && selectedCount > 0) {
             titleAttr =
-              'Cannot save: One or more selected conferences have errors or warnings.'
+              'Cannot save: One or more selected conferences have errors or warnings or saved'
             disabled = true
           }
           break

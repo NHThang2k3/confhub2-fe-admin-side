@@ -512,7 +512,7 @@
   "FileUploadStep": {
     "header": {
       "title": "Step 1: Import CSV File",
-      "description": "Select a CSV file containing conference data. Required columns: Title, Acronym. Optional: link, cfpLink, impLink."
+      "description": "Select a CSV file containing conference data. Required columns: Title, Acronym"
     },
     "button": {
       "parsing": "Parsing...",
