@@ -111,7 +111,15 @@ export const getConferenceTableColumns = (
     {
       accessorKey: 'sources',
       header: 'Sources',
-      cell: ({ row }) => <div className="whitespace-nowrap">{row.getValue('sources')}</div>,
+      cell: ({ row }) => (
+        <div className="flex flex-wrap gap-1">
+          {(row.getValue('sources') as string[])?.map((source: string, index: number) => (
+            <span key={index} className="px-2 py-1 bg-blue-100 text-blue-800 rounded text-sm">
+              {source}
+            </span>
+          ))}
+        </div>
+      ),
       sortingFn: sortingFns.text,
       filterFn: filterFns.includesString,
       size: 150,
@@ -119,7 +127,15 @@ export const getConferenceTableColumns = (
     {
       accessorKey: 'ranks',
       header: 'Ranks',
-      cell: ({ row }) => <div className="whitespace-nowrap">{row.getValue('ranks')}</div>,
+      cell: ({ row }) => (
+        <div className="flex flex-wrap gap-1">
+          {(row.getValue('ranks') as string[])?.map((rank: string, index: number) => (
+            <span key={index} className="px-2 py-1 bg-purple-100 text-purple-800 rounded text-sm">
+              {rank}
+            </span>
+          ))}
+        </div>
+      ),
       sortingFn: sortingFns.text,
       filterFn: filterFns.includesString,
       size: 100,
@@ -127,7 +143,15 @@ export const getConferenceTableColumns = (
     {
       accessorKey: 'researchFields',
       header: 'Research Fields',
-      cell: ({ row }) => <div className="whitespace-nowrap">{row.getValue('researchFields')}</div>,
+      cell: ({ row }) => (
+        <div className="flex flex-wrap gap-1">
+          {(row.getValue('researchFields') as string[])?.map((field: string, index: number) => (
+            <span key={index} className="px-2 py-1 bg-green-100 text-green-800 rounded text-sm">
+              {field}
+            </span>
+          ))}
+        </div>
+      ),
       sortingFn: sortingFns.text,
       filterFn: filterFns.includesString,
       size: 200,
