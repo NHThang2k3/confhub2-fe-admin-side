@@ -61,7 +61,9 @@ export const JournalCrawlUploader: React.FC = () => {
     resetCrawl
   } = useJournalCrawl()
 
-  const tableManager = useJournalTableManager(parsedData || [])
+  const tableManager = useJournalTableManager({
+    logAnalysisResult: null
+  })
 
   // Handle step navigation
   const handleNext = () => {
