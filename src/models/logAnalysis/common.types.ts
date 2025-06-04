@@ -32,7 +32,9 @@ export interface RequestTimings {
     | 'PartiallyCompleted'
     | 'Skipped'
     | 'NoData'
-    | 'Unknown';
+    | 'Unknown'
+    | 'NoRequestsAnalyzed'      // THÊM VÀO
+    | 'NotFoundInAggregation';  // THÊM VÀO
     /**
      * @property {string} [originalRequestId] - Tùy chọn: ID gốc được cung cấp cho yêu cầu, nếu đó là một lần thu thập lại.
      */
@@ -43,6 +45,7 @@ export interface RequestTimings {
     totalConferencesInputForRequest?: number;
     /** NEW: Số lượng hội nghị đã được xử lý hoàn tất cho yêu cầu cụ thể này. */
     processedConferencesCountForRequest?: number;
+    csvOutputStreamFailed?: boolean;
 }
 
 /**
@@ -121,7 +124,7 @@ export interface LogErrorContext {
     /**
      * @property {'primary_execution' | 'fallback_execution' | 'setup' | 'response_processing' | 'sdk_call' | string} [phase] - Giai đoạn của quá trình xử lý mà lỗi xảy ra.
      */
-    phase?: 'primary_execution' | 'fallback_execution' | 'setup' | 'response_processing' | 'sdk_call' | string;
+    phase?: 'primary_execution' | 'fallback_execution' | 'setup' | 'response_processing' | 'sdk_call' | 'response_processing' | string;
     /**
      * @property {string} [modelIdentifier] - Định danh của mô hình được sử dụng khi lỗi xảy ra.
      */
