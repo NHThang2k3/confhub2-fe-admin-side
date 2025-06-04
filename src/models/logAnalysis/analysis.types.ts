@@ -1,4 +1,9 @@
 // src/types/analysis.types.ts
+/**
+ * @fileoverview Định nghĩa các kiểu dữ liệu cho việc phân tích nhật ký (log analysis) của quá trình thu thập dữ liệu (crawl pipeline).
+ * Bao gồm các tóm tắt tổng thể, chi tiết phân tích từng hội nghị, và kết quả phân tích tổng hợp từ các thành phần khác nhau.
+ */
+
 import { RequestTimings, LogError } from './common.types';
 import { GoogleSearchAnalysis } from './search.types';
 import { GeminiApiAnalysis } from './gemini.types';
@@ -8,69 +13,146 @@ import { FileOutputAnalysis } from './fileOutput.types';
 import { ValidationStats, DataQualityInsight } from './validation.types';
 
 /**
- * Overall summary of the log analysis.
+ * @interface OverallAnalysis
+ * @description Tóm tắt tổng thể về phân tích nhật ký.
  */
 export interface OverallAnalysis {
-    /** The start time of the analysis period (ISO string), or null. */
+    /**
+     * @property {string | null} startTime - Thời gian bắt đầu của giai đoạn phân tích (chuỗi ISO), hoặc null nếu không xác định.
+     */
     startTime: string | null;
-    /** The end time of the analysis period (ISO string), or null. */
+    /**
+     * @property {string | null} endTime - Thời gian kết thúc của giai đoạn phân tích (chuỗi ISO), hoặc null nếu không xác định.
+     */
     endTime: string | null;
-    /** The total duration of the analysis period in seconds, or null. */
+    /**
+     * @property {number | null} durationSeconds - Tổng thời lượng của giai đoạn phân tích tính bằng giây, hoặc null nếu không xác định.
+     */
     durationSeconds: number | null;
-    /** The total number of conferences initially fed as input. */
+    /**
+     * @property {number} totalConferencesInput - Tổng số hội nghị được cung cấp ban đầu làm đầu vào.
+     */
     totalConferencesInput: number;
-    /** The total number of conferences that were processed to completion (regardless of internal errors). */
+    /**
+     * @property {number} processedConferencesCount - Tổng số hội nghị đã được xử lý hoàn tất (bất kể lỗi nội bộ).
+     */
     processedConferencesCount: number;
-    /** The number of tasks that fully completed successfully. */
+    /**
+     * @property {number} completedTasks - Số lượng tác vụ đã hoàn thành thành công.
+     */
     completedTasks: number;
-    /** The number of tasks that failed or crashed. */
+    /**
+     * @property {number} failedOrCrashedTasks - Số lượng tác vụ đã thất bại hoặc gặp sự cố.
+     */
     failedOrCrashedTasks: number;
-    /** The number of tasks currently in processing. */
+    /**
+     * @property {number} processingTasks - Số lượng tác vụ hiện đang trong quá trình xử lý.
+     */
     processingTasks: number;
-    /** The number of tasks that were skipped entirely. */
+    /**
+     * @property {number} skippedTasks - Số lượng tác vụ đã bị bỏ qua hoàn toàn.
+     */
     skippedTasks: number;
-    /** The number of successful extractions performed by the AI models. */
+    /**
+     * @property {number} successfulExtractions - Số lượng trích xuất thành công được thực hiện bởi các mô hình AI.
+     */
     successfulExtractions: number;
 }
 
-
-export type ConferenceCrawlType = 'crawl' | 'update'; // Đảm bảo type này tồn tại
-
+/**
+ * @typedef {'crawl' | 'update'} ConferenceCrawlType
+ * @description Định nghĩa loại thu thập dữ liệu cho một hội nghị: 'crawl' (thu thập mới) hoặc 'update' (cập nhật).
+ */
+export type ConferenceCrawlType = 'crawl' | 'update';
 
 /**
- * Detailed analysis of the processing of a specific conference within a batch.
- * Provides a granular view of each step of the crawl for a single conference.
+ * @interface ConferenceAnalysisDetail
+ * @description Phân tích chi tiết quá trình xử lý của một hội nghị cụ thể trong một lô.
+ * Cung cấp cái nhìn chi tiết về từng bước thu thập dữ liệu cho một hội nghị duy nhất.
  */
 export interface ConferenceAnalysisDetail {
-    /** The batch request ID this conference belongs to. */
+    /**
+     * @property {string} batchRequestId - ID yêu cầu lô mà hội nghị này thuộc về.
+     */
     batchRequestId: string;
-    /** Optional: The original request ID if this conference was part of a re-crawl. */
+    /**
+     * @property {string} [originalRequestId] - Tùy chọn: ID yêu cầu gốc nếu hội nghị này là một phần của quá trình thu thập lại.
+     */
     originalRequestId?: string;
-    /** Crawl Type */
+    /**
+     * @property {ConferenceCrawlType} crawlType - Loại thu thập dữ liệu (crawl hoặc update).
+     */
     crawlType: ConferenceCrawlType;
-    persistedSaveStatus?: 'SAVED_TO_DATABASE' | string; // Trạng thái lưu trữ bền vững
-    persistedSaveTimestamp?: string; // Thời điểm ghi nhận lưu trữ bền vững (từ clientTimestamp)
-    /** The title of the conference. */
+    /**
+     * @property {'SAVED_TO_DATABASE' | string} [persistedSaveStatus] - Trạng thái lưu trữ bền vững (ví dụ: 'SAVED_TO_DATABASE').
+     */
+    persistedSaveStatus?: 'SAVED_TO_DATABASE' | string;
+    /**
+     * @property {string} [persistedSaveTimestamp] - Thời điểm ghi nhận lưu trữ bền vững (từ clientTimestamp), định dạng ISO string.
+     */
+    persistedSaveTimestamp?: string;
+    /**
+     * @property {string} title - Tiêu đề của hội nghị.
+     */
     title: string;
-    /** The acronym of the conference. */
+    /**
+     * @property {string} acronym - Từ viết tắt của hội nghị.
+     */
     acronym: string;
-    /** The status of this specific conference's processing. */
+    /**
+     * @property {'unknown' | 'processing' | 'processed_ok' | 'completed' | 'failed' | 'skipped'} status - Trạng thái xử lý của hội nghị cụ thể này.
+     */
     status: 'unknown' | 'processing' | 'processed_ok' | 'completed' | 'failed' | 'skipped';
-    /** The start time of processing for this conference (ISO string), or null. */
+    /**
+     * @property {string | null} startTime - Thời gian bắt đầu xử lý cho hội nghị này (chuỗi ISO), hoặc null.
+     */
     startTime: string | null;
-    /** The end time of processing for this conference (ISO string), or null. */
+    /**
+     * @property {string | null} endTime - Thời gian kết thúc xử lý cho hội nghị này (chuỗi ISO), hoặc null.
+     */
     endTime: string | null;
-    /** The duration of processing for this conference in seconds, or null. */
+    /**
+     * @property {number | null} durationSeconds - Thời lượng xử lý cho hội nghị này tính bằng giây, hoặc null.
+     */
     durationSeconds: number | null;
-    /** Optional: The end time of the overall crawling process for this conference (ISO string). */
+    /**
+     * @property {string | null} [crawlEndTime] - Tùy chọn: Thời gian kết thúc của quá trình thu thập dữ liệu tổng thể cho hội nghị này (chuỗi ISO).
+     */
     crawlEndTime?: string | null;
-    /** Optional: Indicates if crawling succeeded without errors for this specific conference. */
+    /**
+     * @property {boolean | null} [crawlSucceededWithoutError] - Tùy chọn: Cho biết liệu việc thu thập dữ liệu có thành công mà không có lỗi cho hội nghị cụ thể này hay không.
+     */
     crawlSucceededWithoutError?: boolean | null;
-    /** Optional: Indicates if writing to JSONL was successful for this conference. */
+    /**
+     * @property {boolean | null} [jsonlWriteSuccess] - Tùy chọn: Cho biết liệu việc ghi vào JSONL có thành công cho hội nghị này hay không.
+     */
     jsonlWriteSuccess?: boolean | null;
-    /** Optional: Indicates if writing to CSV was successful for this conference. */
+    /**
+     * @property {boolean | null} [csvWriteSuccess] - Tùy chọn: Cho biết liệu việc ghi vào CSV có thành công cho hội nghị này hay không.
+     */
     csvWriteSuccess?: boolean | null;
-    /** Detailed breakdown of each step taken for this conference. */
+    /**
+     * @property {object} steps - Phân tích chi tiết từng bước được thực hiện cho hội nghị này.
+     * @property {boolean} steps.search_attempted - Cho biết liệu tìm kiếm có được thử hay không.
+     * @property {boolean | null} steps.search_success - Cho biết liệu tìm kiếm có thành công hay không.
+     * @property {number} steps.search_attempts_count - Số lần thử tìm kiếm.
+     * @property {number | null} steps.search_results_count - Số lượng kết quả tìm kiếm.
+     * @property {number | null} steps.search_filtered_count - Số lượng kết quả tìm kiếm đã được lọc.
+     * @property {boolean} steps.html_save_attempted - Cho biết liệu việc lưu HTML có được thử hay không.
+     * @property {boolean | 'skipped' | null} steps.html_save_success - Cho biết liệu việc lưu HTML có thành công, bị bỏ qua hay không.
+     * @property {number} steps.link_processing_attempted_count - Số lượng liên kết đã cố gắng xử lý.
+     * @property {number} steps.link_processing_success_count - Số lượng liên kết đã xử lý thành công.
+     * @property {Array<{ timestamp: string; url?: string; error?: string; event?: string }>} steps.link_processing_failed_details - Chi tiết các liên kết xử lý thất bại.
+     * @property {boolean} steps.gemini_determine_attempted - Cho biết liệu API Gemini 'determine' có được thử hay không.
+     * @property {boolean | null} steps.gemini_determine_success - Cho biết liệu API Gemini 'determine' có thành công hay không.
+     * @property {boolean | null} steps.gemini_determine_cache_used - Cho biết liệu cache có được sử dụng cho API Gemini 'determine' hay không.
+     * @property {boolean} steps.gemini_extract_attempted - Cho biết liệu API Gemini 'extract' có được thử hay không.
+     * @property {boolean | null} steps.gemini_extract_success - Cho biết liệu API Gemini 'extract' có thành công hay không.
+     * @property {boolean | null} steps.gemini_extract_cache_used - Cho biết liệu cache có được sử dụng cho API Gemini 'extract' hay không.
+     * @property {boolean} [steps.gemini_cfp_attempted] - Tùy chọn: Cho biết liệu API Gemini 'cfp' có được thử hay không.
+     * @property {boolean | null} [steps.gemini_cfp_success] - Tùy chọn: Cho biết liệu API Gemini 'cfp' có thành công hay không.
+     * @property {boolean | null} [steps.gemini_cfp_cache_used] - Tùy chọn: Cho biết liệu cache có được sử dụng cho API Gemini 'cfp' hay không.
+     */
     steps: {
         search_attempted: boolean;
         search_success: boolean | null;
@@ -99,34 +181,49 @@ export interface ConferenceAnalysisDetail {
         gemini_cfp_success?: boolean | null;
         gemini_cfp_cache_used?: boolean | null;
     };
-    /** An array of errors specifically encountered for this conference during its processing. */
+    /**
+     * @property {LogError[]} errors - Một mảng các lỗi cụ thể gặp phải cho hội nghị này trong quá trình xử lý.
+     */
     errors: LogError[];
-    /** Optional: An array of data quality insights generated for this conference. */
+    /**
+     * @property {DataQualityInsight[]} [dataQualityInsights] - Tùy chọn: Một mảng các thông tin chi tiết về chất lượng dữ liệu được tạo ra cho hội nghị này.
+     */
     dataQualityInsights?: DataQualityInsight[];
-    /** Optional: A preview of the final processed result for this conference. */
-    finalResultPreview?: any; // Consider a more specific type if schema is known
-    /** Optional: The full final processed result for this conference. */
-    finalResult?: any; // Consider a more specific type if schema is known
+    /**
+     * @property {any} [finalResultPreview] - Tùy chọn: Bản xem trước của kết quả cuối cùng đã xử lý cho hội nghị này.
+     * (Cân nhắc một kiểu cụ thể hơn nếu lược đồ được biết)
+     */
+    finalResultPreview?: any;
+    /**
+     * @property {any} [finalResult] - Tùy chọn: Kết quả cuối cùng đã xử lý đầy đủ cho hội nghị này.
+     * (Cân nhắc một kiểu cụ thể hơn nếu lược đồ được biết)
+     */
+    finalResult?: any;
 }
 
 /**
- * The comprehensive result structure for a complete log analysis operation.
- * Aggregates all insights from various components of the crawl pipeline.
+ * @interface ConferenceLogAnalysisResult
+ * @description Cấu trúc kết quả toàn diện cho một hoạt động phân tích nhật ký hoàn chỉnh.
+ * Tổng hợp tất cả các thông tin chi tiết từ các thành phần khác nhau của pipeline thu thập dữ liệu.
  */
 export interface ConferenceLogAnalysisResult {
-    /** ISO timestamp when this analysis was generated. */
-    analysisTimestamp: string;
-    /** The file path of the log file(s) that were analyzed. */
-    logFilePath: string;
     /**
-     * The overall status of the analysis itself.
-     * - 'Completed': Analysis ran to completion. (All task completed)
-     * - 'Failed': Analysis process failed. (All task falied).
-     * - 'Processing': Analysis is still running. 
-     * - 'CompletedWithErrors': Analysis completed, but encountered internal errors.
-     * - 'PartiallyCompleted': Analysis completed partially.
-     * - 'NoRequestsAnalyzed': No requests were found or analyzed based on filters.
-     * - 'Unknown': Status could not be determined.
+     * @property {string} analysisTimestamp - Dấu thời gian ISO khi phân tích này được tạo.
+     */
+    analysisTimestamp: string;
+    /**
+     * @property {string} logFilePath - Đường dẫn tệp của (các) tệp nhật ký đã được phân tích.
+     */
+    logFilePath: string | undefined;
+    /**
+     * @property {'Completed' | 'Failed' | 'Processing' | 'CompletedWithErrors' | 'PartiallyCompleted' | 'NoRequestsAnalyzed' | 'Unknown'} [status] - Trạng thái tổng thể của quá trình phân tích.
+     * - 'Completed': Phân tích đã chạy hoàn tất. (Tất cả tác vụ hoàn thành)
+     * - 'Failed': Quá trình phân tích thất bại. (Tất cả tác vụ thất bại).
+     * - 'Processing': Phân tích vẫn đang chạy.
+     * - 'CompletedWithErrors': Phân tích hoàn thành, nhưng gặp lỗi nội bộ.
+     * - 'PartiallyCompleted': Phân tích hoàn thành một phần.
+     * - 'NoRequestsAnalyzed': Không tìm thấy hoặc phân tích được yêu cầu nào dựa trên bộ lọc.
+     * - 'Unknown': Không thể xác định trạng thái.
      */
     status?:
     | 'Completed'
@@ -136,51 +233,89 @@ export interface ConferenceLogAnalysisResult {
     | 'PartiallyCompleted'
     | 'NoRequestsAnalyzed'
     | 'Unknown';
-    /** Optional: An error message if the analysis itself failed. */
+    /**
+     * @property {string} [errorMessage] - Tùy chọn: Thông báo lỗi nếu quá trình phân tích thất bại.
+     */
     errorMessage?: string;
-    /** Optional: The specific request ID that was filtered for analysis. */
+    /**
+     * @property {string} [filterRequestId] - Tùy chọn: ID yêu cầu cụ thể đã được lọc để phân tích.
+     */
     filterRequestId?: string;
-    /** An array of all batch request IDs that were included in this analysis. */
+    /**
+     * @property {string[]} analyzedRequestIds - Một mảng tất cả các ID yêu cầu lô đã được bao gồm trong phân tích này.
+     */
     analyzedRequestIds: string[];
 
-    /** A dictionary of `RequestTimings` indexed by `batchRequestId`. */
+    /**
+     * @property {{[batchRequestId: string]: RequestTimings}} requests - Một từ điển các `RequestTimings` được lập chỉ mục bởi `batchRequestId`.
+     */
     requests: {
         [batchRequestId: string]: RequestTimings;
     };
 
-    /** Total number of raw log entries read. */
+    /**
+     * @property {number} totalLogEntries - Tổng số mục nhật ký thô đã đọc.
+     */
     totalLogEntries: number;
-    /** Number of log entries successfully parsed. */
+    /**
+     * @property {number} parsedLogEntries - Số lượng mục nhật ký đã được phân tích cú pháp thành công.
+     */
     parsedLogEntries: number;
-    /** Number of errors encountered during log parsing. */
+    /**
+     * @property {number} parseErrors - Số lượng lỗi gặp phải trong quá trình phân tích cú pháp nhật ký.
+     */
     parseErrors: number;
-    /** Number of log entries classified as 'error' level. */
+    /**
+     * @property {number} errorLogCount - Số lượng mục nhật ký được phân loại là cấp độ 'error'.
+     */
     errorLogCount: number;
-    /** Number of log entries classified as 'fatal' level. */
+    /**
+     * @property {number} fatalLogCount - Số lượng mục nhật ký được phân loại là cấp độ 'fatal'.
+     */
     fatalLogCount: number;
 
-    /** Analysis specific to Google Search operations. */
+    /**
+     * @property {GoogleSearchAnalysis} googleSearch - Phân tích cụ thể cho các hoạt động tìm kiếm của Google.
+     */
     googleSearch: GoogleSearchAnalysis;
-    /** Analysis specific to Playwright (web scraping) operations. */
+    /**
+     * @property {PlaywrightAnalysis} playwright - Phân tích cụ thể cho các hoạt động Playwright (cạo web).
+     */
     playwright: PlaywrightAnalysis;
-    /** Analysis specific to Gemini API interactions. */
+    /**
+     * @property {GeminiApiAnalysis} geminiApi - Phân tích cụ thể cho các tương tác API Gemini.
+     */
     geminiApi: GeminiApiAnalysis;
-    /** Analysis specific to batch processing operations. */
+    /**
+     * @property {BatchProcessingAnalysis} batchProcessing - Phân tích cụ thể cho các hoạt động xử lý lô.
+     */
     batchProcessing: BatchProcessingAnalysis;
-    /** Analysis specific to file output operations (JSONL, CSV). */
+    /**
+     * @property {FileOutputAnalysis} fileOutput - Phân tích cụ thể cho các hoạt động đầu ra tệp (JSONL, CSV).
+     */
     fileOutput: FileOutputAnalysis;
-    /** Aggregated statistics on data validation and normalization. */
+    /**
+     * @property {ValidationStats} validationStats - Thống kê tổng hợp về xác thực và chuẩn hóa dữ liệu.
+     */
     validationStats: ValidationStats;
 
-    /** Overall summary statistics. */
+    /**
+     * @property {OverallAnalysis} overall - Thống kê tóm tắt tổng thể.
+     */
     overall: OverallAnalysis;
 
-    /** Aggregated counts of all unique error messages encountered, normalized. */
+    /**
+     * @property {{[normalizedErrorKey: string]: number}} errorsAggregated - Tổng số lỗi duy nhất gặp phải, đã được chuẩn hóa.
+     */
     errorsAggregated: { [normalizedErrorKey: string]: number };
-    /** An array of general errors encountered during the log processing (e.g., file read errors). */
+    /**
+     * @property {string[]} logProcessingErrors - Một mảng các lỗi chung gặp phải trong quá trình xử lý nhật ký (ví dụ: lỗi đọc tệp).
+     */
     logProcessingErrors: string[];
 
-    /** A dictionary of `ConferenceAnalysisDetail` objects, indexed by a composite key (e.g., `batchRequestId-conferenceTitle`). */
+    /**
+     * @property {{[compositeKey: string]: ConferenceAnalysisDetail}} conferenceAnalysis - Một từ điển các đối tượng `ConferenceAnalysisDetail`, được lập chỉ mục bởi một khóa tổng hợp (ví dụ: `batchRequestId-conferenceTitle`).
+     */
     conferenceAnalysis: {
         [compositeKey: string]: ConferenceAnalysisDetail;
     };

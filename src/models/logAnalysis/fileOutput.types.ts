@@ -1,25 +1,49 @@
 // src/types/fileOutput.types.ts
 
 /**
- * Analysis of file output operations (JSONL and CSV).
+ * @fileoverview Định nghĩa các kiểu dữ liệu cho phân tích các hoạt động xuất tệp (File Output),
+ * bao gồm cả tệp JSONL và CSV.
+ */
+
+/**
+ * @interface FileOutputAnalysis
+ * @description Phân tích các hoạt động xuất tệp (JSONL và CSV).
  */
 export interface FileOutputAnalysis {
-    /** Number of records successfully written to JSONL files. */
+    /**
+     * @property {number} jsonlRecordsSuccessfullyWritten - Số lượng bản ghi đã được ghi thành công vào các tệp JSONL.
+     */
     jsonlRecordsSuccessfullyWritten: number;
-    /** Number of errors encountered during JSONL file writes. */
+    /**
+     * @property {number} jsonlWriteErrors - Số lượng lỗi gặp phải trong quá trình ghi tệp JSONL.
+     */
     jsonlWriteErrors: number;
-    /** Whether a CSV file was successfully generated (null if not attempted/finished). */
+    /**
+     * @property {boolean | null} csvFileGenerated - Cho biết liệu một tệp CSV có được tạo thành công hay không (null nếu chưa được thử/hoàn thành).
+     */
     csvFileGenerated: boolean | null;
-    /** Number of records attempted to be written to CSV. */
+    /**
+     * @property {number} csvRecordsAttempted - Số lượng bản ghi đã cố gắng ghi vào CSV.
+     */
     csvRecordsAttempted: number;
-    /** Number of records successfully written to CSV. */
+    /**
+     * @property {number} csvRecordsSuccessfullyWritten - Số lượng bản ghi đã được ghi thành công vào CSV.
+     */
     csvRecordsSuccessfullyWritten: number;
-    /** Number of errors encountered during CSV file writes. */
+    /**
+     * @property {number} csvWriteErrors - Số lượng lỗi gặp phải trong quá trình ghi tệp CSV.
+     */
     csvWriteErrors: number;
-    /** Number of successful CSV records that were "orphaned" (e.g., not linked to a full batch success). */
+    /**
+     * @property {number} csvOrphanedSuccessRecords - Số lượng bản ghi CSV thành công bị "mồ côi" (ví dụ: không được liên kết với một lô thành công hoàn chỉnh).
+     */
     csvOrphanedSuccessRecords: number;
-    /** Number of failures in the overall CSV pipeline. */
+    /**
+     * @property {number} csvPipelineFailures - Số lượng lỗi trong pipeline CSV tổng thể.
+     */
     csvPipelineFailures: number;
-    /** Optional: Other unclassified CSV-related errors. */
+    /**
+     * @property {number} [csvOtherErrors] - Tùy chọn: Các lỗi liên quan đến CSV khác không được phân loại.
+     */
     csvOtherErrors?: number;
 }

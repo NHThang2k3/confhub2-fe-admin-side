@@ -4,7 +4,9 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Socket } from 'socket.io-client';
 // *** THAY ĐỔI: Import cả hai kiểu dữ liệu và tạo Union Type ***
-import { ConferenceLogAnalysisResult, JournalLogAnalysisResult } from '../../models/logAnalysis'; // Adjust path
+import { ConferenceLogAnalysisResult } from '../../models/logAnalysis/index'; // Adjust path
+import { JournalLogAnalysisResult } from '@/src/models/logAnalysis/logAnalysisJournal.types';
+
 import { useAuth } from '@/src/contexts/AuthContext'; // Adjust path
 // *** THAY ĐỔI: Import hàm fetch chung hoặc hai hàm riêng biệt ***
 import {

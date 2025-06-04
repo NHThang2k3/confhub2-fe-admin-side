@@ -1,6 +1,25 @@
-// src/types/logAnalysisJournal.types.ts
+// src/models/logAnalysis/logAnalysisJournal.types.ts
+
 import { Writable } from 'stream';
-import { LogError } from './common.types';
+
+// --- Basic Log Error Structure ---
+export interface LogErrorContext {
+    phase?: 'initialization' | 'processing' | 'api_call' | 'response_processing' | 'file_output' | 'cleanup';
+    step?: string; // e.g., 'bioxbio_fetch', 'scimago_details', 'image_search'
+    [key: string]: any;
+}
+
+export interface LogError {
+    timestamp: string;
+    message: string;
+    key: string; // Normalized error key for aggregation
+    details?: any;
+    errorCode?: string;
+    sourceService?: string;
+    errorType?: 'Network' | 'API' | 'Playwright' | 'FileSystem' | 'Validation' | 'Logic' | 'Cache' | 'Unknown' | 'ThirdParty';
+    isRecovered: boolean;
+    context?: LogErrorContext;
+}
 
 // --- Journal Specific Analysis Detail ---
 export interface JournalAnalysisDetailSteps {
@@ -28,7 +47,7 @@ export interface JournalAnalysisDetailSteps {
 export interface JournalAnalysisDetail {
     batchRequestId: string;
     journalTitle: string; // Primary identifier
-    sourceId: string; // Secondary identifier, if available
+    sourceId?: string; // Secondary identifier, if available
     dataSource: 'scimago' | 'client' | 'unknown';
     originalInput?: string; // URL for scimago, or part of CSV row for client
 
@@ -49,8 +68,8 @@ export interface JournalRequestSummary {
     startTime: string | null;
     endTime: string | null;
     durationSeconds: number | null;
-    status: 'Unknown' | 'Processing' | 'Completed' | 'CompletedWithErrors' | 'Failed' | 'NoData' | 'PartiallyCompleted' | 'Skipped';
-    dataSource?: 'scimago' | 'client';
+    status: 'Unknown' | 'Processing' | 'Completed' | 'CompletedWithErrors' | 'Failed' | 'NoData' | 'PartiallyCompleted' | 'Skipped' | 'NotFoundInAggregation' | 'NoRequestsAnalyzed';
+    dataSource?: 'scimago' | 'client' | string; // Cho phép 'scimago', 'client', hoặc bất kỳ string nào khác
     totalJournalsInputForRequest?: number; // Total Scimago URLs or CSV rows for this batch
     processedJournalsCountForRequest?: number; // Journals successfully written to JSONL
     failedJournalsCountForRequest?: number;
@@ -149,8 +168,18 @@ export interface JournalFileOutputAnalysis {
 // --- Main Log Analysis Result Structure for Journals ---
 export interface JournalLogAnalysisResult {
     analysisTimestamp: string;
-    logFilePath: string;
-    status: 'Processing' | 'Completed' | 'CompletedWithErrors' | 'Failed' | 'NoRequestsAnalyzed' | 'PartiallyCompleted' | 'Unknown';
+    logFilePath?: string | undefined;
+    status?:
+    | 'Completed'
+    | 'Failed'
+    | 'Processing'
+    | 'CompletedWithErrors'
+    | 'PartiallyCompleted'
+    | 'Skipped'
+    | 'NoData'
+    | 'Unknown'
+    | 'NoRequestsAnalyzed'      // THÊM VÀO
+    | 'NotFoundInAggregation';  // THÊM VÀO
     errorMessage?: string;
     filterRequestId?: string; // If analysis was filtered to a single batchRequestId
     analyzedRequestIds: string[];
@@ -182,7 +211,7 @@ export interface JournalRequestLogData {
     logs: any[];
     startTime: number | null;
     endTime: number | null;
-    dataSource?: 'scimago' | 'client'; // To be populated early
+    dataSource?: 'scimago' | 'client' | string; // Cho phép 'scimago', 'client', hoặc bất kỳ string nào khác
 }
 
 export interface JournalReadLogResult {
@@ -201,5 +230,5 @@ export interface JournalFilteredData {
 
 // For pino.destination
 export interface PinoFileDestination extends Writable {
-  flushSync(): void;
+    flushSync(): void;
 }

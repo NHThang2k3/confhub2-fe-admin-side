@@ -1,15 +1,24 @@
-// src/types/initializers.ts
-import { OverallAnalysis, ConferenceLogAnalysisResult, ConferenceAnalysisDetail } from './analysis.types';
+// src/models/logAnalysis/initializers.ts
+
+/**
+ * @fileoverview Cung cấp các hàm khởi tạo (initializer functions) để tạo các đối tượng phân tích
+ * với các giá trị mặc định. Điều này giúp đảm bảo tính nhất quán và dễ dàng khởi tạo trạng thái ban đầu
+ * cho các cấu trúc dữ liệu phân tích nhật ký.
+ */
+
+import { OverallAnalysis, ConferenceLogAnalysisResult, ConferenceAnalysisDetail, ConferenceCrawlType } from './analysis.types';
 import { GoogleSearchAnalysis, GoogleSearchHealthData } from './search.types';
 import { GeminiApiAnalysis } from './gemini.types';
 import { PlaywrightAnalysis } from './playwright.types';
 import { BatchProcessingAnalysis } from './batchProcessing.types';
 import { FileOutputAnalysis } from './fileOutput.types';
-import { ValidationStats } from './validation.types';
+import { ValidationStats, DataQualityInsight } from './validation.types';
+import { RequestTimings, LogError } from './common.types'; // Đảm bảo đã import LogError
 
 /**
- * Initializes an empty `OverallAnalysis` object with default values.
- * @returns {OverallAnalysis} A new `OverallAnalysis` instance.
+ * @function getInitialOverallAnalysis
+ * @description Khởi tạo một đối tượng `OverallAnalysis` rỗng với các giá trị mặc định.
+ * @returns {OverallAnalysis} Một thể hiện `OverallAnalysis` mới.
  */
 export const getInitialOverallAnalysis = (): OverallAnalysis => ({
     startTime: null,
@@ -25,8 +34,9 @@ export const getInitialOverallAnalysis = (): OverallAnalysis => ({
 });
 
 /**
- * Initializes an empty `GoogleSearchHealthData` object with default values.
- * @returns {GoogleSearchHealthData} A new `GoogleSearchHealthData` instance.
+ * @function getInitialGoogleSearchHealthData
+ * @description Khởi tạo một đối tượng `GoogleSearchHealthData` rỗng với các giá trị mặc định.
+ * @returns {GoogleSearchHealthData} Một thể hiện `GoogleSearchHealthData` mới.
  */
 export const getInitialGoogleSearchHealthData = (): GoogleSearchHealthData => ({
     rotationsSuccess: 0,
@@ -37,8 +47,9 @@ export const getInitialGoogleSearchHealthData = (): GoogleSearchHealthData => ({
 });
 
 /**
- * Initializes an empty `GoogleSearchAnalysis` object with default values.
- * @returns {GoogleSearchAnalysis} A new `GoogleSearchAnalysis` instance.
+ * @function getInitialGoogleSearchAnalysis
+ * @description Khởi tạo một đối tượng `GoogleSearchAnalysis` rỗng với các giá trị mặc định.
+ * @returns {GoogleSearchAnalysis} Một thể hiện `GoogleSearchAnalysis` mới.
  */
 export const getInitialGoogleSearchAnalysis = (): GoogleSearchAnalysis => ({
     totalRequests: 0,
@@ -62,8 +73,9 @@ export const getInitialGoogleSearchAnalysis = (): GoogleSearchAnalysis => ({
 });
 
 /**
- * Initializes an empty `PlaywrightAnalysis` object with default values.
- * @returns {PlaywrightAnalysis} A new `PlaywrightAnalysis` instance.
+ * @function getInitialPlaywrightAnalysis
+ * @description Khởi tạo một đối tượng `PlaywrightAnalysis` rỗng với các giá trị mặc định.
+ * @returns {PlaywrightAnalysis} Một thể hiện `PlaywrightAnalysis` mới.
  */
 export const getInitialPlaywrightAnalysis = (): PlaywrightAnalysis => ({
     setupAttempts: 0,
@@ -85,8 +97,9 @@ export const getInitialPlaywrightAnalysis = (): PlaywrightAnalysis => ({
 });
 
 /**
- * Initializes an empty `GeminiApiAnalysis` object with default values.
- * @returns {GeminiApiAnalysis} A new `GeminiApiAnalysis` instance.
+ * @function getInitialGeminiApiAnalysis
+ * @description Khởi tạo một đối tượng `GeminiApiAnalysis` rỗng với các giá trị mặc định.
+ * @returns {GeminiApiAnalysis} Một thể hiện `GeminiApiAnalysis` mới.
  */
 export const getInitialGeminiApiAnalysis = (): GeminiApiAnalysis => ({
     // --- Call Stats ---
@@ -119,7 +132,7 @@ export const getInitialGeminiApiAnalysis = (): GeminiApiAnalysis => ({
         preparationFailures: 0,
         notConfiguredWhenNeeded: 0,
     },
-    // fallbackLogic is deprecated but kept for now if old logs might use it.
+    // fallbackLogic is deprecated but kept for compatibility with old logs.
     // For new analysis, primaryModelStats and fallbackModelStats are preferred.
     fallbackLogic: {
         attemptsWithFallbackModel: 0,
@@ -207,7 +220,7 @@ export const getInitialGeminiApiAnalysis = (): GeminiApiAnalysis => ({
     cacheContextAttempts: 0,
     cacheContextCreationSuccess: 0,
     cacheContextRetrievalSuccess: 0,
-    cacheContextMisses: 0, // Kept if still used, though might be derivable
+    cacheContextMisses: 0, // Kept for backward compatibility if old logs might use it.
     cacheContextCreationFailed: 0,
     cacheContextInvalidations: 0,
     cacheContextRetrievalFailures: 0,
@@ -217,7 +230,7 @@ export const getInitialGeminiApiAnalysis = (): GeminiApiAnalysis => ({
     cacheMapWriteAttempts: 0,
     cacheMapWriteSuccessCount: 0,
     cacheMapWriteFailures: 0,
-    cacheManagerCreateFailures: 0, // Kept if still used, though might be part of serviceInitialization.clientInitFailures
+    cacheManagerCreateFailures: 0, // Kept for backward compatibility.
 
     // --- Response Processing ---
     responseProcessingStats: {
@@ -234,18 +247,18 @@ export const getInitialGeminiApiAnalysis = (): GeminiApiAnalysis => ({
     },
 
     // --- Config Errors ---
-    // serviceInitializationFailures is deprecated, use serviceInitialization.failures
-    serviceInitializationFailures: 0, // Mark as @deprecated in type if possible
+    serviceInitializationFailures: 0, // Should be marked as @deprecated in GeminiApiAnalysis type.
     configErrors: {
         modelListMissing: 0,
         apiTypeConfigMissing: 0,
-        // Add other specific config errors here if they are part of the type
+        // Add other specific config errors here if they are part of the type.
     },
 });
 
 /**
- * Initializes an empty `BatchProcessingAnalysis` object with default values.
- * @returns {BatchProcessingAnalysis} A new `BatchProcessingAnalysis` instance.
+ * @function getInitialBatchProcessingAnalysis
+ * @description Khởi tạo một đối tượng `BatchProcessingAnalysis` rỗng với các giá trị mặc định.
+ * @returns {BatchProcessingAnalysis} Một thể hiện `BatchProcessingAnalysis` mới.
  */
 export const getInitialBatchProcessingAnalysis = (): BatchProcessingAnalysis => ({
     totalBatchesAttempted: 0,
@@ -262,8 +275,9 @@ export const getInitialBatchProcessingAnalysis = (): BatchProcessingAnalysis => 
 });
 
 /**
- * Initializes an empty `FileOutputAnalysis` object with default values.
- * @returns {FileOutputAnalysis} A new `FileOutputAnalysis` instance.
+ * @function getInitialFileOutputAnalysis
+ * @description Khởi tạo một đối tượng `FileOutputAnalysis` rỗng với các giá trị mặc định.
+ * @returns {FileOutputAnalysis} Một thể hiện `FileOutputAnalysis` mới.
  */
 export const getInitialFileOutputAnalysis = (): FileOutputAnalysis => ({
     jsonlRecordsSuccessfullyWritten: 0,
@@ -277,8 +291,9 @@ export const getInitialFileOutputAnalysis = (): FileOutputAnalysis => ({
 });
 
 /**
- * Initializes an empty `ValidationStats` object with default values.
- * @returns {ValidationStats} A new `ValidationStats` instance.
+ * @function getInitialValidationStats
+ * @description Khởi tạo một đối tượng `ValidationStats` rỗng với các giá trị mặc định.
+ * @returns {ValidationStats} Một thể hiện `ValidationStats` mới.
  */
 export const getInitialValidationStats = (): ValidationStats => ({
     totalValidationWarnings: 0,
@@ -295,9 +310,10 @@ export const getInitialValidationStats = (): ValidationStats => ({
 });
 
 /**
- * Initializes a complete `ConferenceLogAnalysisResult` object with default values for all its components.
- * @param {string} logFilePath - The path to the log file being analyzed (defaults to "N/A").
- * @returns {ConferenceLogAnalysisResult} A new `ConferenceLogAnalysisResult` instance.
+ * @function getInitialLogAnalysisResult
+ * @description Khởi tạo một đối tượng `ConferenceLogAnalysisResult` hoàn chỉnh với các giá trị mặc định cho tất cả các thành phần của nó.
+ * @param {string} [logFilePath="N/A"] - Đường dẫn đến tệp nhật ký đang được phân tích. Mặc định là "N/A".
+ * @returns {ConferenceLogAnalysisResult} Một thể hiện `ConferenceLogAnalysisResult` mới.
  */
 export const getInitialLogAnalysisResult = (logFilePath: string = "N/A"): ConferenceLogAnalysisResult => ({
     analysisTimestamp: new Date().toISOString(),

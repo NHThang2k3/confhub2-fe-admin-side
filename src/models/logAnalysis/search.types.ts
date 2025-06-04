@@ -1,59 +1,112 @@
-// src/types/search.types.ts
+// src/models/logAnalysis/search.types.ts
 
 /**
- * Defines high-level health metrics related to Google Custom Search API key rotations and usage.
+ * @fileoverview Định nghĩa các kiểu dữ liệu liên quan đến việc phân tích các hoạt động tìm kiếm Google,
+ * bao gồm các chỉ số về tình trạng khóa API và phân tích chi tiết các truy vấn tìm kiếm.
+ */
+
+/**
+ * @interface GoogleSearchHealthData
+ * @description Định nghĩa các chỉ số sức khỏe cấp cao liên quan đến việc xoay vòng và sử dụng khóa API Google Custom Search.
  */
 export interface GoogleSearchHealthData {
-    /** The number of successful API key rotations. */
+    /**
+     * @property {number} rotationsSuccess - Số lần xoay vòng khóa API thành công.
+     */
     rotationsSuccess: number;
-    /** The number of failed API key rotations. */
+    /**
+     * @property {number} rotationsFailed - Số lần xoay vòng khóa API thất bại.
+     */
     rotationsFailed: number;
-    /** The total count of times all configured API keys were exhausted when attempting to get the next available key. */
+    /**
+     * @property {number} allKeysExhaustedOnGetNextKey - Tổng số lần tất cả các khóa API đã cấu hình bị cạn kiệt khi cố gắng lấy khóa tiếp theo.
+     */
     allKeysExhaustedOnGetNextKey: number;
-    /** The total number of times maximum usage limits (across all keys) were reported as reached. */
+    /**
+     * @property {number} maxUsageLimitsReachedTotal - Tổng số lần giới hạn sử dụng tối đa (trên tất cả các khóa) được báo cáo là đã đạt đến.
+     */
     maxUsageLimitsReachedTotal: number;
-    /** The number of successful search queries that returned no items (i.e., empty results). */
+    /**
+     * @property {number} successfulSearchesWithNoItems - Số lượng truy vấn tìm kiếm thành công nhưng không trả về bất kỳ mục nào (tức là kết quả trống).
+     */
     successfulSearchesWithNoItems: number;
 }
 
 /**
- * Comprehensive analysis of Google Search operations.
+ * @interface GoogleSearchAnalysis
+ * @description Phân tích toàn diện các hoạt động tìm kiếm Google.
  */
 export interface GoogleSearchAnalysis {
-    /** Total number of Google Search API requests made. */
+    /**
+     * @property {number} totalRequests - Tổng số yêu cầu API Google Search đã thực hiện.
+     */
     totalRequests: number;
-    /** Number of successful search queries. */
+    /**
+     * @property {number} successfulSearches - Số lượng truy vấn tìm kiếm thành công.
+     */
     successfulSearches: number;
-    /** Number of failed search queries. */
+    /**
+     * @property {number} failedSearches - Số lượng truy vấn tìm kiếm thất bại.
+     */
     failedSearches: number;
-    /** Number of search queries that were skipped. */
+    /**
+     * @property {number} skippedSearches - Số lượng truy vấn tìm kiếm đã bị bỏ qua.
+     */
     skippedSearches: number;
-    /** Number of times general quota errors were encountered (can overlap with keySpecificLimitsReached). */
+    /**
+     * @property {number} quotaErrors - Số lần gặp lỗi quota chung (có thể trùng lặp với `keySpecificLimitsReached`).
+     */
     quotaErrors: number;
-    /** Breakdown of API key usage by key. */
+    /**
+     * @property {Record<string, number>} keyUsage - Phân tích việc sử dụng khóa API theo từng khóa.
+     */
     keyUsage: { [apiKey: string]: number };
-    /** A map of error types to their counts, where keys are normalized error strings. */
+    /**
+     * @property {Record<string, number>} errorsByType - Một bản đồ các loại lỗi với số lượng của chúng, trong đó các khóa là các chuỗi lỗi đã được chuẩn hóa.
+     */
     errorsByType: { [normalizedErrorKey: string]: number };
-    /** Number of issues encountered during search attempts (e.g., malformed URLs). */
+    /**
+     * @property {number} attemptIssues - Số lượng vấn đề gặp phải trong quá trình thử tìm kiếm (ví dụ: URL không đúng định dạng).
+     */
     attemptIssues: number;
-    /** Detailed breakdown of specific attempt issues. */
+    /**
+     * @property {Record<string, number>} attemptIssueDetails - Phân tích chi tiết các vấn đề cụ thể trong quá trình thử.
+     */
     attemptIssueDetails: Record<string, number>;
-    /** Number of times Google API key limits were explicitly reached. */
+    /**
+     * @property {number} apiKeyLimitsReached - Số lần giới hạn khóa API Google được đạt đến một cách rõ ràng.
+     */
     apiKeyLimitsReached: number;
-    /** Breakdown of limits reached for specific API keys. */
+    /**
+     * @property {Record<string, number>} keySpecificLimitsReached - Phân tích giới hạn đã đạt đến cho các khóa API cụ thể.
+     */
     keySpecificLimitsReached: Record<string, number>;
-    /** Total number of API keys provided for Google Search. */
+    /**
+     * @property {number} apiKeysProvidedCount - Tổng số khóa API được cung cấp cho Google Search.
+     */
     apiKeysProvidedCount: number;
-    /** Number of times all keys were exhausted when getting the next key. */
+    /**
+     * @property {number} allKeysExhaustedEvents_GetNextKey - Số lần tất cả các khóa bị cạn kiệt khi lấy khóa tiếp theo.
+     */
     allKeysExhaustedEvents_GetNextKey: number;
-    /** Number of times all keys were exhausted during status checks. */
+    /**
+     * @property {number} allKeysExhaustedEvents_StatusCheck - Số lần tất cả các khóa bị cạn kiệt trong quá trình kiểm tra trạng thái.
+     */
     allKeysExhaustedEvents_StatusCheck: number;
-    /** Number of successful API key rotations. */
+    /**
+     * @property {number} apiKeyRotationsSuccess - Số lần xoay vòng khóa API thành công.
+     */
     apiKeyRotationsSuccess: number;
-    /** Number of failed API key rotations. */
+    /**
+     * @property {number} apiKeyRotationsFailed - Số lần xoay vòng khóa API thất bại.
+     */
     apiKeyRotationsFailed: number;
-    /** Number of successful searches that returned no items. */
+    /**
+     * @property {number} successfulSearchesWithNoItems - Số lượng tìm kiếm thành công nhưng không trả về mục nào.
+     */
     successfulSearchesWithNoItems: number;
-    /** Number of times malformed result items were received from Google CSE. */
+    /**
+     * @property {number} malformedResultItems - Số lần nhận được các mục kết quả không đúng định dạng từ Google CSE.
+     */
     malformedResultItems: number;
 }

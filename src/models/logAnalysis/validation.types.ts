@@ -1,69 +1,111 @@
-// src/types/validation.types.ts
+// src/models/logAnalysis/validation.types.ts
 
 /**
- * Provides an insight into data quality issues or transformations during processing.
- * Used for logging and reporting potential data discrepancies.
+ * @fileoverview Định nghĩa các kiểu dữ liệu liên quan đến việc xác thực và chuẩn hóa dữ liệu,
+ * bao gồm các thông tin chi tiết về chất lượng dữ liệu và thống kê tổng hợp.
+ */
+
+/**
+ * @interface DataQualityInsight
+ * @description Cung cấp thông tin chi tiết về các vấn đề chất lượng dữ liệu hoặc các phép biến đổi trong quá trình xử lý.
+ * Được sử dụng để ghi nhật ký và báo cáo các sai lệch dữ liệu tiềm ẩn.
  */
 export interface DataQualityInsight {
-    /** ISO timestamp when the insight was generated. */
+    /**
+     * @property {string} timestamp - Dấu thời gian ISO khi thông tin chi tiết được tạo.
+     */
     timestamp: string;
-    /** The name of the field affected by the insight (e.g., 'location', 'conferenceDates'). */
+    /**
+     * @property {string} field - Tên của trường bị ảnh hưởng bởi thông tin chi tiết (ví dụ: 'location', 'conferenceDates').
+     */
     field: string;
-    /** Optional: The original value of the field before any changes or warnings. */
+    /**
+     * @property {any} [originalValue] - Tùy chọn: Giá trị gốc của trường trước bất kỳ thay đổi hoặc cảnh báo nào.
+     */
     originalValue?: any;
-    /** The current value of the field (e.g., after normalization or the value causing the warning). */
+    /**
+     * @property {any} currentValue - Giá trị hiện tại của trường (ví dụ: sau khi chuẩn hóa hoặc giá trị gây ra cảnh báo).
+     */
     currentValue: any;
     /**
-     * The type of insight.
-     * - 'ValidationWarning': Data did not meet expected criteria, but was kept or loosely processed.
-     * - 'NormalizationApplied': Data was transformed or standardized.
-     * - 'DataCorrection': Data was actively corrected based on specific rules.
+     * @property {'ValidationWarning' | 'NormalizationApplied' | 'DataCorrection'} insightType - Loại thông tin chi tiết.
+     * - 'ValidationWarning': Dữ liệu không đáp ứng tiêu chí mong đợi, nhưng vẫn được giữ lại hoặc xử lý một cách lỏng lẻo.
+     * - 'NormalizationApplied': Dữ liệu đã được chuyển đổi hoặc chuẩn hóa.
+     * - 'DataCorrection': Dữ liệu đã được sửa chữa chủ động dựa trên các quy tắc cụ thể.
      */
     insightType: 'ValidationWarning' | 'NormalizationApplied' | 'DataCorrection';
-    /** Optional: Severity of the insight, primarily for 'ValidationWarning'. */
+    /**
+     * @property {'Low' | 'Medium' | 'High'} [severity] - Tùy chọn: Mức độ nghiêm trọng của thông tin chi tiết, chủ yếu dành cho 'ValidationWarning'.
+     */
     severity?: 'Low' | 'Medium' | 'High';
-    /** A detailed description of the insight. */
+    /**
+     * @property {string} message - Mô tả chi tiết của thông tin chi tiết.
+     */
     message: string;
-    /** Optional: Additional details about the insight. */
+    /**
+     * @property {object} [details] - Tùy chọn: Các chi tiết bổ sung về thông tin chi tiết.
+     * @property {string} [details.actionTaken] - Ví dụ: "KeptAsIs", "NormalizedToDefault", "RemovedCharacters".
+     * @property {any} [details.normalizedTo] - Giá trị sau khi chuẩn hóa, nếu `insightType` là 'NormalizationApplied'.
+     * @property {string} [details.ruleViolated] - Quy tắc cụ thể đã bị vi phạm, nếu áp dụng (ví dụ: "YEAR_REGEX", "VALID_CONTINENTS").
+     */
     details?: {
-        /** E.g., "KeptAsIs", "NormalizedToDefault", "RemovedCharacters". */
         actionTaken?: string;
-        /** The value after normalization, if `insightType` is 'NormalizationApplied'. */
         normalizedTo?: any;
-        /** The specific rule that was violated, if applicable (e.g., "YEAR_REGEX", "VALID_CONTINENTS"). */
         ruleViolated?: string;
     };
 }
 
 /**
- * Aggregated statistics on data validation and normalization.
+ * @interface ValidationStats
+ * @description Thống kê tổng hợp về xác thực và chuẩn hóa dữ liệu.
  */
 export interface ValidationStats {
     // --- Validation Warnings ---
-    /** Total number of validation warnings recorded. */
+    /**
+     * @property {number} totalValidationWarnings - Tổng số cảnh báo xác thực đã ghi.
+     */
     totalValidationWarnings: number;
-    /** Breakdown of validation warnings by affected field name. */
+    /**
+     * @property {Record<string, number>} warningsByField - Phân tích các cảnh báo xác thực theo tên trường bị ảnh hưởng.
+     */
     warningsByField: { [fieldName: string]: number };
-    /** Breakdown of validation warnings by severity level. */
+    /**
+     * @property {object} warningsBySeverity - Phân tích các cảnh báo xác thực theo mức độ nghiêm trọng.
+     * @property {number} warningsBySeverity.Low - Số lượng cảnh báo mức độ thấp.
+     * @property {number} warningsBySeverity.Medium - Số lượng cảnh báo mức độ trung bình.
+     * @property {number} warningsBySeverity.High - Số lượng cảnh báo mức độ cao.
+     */
     warningsBySeverity: {
         Low: number;
         Medium: number;
         High: number;
     };
-    /** Breakdown of validation warnings by their specific message/type. */
+    /**
+     * @property {Record<string, number>} warningsByInsightMessage - Phân tích các cảnh báo xác thực theo thông báo/loại cụ thể của chúng.
+     */
     warningsByInsightMessage: { [message: string]: number };
 
     // --- Normalizations ---
-    /** Total number of data normalizations applied. */
+    /**
+     * @property {number} totalNormalizationsApplied - Tổng số lần chuẩn hóa dữ liệu đã áp dụng.
+     */
     totalNormalizationsApplied: number;
-    /** Breakdown of normalizations by affected field name. */
+    /**
+     * @property {Record<string, number>} normalizationsByField - Phân tích các chuẩn hóa theo tên trường bị ảnh hưởng.
+     */
     normalizationsByField: { [fieldName: string]: number };
-    /** Breakdown of normalizations by the reason/message for normalization. */
+    /**
+     * @property {Record<string, number>} normalizationsByReason - Phân tích các chuẩn hóa theo lý do/thông báo chuẩn hóa.
+     */
     normalizationsByReason: { [reasonMessage: string]: number };
 
     // --- Data Corrections (Optional) ---
-    /** Optional: Total number of data corrections applied. */
+    /**
+     * @property {number} [totalDataCorrections] - Tùy chọn: Tổng số lần sửa chữa dữ liệu đã áp dụng.
+     */
     totalDataCorrections?: number;
-    /** Optional: Breakdown of data corrections by affected field name. */
+    /**
+     * @property {Record<string, number>} [correctionsByField] - Tùy chọn: Phân tích các sửa chữa dữ liệu theo tên trường bị ảnh hưởng.
+     */
     correctionsByField?: { [fieldName: string]: number };
 }

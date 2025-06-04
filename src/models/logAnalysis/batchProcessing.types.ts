@@ -1,29 +1,56 @@
 // src/types/batchProcessing.types.ts
 
 /**
- * Analysis of batch processing operations.
+ * @fileoverview Định nghĩa các kiểu dữ liệu cho phân tích các hoạt động xử lý theo lô (batch processing).
+ */
+
+/**
+ * @interface BatchProcessingAnalysis
+ * @description Phân tích các hoạt động xử lý theo lô.
  */
 export interface BatchProcessingAnalysis {
-    /** Total number of batches attempted. */
+    /**
+     * @property {number} totalBatchesAttempted - Tổng số lô đã được thử xử lý.
+     */
     totalBatchesAttempted: number;
-    /** Number of batches that completed successfully. */
+    /**
+     * @property {number} successfulBatches - Số lượng lô đã hoàn thành thành công.
+     */
     successfulBatches: number;
-    /** Number of batches that failed. */
+    /**
+     * @property {number} failedBatches - Số lượng lô đã thất bại.
+     */
     failedBatches: number;
-    /** Number of failures related to API calls within batches. */
+    /**
+     * @property {number} apiFailures - Số lượng lỗi liên quan đến các cuộc gọi API trong các lô.
+     */
     apiFailures: number;
-    /** Number of failures related to file system operations within batches. */
+    /**
+     * @property {number} fileSystemFailures - Số lượng lỗi liên quan đến các hoạt động hệ thống tệp trong các lô.
+     */
     fileSystemFailures: number;
-    /** Number of times processing was rejected due to logic (e.g., invalid input). */
+    /**
+     * @property {number} logicRejections - Số lần xử lý bị từ chối do lỗi logic (ví dụ: đầu vào không hợp lệ).
+     */
     logicRejections: number;
-    /** Aggregated count of results across all processed batches (null if no results). */
+    /**
+     * @property {number | null} aggregatedResultsCount - Tổng số kết quả trên tất cả các lô đã xử lý (null nếu không có kết quả).
+     */
     aggregatedResultsCount: number | null;
-    /** Number of failures in the 'determineLinks' API stage. */
+    /**
+     * @property {number} determineApiFailures - Số lượng lỗi trong giai đoạn API 'determineLinks'.
+     */
     determineApiFailures: number;
-    /** Number of failures in the 'extractInfo' API stage. */
+    /**
+     * @property {number} extractApiFailures - Số lượng lỗi trong giai đoạn API 'extractInfo'.
+     */
     extractApiFailures: number;
-    /** Number of failures in the 'extractCfp' API stage. */
+    /**
+     * @property {number} cfpApiFailures - Số lượng lỗi trong giai đoạn API 'extractCfp'.
+     */
     cfpApiFailures: number;
-    /** Number of times API responses failed to parse. */
+    /**
+     * @property {number} apiResponseParseFailures - Số lần phản hồi API không thể phân tích cú pháp.
+     */
     apiResponseParseFailures: number;
 }
