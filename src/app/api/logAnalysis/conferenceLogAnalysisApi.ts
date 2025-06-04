@@ -4,15 +4,15 @@ import { ConferenceLogAnalysisResult } from '../../../models/logAnalysis';
 const API_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 
 export const fetchLogAnalysisData = async (
-    filterStartTime?: number, // Milliseconds
-    filterEndTime?: number,   // Milliseconds
+    // filterStartTime?: number, // Milliseconds
+    // filterEndTime?: number,   // Milliseconds
     requestId?: string // <<< NEW
 
 ): Promise<ConferenceLogAnalysisResult> => {
     // Xây dựng URL với các tham số query nếu chúng tồn tại
     const url = new URL(`${API_BASE_URL}/api/v1/logs/analysis/conference/latest`);
-    if (filterStartTime !== undefined) { url.searchParams.append('filterStartTime', filterStartTime.toString()); }
-    if (filterEndTime !== undefined) { url.searchParams.append('filterEndTime', filterEndTime.toString()); }
+    // if (filterStartTime !== undefined) { url.searchParams.append('filterStartTime', filterStartTime.toString()); }
+    // if (filterEndTime !== undefined) { url.searchParams.append('filterEndTime', filterEndTime.toString()); }
     if (requestId !== undefined) url.searchParams.append('requestId', requestId); // <<< NEW
 
 
