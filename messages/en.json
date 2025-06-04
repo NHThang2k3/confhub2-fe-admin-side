@@ -280,7 +280,10 @@
       },
       "editButton": "Edit",
       "deleteButton": "Delete",
-      "deleteConfirmation": "Are you sure you want to delete this history?",
+      "deleteConfirmation": "Delete Conference History",
+      "deleteConfirmationMessage": "Are you sure you want to delete the history for {title}? This action cannot be undone.",
+      "deleteSuccess": "Successfully deleted conference history",
+      "deleteError": "Failed to delete conference history",
       "editForm": {
         "loading": "Loading...",
         "title": "Edit Conference History",
@@ -1118,5 +1121,23 @@
     "unban": "Unban",
     "ban": "Ban"
   },
-  "Accounts": "Accounts"
+  "Accounts": "Accounts",
+  "ConferenceEvaluateUploader": {
+    "title": "Import Conference Evaluations",
+    "description": "Upload a CSV file containing conference evaluation data. The file should follow the required format.",
+    "fileLabel": "Evaluation File",
+    "chooseFile": "Choose CSV File",
+    "changeFile": "Change File",
+    "uploading": "Uploading...",
+    "success": {
+      "title": "Success",
+      "fileImported": "File has been successfully imported"
+    },
+    "error": {
+      "title": "Error",
+      "invalidFileType": "Invalid file type",
+      "pleaseSelectCsv": "Please select a CSV file",
+      "uploadFailed": "Failed to upload file. Please try again."
+    }
+  }
 }

@@ -15,6 +15,7 @@ import axios from 'axios';
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { DeleteConfirmationDialog } from './DeleteConfirmationDialog';
 
 // --- Interfaces (Giữ lại các interface này trong file Conferences.tsx) ---
 interface Conference {
@@ -372,7 +373,7 @@ const FilterSection = ({
   }
 
   return (
-    <div className="mb-4 p-4 bg-white-pure rounded-lg shadow-sm">
+    <div className="relative mb-4 p-4 bg-white-pure rounded-lg shadow-sm">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-lg font-semibold">{t('title')}</h2>
         <button
@@ -499,6 +500,35 @@ export default function Conferences({ locale }: { locale: string }) {
     researchFields: '',
     rank: ''
   });
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [selectedOrganization, setSelectedOrganization] = useState<any>(null);
+
+  // Add new state for conference history
+  const [conferenceHistory, setConferenceHistory] = useState<Organization[]>([]);
+  // Add loading state for history
+  const [historyLoading, setHistoryLoading] = useState(false);
+
+  // Add function to fetch conference history
+  const fetchConferenceHistory = useCallback(async (conferenceId: string) => {
+    try {
+      setHistoryLoading(true);
+      const response = await axios.get(
+        `${DATA_API_URL}/api/v1/admin/conferences/conference/${conferenceId}/history`
+      );
+      setConferenceHistory(response.data);
+    } catch (error) {
+      console.error('Error fetching conference history:', error);
+    } finally {
+      setHistoryLoading(false);
+    }
+  }, []);
+
+  // Update the modal visibility handler to fetch history
+  const handleViewHistory = useCallback((conference: Conference) => {
+    setSelectedConference(conference);
+    setIsModalVisible(true);
+    fetchConferenceHistory(conference.id);
+  }, [fetchConferenceHistory]);
 
   const columnDefs: ColDef[] = useMemo(() => [
     {
@@ -588,16 +618,13 @@ export default function Conferences({ locale }: { locale: string }) {
       cellRenderer: (params: ICellRendererParams) => (
         <button
           className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
-          onClick={() => {
-            setSelectedConference(params.data);
-            setIsModalVisible(true);
-          }}
+          onClick={() => handleViewHistory(params.data)}
         >
           {t('viewHistoryButton')}
         </button>
       ),
     },
-  ], [t]);
+  ], [t, handleViewHistory]);
 
   const defaultColDef = useMemo(() => ({
     sortable: true,
@@ -680,16 +707,9 @@ export default function Conferences({ locale }: { locale: string }) {
             {t('modal.editButton')}
           </Link>
           <button
-            onClick={async () => {
-              if (window.confirm(t('modal.deleteConfirmation'))) {
-                try {
-                  await axios.delete(`${DATA_API_URL}/api/v1/admin/conferences/history/${organization.id}`);
-                  await fetchConferences();
-                  setIsModalVisible(false);
-                } catch (error) {
-                  console.error('Error deleting organization history:', error);
-                }
-              }
+            onClick={() => {
+              setSelectedOrganization(organization);
+              setDeleteDialogOpen(true);
             }}
             className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
           >
@@ -755,7 +775,7 @@ export default function Conferences({ locale }: { locale: string }) {
         </div>
       </div>
     </div>
-  ), [t, router]);
+  ), [t]);
 
   return (
     <div className="p-6">
@@ -796,23 +816,64 @@ export default function Conferences({ locale }: { locale: string }) {
       />
 
       {isModalVisible && selectedConference && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white-pure rounded-lg p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-center mb-4 sticky top-0 bg-white-pure pb-4">
+        <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-[100] transition-all duration-300" style={{ 
+          left: '240px',
+          width: 'calc(100% - 240px)',
+          transform: 'translateX(0)'
+        }}>
+          <div className="bg-white-pure rounded-lg p-6 w-full max-w-4xl max-h-[calc(100vh-8rem)] overflow-y-auto relative">
+            <div className="flex justify-between items-center mb-4 sticky top-0 bg-white-pure pb-4 z-10 border-b">
               <h2 className="text-xl font-bold">
                 {t('modal.historyTitle', { conferenceTitle: selectedConference.title })}
               </h2>
               <button
                 onClick={() => setIsModalVisible(false)}
-                className=" p-2"
+                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
               >
                 {tCommon('close')}
               </button>
             </div>
-            {selectedConference.organizationHistory.map(renderOrganizationHistory)}
+            <div className="mt-4">
+              {historyLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+                  <span className="ml-2">{tCommon('loading')}</span>
+                </div>
+              ) : conferenceHistory.length === 0 ? (
+                <div className="text-center py-8 text-gray-500">
+                  {t('modal.noHistory')}
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {conferenceHistory.map(renderOrganizationHistory)}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}
+
+      <DeleteConfirmationDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        title={selectedOrganization?.title || ''}
+        onConfirm={async () => {
+          if (selectedOrganization && selectedConference) {
+            try {
+              setHistoryLoading(true);
+              await axios.delete(`${DATA_API_URL}/api/v1/admin/conferences/history/${selectedOrganization.id}`);
+              // Refetch the conference history after successful deletion
+              await fetchConferenceHistory(selectedConference.id);
+              // Close the delete dialog
+              setDeleteDialogOpen(false);
+            } catch (error) {
+              console.error('Error deleting conference history:', error);
+            } finally {
+              setHistoryLoading(false);
+            }
+          }
+        }}
+      />
     </div>
   );
 }
