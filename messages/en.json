@@ -11,6 +11,7 @@
   "By_continuing_you_agree_to_our_Terms_of_Service_and_Privacy_Policy": "By continuing you agree to our Terms of Service and Privacy Policy",
   "ModerationPage": {
     "AuthStatus_Loading": "Loading authentication status...",
+    "Error_FailedToLoadDataGeneric": "Failed to load data",
     "AuthStatus_Redirecting": "Redirecting to login..."
   },
   "Moderation": {
