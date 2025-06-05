@@ -1182,7 +1182,9 @@
     "createdAt": "Created At",
     "actions": "Actions",
     "unban": "Unban",
-    "ban": "Ban"
+    "ban": "Ban",
+    "pageInfo": "Page {current} of {total}",
+    "noUsersFound": "No users found."
   },
   "Accounts": "Accounts",
   "ConferenceEvaluateUploader": {
