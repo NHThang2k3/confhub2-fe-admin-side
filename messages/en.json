@@ -1132,6 +1132,7 @@
       "successGeneric": "Deletion process completed. Check details for status of each request."
     },
     "noData": {
+      "noRequestsMatchingFiltersOrPeriod": "No requests match the current filters or time period.",
       "forRequestId": "No data found for Request ID: \"{{requestId}}\". Please check the ID or adjust time filters.",
       "noRequestsForPeriod": "No log requests found for the selected time period.",
       "noResultsForPeriod": "No analysis results available for the selected time period.",

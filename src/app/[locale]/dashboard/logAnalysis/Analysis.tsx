@@ -259,6 +259,57 @@ const Analysis: React.FC = () => {
     }, [currentData, timeFilterOption, filterStartTime, filterEndTime]);
 
 
+    const actuallyAnalyzedRequestsData = useMemo(() => {
+        if (!currentData || !currentData.requests || !currentData.analyzedRequestIds) {
+            return null;
+        }
+
+        // Chỉ giữ lại các request không có status 'NoRequestsAnalyzed'
+        // HOẶC nếu có status 'NoRequestsAnalyzed' nhưng không phải do filter thời gian
+        // (ví dụ: file log rỗng thực sự, không phải do filter)
+        const filteredIds = currentData.analyzedRequestIds.filter(id => {
+            const req = currentData.requests[id];
+            if (!req) return false;
+            if (req.status !== 'NoRequestsAnalyzed') {
+                return true; // Luôn giữ lại nếu không phải 'NoRequestsAnalyzed'
+            }
+            // Nếu là 'NoRequestsAnalyzed', chỉ giữ lại nếu KHÔNG phải do filter thời gian
+            // (tức là không có lỗi "matching filters")
+            // Điều này cho phép hiển thị request "NoRequestsAnalyzed" nếu nó thực sự không có log,
+            // ngay cả khi có filter thời gian.
+            const isFilteredByTime = req.errorMessages?.some(msg => msg.toLowerCase().includes('matching filters'));
+            return !isFilteredByTime;
+        });
+
+        if (filteredIds.length === 0 && currentData.analyzedRequestIds.length > 0 && allRequestsFilteredOutDueToTime) {
+            // Trường hợp đặc biệt: tất cả đều bị filter loại bỏ, trả về null để NoDataDisplay xử lý
+            return null;
+        }
+
+        // Nếu không có filter thời gian, hoặc có request được phân tích, trả về toàn bộ data
+        // để LogRequestsList tự xử lý (nó sẽ hiển thị cả "NoRequestsAnalyzed" nếu chúng không phải do filter)
+        const hasTimeFilterApplied = timeFilterOption !== 'latest' || filterStartTime !== undefined || filterEndTime !== undefined;
+        if (!hasTimeFilterApplied) {
+            return currentData; // Trả về toàn bộ data nếu không có filter thời gian
+        }
+
+        // Nếu có filter thời gian, chỉ trả về những request thực sự được phân tích
+        // hoặc những request "NoRequestsAnalyzed" không phải do filter
+        const newRequestsMap: typeof currentData.requests = {};
+        filteredIds.forEach(id => {
+            if (currentData.requests[id]) {
+                newRequestsMap[id] = currentData.requests[id];
+            }
+        });
+
+        return {
+            ...currentData,
+            requests: newRequestsMap,
+            analyzedRequestIds: filteredIds,
+        } as LogAnalysisResultUnion;
+
+    }, [currentData, allRequestsFilteredOutDueToTime, timeFilterOption, filterStartTime, filterEndTime]);
+
     const hasOverallDataForDisplay = useMemo(() => {
         if (!currentData?.overall) return false;
         if (activeCrawler === 'conference') {
@@ -295,11 +346,13 @@ const Analysis: React.FC = () => {
             return t('noData.forRequestId', { requestId: activeRequestIdFilter });
         }
         // *** SỬA ĐỔI Ở ĐÂY ***
-        if (isListView && allRequestsFilteredOutDueToTime) {
-            return t('noData.allRequestsFilteredByTime'); // Thêm key translation này
+        if (isListView && allRequestsFilteredOutDueToTime) { // Điều kiện này vẫn quan trọng
+            return t('noData.allRequestsFilteredByTime');
         }
-        if (isListView && (!currentData?.analyzedRequestIds || currentData.analyzedRequestIds.length === 0)) {
-            // Trường hợp này có thể bao gồm khi BE trả về analyzedRequestIds rỗng (ví dụ: không có file log nào)
+        if (isListView && (!actuallyAnalyzedRequestsData?.analyzedRequestIds || actuallyAnalyzedRequestsData.analyzedRequestIds.length === 0)) {
+            if (timeFilterOption !== 'latest' || filterStartTime || filterEndTime) {
+                return t('noData.noRequestsMatchingFiltersOrPeriod'); // Thông báo cụ thể hơn
+            }
             return t('noData.noRequestsForPeriod');
         }
         // Giữ nguyên các trường hợp khác
@@ -310,7 +363,7 @@ const Analysis: React.FC = () => {
             return t('noData.genericNoResults');
         }
         return t('noData.noSpecificData');
-    }, [isDetailView, activeRequestIdFilter, isListView, currentData, hasOverallDataForDisplay, loading, timeFilterOption, t, allRequestsFilteredOutDueToTime]);
+    }, [isDetailView, activeRequestIdFilter, isListView, actuallyAnalyzedRequestsData, hasOverallDataForDisplay, loading, timeFilterOption, t, allRequestsFilteredOutDueToTime, filterStartTime, filterEndTime]);
 
 
 
@@ -457,12 +510,12 @@ const Analysis: React.FC = () => {
                 overallAnalysisErrorMessage={currentData?.errorMessage}
             />
 
-            {/* *** SỬA ĐỔI LOGIC HIỂN THỊ CHO LogRequestsList *** */}
-            {isListView && currentData && !allRequestsFilteredOutDueToTime && ( // <<<< THÊM ĐIỀU KIỆN NÀY
+            {/* SỬ DỤNG actuallyAnalyzedRequestsData CHO LogRequestsList */}
+            {isListView && actuallyAnalyzedRequestsData && actuallyAnalyzedRequestsData.analyzedRequestIds.length > 0 && (
                 <LogRequestsList
                     isExpanded={isLogRequestsExpanded}
                     onToggle={handleToggleLogRequests}
-                    data={currentData}
+                    data={actuallyAnalyzedRequestsData} // <<<< THAY ĐỔI Ở ĐÂY
                     onSelectRequest={handleSelectRequestFromList} // For viewing details
                     formatDateTime={formatDateTime}
                     getStatusChipClass={getStatusChipClass}
@@ -473,7 +526,7 @@ const Analysis: React.FC = () => {
                     crawlerType={activeCrawler}
                     currentPage={currentPage}
                     onPageChange={handlePageChange}
-                    totalRequestCount={currentData.analyzedRequestIds ? currentData.analyzedRequestIds.length : 0}
+                    totalRequestCount={actuallyAnalyzedRequestsData.analyzedRequestIds.length}
                     sortConfig={sortConfig}
                     onSort={handleSort}
                     // Selection and Deletion props
@@ -485,10 +538,11 @@ const Analysis: React.FC = () => {
                 />
             )}
 
-            {/* Hiển thị NoDataDisplay nếu tất cả request bị filter loại bỏ */}
-            {isListView && currentData && allRequestsFilteredOutDueToTime && (
+            {/* Hiển thị NoDataDisplay nếu không có request nào được phân tích thực sự HOẶC tất cả bị filter */}
+            {isListView && (!actuallyAnalyzedRequestsData || actuallyAnalyzedRequestsData.analyzedRequestIds.length === 0) && currentData && (
                 <NoDataDisplay message={getNoDataFoundMessage()} />
             )}
+
 
             {isDetailView && currentData && (
                 <RequestDetailView
