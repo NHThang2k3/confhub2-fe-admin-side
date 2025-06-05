@@ -1,29 +1,22 @@
-// src/app/[locale]/dashboard/logAnalysis/Analysis.tsx
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
     useLogAnalysisData,
-    CrawlerType, // Import CrawlerType từ hook
-    LogAnalysisResultUnion // Import LogAnalysisResultUnion từ hook
-} from '../../../../hooks/logAnalysis/useLogAnalysisData'; // Adjust path
+    CrawlerType,
+    LogAnalysisResultUnion
+} from '../../../../hooks/logAnalysis/useLogAnalysisData';
 import {
-    FaExclamationTriangle, FaSyncAlt, FaBookOpen, FaUsers // Icons for tabs
+    FaExclamationTriangle, FaSyncAlt, FaBookOpen, FaUsers
 } from 'react-icons/fa';
 import { useTranslations } from 'next-intl';
 
 import AnalysisHeader from './analysis/AnalysisHeader';
-
-// Import types từ models (nếu chưa có trong hook)
 import { ConferenceLogAnalysisResult } from '@/src/models/logAnalysis';
 import { JournalLogAnalysisResult } from '@/src/models/logAnalysis/logAnalysisJournal.types';
-
-// New Child Components
 import LogRequestsList from './analysis/LogRequestsList';
 import RequestDetailView from './analysis/RequestDetailView';
 import LoadingScreen from './analysis/LoadingScreen';
 import ErrorScreen from './analysis/ErrorScreen';
 import NoDataDisplay from './analysis/NoDataDisplay';
-
-// formatDateTime và getStatusChipClass giữ nguyên như bạn đã cung cấp
 
 export const formatDateTime = (isoString: string | null | undefined): string => {
     if (!isoString) {
@@ -61,7 +54,7 @@ export const getStatusChipClass = (status: string | undefined | null): string =>
         case 'processing':
             return 'bg-blue-100 text-blue-700';
         case 'partiallycompleted':
-        case 'completedwitherrors': // Thêm completedwitherrors
+        case 'completedwitherrors':
             return 'bg-yellow-100 text-yellow-700';
         case 'unknown':
             return 'bg-gray-200 text-gray-600';
@@ -81,10 +74,17 @@ const Analysis: React.FC = () => {
     const [activeRequestIdFilter, setActiveRequestIdFilter] = useState<string | undefined>(undefined);
 
     const [isSummaryExpanded, setIsSummaryExpanded] = useState(false);
-    // *** THAY ĐỔI: activeCrawler được quản lý ở đây ***
     const [activeCrawler, setActiveCrawler] = useState<CrawlerType>('conference');
-    // const [isCrawlerSectionExpanded, setIsCrawlerSectionExpanded] = useState(false); // Có thể không cần nữa nếu dùng tabs
     const [isLogRequestsExpanded, setIsLogRequestsExpanded] = useState(true);
+
+    // *** ADD CURRENT PAGE STATE FOR PAGINATION ***
+    const [currentPage, setCurrentPage] = useState(1);
+
+    // *** RESET CURRENT PAGE WHEN FILTERS OR CRAWLER TYPE CHANGE ***
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [timeFilterOption, activeRequestIdFilter, activeCrawler]);
+
 
     useEffect(() => {
         const now = Date.now();
@@ -102,13 +102,20 @@ const Analysis: React.FC = () => {
         setFilterEndTime(end);
     }, [timeFilterOption]);
 
-    // *** THAY ĐỔI: Truyền activeCrawler vào useLogAnalysisData ***
     const { data, loading, error, isConnectedToSocket, refetchData } = useLogAnalysisData(
-        activeCrawler, // Truyền crawler type hiện tại
+        activeCrawler,
         filterStartTime,
         filterEndTime,
         activeRequestIdFilter
     );
+
+    // *** CALLBACK FOR PAGE CHANGE ***
+    const handlePageChange = (page: number) => {
+        setCurrentPage(page);
+        // Optionally, scroll to top of the list or table
+        // document.getElementById('log-requests-content')?.scrollIntoView({ behavior: 'smooth' });
+    };
+
 
     const handleTimeFilterChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
         setTimeFilterOption(event.target.value);
@@ -130,10 +137,9 @@ const Analysis: React.FC = () => {
     };
 
     const handleToggleSummary = () => setIsSummaryExpanded(prev => !prev);
-    // const handleToggleCrawlerSection = () => setIsCrawlerSectionExpanded(prev => !prev); // Không cần nữa
     const handleToggleLogRequests = () => setIsLogRequestsExpanded(prev => !prev);
 
-    // *** THAY ĐỔI: activeCrawler được dùng để xác định view và data type ***
+
     const isDetailView = !!activeRequestIdFilter && !!data && data.filterRequestId === activeRequestIdFilter;
     const isListView = !activeRequestIdFilter && !!data && !data.filterRequestId;
 
@@ -143,12 +149,10 @@ const Analysis: React.FC = () => {
         if (!currentData?.overall) return false;
         if (activeCrawler === 'conference') {
             const confData = currentData as ConferenceLogAnalysisResult;
-            // Điều kiện cho conference, ví dụ:
             return (confData.overall.processedConferencesCount || 0) > 0 || (confData.overall.totalConferencesInput || 0) > 0;
         }
         if (activeCrawler === 'journal') {
             const journalData = currentData as JournalLogAnalysisResult;
-            // Điều kiện cho journal, ví dụ:
             return (journalData.overall.totalJournalsProcessed || 0) > 0 || (journalData.overall.totalJournalsInput || 0) > 0;
         }
         return false;
@@ -183,7 +187,6 @@ const Analysis: React.FC = () => {
         return t('noData.noSpecificData');
     }, [isDetailView, activeRequestIdFilter, isListView, currentData, hasOverallDataForDisplay, loading, timeFilterOption, t]);
 
-    // UI chọn Crawler Type
     const CrawlerTypeSelector = () => (
         <div className="mb-6 flex justify-center">
             <div className="inline-flex rounded-md shadow-sm bg-white border border-gray-300" role="group">
@@ -226,7 +229,7 @@ const Analysis: React.FC = () => {
                     setRequestIdFilterInput={setRequestIdFilterInput}
                     applyRequestIdFilter={applyRequestIdFilterFromInput}
                     clearRequestIdFilter={clearActiveFilterAndGoToList}
-                    crawlerType={activeCrawler} // Truyền crawlerType
+                    crawlerType={activeCrawler}
                 />
             </LoadingScreen>
         );
@@ -244,20 +247,20 @@ const Analysis: React.FC = () => {
                     setRequestIdFilterInput={setRequestIdFilterInput}
                     applyRequestIdFilter={applyRequestIdFilterFromInput}
                     clearRequestIdFilter={clearActiveFilterAndGoToList}
-                    crawlerType={activeCrawler} // Truyền crawlerType
+                    crawlerType={activeCrawler}
                 />
             </ErrorScreen>
         );
     }
 
     return (
-        <div className="p-2 bg-gradient-to-br from-gray-100 to-blue-50 min-h-screen font-sans space-y-6">
-            <CrawlerTypeSelector /> {/* Thêm UI chọn crawler type */}
+        <div className="bg-gradient-to-br from-gray-100 to-blue-50 min-h-screen font-sans space-y-6">
+            <CrawlerTypeSelector />
             <AnalysisHeader
                 loading={loading && !!currentData}
                 error={(error && currentData) ? error : null}
                 isConnected={isConnectedToSocket}
-                data={currentData} // Truyền currentData (union type)
+                data={currentData}
                 timeFilterOption={timeFilterOption}
                 handleFilterChange={handleTimeFilterChange}
                 refetchData={refetchData}
@@ -265,14 +268,14 @@ const Analysis: React.FC = () => {
                 setRequestIdFilterInput={setRequestIdFilterInput}
                 applyRequestIdFilter={applyRequestIdFilterFromInput}
                 clearRequestIdFilter={clearActiveFilterAndGoToList}
-                crawlerType={activeCrawler} // Truyền crawlerType
+                crawlerType={activeCrawler}
             />
 
             {isListView && currentData && (
                 <LogRequestsList
                     isExpanded={isLogRequestsExpanded}
                     onToggle={handleToggleLogRequests}
-                    data={currentData} // Truyền currentData
+                    data={currentData}
                     onSelectRequest={handleSelectRequestFromList}
                     formatDateTime={formatDateTime}
                     getStatusChipClass={getStatusChipClass}
@@ -280,26 +283,29 @@ const Analysis: React.FC = () => {
                     onToggleSummaryOverall={handleToggleSummary}
                     getNoDataMessage={getNoDataFoundMessage}
                     hasOverallDataForDisplay={hasOverallDataForDisplay}
-                    crawlerType={activeCrawler} // Truyền crawlerType cho OverallSummary
+                    crawlerType={activeCrawler}
+                    currentPage={currentPage}
+                    onPageChange={handlePageChange}
+                    // *** THÊM PROP totalRequestCount ***
+                    totalRequestCount={currentData.analyzedRequestIds ? currentData.analyzedRequestIds.length : 0}
                 />
             )}
 
             {isDetailView && currentData && (
                 <RequestDetailView
-                    data={currentData} // Truyền currentData
+                    data={currentData}
                     activeRequestIdFilter={activeRequestIdFilter}
                     onClearFilter={clearActiveFilterAndGoToList}
                     isSummaryExpandedOverall={isSummaryExpanded}
                     onToggleSummaryOverall={handleToggleSummary}
                     getNoDataMessage={getNoDataFoundMessage}
                     hasOverallDataForDisplay={hasOverallDataForDisplay}
-                    hasItemDetailsForDisplay={hasItemDetailsForDisplay} // Sử dụng hasItemDetailsForDisplay
+                    hasItemDetailsForDisplay={hasItemDetailsForDisplay}
                     loading={loading}
-                    activeCrawler={activeCrawler} // Truyền activeCrawler
+                    activeCrawler={activeCrawler}
                 />
             )}
 
-            {/* Fallback No Data / Status Messages */}
             {!loading && currentData === null && !error && (
                 <NoDataDisplay message={getNoDataFoundMessage()} />
             )}
@@ -310,7 +316,6 @@ const Analysis: React.FC = () => {
                 />
             )}
 
-            {/* Refreshing/Error states when data already exists */}
             {loading && currentData && (
                 <div className="mt-6 text-center text-blue-600">
                     <FaSyncAlt className="inline mr-2 animate-spin" />

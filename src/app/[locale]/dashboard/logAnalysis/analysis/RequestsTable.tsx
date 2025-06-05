@@ -1,19 +1,16 @@
 // src/app/[locale]/dashboard/logAnalysis/analysis/RequestsTable.tsx
 import React from 'react';
 import { FaExternalLinkAlt, FaLink, FaClock, FaStopwatch, FaInfoCircle, FaCheckCircle, FaTimesCircle, FaQuestionCircle, FaEllipsisH, FaListAlt, FaChartPie, FaExclamationTriangle } from 'react-icons/fa';
-// *** THAY ĐỔI: Import types cần thiết ***
 import { useTranslations } from 'next-intl';
-import { CrawlerType } from '@/src/hooks/logAnalysis/useLogAnalysisData'; // Hoặc từ Analysis.tsx
+import { CrawlerType } from '@/src/hooks/logAnalysis/useLogAnalysisData';
 
-// *** ĐỊNH NGHĨA HOẶC IMPORT TYPES CHO REQUEST SUMMARY ***
 export interface RequestSummaryShared {
     startTime: string | null;
     endTime: string | null;
     durationSeconds: number | null;
     status: string | undefined | null;
     originalRequestId?: string | null;
-    dataSource?: 'scimago' | 'client' | string; // Thêm dataSource nếu cần hiển thị
-    // Thêm các trường chung khác nếu có
+    dataSource?: 'scimago' | 'client' | string;
 }
 
 export interface ConferenceRequestSummaryForTable extends RequestSummaryShared {
@@ -22,35 +19,38 @@ export interface ConferenceRequestSummaryForTable extends RequestSummaryShared {
 }
 
 export interface JournalRequestSummaryForTable extends RequestSummaryShared {
-    processedJournalsCountForRequest?: number; // Đổi tên cho journal
-    totalJournalsInputForRequest?: number;     // Đổi tên cho journal
+    processedJournalsCountForRequest?: number;
+    totalJournalsInputForRequest?: number;
 }
 
 export type RequestSummaryUnionForTable = ConferenceRequestSummaryForTable | JournalRequestSummaryForTable;
 
 
 interface RequestsTableProps {
-    requestIds: string[];
-    requestsData: { [key: string]: RequestSummaryUnionForTable }; // *** THAY ĐỔI TYPE ***
+    requestIds: string[]; // IDs for the current page
+    requestsData: { [key: string]: RequestSummaryUnionForTable };
     onSelectRequest: (requestId: string) => void;
     formatDateTime: (isoString: string | null | undefined) => string;
     getStatusChipClass: (status: string | undefined | null) => string;
-    crawlerType: CrawlerType; // *** THÊM PROP crawlerType ***
+    crawlerType: CrawlerType;
+    totalRequestCount: number; // *** THÊM PROP TỔNG SỐ REQUEST ***
 }
 
 const RequestsTable: React.FC<RequestsTableProps> = ({
-    requestIds,
+    requestIds, // IDs for the current page
     requestsData,
     onSelectRequest,
     formatDateTime,
     getStatusChipClass,
-    crawlerType, // *** NHẬN PROP crawlerType ***
+    crawlerType,
+    totalRequestCount, // *** NHẬN PROP ***
 }) => {
     const t = useTranslations('RequestsTable');
 
     if (!requestIds || requestIds.length === 0) {
         return null;
     }
+
 
     const getStatusIcon = (status: string | undefined | null) => {
         switch (status?.toLowerCase()) {
@@ -79,6 +79,7 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
         return 'bg-red-500';
     };
 
+    // These calculations are for the CURRENT PAGE requests
     let totalProcessedItemsOverall = 0;
     let totalItemsOverallInput = 0;
 
@@ -102,16 +103,14 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
         : 0;
     const overallSuccessRatePercentageString = overallSuccessRatePercentage.toFixed(1);
 
-    // *** THAY ĐỔI: Tiêu đề cột success rate có thể động hoặc dùng key dịch khác ***
     const successRateColumnHeader = crawlerType === 'conference'
-        ? t('tableHeaders.conferenceSuccessRate') // Key dịch mới
-        : t('tableHeaders.journalSuccessRate');   // Key dịch mới
-    // Hoặc giữ chung: t('tableHeaders.successRate')
+        ? t('tableHeaders.conferenceSuccessRate')
+        : t('tableHeaders.journalSuccessRate');
 
     return (
         <div className="overflow-x-auto border border-gray-200 rounded-lg shadow-sm">
             <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-5">
+                <thead className="bg-gray-10"> {/* Sửa bg-gray-5 thành bg-gray-10 để đồng nhất nếu cần */}
                     <tr>
                         <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             <div className="flex items-center">
@@ -143,12 +142,6 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
                                 <FaInfoCircle className="mr-1.5 h-3.5 w-3.5 text-gray-400" /> {t('tableHeaders.status')}
                             </div>
                         </th>
-                        {/* Có thể thêm cột DataSource nếu cần */}
-                        {/* <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            <div className="flex items-center">
-                                <FaDatabase className="mr-1.5 h-3.5 w-3.5 text-gray-400" /> {t('tableHeaders.dataSource')}
-                            </div>
-                        </th> */}
                         <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             <div className="flex items-center">
                                 <FaChartPie className="mr-1.5 h-3.5 w-3.5 text-gray-400" /> {successRateColumnHeader}
@@ -181,10 +174,10 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
                             ? (processedForRequest / totalInputForRequest) * 100
                             : 0;
                         const requestSuccessRateString = requestSuccessRateValue.toFixed(1);
-                        const textColorForProgressBar = 'text-gray-700'; // Hoặc động dựa trên rate
+                        const textColorForProgressBar = 'text-gray-700';
 
                         return (
-                            <tr key={reqId} className="hover:bg-gray-5 transition-colors duration-150">
+                            <tr key={reqId} className="hover:bg-gray-10 transition-colors duration-150"> {/* Sửa bg-gray-5 thành bg-gray-10 */}
                                 <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900 break-all">
                                     {reqId}
                                 </td>
@@ -224,7 +217,6 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
                                         </span>
                                     )}
                                 </td>
-                                {/* Cell for Success Rate with Progress Bar */}
                                 <td className="px-4 py-3">
                                     {totalInputForRequest > 0 ? (
                                         <div className="relative w-32 bg-gray-200 rounded-full py-1.5">
@@ -253,19 +245,23 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
                         );
                     })}
                 </tbody>
-                {totalItemsOverallInput > 0 && (
-                    <tfoot className="bg-gray-5 border-t border-gray-200">
+                {/* *** CẬP NHẬT TFOOT *** */}
+                {totalItemsOverallInput > 0 && ( // totalItemsOverallInput là của trang hiện tại
+                    <tfoot className="bg-gray-10 border-t border-gray-200">
                         <tr>
                             <td colSpan={6} className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
                                 <div className="flex items-center font-semibold">
                                     <FaChartPie className="mr-2 h-4 w-4 text-gray-600" />
-                                    {t('tableFooter.totalSuccessRate')}: {/* Giữ chung hoặc làm động */}
+                                    {t('tableFooter.totalSuccessRate')}: {/* Đây là success rate của trang hiện tại */}
                                 </div>
                             </td>
                             <td className="px-4 py-3 whitespace-nowrap text-sm font-bold text-gray-900">
                                 {totalProcessedItemsOverall} / {totalItemsOverallInput} ({overallSuccessRatePercentageString}%)
                             </td>
-                            <td className="px-4 py-3"></td>
+                            {/* Ô này trước đây trống, giờ hiển thị tổng số request */}
+                            <td className="px-4 py-3 whitespace-nowrap text-sm font-semibold text-gray-700 text-right">
+                                {t('tableFooter.totalAllRequests', { count: totalRequestCount })}
+                            </td>
                         </tr>
                     </tfoot>
                 )}

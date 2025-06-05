@@ -572,6 +572,26 @@
     "errorMessagePrefix": "Error loading analysis data",
     "retryButton": "Try Again"
   },
+  "RequestsOverallSummary": {
+    "title": "Requests Performance Overview",
+    "noRequestData": "No request data available to display summary.",
+    "kpi": {
+      "totalRequests": "Total Requests",
+      "completed": "Completed",
+      "failed": "Failed",
+      "processing": "Processing",
+      "withErrors": "Completed with Errors",
+      "unknown": "Unknown Status",
+      "avgDuration": "Avg. Duration",
+      "withOriginalId": "Chained/Retried"
+    },
+    "charts": {
+      "statusDistribution": {
+        "title": "Request Status",
+        "noData": "No status data for chart."
+      }
+    }
+  },
   "LogRequestsList": {
     "title": "Available Log Analysis Requests",
     "ariaLabel": {
@@ -581,6 +601,11 @@
     "srOnly": {
       "collapse": "Collapse",
       "expand": "Expand"
+    },
+        "overallSummaryTitle": "Overall Summary",
+    "summaryViews": {
+      "requestsLevel": "Requests View",
+      "detailsLevel": "{type} View" 
     }
   },
   "RequestDetailView": {
@@ -609,22 +634,27 @@
     },
     "viewDetailsForOriginalRequestTitle": "View details for original request: {requestId}",
     "viewDetailsForOriginalRequestAriaLabel": "View details for original request ID {requestId}",
-    "statusNames": {
-      "completed": "Completed",
-      "completedwitherrors": "Completed with Errors",
-      "partiallycompleted": "Partially Completed",
-      "failed": "Failed",
-      "processing": "Processing",
-      "pending": "Pending",
-      "skipped": "Skipped",
-      "nodata": "No Data",
-      "unknown": "Unknown"
-    },
     "viewDetailsButton": "View Details",
     "viewDetailsForRequestAriaLabel": "View details for request {requestId}",
     "tableFooter": {
-      "totalSuccessRate": "Total Success Rate for Displayed Requests"
-    }
+      "totalSuccessRate": "Total Success Rate (Current Page)",
+      "totalSuccessRateCurrentPage": "Success Rate (Current Page)",
+      "totalAllRequests": "Total Requests: {count}",
+      "statusSummaryOverall": "Status Summary (Overall)"
+    },
+    "statusNames": {
+      "unknown": "Unknown",
+      "processing": "Processing",
+      "completed": "Completed",
+      "completedwitherrors": "Completed w/ Errors",
+      "failed": "Failed",
+      "nodata": "No Data",
+      "partiallycompleted": "Partially Completed",
+      "skipped": "Skipped",
+      "notfoundinaggregation": "Not Found in Aggregation",
+      "norequestsanalyzed": "No Requests Analyzed"
+    },
+    "noRequestsOnCurrentPage": "No requests to display on this page."
   },
   "SummaryHeader": {
     "title": "Overall Summary",
@@ -764,7 +794,11 @@
   },
   "Common": {
     "count": "Count",
-    "warnings": "Warnings"
+    "warnings": "Warnings",
+    "expand": "Expand",
+    "collapse": "Collapse",
+    "conference": "Conference",
+    "journal": "Journal"
   },
   "ValidationQualityCharts": {
     "warningsByField": {
