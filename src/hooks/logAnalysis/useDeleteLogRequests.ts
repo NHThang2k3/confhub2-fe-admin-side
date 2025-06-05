@@ -15,7 +15,8 @@ interface DeletionOpResultFE { // Frontend version of DeletionOpResult
     error?: string;
 }
 
-interface RequestDeletionResultFE { // Frontend version of RequestDeletionResult
+// Make sure to export this interface
+export interface RequestDeletionResultFE { // Frontend version of RequestDeletionResult
     requestId: string;
     logFile: DeletionOpResultFE;
     cacheFile: DeletionOpResultFE;
@@ -35,7 +36,7 @@ export const useDeleteLogRequests = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [successMessage, setSuccessMessage] = useState<string | null>(null);
-    const [detailedResults, setDetailedResults] = useState<RequestDeletionResultFE[] | null>(null);
+    const [detailedResults, setDetailedResults] = useState<RequestDeletionResultFE[] | null>(null); // Uses RequestDeletionResultFE
 
     const deleteRequests = useCallback(async (payload: DeleteRequestsPayload): Promise<boolean> => {
         setIsLoading(true);
@@ -45,7 +46,7 @@ export const useDeleteLogRequests = () => {
 
         try {
             // Adjust API path if your Next.js app serves the API from a different base
-            const response = await fetch(`${NEXT_PUBLIC_BACKEND_URL}/api/v1/logs/requests`, { 
+            const response = await fetch(`${NEXT_PUBLIC_BACKEND_URL}/api/v1/logs/requests`, {
                 method: 'DELETE',
                 headers: {
                     'Content-Type': 'application/json',
@@ -62,7 +63,7 @@ export const useDeleteLogRequests = () => {
                 console.error('Error deleting requests:', data);
                 return false;
             }
-            
+
             setSuccessMessage(data.message || t('successGeneric'));
             if(data.results) setDetailedResults(data.results);
             return true; // Indicates the API call itself was successful (even if some items failed)
