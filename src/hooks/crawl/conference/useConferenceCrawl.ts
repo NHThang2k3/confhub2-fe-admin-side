@@ -12,11 +12,11 @@ import {
 import { appConfig } from '@/src/middleware'; // Adjust path as needed
 
 const API_CONFERENCE_ENDPOINT = `${appConfig.NEXT_PUBLIC_BACKEND_URL}/api/v1/crawl-conferences`;
-const UPLOAD_FILE_ENDPOINT = `${process.env.NEXT_PUBLIC_DATABASE_URL}/api/v1/admin/conferences/upload-file-csv`; // Ensure this env var is set
+const UPLOAD_FILE_ENDPOINT = `${process.env.NEXT_PUBLIC_DATABASE_URL}/api/v1/admin/conferences/upload-file-csv`;
 const MAX_ITEMS_PER_CRAWL_REQUEST = 50;
 
 function chunkArray<T>(array: T[], size: number): T[][] {
-    if (size <= 0) return [array]; // Return as a single chunk if size is invalid
+    if (size <= 0) return [array];
     const chunks: T[][] = [];
     for (let i = 0; i < array.length; i += size) {
         chunks.push(array.slice(i, i + size));
@@ -39,6 +39,13 @@ const initialApiModels: ApiModels = {
     extractCfp: null,
 };
 
+// New interface for the overall request payload
+export interface CrawlRequestPayload {
+    description?: string;
+    items: ConferenceApiPayloadItem[];
+    models: ApiModels;
+}
+
 export interface UseConferenceCrawlReturn {
     file: File | null;
     parsedData: Conference[] | null;
@@ -57,8 +64,8 @@ export interface UseConferenceCrawlReturn {
     setEnableChunking: (enabled: boolean) => void;
     setChunkSize: (size: number) => void;
     setApiModel: (apiName: ApiName, model: CrawlModelType) => void;
-    startCrawlFromCsv: () => Promise<void>;
-    startCrawlItems: (items: ConferenceForAction[], modelsToUse: ApiModels) => Promise<void>;
+    startCrawlFromCsv: (description?: string) => Promise<void>; // Modified signature
+    startCrawlItems: (items: ConferenceForAction[], modelsToUse: ApiModels, description?: string) => Promise<void>; // Added description
     resetCrawl: () => void;
     onCsvSelectionChanged: (selectedRows: Conference[]) => void;
     updateActionTypeOfSelectedRows: (actionType: 'crawl' | 'update', selectedRows: Conference[]) => void;
@@ -116,7 +123,7 @@ export const useConferenceCrawl = (): UseConferenceCrawlReturn => {
             if (data.data && Array.isArray(data.data)) {
                 const conferencesWithDefaults: Conference[] = data.data.map((conf: any, index: number) => ({
                     ...conf,
-                    id: conf.id || `${conf.acronym || 'conf'}-${Date.now()}-${index}`, // This is good for getRowId
+                    id: conf.id || `${conf.acronym || 'conf'}-${Date.now()}-${index}`,
                     crawlType: 'crawl',
                 }));
                 setParsedData(conferencesWithDefaults);
@@ -173,28 +180,26 @@ export const useConferenceCrawl = (): UseConferenceCrawlReturn => {
 
     const updateActionTypeOfSelectedRows = useCallback((
         actionType: 'crawl' | 'update',
-        selectedRowsToUpdate: Conference[] // Renamed for clarity
+        selectedRowsToUpdate: Conference[]
     ) => {
         if (selectedRowsToUpdate.length === 0) return;
 
-        const selectedIds = selectedRowsToUpdate.map(row => row.id); // Assuming row.id is the stable ID
+        const selectedIds = selectedRowsToUpdate.map(row => row.id);
         let updatedCount = 0;
 
         const newParsedData = parsedData?.map(conf => {
             if (selectedIds.includes(conf.id)) {
                 updatedCount++;
-                // Create a new object for the updated conference
                 return { ...conf, crawlType: actionType };
             }
-            return conf; // Return the original object if not updated
+            return conf;
         }) || null;
 
         if (newParsedData && updatedCount > 0) {
-            setParsedData(newParsedData); // Update state with the new array
+            setParsedData(newParsedData);
 
-            // Also update selectedCsvRows if it needs to reflect crawlType changes immediately
             const newSelectedCsvRows = selectedCsvRows.map(selRow => {
-                if (selectedIds.includes(selRow.id)) { // selRow should also have an id
+                if (selectedIds.includes(selRow.id)) {
                     return { ...selRow, crawlType: actionType };
                 }
                 return selRow;
@@ -206,7 +211,7 @@ export const useConferenceCrawl = (): UseConferenceCrawlReturn => {
         } else if (updatedCount === 0) {
             console.log("No matching conferences found in parsedData to update action type.");
         }
-    }, [parsedData, selectedCsvRows, setParsedData, setSelectedCsvRows, setCrawlMessages]);
+    }, [parsedData, selectedCsvRows]);
 
     const setApiModel = useCallback((apiName: ApiName, model: CrawlModelType) => {
         setApiModels(prev => ({ ...prev, [apiName]: model }));
@@ -219,8 +224,9 @@ export const useConferenceCrawl = (): UseConferenceCrawlReturn => {
 
     const sendApiRequest = useCallback(async (
         items: ConferenceForAction[],
-        description: string,
-        modelsForRequest: ApiModels
+        modelsForRequest: ApiModels,
+        batchContextDescription: string, // For logging, e.g., "Batch 1/5"
+        overallRequestDescription?: string // User-provided description for the whole request
     ): Promise<boolean> => {
         const apiPayloadItems: ConferenceApiPayloadItem[] = [];
         for (const item of items) {
@@ -237,57 +243,69 @@ export const useConferenceCrawl = (): UseConferenceCrawlReturn => {
                         mainLink: item.link,
                         cfpLink: (item.cfpLink && item.cfpLink.trim() !== '') ? item.cfpLink : null,
                         impLink: (item.impLink && item.impLink.trim() !== '') ? item.impLink : null,
-                    });
+                    } as ConferenceApiPayloadItem);
                 } else {
                     const warningMsg = `Conference "${item.Acronym}" (${item.Title}) marked for UPDATE but is missing 'link'. Sending as CRAWL.`;
                     console.warn(warningMsg);
                     setCrawlMessages(prev => [warningMsg, ...prev]);
-                    apiPayloadItems.push({
+                    apiPayloadItems.push({ // Fallback to crawl-like structure
                         ...commonPayload,
-                        mainLink: undefined,
-                        cfpLink: undefined,
-                        impLink: undefined,
-                    });
+                    } as ConferenceApiPayloadItem);
                 }
-            } else {
+            } else { // 'crawl' type
                 apiPayloadItems.push({
                     ...commonPayload,
-                    mainLink: undefined,
-                    cfpLink: undefined,
-                    impLink: undefined,
-                });
+                } as ConferenceApiPayloadItem);
             }
         }
 
         if (apiPayloadItems.length === 0) {
             if (items.length > 0) {
-                setCrawlMessages(prev => [`No valid items to send for "${description}" after processing action types.`, ...prev]);
+                setCrawlMessages(prev => [`No valid items to send for "${batchContextDescription}" after processing action types.`, ...prev]);
             }
             return items.length === 0;
         }
 
-        const params = { dataSource: 'client', models: modelsForRequest };
+        const payload: CrawlRequestPayload = {
+            items: apiPayloadItems,
+            models: modelsForRequest,
+        };
+        if (overallRequestDescription) {
+            payload.description = overallRequestDescription;
+        }
+
+        const params = { dataSource: 'client' }; // Models are now in the body
         const modelDesc = `(Models: DL-${modelsForRequest.determineLinks?.[0]}, EI-${modelsForRequest.extractInfo?.[0]}, EC-${modelsForRequest.extractCfp?.[0]})`;
+        
+        let logEntryPrefix = batchContextDescription;
+        if (overallRequestDescription) {
+            logEntryPrefix = `Req: "${overallRequestDescription}" (${batchContextDescription})`;
+        }
+
         try {
-            const response = await axios.post<ApiCrawlResponse>(API_CONFERENCE_ENDPOINT, apiPayloadItems as any[], {
-                params: params,
-                headers: { 'Content-Type': 'application/json' },
-                timeout: 720000
-            });
-            console.log(`${description} ${modelDesc} - Response Status:`, response.status, response.data);
-            setCrawlMessages(prev => [...prev, `${description} ${modelDesc}: ${response.data.message} (Runtime: ${response.data.runtime ?? 'N/A'}s)`]);
+            const response = await axios.post<ApiCrawlResponse>(
+                API_CONFERENCE_ENDPOINT,
+                payload, // Send the structured payload
+                {
+                    params: params,
+                    headers: { 'Content-Type': 'application/json' },
+                    timeout: 7200000 // 2 hours
+                }
+            );
+            console.log(`${logEntryPrefix} ${modelDesc} - Response Status:`, response.status, response.data);
+            setCrawlMessages(prev => [...prev, `${logEntryPrefix} ${modelDesc}: ${response.data.message} (Runtime: ${response.data.runtime ?? 'N/A'}s)`]);
             return true;
         } catch (err) {
             const error = err as AxiosError<ApiCrawlResponse>;
-            console.error(`API Error during ${description} ${modelDesc}:`, error);
-            let errorMessage = `Error sending ${description} ${modelDesc}: ${error.message}`;
+            console.error(`API Error during ${logEntryPrefix} ${modelDesc}:`, error);
+            let errorMessage = `Error sending ${logEntryPrefix} ${modelDesc}: ${error.message}`;
             if (error.response) {
                 errorMessage += ` (Server: ${error.response.status} - ${error.response.data?.message || error.response.data?.error || 'Unknown server error'})`;
             } else if (error.request) {
                 errorMessage += ' (No response received from server)';
             }
             setCrawlError(errorMessage);
-            setCrawlMessages(prev => [...prev, `FAILED to send ${description} ${modelDesc}. Details: ${errorMessage}`]);
+            setCrawlMessages(prev => [...prev, `FAILED to send ${logEntryPrefix} ${modelDesc}. Details: ${errorMessage}`]);
             return false;
         }
     }, [setCrawlMessages, setCrawlError]);
@@ -295,7 +313,8 @@ export const useConferenceCrawl = (): UseConferenceCrawlReturn => {
     const processCrawlRequest = async (
         itemsToCrawl: ConferenceForAction[],
         modelsToUse: ApiModels,
-        sourceDescription: string
+        sourceDescription: string, // e.g., "CSV Selections"
+        userProvidedDescription?: string // The optional description from the user
     ) => {
         if (itemsToCrawl.length === 0) {
             const msg = `No items from "${sourceDescription}" to process.`;
@@ -332,29 +351,34 @@ export const useConferenceCrawl = (): UseConferenceCrawlReturn => {
 
         if (!enableChunking && itemsToCrawl.length > MAX_ITEMS_PER_CRAWL_REQUEST) {
             wasChunkingForceEnabled = true;
+            // effectiveChunkSize will be MAX_ITEMS_PER_CRAWL_REQUEST due to chunkArray logic
         } else if (!enableChunking) {
-            effectiveChunkSize = itemsToCrawl.length;
+            effectiveChunkSize = itemsToCrawl.length; // Send all in one go if not chunking and within limits
         }
 
-        if (itemsToCrawl.length > 0 && effectiveChunkSize <= 0) {
+        if (itemsToCrawl.length > 0 && effectiveChunkSize <= 0) { // Safety net
             effectiveChunkSize = MAX_ITEMS_PER_CRAWL_REQUEST;
         }
 
-        const needsActualChunking = itemsToCrawl.length > 0 && itemsToCrawl.length > effectiveChunkSize && enableChunking;
+        const needsActualChunking = enableChunking && itemsToCrawl.length > effectiveChunkSize;
         const modelDescShort = `DL:${modelsToUse.determineLinks?.[0]}, EI:${modelsToUse.extractInfo?.[0]}, EC:${modelsToUse.extractCfp?.[0]}`;
-        let initialMessage = `Starting process for ${itemsToCrawl.length} items from "${sourceDescription}" using models (${modelDescShort})... `;
+        
+        let initialMessage = `Starting process for ${itemsToCrawl.length} items from "${sourceDescription}"`;
+        if (userProvidedDescription) {
+            initialMessage += ` (Description: "${userProvidedDescription}")`;
+        }
+        initialMessage += ` using models (${modelDescShort})... `;
 
         if (needsActualChunking) {
             initialMessage += `Processing in chunks of up to ${effectiveChunkSize}.`;
-        } else if (wasChunkingForceEnabled) {
-            initialMessage += `Sending in batches of up to ${MAX_ITEMS_PER_CRAWL_REQUEST} (auto-batching).`;
-        }
-        else if (itemsToCrawl.length > 0) {
+        } else if (wasChunkingForceEnabled && itemsToCrawl.length > MAX_ITEMS_PER_CRAWL_REQUEST) {
+             initialMessage += `Sending in batches of up to ${MAX_ITEMS_PER_CRAWL_REQUEST} (auto-batching).`;
+        } else if (itemsToCrawl.length > 0) {
             initialMessage += 'Sending all at once.';
         }
 
         const newMessages = [initialMessage];
-        if (wasChunkingForceEnabled) {
+        if (wasChunkingForceEnabled && itemsToCrawl.length > MAX_ITEMS_PER_CRAWL_REQUEST) {
             newMessages.push(
                 `Note: Automatic batching (max ${MAX_ITEMS_PER_CRAWL_REQUEST} items per request) was applied as the number of items exceeds the limit and chunking was not explicitly enabled.`
             );
@@ -376,9 +400,9 @@ export const useConferenceCrawl = (): UseConferenceCrawlReturn => {
                     const currentChunk = chunks[i];
                     if (currentChunk.length === 0) continue;
 
-                    const description = `Batch ${i + 1}/${totalChunks} (${currentChunk.length} items, from ${sourceDescription})`;
+                    const batchContextDesc = `Batch ${i + 1}/${totalChunks} (${currentChunk.length} items, from ${sourceDescription})`;
                     setCrawlProgress(prev => ({ ...prev, current: i + 1, currentChunkData: currentChunk }));
-                    const success = await sendApiRequest(currentChunk, description, modelsToUse);
+                    const success = await sendApiRequest(currentChunk, modelsToUse, batchContextDesc, userProvidedDescription);
                     if (!success) {
                         setCrawlProgress(prev => ({ ...prev, status: 'stopped' }));
                         overallSuccess = false;
@@ -391,10 +415,10 @@ export const useConferenceCrawl = (): UseConferenceCrawlReturn => {
                 } else if (!overallSuccess && totalChunks > 0) {
                     setCrawlMessages(prev => [...prev, `Process from "${sourceDescription}" with selected models stopped due to an error.`]);
                 }
-            } else {
+            } else { // Single batch
                 setCrawlProgress({ current: 0, total: 1, status: 'crawling', currentChunkData: itemsForBatches });
-                const description = `Batch (${itemsForBatches.length} items from ${sourceDescription})`;
-                const success = await sendApiRequest(itemsForBatches, description, modelsToUse);
+                const batchContextDesc = `Batch (${itemsForBatches.length} items from ${sourceDescription})`;
+                const success = await sendApiRequest(itemsForBatches, modelsToUse, batchContextDesc, userProvidedDescription);
                 setCrawlProgress(prev => ({ ...prev, current: 1 }));
                 if (success) {
                     setCrawlProgress(prev => ({ ...prev, status: 'success' }));
@@ -405,24 +429,30 @@ export const useConferenceCrawl = (): UseConferenceCrawlReturn => {
                 }
             }
         } else {
-            overallSuccess = false;
+            overallSuccess = false; 
+            setCrawlMessages(prev => [`No valid items to process from "${sourceDescription}".`, ...prev]);
         }
 
         setIsCrawling(false);
+        if (overallSuccess && crawlProgress.status !== 'success' && crawlProgress.status !== 'error' && crawlProgress.status !== 'stopped') {
+            setCrawlProgress(prev => ({ ...prev, status: 'success' }));
+        } else if (!overallSuccess && crawlProgress.status !== 'error' && crawlProgress.status !== 'stopped') {
+            setCrawlProgress(prev => ({ ...prev, status: 'error' }));
+        }
     };
 
-    const startCrawlFromCsv = async () => {
+    const startCrawlFromCsv = async (description?: string) => { // Accepts optional description
         if (selectedCsvRows.length === 0) {
             const msg = "No conferences selected from the CSV data to process.";
             setCrawlError(msg);
             setCrawlMessages(prev => [msg, ...prev.filter(m => !m.startsWith("No conferences selected from"))]);
             return;
         }
-        await processCrawlRequest(selectedCsvRows, apiModels, "CSV Selections");
+        await processCrawlRequest(selectedCsvRows, apiModels, "CSV Selections", description); // Pass description
     };
 
-    const startCrawlItems = async (items: ConferenceForAction[], modelsToUse: ApiModels) => {
-        await processCrawlRequest(items, modelsToUse, "Programmatic Re-Crawl");
+    const startCrawlItems = async (items: ConferenceForAction[], modelsToUse: ApiModels, description?: string) => { // Accepts optional description
+        await processCrawlRequest(items, modelsToUse, "Programmatic Re-Crawl", description); // Pass description
     };
 
     const resetCrawl = useCallback(() => {

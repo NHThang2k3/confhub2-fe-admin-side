@@ -531,7 +531,7 @@
   "ProcessingStep": {
     "header": {
       "title": "Process Execution & Status",
-      "description": "Monitor the progress and view detailed logs of the processing."
+      "description": "Start the crawling process and monitor its progress. You can add an optional description for this crawl request."
     },
     "buttons": {
       "processingData": "Processing Data...",
@@ -539,6 +539,13 @@
       "startProcessing": "Start Processing",
       "resetAllTitle": "Reset all configurations, data, and return to the first step",
       "resetAll": "Reset All & Start Over"
+    },
+    "descriptionInput": {
+      "label": "Crawl Description",
+      "placeholder": "e.g., 'Initial crawl for ACL 2025 conference papers' or 'Recrawl after fixing parsing issues'",
+      "helperText": "Add a brief description for this crawl session. This will help you identify it later in the logs.",
+      "tooltipContent": "This description is optional but highly recommended. It helps you track and understand the purpose of each crawl session in your logs.",
+      "characterCount": "Characters: {current}/{max}"
     },
     "statusLog": {
       "title": "Process Status & Log",
@@ -624,6 +631,7 @@
     "tableHeaders": {
       "requestId": "Request ID",
       "originalRequestId": "Original Request ID",
+      "description": "Description",
       "startTime": "Start Time",
       "endTime": "End Time",
       "duration": "Duration",

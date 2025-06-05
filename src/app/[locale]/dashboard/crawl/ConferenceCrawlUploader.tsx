@@ -4,9 +4,9 @@ import { useConferenceCrawl, ApiName } from '@/src/hooks/crawl/conference/useCon
 
 // Import các component con cho từng bước
 import FileUploadStep from './steps/FileUploadStep';
-import ConferenceSelectionStep from './steps/ConferenceSelectionStep'; // Correct path if it's in a subfolder of steps
+import ConferenceSelectionStep from './steps/ConferenceSelectionStep';
 import ConfigurationStep from './steps/ConfigurationStep';
-import ProcessingStep from './steps/ProcessingStep';
+import ProcessingStep from './steps/ProcessingStep'; // Corrected path
 import StepperNavigation from './steps/StepperNavigation';
 import { useTranslations } from 'next-intl';
 
@@ -16,14 +16,14 @@ export const ConferenceCrawlUploader: React.FC = () => {
       { name: "determineLinks", displayName: t('apiSteps.determineLinksModel') },
       { name: "extractInfo", displayName: t('apiSteps.extractInfoModel') },
       { name: "extractCfp", displayName: t('apiSteps.extractCfpModel') },
-  ], [t]); // Thêm t vào dependency array
+  ], [t]);
 
   const STEPS = useMemo(() => [
     { id: 1, name: t('steps.importCsv') },
     { id: 2, name: t('steps.selectConferences') },
     { id: 3, name: t('steps.configureSettings') },
     { id: 4, name: t('steps.processAndViewStatus') },
-  ], [t]); // Thêm t vào dependency array
+  ], [t]);
 
   const crawlHook = useConferenceCrawl();
   const [currentStep, setCurrentStep] = useState(STEPS[0].id);
@@ -33,10 +33,10 @@ export const ConferenceCrawlUploader: React.FC = () => {
     parsedData,
     isParsing,
     parseError,
-    selectedCsvRows, // This is used for canProceedToStep3
+    selectedCsvRows,
     apiModels,
     isCrawling,
-    startCrawlFromCsv,
+    startCrawlFromCsv, // This function's signature will change in the hook
     resetCrawl,
     enableChunking,
     chunkSize,
@@ -53,7 +53,6 @@ export const ConferenceCrawlUploader: React.FC = () => {
     return !!parsedData && parsedData.length > 0 && !isParsing && !parseError;
   }, [parsedData, isParsing, parseError]);
 
-  // This logic correctly uses selectedCsvRows from the hook for global state
   const canProceedToStep3 = useMemo(() => {
     return selectedCsvRows && selectedCsvRows.length > 0;
   }, [selectedCsvRows]);
@@ -120,7 +119,6 @@ export const ConferenceCrawlUploader: React.FC = () => {
           <ConferenceSelectionStep
             parsedData={parsedData}
             onSelectionChanged={crawlHook.onCsvSelectionChanged}
-            // selectedCsvRowsCount={selectedCsvRows.length} // PROP REMOVED HERE
             onNext={handleNextStep}
             onPrev={handlePrevStep}
             canProceed={canProceedToStep3}
@@ -152,7 +150,7 @@ export const ConferenceCrawlUploader: React.FC = () => {
             crawlProgress={crawlProgress}
             crawlMessages={crawlMessages}
             enableChunking={enableChunking}
-            onStartProcess={startCrawlFromCsv}
+            onStartProcess={startCrawlFromCsv} // This now correctly matches the updated prop in ProcessingStep
             onResetAll={handleReset}
             canStartProcess={canStartProcessing}
             onPrev={handlePrevStep}

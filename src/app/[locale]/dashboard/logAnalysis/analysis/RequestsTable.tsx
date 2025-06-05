@@ -1,10 +1,8 @@
-// src/app/[locale]/dashboard/logAnalysis/analysis/RequestsTable.tsx
 import React from 'react';
 import {
     FaLink, FaClock, FaStopwatch, FaInfoCircle, FaCheckCircle,
     FaTimesCircle, FaQuestionCircle, FaEllipsisH, FaListAlt, FaChartPie, FaExclamationTriangle,
-    FaSort, FaSortUp, FaSortDown
-    // FaTrash is not directly used here for row actions anymore, but kept if needed elsewhere
+    FaSort, FaSortUp, FaSortDown, FaCommentAlt
 } from 'react-icons/fa';
 import { useTranslations } from 'next-intl';
 import { CrawlerType } from '@/src/hooks/logAnalysis/useLogAnalysisData';
@@ -16,6 +14,8 @@ export interface RequestSummaryShared {
     durationSeconds: number | null;
     status: string | undefined | null;
     originalRequestId?: string | null;
+    description?: string | null; // <<< THÊM DÒNG NÀY
+
     dataSource?: 'scimago' | 'client' | string;
     requestId?: string; // Should be present if it's the key of requestsData
 }
@@ -35,6 +35,7 @@ export type RequestSummaryUnionForTable = ConferenceRequestSummaryForTable | Jou
 export type RequestSortableKey =
     | 'requestId'
     | 'originalRequestId'
+    | 'description' // <<< THÊM DÒNG NÀY
     | 'startTime'
     | 'endTime'
     | 'durationSeconds'
@@ -77,6 +78,9 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
     const t = useTranslations('RequestsTable');
     const tCommon = useTranslations('Common'); // For common translations like selectAll
 
+    // Define the character limit for truncation in the table
+    const TRUNCATE_LIMIT = 50; // Ví dụ: cắt bớt nếu description dài hơn 50 ký tự
+
     if (!requestIds || requestIds.length === 0) {
         return null;
     }
@@ -107,6 +111,16 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
         if (percentage >= 50) return 'bg-yellow-500';
         return 'bg-red-500';
     };
+
+    // Helper function to truncate description
+    const truncateDescription = (description: string | null | undefined, limit: number): string => {
+        if (!description) return '';
+        if (description.length > limit) {
+            return description.substring(0, limit) + '...';
+        }
+        return description;
+    };
+
 
     // Calculate success rate for the current page's items
     let totalProcessedItemsOnPage = 0;
@@ -184,6 +198,10 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
                         <SortableHeader columnKey="originalRequestId">
                             <FaLink className="mr-1.5 h-3.5 w-3.5 text-gray-400" /> {t('tableHeaders.originalRequestId')}
                         </SortableHeader>
+                         {/* <<< THÊM HEADER CHO DESCRIPTION >>> */}
+                        <SortableHeader columnKey="description">
+                            <FaCommentAlt className="mr-1.5 h-3.5 w-3.5 text-gray-400" /> {t('tableHeaders.description')}
+                        </SortableHeader>
                         <SortableHeader columnKey="startTime">
                             <FaClock className="mr-1.5 h-3.5 w-3.5 text-gray-400" /> {t('tableHeaders.startTime')}
                         </SortableHeader>
@@ -228,14 +246,14 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
                         const isSelected = selectedRequestIds.includes(reqId);
 
                         return (
-                            <tr 
-                                key={reqId} 
+                            <tr
+                                key={reqId}
                                 className={`transition-colors duration-150 ${isSelected ? 'bg-blue-50 hover:bg-blue-100' : 'hover:bg-gray-10'}`}
                                 aria-selected={isSelected}
                             >
                                 <td className="px-3 py-3 whitespace-nowrap">
-                                     <label htmlFor={`select-request-${reqId}`} className="sr-only">
-                                        {tCommon('selectRequest', {requestId: reqId})}
+                                    <label htmlFor={`select-request-${reqId}`} className="sr-only">
+                                        {tCommon('selectRequest', { requestId: reqId })}
                                     </label>
                                     <input
                                         id={`select-request-${reqId}`}
@@ -272,13 +290,25 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
                                         <span className="text-gray-400">-</span>
                                     )}
                                 </td>
+
+                                 {/* <<< THÊM CELL CHO DESCRIPTION - VỚI TRUNCATE VÀ TITLE >>> */}
+                                <td className="px-4 py-3 text-sm text-gray-600 max-w-xs break-words">
+                                    {details?.description ? (
+                                        <span title={details.description}>
+                                            {truncateDescription(details.description, TRUNCATE_LIMIT)}
+                                        </span>
+                                    ) : (
+                                        <span className="text-gray-400">-</span>
+                                    )}
+                                </td>
+
                                 <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">
                                     {details ? formatDateTime(details.startTime) : tCommon('na')}
                                 </td>
                                 <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">
                                     {details ? formatDateTime(details.endTime) : tCommon('na')}
                                 </td>
-                                <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">
+                                <td className="px-4 py-3 whitespace-nowrap text-center text-sm text-gray-600">
                                     {details && details.durationSeconds != null ? `${details.durationSeconds.toFixed(2)}s` : tCommon('na')}
                                 </td>
                                 <td className="px-4 py-3 whitespace-nowrap text-sm">
@@ -315,8 +345,8 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
                 {totalItemsInputOnPage > 0 && ( // Show footer if there's data on the current page
                     <tfoot className="bg-gray-10 border-t border-gray-200">
                         <tr>
-                            {/* Checkbox column + 6 data columns = 7 */}
-                            <td colSpan={7} className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                            {/* Cập nhật colspan cho phù hợp với cột description đã thêm */}
+                            <td colSpan={8} className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
                                 <div className="flex items-center font-semibold">
                                     <FaChartPie className="mr-2 h-4 w-4 text-gray-600" />
                                     {t('tableFooter.currentPageSuccessRate')}:
@@ -325,10 +355,6 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
                             <td className="px-4 py-3 whitespace-nowrap text-sm font-bold text-gray-900 text-center">
                                 {totalProcessedItemsOnPage} / {totalItemsInputOnPage} ({pageSuccessRatePercentageString}%)
                             </td>
-                            {/* This cell is effectively empty as the totalRequestCount is better placed in LogRequestsList or AnalysisHeader */}
-                            {/* <td className="px-4 py-3 whitespace-nowrap text-sm font-semibold text-gray-700 text-right">
-                                {t('tableFooter.totalAllRequests', { count: totalRequestCount })}
-                            </td> */}
                         </tr>
                     </tfoot>
                 )}

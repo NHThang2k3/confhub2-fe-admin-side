@@ -126,16 +126,19 @@ const LogRequestsList: React.FC<LogRequestsListProps> = ({
                     aValue = String(aValue ?? '').toLowerCase();
                     bValue = String(bValue ?? '').toLowerCase();
                     break;
-                default:
+                case 'description': // <<< THÊM 'description' VÀO ĐÂY
+                    aValue = String(aValue ?? '').toLowerCase();
+                    bValue = String(bValue ?? '').toLowerCase();
+                    break;
+                default: // Cho processedItemsRatio và các trường số khác
                     if (typeof aValue === 'number' && typeof bValue === 'number') {
                         // no change
-                    } else {
+                    } else { // Fallback cho trường hợp bất ngờ
                         aValue = String(aValue ?? '').toLowerCase();
                         bValue = String(bValue ?? '').toLowerCase();
                     }
                     break;
             }
-
             if (aValue < bValue) {
                 return sortConfig.direction === 'ascending' ? -1 : 1;
             }
