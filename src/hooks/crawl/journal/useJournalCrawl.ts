@@ -46,13 +46,14 @@ export interface UseJournalCrawlReturn {
     crawlBackendMessages: string[];
 
     handleFileChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
-    startBackendCrawl: () => Promise<void>; // Renamed from startCrawl
+    startBackendCrawl: (selectedJournals: JournalWithStatus[]) => Promise<void>; // Modified to accept selected journals
     resetAll: () => void; // Renamed from resetCrawl
 }
 
 export const useJournalCrawl = (): UseJournalCrawlReturn => {
     const [file, setFile] = useState<File | null>(null);
     const [rawCsvContent, setRawCsvContent] = useState<string | null>(null);
+    const [parsedCsvData, setParsedCsvData] = useState<any[]>([]); // Store parsed CSV data
 
     const [isReadingFile, setIsReadingFile] = useState(false);
     const [fileReadError, setFileReadError] = useState<string | null>(null);
@@ -73,6 +74,7 @@ export const useJournalCrawl = (): UseJournalCrawlReturn => {
     const resetAll = useCallback(() => {
         setFile(null);
         setRawCsvContent(null);
+        setParsedCsvData([]); // Reset parsed data
         setIsReadingFile(false);
         setFileReadError(null);
         setScimagoPreviewData(null);
@@ -94,6 +96,7 @@ export const useJournalCrawl = (): UseJournalCrawlReturn => {
         setIsReadingFile(true);
         setFileReadError(null);
         setRawCsvContent(null);
+        setParsedCsvData([]); // Reset parsed data
         setScimagoPreviewData(null); // Reset preview
         setDbCheckMessages(prev => [...prev, "Reading file..."]);
 
@@ -106,34 +109,38 @@ export const useJournalCrawl = (): UseJournalCrawlReturn => {
                 setDbCheckMessages(prev => [...prev, "Error: Could not read file content."]);
                 return;
             }
+            console.log('Raw file content length:', fileContent.length);
             setRawCsvContent(fileContent); // Store raw content for backend crawl
             setDbCheckMessages(prev => [...prev, `File read successfully (${fileContent.length} chars). Stored for backend crawl.`]);
 
-            // Optional: Parse for SCImago preview locally (like old hook)
-            // This is useful if you want to show a preview based on the SCImago structure
-            // before or alongside the DB check results.
-            Papa.parse<ScimagoJournal>(fileContent, {
-                header: true, delimiter: ";", skipEmptyLines: true, dynamicTyping: false,
-                transformHeader: header => header.trim(), transform: (value) => value.trim(),
+            // Parse CSV and store the data
+            Papa.parse(fileContent, {
+                header: true,
+                delimiter: ";",
+                skipEmptyLines: true,
+                transformHeader: header => header.trim(),
+                transform: (value) => value.trim(),
                 complete: (results) => {
                     if (results.data) {
-                        const validScimagoJournals = results.data.filter(row => row.Title && row.Title.trim() !== '');
-                        if (validScimagoJournals.length > 0) {
-                            setScimagoPreviewData(validScimagoJournals);
-                            setDbCheckMessages(prev => [...prev, `Local SCImago preview: ${validScimagoJournals.length} journals.`]);
-                        } else {
-                            setDbCheckMessages(prev => [...prev, `Local SCImago preview: No valid journals found.`]);
-                        }
+                        console.log('CSV Parsing Results:', {
+                            totalRows: results.data.length,
+                            headers: results.meta.fields,
+                            firstRow: results.data[0],
+                            lastRow: results.data[results.data.length - 1]
+                        });
+                        setParsedCsvData(results.data);
+                        setDbCheckMessages(prev => [...prev, `Parsed ${results.data.length} rows from CSV.`]);
                     }
                     if (results.errors.length > 0) {
-                        setDbCheckMessages(prev => [...prev, `Local SCImago preview: ${results.errors.length} parsing errors.`]);
+                        console.error('CSV Parsing Errors:', results.errors);
+                        setDbCheckMessages(prev => [...prev, `CSV parsing errors: ${results.errors.length} errors found.`]);
                     }
                 },
                 error: (error: Error) => {
-                    setDbCheckMessages(prev => [...prev, `Local SCImago preview error: ${error.message}.`]);
+                    console.error('CSV Parsing Error:', error);
+                    setDbCheckMessages(prev => [...prev, `CSV parsing error: ${error.message}.`]);
                 }
             });
-
 
             // Now, proceed with DB check API
             setIsReadingFile(false); // File reading part is done
@@ -220,12 +227,12 @@ export const useJournalCrawl = (): UseJournalCrawlReturn => {
     }, [resetAll, readFileContentAndCheckDB]);
 
 
-    const startBackendCrawl = useCallback(async () => {
-        if (!rawCsvContent) {
-            const errorMsg = "Cannot start backend crawl: No raw CSV content available.";
+    const startBackendCrawl = useCallback(async (selectedJournals: JournalWithStatus[]) => {
+        if (!parsedCsvData.length) {
+            const errorMsg = "Cannot start backend crawl: No parsed CSV data available.";
             console.warn(errorMsg);
             setCrawlBackendError(errorMsg);
-            setCrawlBackendMessages(prev => [errorMsg, ...prev]); // Add error to messages
+            setCrawlBackendMessages(prev => [errorMsg, ...prev]);
             return;
         }
         if (isCrawlingBackend) {
@@ -235,27 +242,68 @@ export const useJournalCrawl = (): UseJournalCrawlReturn => {
 
         setIsCrawlingBackend(true);
         setCrawlBackendError(null);
-        // Clear previous backend messages or decide if you want to append
-        setCrawlBackendMessages([`Sending journal data (raw CSV) to backend for crawling...`]);
+        setCrawlBackendMessages([`Filtering and sending selected journal data to backend for crawling...`]);
         setCrawlBackendProgress({ status: 'crawling' });
 
-        console.log("Starting backend journal crawl: Sending raw CSV content.");
         try {
-            const params = { dataSource: 'client' }; // <--- THÊM LẠI DÒNG NÀY
+            // Create a map of selected journals by their index in the original data
+            const selectedJournalsByIndex = new Map(
+                selectedJournals.map(journal => {
+                    // Find the index of this journal in the original parsed CSV data
+                    const index = parsedCsvData.findIndex(
+                        (row: any) => {
+                            // Check if the ISSNs match (handling multiple ISSNs)
+                            const rowIssns = row.Issn.split(',').map((issn: string) => issn.trim());
+                            const journalIssns = journal.Issn.split(',').map((issn: string) => issn.trim());
+                            
+                            // Check if any of the ISSNs match
+                            const hasMatchingIssn = rowIssns.some((rowIssn: string) => 
+                                journalIssns.some(journalIssn => journalIssn === rowIssn)
+                            );
+                            
+                            // Also check the title as a backup
+                            const hasMatchingTitle = row.Title.trim() === journal.Title.trim();
+                            
+                            return hasMatchingIssn || hasMatchingTitle;
+                        }
+                    );
+                    
+                    return [index.toString(), journal];
+                })
+            );
 
-            const response = await axios.post<BackendCrawlApiResponse>(API_BACKEND_CRAWL_ENDPOINT, rawCsvContent, {
-                params: params, // <--- VÀ THÊM LẠI params VÀO ĐÂY
-                headers: { 'Content-Type': 'text/csv' }, // Hoặc 'text/csv' tùy theo backend của bạn
-                timeout: 600000 // 10 phút
+            // Filter the data to only include selected journals using their index
+            const filteredData = parsedCsvData.filter((row: any, index: number) => 
+                selectedJournalsByIndex.has(index.toString())
+            );
+            
+            if (filteredData.length === 0) {
+                throw new Error('No matching data found for selected journals');
+            }
+
+            if (filteredData.length !== selectedJournals.length) {
+                console.warn(`Warning: Filtered data count (${filteredData.length}) doesn't match selected journals count (${selectedJournals.length})`);
+            }
+
+            // Convert filtered data back to CSV string
+            const filteredCsv = Papa.unparse(filteredData, {
+                delimiter: ";",
+                header: true
             });
 
-            console.log(`Backend Crawl - Response Status:`, response.status);
+            const params = { dataSource: 'client' };
+
+            const response = await axios.post<BackendCrawlApiResponse>(API_BACKEND_CRAWL_ENDPOINT, filteredCsv, {
+                params: params,
+                headers: { 'Content-Type': 'text/csv' },
+                timeout: 600000 // 10 minutes
+            });
+
             setCrawlBackendMessages(prev => [...prev, `Backend Crawl: ${response.data.message} (Runtime: ${response.data.runtime ?? 'N/A'}s)`]);
 
-            if (response.data.error) { // Check if backend itself reported an error in the response body
+            if (response.data.error) {
                 setCrawlBackendError(`Backend error: ${response.data.error}`);
                 setCrawlBackendProgress({ status: 'error' });
-                // No need to throw here if we set error and progress, unless you want to catch it again
             } else {
                 setCrawlBackendProgress({ status: 'success' });
             }
@@ -275,7 +323,7 @@ export const useJournalCrawl = (): UseJournalCrawlReturn => {
         } finally {
             setIsCrawlingBackend(false);
         }
-    }, [rawCsvContent, isCrawlingBackend, API_BACKEND_CRAWL_ENDPOINT]); // Added API_BACKEND_CRAWL_ENDPOINT to dependencies
+    }, [parsedCsvData, isCrawlingBackend, API_BACKEND_CRAWL_ENDPOINT]);
     return {
         file,
         rawCsvContent,
