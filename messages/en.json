@@ -211,7 +211,14 @@
   "common": {
     "loading": "Loading...",
     "close": "✕",
-    "ellipsis": "..."
+    "ellipsis": "...",
+    "yes": "Yes",
+    "no": "No",
+    "notApplicable": "N/A",
+    "success": "Success",
+    "failed": "Failed",
+    "attempted": "Attempted",
+    "cacheUsed": "Cache Used"
   },
   "pagination": {
     "perPage": "{count} per page",
@@ -623,7 +630,8 @@
     "tabsAriaLabel": "Analysis Tabs",
     "tabs": {
       "overallSummary": "Overall Summary",
-      "conferenceDetails": "Conference Details"
+      "conferenceDetails": "Conference Details",
+      "journalDetails": "Journal Details"
     },
     "noDetailsMessage": "No specific Conference analysis details available for this request."
   },
@@ -898,35 +906,42 @@
     "details": "Details",
     "context": "Context"
   },
-  "JournalTableHeader": {
-    "columnTitles": {
-      "select": "Select",
-      "journalTitle": "Journal Title",
-      "sourceId": "Source ID",
-      "batchRequestId": "Request ID",
-      "dataSource": "Data Source",
-      "status": "Status",
-      "duration": "Duration",
-      "bioxbio": "Bioxbio",
-      "scimagoDetails": "Scimago Det.",
-      "imageSearch": "Image",
-      "jsonlWrite": "JSONL",
-      "errors": "Errors"
-    },
-    "sortTooltip": "Sort by {column}",
-    "filterPlaceholder": "Filter {column}...",
-    "filterByCountLevelTitle": "Filter by {{field}} count level",
-    "filterByDataSourceTitle": "Filter by data source",
-    "filterOptions": {
-      "all": "All",
-      "any": "Any",
-      "none": "None"
-    },
-    "dataSourceOptions": {
-      "scimago": "Scimago",
-      "client": "Client"
-    },
-    "selectAllTooltip": "Select/Deselect all visible rows"
+  "JournalDetailsPage": {
+    "title": "Detailed Journal Analysis"
+  },
+  "JournalCrawl": {
+    "fileLabel": "Upload Journal List (CSV, Semicolon-delimited ';')",
+    "processing": "Processing...",
+    "changeFile": "Change File",
+    "chooseFile": "Choose File",
+    "nextStep": "Next Step",
+    "reviewAndStartBackendCrawl": "Review & Start Backend Crawl",
+    "selectedJournalsCount": "{count, plural, =0 {No journals selected} one {# journal selected} other {# journals selected}} for review",
+    "title": "Title",
+    "issn": "ISSN",
+    "intendedAction": "Intended Action",
+    "resetAll": "Reset All",
+    "back": "Back",
+    "crawlingBackend": "Crawling...",
+    "startBackendCrawlButton": "Start Backend Crawl",
+    "mainTitle": "Journal Crawl and Database Import",
+    "statusAndResults": "Process Status & Logs",
+    "checkingJournalsDB": "Checking journals against database...",
+    "dbCheckError": "Database Check Error",
+    "dbCheckSummaryTitle": "Database Check Summary",
+    "totalProcessed": "Total Processed (DB Check)",
+    "alreadyInDB": "Already in DB",
+    "newToDB": "New to DB",
+    "dbCheckLogTitle": "Database Check Log",
+    "backendCrawlInProgress": "Backend crawl in progress... This may take a while.",
+    "backendCrawlError": "Backend Crawl Error",
+    "backendCrawlSuccess": "Backend crawl request completed successfully. Check backend logs for details.",
+    "backendCrawlFailed": "Backend crawl request failed. Check logs for details.",
+    "backendCrawlLogTitle": "Backend Crawl Log",
+    "reading": "Reading file...",
+    "error": "Error",
+    "summary": "Summary",
+    "detailedResults": "Detailed Results"
   },
   "JournalTableRow": {
     "selectRowAria": "Select journal {title}",
@@ -934,6 +949,23 @@
     "collapse": "Collapse",
     "expand": "Expand",
     "errorCountTooltip": "{count, plural, =0 {No errors} one {# error} other {# errors}}",
+    "statusNames": {
+      "completed": "Completed",
+      "failed": "Failed",
+      "processing": "Processing",
+      "pending": "Pending",
+      "skipped": "Skipped",
+      "unknown": "Unknown"
+    },
+    "saveStatus": {
+      "alreadySaved": "Already saved to database",
+      "saving": "Saving to database...",
+      "saveSuccess": "Successfully saved to database",
+      "saveError": "Error saving to database",
+      "cannotSaveWithErrors": "Cannot save, item has errors",
+      "readyToSave": "Ready to save to database"
+    },
+    "unknownError": "Unknown error",
     "expanded": {
       "basicInfoTitle": "Basic Information",
       "startTimeLabel": "Start Time",
@@ -951,14 +983,62 @@
       "no": "No",
       "na": "N/A"
     },
-    "statusNames": {
-      "completed": "Completed",
-      "failed": "Failed",
-      "processing": "Processing",
-      "pending": "Pending",
-      "skipped": "Skipped",
-      "unknown": "Unknown"
+    "success": "Success",
+    "cacheUsed": "Cache Used",
+    "yes": "Yes",
+    "no": "No",
+    "na": "N/A"
+  },
+  "JournalTable": {
+    "noDataMessage": "No journal data available to display."
+  },
+  "JournalTableControls": {
+    "searchPlaceholder": "Search journals (title, source ID...)",
+    "selectAllTitle": "Select All Visible",
+    "selectNoErrorTitle": "Select All with No Errors",
+    "selectErrorTitle": "Select All with Errors",
+    "deselectAllTitle": "Deselect All",
+    "reCrawlDisabledTitle": "Select journals to re-crawl",
+    "reCrawlSelectedTitle": "Re-crawl {count, plural, =0 {selected journals} one {# selected journal} other {# selected journals}}",
+    "reCrawlButtonText": "Re-crawl Selected",
+    "saveButton": {
+      "saving": "Saving...",
+      "saved": "Saved",
+      "saveError": "Save Error",
+      "saveSelected": "Save Selected ({count})",
+      "disabledTooltip": "Select journals to save",
+      "tooltip": "Save selected journals to database"
     }
+  },
+  "JournalTableHeader": {
+    "columnTitles": {
+      "select": "Select",
+      "journalTitle": "Journal Title",
+      "sourceId": "Source ID",
+      "dataSource": "Data Source",
+      "status": "Status",
+      "duration": "Duration",
+      "bioxbio": "Bioxbio",
+      "scimagoDetails": "Scimago Det.",
+      "imageSearch": "Image",
+      "jsonlWrite": "JSONL",
+      "errors": "Errors",
+      "save": "Save Status"
+    },
+    "sortTooltip": "Sort by {column}",
+    "filterPlaceholder": "Filter {column}...",
+    "filterByCountLevelTitle": "Filter by {field} count level",
+    "filterByDataSourceTitle": "Filter by data source",
+    "filterOptions": {
+      "all": "All",
+      "any": "Any",
+      "none": "None"
+    },
+    "dataSourceOptions": {
+      "scimago": "Scimago",
+      "client": "Client"
+    },
+    "selectAllTooltip": "Select/Deselect all visible rows"
   },
   "ScimagoCharts": {
     "detailPageStatusTitle": "Scimago Detail Page Status",
@@ -1044,37 +1124,29 @@
       "clientCsvParsed": "Client CSV Parsed"
     }
   },
-  "JournalTable": {
-    "noDataMessage": "No data available."
+  "BioxbioCharts": {
+    "fetchStatusTitle": "Bioxbio Fetch Status",
+    "noFetchStatusData": "No Bioxbio fetch status data.",
+    "cacheStatusTitle": "Bioxbio Cache Status",
+    "noCacheStatusData": "No Bioxbio cache status data.",
+    "topErrorsTitle": "Top Bioxbio Errors",
+    "noErrorsData": "No Bioxbio error data.",
+    "common": {
+      "count": "Count"
+    }
   },
-  "JournalTableControls": {
-    "searchPlaceholder": "Search journals (title, source ID...)",
-    "selectAllTitle": "Select All",
-    "selectNoErrorTitle": "Select All Journals with No Errors",
-    "selectErrorTitle": "Select All Journals with Errors",
-    "deselectAllTitle": "Deselect All",
-    "reCrawlDisabledTitle": "Select journals to re-crawl",
-    "reCrawlSelectedTitle": "Re-crawl {{count}} selected journals",
-    "reCrawlButtonText": "Re-crawl Selected"
-  },
-  "JournalCrawl": {
-    "title": "Journal Crawl & Update",
-    "fileLabel": "Upload Journal List (CSV)",
-    "reading": "Reading file...",
-    "changeFile": "Change File",
-    "chooseFile": "Choose File",
-    "sendingData": "Sending data...",
-    "sendAgain": "Send Again",
-    "startCrawl": "Start Crawl",
-    "reset": "Reset",
-    "statusAndResults": "Crawl Status & Results",
-    "checkingJournals": "Checking journals and initiating crawl...",
-    "error": "Error",
-    "summary": "Summary",
-    "totalProcessed": "Total Processed",
-    "alreadyCrawled": "Already Crawled",
-    "newJournals": "New Journals",
-    "detailedResults": "Detailed Results"
+  "GeneralJournalCharts": {
+    "overallStatusTitle": "Overall Journal Status",
+    "noOverallStatusData": "No overall journal status data.",
+    "dataSourceTitle": "Journal Data Source Distribution",
+    "noDataSourceData": "No journal data source distribution data.",
+    "playwrightAccessTitle": "Playwright Access Status",
+    "noPlaywrightData": "No Playwright access status data.",
+    "topErrorsTitle": "Top Aggregated Errors",
+    "noAggregatedErrorsData": "No aggregated error data.",
+    "common": {
+      "count": "Count"
+    }
   },
   "AnalysisHeader": {
     "headerText": {
