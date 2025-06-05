@@ -21,7 +21,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Pagination, PaginationContent, PaginationItem, PaginationPrevious, PaginationLink, PaginationNext } from '@/components/ui/pagination';
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationPrevious,
+  PaginationLink,
+  PaginationNext,
+  PaginationEllipsis // Import PaginationEllipsis
+} from '@/components/ui/pagination';
 import { BanUserDialog } from './BanUserDialog';
 import { useTranslations } from 'next-intl';
 import '@/src/styles/theme.scss';
@@ -72,6 +80,41 @@ export default function UsersPage({ params: { locale } }: { params: { locale: st
     }
   }, [isLoggedIn, isInitializing, locale, router]);
 
+  // Hàm trợ giúp để tạo danh sách các trang cần hiển thị trong phân trang
+  // Hiển thị trang đầu tiên, trang cuối cùng, và một số trang xung quanh trang hiện tại,
+  // sử dụng dấu ba chấm để biểu thị các trang bị bỏ qua.
+  const getPaginationPages = (currentPage: number, totalPages: number, pageRange = 2) => {
+    const pages: (number | 'ellipsis')[] = [];
+    // Đảm bảo không hiển thị số trang âm hoặc lớn hơn tổng số trang
+    const startPage = Math.max(1, currentPage - pageRange);
+    const endPage = Math.min(totalPages, currentPage + pageRange);
+
+    // Thêm trang đầu tiên và dấu ba chấm nếu cần
+    if (startPage > 1) {
+      pages.push(1);
+      if (startPage > 2) { // Chỉ thêm dấu ba chấm nếu có hơn một trang bị bỏ qua
+        pages.push('ellipsis');
+      }
+    }
+
+    // Thêm các trang xung quanh trang hiện tại
+    for (let i = startPage; i <= endPage; i++) {
+      pages.push(i);
+    }
+
+    // Thêm trang cuối cùng và dấu ba chấm nếu cần
+    if (endPage < totalPages) {
+      if (endPage < totalPages - 1) { // Chỉ thêm dấu ba chấm nếu có hơn một trang bị bỏ qua
+        pages.push('ellipsis');
+      }
+      pages.push(totalPages);
+    }
+
+    return pages;
+  };
+
+  const paginationPages = getPaginationPages(state.page, totalPages);
+
   if (isInitializing || isLoading) {
     return (
       <div className="flex items-center justify-center w-full min-h-[50vh] text-[var(--color-text-primary)]">
@@ -94,17 +137,20 @@ export default function UsersPage({ params: { locale } }: { params: { locale: st
         <Input
           placeholder={t('searchPlaceholder')}
           value={state.search}
-          onChange={(e) => setState((prev: UserManagementState) => ({ ...prev, search: e.target.value }))}
+          // Reset về trang 1 khi tìm kiếm mới
+          onChange={(e) => setState((prev: UserManagementState) => ({ ...prev, search: e.target.value, page: 1 }))}
           className="max-w-sm border-[var(--color-input-border)] text-[var(--color-text-primary)] focus:border-[var(--color-input-focus-border)] focus:ring-[var(--color-input-focus-ring)]"
         />
         <Select
           value={state.status || 'all'}
-          onValueChange={(value) => setState((prev: UserManagementState) => ({ ...prev, status: value === 'all' ? '' : value }))}
+          // Reset về trang 1 khi thay đổi trạng thái lọc
+          onValueChange={(value) => setState((prev: UserManagementState) => ({ ...prev, status: value === 'all' ? '' : value, page: 1 }))}
         >
           <SelectTrigger className="w-[180px] bg-[var(--color-bg-white)] border-[var(--color-input-border)] text-[var(--color-text-primary)] hover:border-[var(--color-primary)] focus:border-[var(--color-primary)] focus:ring-[var(--color-primary)]">
             <SelectValue placeholder={t('statusAll')} />
           </SelectTrigger>
-          <SelectContent>
+          {/* Đổi màu bg và cho nó đè lên trên (z-index) */}
+          <SelectContent className="bg-[var(--color-bg-white)] z-50 shadow-lg border-[var(--color-input-border)]">
             <SelectItem value="all">{t('statusAll')}</SelectItem>
             <SelectItem value="active">{t('statusActive')}</SelectItem>
             <SelectItem value="banned">{t('statusBanned')}</SelectItem>
@@ -129,62 +175,93 @@ export default function UsersPage({ params: { locale } }: { params: { locale: st
               </TableRow>
             </TableHeader>
             <TableBody>
-              {users.map((user: User) => (
-                <TableRow key={user.id} className="hover:bg-[var(--color-table-hover-bg)]">
-                  <TableCell className="text-[var(--color-text-primary)]">{`${user.firstName} ${user.lastName}`}</TableCell>
-                  <TableCell className="text-[var(--color-text-primary)]">{user.email}</TableCell>
-                  <TableCell>
-                    <span className={`px-2 py-1 rounded ${
-                      user.isBanned 
-                        ? 'bg-[var(--color-status-error-light)] text-[var(--color-status-error)]' 
-                        : 'bg-[var(--color-status-success-light)] text-[var(--color-status-success)]'
-                    }`}>
-                      {user.isBanned ? t('statusBanned') : t('statusActive')}
-                    </span>
-                  </TableCell>
-                  <TableCell className="text-[var(--color-text-primary)]">{new Date(user.createdAt).toLocaleDateString()}</TableCell>
-                  <TableCell>
-                    <Button
-                      variant="outline"
-                      onClick={() => {
-                        setSelectedUser(user);
-                        setIsBanDialogOpen(true);
-                      }}
-                      className="border-[var(--color-button-outline-border)] text-[var(--color-text-primary)] hover:bg-[var(--color-button-outline-hover-bg)] hover:text-[var(--color-button-outline-hover-text)]"
-                    >
-                      {user.isBanned ? t('unban') : t('ban')}
-                    </Button>
+              {users.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={5} className="text-center text-[var(--color-text-secondary)] py-4">
+                    {t('noUsersFound')}
                   </TableCell>
                 </TableRow>
-              ))}
+              ) : (
+                users.map((user: User) => (
+                  <TableRow key={user.id} className="hover:bg-[var(--color-table-hover-bg)]">
+                    <TableCell className="text-[var(--color-text-primary)]">{`${user.firstName} ${user.lastName}`}</TableCell>
+                    <TableCell className="text-[var(--color-text-primary)]">{user.email}</TableCell>
+                    <TableCell>
+                      <span className={`px-2 py-1 rounded ${
+                        user.isBanned
+                          ? 'bg-[var(--color-status-error-light)] text-[var(--color-status-error)]'
+                          : 'bg-[var(--color-status-success-light)] text-[var(--color-status-success)]'
+                      }`}>
+                        {user.isBanned ? t('statusBanned') : t('statusActive')}
+                      </span>
+                    </TableCell>
+                    <TableCell className="text-[var(--color-text-primary)]">{new Date(user.createdAt).toLocaleDateString()}</TableCell>
+                    <TableCell>
+                      <Button
+                        variant="outline"
+                        onClick={() => {
+                          setSelectedUser(user);
+                          setIsBanDialogOpen(true);
+                        }}
+                        className="border-[var(--color-button-outline-border)] text-[var(--color-text-primary)] hover:bg-[var(--color-button-outline-hover-bg)] hover:text-[var(--color-button-outline-hover-text)]"
+                      >
+                        {user.isBanned ? t('unban') : t('ban')}
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
             </TableBody>
           </Table>
 
-          <div className="mt-4">
-            <Pagination>
-              <PaginationContent>
-                <PaginationItem>
-                  <PaginationPrevious 
-                    onClick={() => setState((prev: UserManagementState) => ({ ...prev, page: prev.page - 1 }))}
-                    aria-disabled={state.page === 1}
-                    className={state.page === 1 ? 'pointer-events-none opacity-50' : ''}
-                  />
-                </PaginationItem>
-                <PaginationItem>
-                  <PaginationLink isActive>
-                    {state.page}
-                  </PaginationLink>
-                </PaginationItem>
-                <PaginationItem>
-                  <PaginationNext
-                    onClick={() => setState((prev: UserManagementState) => ({ ...prev, page: prev.page + 1 }))}
-                    aria-disabled={state.page === totalPages}
-                    className={state.page === totalPages ? 'pointer-events-none opacity-50' : ''}
-                  />
-                </PaginationItem>
-              </PaginationContent>
-            </Pagination>
-          </div>
+          {totalPages > 0 && ( // Chỉ hiển thị phân trang nếu có trang dữ liệu
+            <div className="mt-4">
+              <Pagination>
+                <PaginationContent>
+                  <PaginationItem>
+                    <PaginationPrevious
+                      onClick={() => setState((prev: UserManagementState) => ({ ...prev, page: prev.page - 1 }))}
+                      aria-disabled={state.page === 1}
+                      className={`${state.page === 1 ? 'pointer-events-none opacity-50' : ''} text-[var(--color-text-primary)] hover:bg-[var(--color-button-outline-hover-bg)]`}
+                    />
+                  </PaginationItem>
+
+                  {paginationPages.map((page, index) => (
+                    <PaginationItem key={index}>
+                      {page === 'ellipsis' ? (
+                        <PaginationEllipsis className="text-[var(--color-text-primary)]" />
+                      ) : (
+                        <PaginationLink
+                          onClick={() => setState((prev: UserManagementState) => ({ ...prev, page: page as number }))}
+                          isActive={state.page === page}
+                          className={`
+                            text-[var(--color-text-primary)]
+                            ${state.page === page
+                               ? 'bg-[var(--color-primary)] text-[var(--color-button-primary-text)] hover:bg-[var(--color-primary)]' // Active state
+                               : 'hover:bg-[var(--color-button-outline-hover-bg)]' // Hover state for non-active
+                            }
+                          `}
+                        >
+                          {page}
+                        </PaginationLink>
+                      )}
+                    </PaginationItem>
+                  ))}
+
+                  <PaginationItem>
+                    <PaginationNext
+                      onClick={() => setState((prev: UserManagementState) => ({ ...prev, page: prev.page + 1 }))}
+                      aria-disabled={state.page === totalPages}
+                      className={`${state.page === totalPages ? 'pointer-events-none opacity-50' : ''} text-[var(--color-text-primary)] hover:bg-[var(--color-button-outline-hover-bg)]`}
+                    />
+                  </PaginationItem>
+                </PaginationContent>
+              </Pagination>
+              <div className="text-sm text-center text-[var(--color-text-secondary)] mt-2">
+                {t('pageInfo', { current: state.page, total: totalPages })}
+              </div>
+            </div>
+          )}
         </>
       )}
 
