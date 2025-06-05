@@ -4,24 +4,24 @@
 
 import React from 'react';
 import { useTranslations } from 'next-intl';
-import { Link } from '@/src/navigation';
-import { usePathname } from 'next/navigation';
-import GlobeIcon from '@/src/app/icons/globe'; // Assuming this is still a custom React component for your logo
+import { Link, AppPathname } from '@/src/navigation'; // Import AppPathname
+import { usePathname } from 'next/navigation'; // This is from next/navigation (includes locale)
+import GlobeIcon from '@/src/app/icons/globe';
 
 // Import React Icons
 import {
-  FaDatabase, // For Crawl/Analysis (something related to data/processing)
-  FaChartBar, // Alternative for Analysis
-  FaShieldAlt, // For Moderation
-  FaBookOpen, // For Conferences (something related to documents/knowledge)
+  FaDatabase,
+  FaChartBar,
+  FaShieldAlt,
+  FaBookOpen,
   FaKey,
-  FaUser, // For Request_Admin
-} from 'react-icons/fa'; // Using Font Awesome icons from react-icons
+  FaUser,
+} from 'react-icons/fa';
 
 interface MenuItem {
   label: string;
   icon: JSX.Element;
-  hrefSegment: string;
+  href: AppPathname; // Changed from hrefSegment to href, and typed as AppPathname
 }
 
 interface DashboardSidebarProps {
@@ -33,44 +33,40 @@ interface DashboardSidebarProps {
 
 export default function DashboardSidebar({ isSidebarOpen, locale, sidebarWidth, headerHeight }: DashboardSidebarProps) {
   const t = useTranslations('');
+  const currentPathname = usePathname(); // from next/navigation, e.g., /en/dashboard/crawl
 
-  const pathname = usePathname();
-
-  // Define menu items using React Icons
   const menuItems: MenuItem[] = [
     {
       label: t('Crawl'),
-      icon: <FaDatabase className="h-5 w-5" />, // Icon for Crawl (data collection)
-      hrefSegment: 'crawl'
+      icon: <FaDatabase className="h-5 w-5" />,
+      href: '/dashboard/crawl', // Use the full, typed path
     },
     {
       label: t('Analysis'),
-      icon: <FaChartBar className="h-5 w-5" />, // Icon for Analysis (charts/reports)
-      hrefSegment: 'logAnalysis'
+      icon: <FaChartBar className="h-5 w-5" />,
+      href: '/dashboard/logAnalysis', // Use the full, typed path
     },
     {
       label: t('Moderation.Moderation'),
-      icon: <FaShieldAlt className="h-5 w-5" />, // Icon for Moderation (security/control)
-      hrefSegment: 'moderation'
+      icon: <FaShieldAlt className="h-5 w-5" />,
+      href: '/dashboard/moderation', // Use the full, typed path
     },
     {
       label: t('Conferences'),
-      icon: <FaBookOpen className="h-5 w-5" />, // Icon for Conferences (documents/library)
-      hrefSegment: 'conferences'
+      icon: <FaBookOpen className="h-5 w-5" />,
+      href: '/dashboard/conferences', // Use the full, typed path
     },
     // {
     //   label: t('Request_Admin'),
-    //   icon: <FaKey className="h-5 w-5" />, // Icon for Request_Admin (key/access)
-    //   hrefSegment: 'requestAdminTab'
+    //   icon: <FaKey className="h-5 w-5" />,
+    //   href: '/dashboard/requestAdminTab', // This is already an AppPathname
     // },
     {
       label: t('Accounts'),
-      icon: <FaUser className="h-5 w-5" />, // Icon for Accounts (users/admins)
-      hrefSegment: 'accounts/users'
+      icon: <FaUser className="h-5 w-5" />,
+      href: '/dashboard/accounts/users', // Use the full, typed path
     },
   ];
-
-  const basePath = `/${locale}/dashboard`;
 
   const sidebarClasses = `
     fixed top-0 left-0
@@ -80,7 +76,7 @@ export default function DashboardSidebar({ isSidebarOpen, locale, sidebarWidth, 
     bg-background
     shadow-md
     z-20
-    w-[${sidebarWidth}px]
+    w-[${sidebarWidth}px] 
     ${isSidebarOpen ? 'translate-x-0' : `-translate-x-full`}
   `;
 
@@ -114,14 +110,14 @@ export default function DashboardSidebar({ isSidebarOpen, locale, sidebarWidth, 
       <nav className='w-full py-2'>
         <ul className='w-full'>
           {menuItems.map(item => {
-            const href = `/dashboard/${item.hrefSegment}`;
-            const fullHrefForCheck = `/${locale}${href}`;
-            const isActive = pathname === fullHrefForCheck || pathname.startsWith(`${fullHrefForCheck}/`);
+            // item.href is now an AppPathname, e.g., "/dashboard/crawl"
+            const fullHrefForCheck = `/${locale}${item.href}`; // e.g., "/en/dashboard/crawl"
+            const isActive = currentPathname === fullHrefForCheck || currentPathname.startsWith(`${fullHrefForCheck}/`);
 
             return (
-              <li className='w-full' key={item.hrefSegment}>
+              <li className='w-full' key={item.href}> {/* Use item.href as key */}
                 <Link
-                  href={href}
+                  href={item.href} // Pass item.href directly (it's already AppPathname)
                   locale={locale}
                   className={`
                     flex h-12 w-full items-center px-4
@@ -137,9 +133,7 @@ export default function DashboardSidebar({ isSidebarOpen, locale, sidebarWidth, 
                     display: 'flex',
                   } as React.CSSProperties}
                 >
-                  {/* Direct use of React Icon component */}
                   <span className={`${isSidebarOpen ? 'mr-2' : 'mr-0'} transition-margin duration-300 ease-in-out`}>
-                    {/* React Icons automatically handle sizing and color via className */}
                     {React.cloneElement(item.icon, {
                       className: `${item.icon.props.className || ''} ${isActive ? 'text-primary' : 'text-gray-600 dark:text-gray-300'}`
                     })}
