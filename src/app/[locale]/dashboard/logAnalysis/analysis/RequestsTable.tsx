@@ -1,8 +1,13 @@
 // src/app/[locale]/dashboard/logAnalysis/analysis/RequestsTable.tsx
 import React from 'react';
-import { FaExternalLinkAlt, FaLink, FaClock, FaStopwatch, FaInfoCircle, FaCheckCircle, FaTimesCircle, FaQuestionCircle, FaEllipsisH, FaListAlt, FaChartPie, FaExclamationTriangle } from 'react-icons/fa';
+import {
+    FaLink, FaClock, FaStopwatch, FaInfoCircle, FaCheckCircle,
+    FaTimesCircle, FaQuestionCircle, FaEllipsisH, FaListAlt, FaChartPie, FaExclamationTriangle,
+    FaSort, FaSortUp, FaSortDown
+} from 'react-icons/fa';
 import { useTranslations } from 'next-intl';
 import { CrawlerType } from '@/src/hooks/logAnalysis/useLogAnalysisData';
+import { SortConfig } from './LogRequestsList';
 
 export interface RequestSummaryShared {
     startTime: string | null;
@@ -11,6 +16,7 @@ export interface RequestSummaryShared {
     status: string | undefined | null;
     originalRequestId?: string | null;
     dataSource?: 'scimago' | 'client' | string;
+    requestId?: string;
 }
 
 export interface ConferenceRequestSummaryForTable extends RequestSummaryShared {
@@ -25,32 +31,43 @@ export interface JournalRequestSummaryForTable extends RequestSummaryShared {
 
 export type RequestSummaryUnionForTable = ConferenceRequestSummaryForTable | JournalRequestSummaryForTable;
 
+export type RequestSortableKey =
+    | 'requestId'
+    | 'originalRequestId'
+    | 'startTime'
+    | 'endTime'
+    | 'durationSeconds'
+    | 'status'
+    | 'processedItemsRatio';
 
 interface RequestsTableProps {
-    requestIds: string[]; // IDs for the current page
+    requestIds: string[];
     requestsData: { [key: string]: RequestSummaryUnionForTable };
     onSelectRequest: (requestId: string) => void;
     formatDateTime: (isoString: string | null | undefined) => string;
     getStatusChipClass: (status: string | undefined | null) => string;
     crawlerType: CrawlerType;
-    totalRequestCount: number; // *** THÊM PROP TỔNG SỐ REQUEST ***
+    totalRequestCount: number;
+    sortConfig: SortConfig;
+    onSort: (key: RequestSortableKey) => void;
 }
 
 const RequestsTable: React.FC<RequestsTableProps> = ({
-    requestIds, // IDs for the current page
+    requestIds,
     requestsData,
     onSelectRequest,
     formatDateTime,
     getStatusChipClass,
     crawlerType,
-    totalRequestCount, // *** NHẬN PROP ***
+    totalRequestCount,
+    sortConfig,
+    onSort,
 }) => {
     const t = useTranslations('RequestsTable');
 
     if (!requestIds || requestIds.length === 0) {
         return null;
     }
-
 
     const getStatusIcon = (status: string | undefined | null) => {
         switch (status?.toLowerCase()) {
@@ -63,7 +80,7 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
                 return <FaTimesCircle className="text-red-500 mr-1" />;
             case 'processing':
                 return <FaStopwatch className="text-blue-500 mr-1 animate-pulse" />;
-            case 'pending': // Giả sử có thể có trạng thái này
+            case 'pending':
                 return <FaEllipsisH className="text-gray-500 mr-1" />;
             case 'skipped':
             case 'nodata':
@@ -79,7 +96,6 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
         return 'bg-red-500';
     };
 
-    // These calculations are for the CURRENT PAGE requests
     let totalProcessedItemsOverall = 0;
     let totalItemsOverallInput = 0;
 
@@ -107,49 +123,60 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
         ? t('tableHeaders.conferenceSuccessRate')
         : t('tableHeaders.journalSuccessRate');
 
+    const renderSortIcon = (columnKey: RequestSortableKey) => {
+        if (!sortConfig || sortConfig.key !== columnKey) {
+            return <FaSort className="ml-1.5 h-3 w-3 text-gray-400 opacity-50 group-hover:opacity-100" />;
+        }
+        if (sortConfig.direction === 'ascending') {
+            return <FaSortUp className="ml-1.5 h-3 w-3 text-blue-500" />;
+        }
+        return <FaSortDown className="ml-1.5 h-3 w-3 text-blue-500" />;
+    };
+
+    const SortableHeader: React.FC<{ columnKey: RequestSortableKey; children: React.ReactNode; className?: string }> = ({ columnKey, children, className = "" }) => (
+        <th
+            scope="col"
+            className={`px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer group ${className}`}
+            onClick={() => onSort(columnKey)}
+        >
+            <div className="flex items-center">
+                {children}
+                {renderSortIcon(columnKey)}
+            </div>
+        </th>
+    );
+
     return (
         <div className="overflow-x-auto border border-gray-200 rounded-lg shadow-sm">
             <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-10"> {/* Sửa bg-gray-5 thành bg-gray-10 để đồng nhất nếu cần */}
+                <thead className="bg-gray-10">
                     <tr>
-                        <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            <div className="flex items-center">
-                                <FaListAlt className="mr-1.5 h-3.5 w-3.5 text-gray-400" /> {t('tableHeaders.requestId')}
-                            </div>
-                        </th>
-                        <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            <div className="flex items-center">
-                                <FaLink className="mr-1.5 h-3.5 w-3.5 text-gray-400" /> {t('tableHeaders.originalRequestId')}
-                            </div>
-                        </th>
-                        <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            <div className="flex items-center">
-                                <FaClock className="mr-1.5 h-3.5 w-3.5 text-gray-400" /> {t('tableHeaders.startTime')}
-                            </div>
-                        </th>
-                        <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            <div className="flex items-center">
-                                <FaClock className="mr-1.5 h-3.5 w-3.5 text-gray-400" /> {t('tableHeaders.endTime')}
-                            </div>
-                        </th>
-                        <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            <div className="flex items-center">
-                                <FaStopwatch className="mr-1.5 h-3.5 w-3.5 text-gray-400" /> {t('tableHeaders.duration')}
-                            </div>
-                        </th>
-                        <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            <div className="flex items-center">
-                                <FaInfoCircle className="mr-1.5 h-3.5 w-3.5 text-gray-400" /> {t('tableHeaders.status')}
-                            </div>
-                        </th>
-                        <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            <div className="flex items-center">
-                                <FaChartPie className="mr-1.5 h-3.5 w-3.5 text-gray-400" /> {successRateColumnHeader}
-                            </div>
-                        </th>
+                        <SortableHeader columnKey="requestId">
+                            <FaListAlt className="mr-1.5 h-3.5 w-3.5 text-gray-400" /> {t('tableHeaders.requestId')}
+                        </SortableHeader>
+                        <SortableHeader columnKey="originalRequestId">
+                            <FaLink className="mr-1.5 h-3.5 w-3.5 text-gray-400" /> {t('tableHeaders.originalRequestId')}
+                        </SortableHeader>
+                        <SortableHeader columnKey="startTime">
+                            <FaClock className="mr-1.5 h-3.5 w-3.5 text-gray-400" /> {t('tableHeaders.startTime')}
+                        </SortableHeader>
+                        <SortableHeader columnKey="endTime">
+                            <FaClock className="mr-1.5 h-3.5 w-3.5 text-gray-400" /> {t('tableHeaders.endTime')}
+                        </SortableHeader>
+                        <SortableHeader columnKey="durationSeconds">
+                            <FaStopwatch className="mr-1.5 h-3.5 w-3.5 text-gray-400" /> {t('tableHeaders.duration')}
+                        </SortableHeader>
+                        <SortableHeader columnKey="status">
+                            <FaInfoCircle className="mr-1.5 h-3.5 w-3.5 text-gray-400" /> {t('tableHeaders.status')}
+                        </SortableHeader>
+                        <SortableHeader columnKey="processedItemsRatio">
+                            <FaChartPie className="mr-1.5 h-3.5 w-3.5 text-gray-400" /> {successRateColumnHeader}
+                        </SortableHeader>
+                        {/* REMOVED ACTIONS HEADER
                         <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             {t('tableHeaders.actions')}
                         </th>
+                        */}
                     </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
@@ -177,9 +204,17 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
                         const textColorForProgressBar = 'text-gray-700';
 
                         return (
-                            <tr key={reqId} className="hover:bg-gray-10 transition-colors duration-150"> {/* Sửa bg-gray-5 thành bg-gray-10 */}
+                            <tr key={reqId} className="hover:bg-gray-10 transition-colors duration-150">
                                 <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900 break-all">
-                                    {reqId}
+                                    {/* MODIFIED: Make requestId clickable */}
+                                    <button
+                                        onClick={() => onSelectRequest(reqId)}
+                                        className="text-blue-600 hover:text-blue-800 hover:underline focus:outline-none font-medium"
+                                        title={t('viewDetailsForRequestAriaLabel', { requestId: reqId })} // Use existing translation or create a new one for title
+                                        aria-label={t('viewDetailsForRequestAriaLabel', { requestId: reqId })}
+                                    >
+                                        {reqId}
+                                    </button>
                                 </td>
                                 <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600 break-all">
                                     {details?.originalRequestId ? (
@@ -232,6 +267,7 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
                                         <span className="text-gray-400 text-xs">{t('common.na')}</span>
                                     )}
                                 </td>
+                                {/* REMOVED ACTIONS CELL
                                 <td className="px-4 py-3 whitespace-nowrap text-sm font-medium">
                                     <button
                                         onClick={() => onSelectRequest(reqId)}
@@ -241,27 +277,24 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
                                         {t('viewDetailsButton')} <FaExternalLinkAlt className="ml-1.5 h-3 w-3 text-blue-500 group-hover:text-blue-700 transition-colors duration-150" />
                                     </button>
                                 </td>
+                                */}
                             </tr>
                         );
                     })}
                 </tbody>
-                {/* *** CẬP NHẬT TFOOT *** */}
-                {totalItemsOverallInput > 0 && ( // totalItemsOverallInput là của trang hiện tại
+                {totalItemsOverallInput > 0 && (
                     <tfoot className="bg-gray-10 border-t border-gray-200">
                         <tr>
                             <td colSpan={6} className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
                                 <div className="flex items-center font-semibold">
                                     <FaChartPie className="mr-2 h-4 w-4 text-gray-600" />
-                                    {t('tableFooter.totalSuccessRate')}: {/* Đây là success rate của trang hiện tại */}
+                                    {t('tableFooter.totalSuccessRate')}:
                                 </div>
                             </td>
-                            <td className="px-4 py-3 whitespace-nowrap text-sm font-bold text-gray-900">
+                            <td className="px-4 py-3 whitespace-nowrap text-sm text-center pr-8 font-bold text-gray-900">
                                 {totalProcessedItemsOverall} / {totalItemsOverallInput} ({overallSuccessRatePercentageString}%)
                             </td>
-                            {/* Ô này trước đây trống, giờ hiển thị tổng số request */}
-                            <td className="px-4 py-3 whitespace-nowrap text-sm font-semibold text-gray-700 text-right">
-                                {t('tableFooter.totalAllRequests', { count: totalRequestCount })}
-                            </td>
+                         
                         </tr>
                     </tfoot>
                 )}

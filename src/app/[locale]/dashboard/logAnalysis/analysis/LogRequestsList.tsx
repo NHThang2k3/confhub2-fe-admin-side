@@ -1,7 +1,8 @@
 // src/app/[locale]/dashboard/logAnalysis/analysis/LogRequestsList.tsx
-import React, { useState } from 'react'; // *** THÊM useState ***
-import { FaListAlt, FaChevronUp, FaChevronDown, FaInfoCircle, FaChartBar, FaFileAlt } from 'react-icons/fa'; // *** THÊM ICONS CHO TABS ***
-import RequestsTable from './RequestsTable';
+import React, { useState, useMemo } from 'react';
+import { FaListAlt, FaChevronUp, FaChevronDown, FaInfoCircle, FaChartBar, FaFileAlt } from 'react-icons/fa';
+// Giả sử RequestSortableKey được export từ RequestsTable.tsx
+import RequestsTable, { RequestSummaryUnionForTable, RequestSortableKey, ConferenceRequestSummaryForTable, JournalRequestSummaryForTable } from './RequestsTable';
 import NoDataDisplay from './NoDataDisplay';
 import { useTranslations } from 'next-intl';
 import { LogAnalysisResultUnion, CrawlerType } from '@/src/hooks/logAnalysis/useLogAnalysisData';
@@ -9,11 +10,17 @@ import ConferenceOverallSummary from '../overallSummary/ConferenceOverallSummary
 import JournalOverallSummary from '../journalOverallSummary/JournalOverallSummary';
 import { ConferenceLogAnalysisResult } from '@/src/models/logAnalysis';
 import { JournalLogAnalysisResult } from '@/src/models/logAnalysis/logAnalysisJournal.types';
-import RequestsOverallSummary from '../overallSummary/RequestsOverallSummary'; // *** IMPORT COMPONENT MỚI ***
+import RequestsOverallSummary from '../overallSummary/RequestsOverallSummary';
 import GeneralPagination from '../../../utils/GeneralPagination';
-const ITEMS_PER_PAGE = 10;
 
-type SummaryViewType = 'requests' | 'details'; // *** TYPE CHO VIEW SUMMARY ***
+
+const ITEMS_PER_PAGE = 10;
+type SummaryViewType = 'requests' | 'details';
+
+export interface SortConfig {
+    key: RequestSortableKey;
+    direction: 'ascending' | 'descending';
+}
 
 interface LogRequestsListProps {
     isExpanded: boolean;
@@ -22,14 +29,16 @@ interface LogRequestsListProps {
     onSelectRequest: (requestId: string) => void;
     formatDateTime: (isoString: string | null | undefined) => string;
     getStatusChipClass: (status: string | undefined | null) => string;
-    isSummaryExpandedOverall: boolean; // This controls the entire summary section visibility
-    onToggleSummaryOverall: () => void; // This controls the entire summary section visibility
+    isSummaryExpandedOverall: boolean;
+    onToggleSummaryOverall: () => void;
     getNoDataMessage: () => string;
-    hasOverallDataForDisplay: boolean; // Used to decide if summary section should be shown AT ALL
+    hasOverallDataForDisplay: boolean;
     crawlerType: CrawlerType;
     currentPage: number;
     onPageChange: (page: number) => void;
-    totalRequestCount: number; // Prop này đã được thêm ở bước trước
+    totalRequestCount: number;
+    sortConfig: SortConfig;
+    onSort: (key: RequestSortableKey) => void;
 }
 
 const LogRequestsList: React.FC<LogRequestsListProps> = ({
@@ -46,23 +55,108 @@ const LogRequestsList: React.FC<LogRequestsListProps> = ({
     crawlerType,
     currentPage,
     onPageChange,
-    totalRequestCount
+    totalRequestCount,
+    sortConfig,
+    onSort,
 }) => {
     const t = useTranslations('LogRequestsList');
     const tCommon = useTranslations('Common');
-
-    // *** STATE ĐỂ QUẢN LÝ VIEW SUMMARY NÀO ĐANG ACTIVE ***
     const [activeSummaryView, setActiveSummaryView] = useState<SummaryViewType>('requests');
 
-    const allRequestIds = data.analyzedRequestIds || [];
-    const hasRequestsData = allRequestIds.length > 0;
+    const allRequestIdsOriginal = data.analyzedRequestIds || [];
+    const requestsData = data.requests as { [key: string]: RequestSummaryUnionForTable };
 
-    const totalPages = Math.ceil(allRequestIds.length / ITEMS_PER_PAGE);
+    const sortedRequestIds = useMemo(() => {
+        const sortableArray = [...allRequestIdsOriginal];
+
+        sortableArray.sort((aId, bId) => {
+            const aItem = requestsData[aId];
+            const bItem = requestsData[bId];
+
+            if (!aItem || !bItem) return 0;
+
+            let aValue: any;
+            let bValue: any;
+
+            // Xử lý riêng cho 'processedItemsRatio'
+            if (sortConfig.key === 'processedItemsRatio') {
+                if (crawlerType === 'conference') {
+                    const aConf = aItem as ConferenceRequestSummaryForTable;
+                    const bConf = bItem as ConferenceRequestSummaryForTable;
+                    aValue = (aConf.totalConferencesInputForRequest ?? 0) > 0 ? (aConf.processedConferencesCountForRequest ?? 0) / aConf.totalConferencesInputForRequest! : -1;
+                    bValue = (bConf.totalConferencesInputForRequest ?? 0) > 0 ? (bConf.processedConferencesCountForRequest ?? 0) / bConf.totalConferencesInputForRequest! : -1;
+                } else { // journal
+                    const aJourn = aItem as JournalRequestSummaryForTable;
+                    const bJourn = bItem as JournalRequestSummaryForTable;
+                    aValue = (aJourn.totalJournalsInputForRequest ?? 0) > 0 ? (aJourn.processedJournalsCountForRequest ?? 0) / aJourn.totalJournalsInputForRequest! : -1;
+                    bValue = (bJourn.totalJournalsInputForRequest ?? 0) > 0 ? (bJourn.processedJournalsCountForRequest ?? 0) / bJourn.totalJournalsInputForRequest! : -1;
+                }
+            } else {
+                // Với các key khác, chúng ta có thể giả định chúng tồn tại trên RequestSummaryShared
+                // hoặc là `requestId` (là key của object, không phải property của aItem/bItem)
+                if (sortConfig.key === 'requestId') {
+                    aValue = aId;
+                    bValue = bId;
+                } else {
+                    // ép kiểu aItem và bItem thành `any` để TypeScript cho phép truy cập động,
+                    // nhưng cần cẩn thận vì điều này bỏ qua type checking cho các key này.
+                    // Một cách an toàn hơn là kiểm tra key cụ thể và ép kiểu.
+                    aValue = (aItem as any)[sortConfig.key];
+                    bValue = (bItem as any)[sortConfig.key];
+                }
+            }
+
+
+            // Xử lý chuyển đổi kiểu dữ liệu sau khi đã lấy giá trị
+            switch (sortConfig.key) {
+                case 'startTime':
+                case 'endTime':
+                    aValue = aValue ? new Date(aValue).getTime() : (sortConfig.direction === 'ascending' ? Infinity : -Infinity);
+                    bValue = bValue ? new Date(bValue).getTime() : (sortConfig.direction === 'ascending' ? Infinity : -Infinity);
+                    break;
+                case 'durationSeconds':
+                    aValue = aValue ?? (sortConfig.direction === 'ascending' ? Infinity : -Infinity);
+                    bValue = bValue ?? (sortConfig.direction === 'ascending' ? Infinity : -Infinity);
+                    break;
+                case 'status':
+                    aValue = String(aValue ?? '').toLowerCase();
+                    bValue = String(bValue ?? '').toLowerCase();
+                    break;
+                case 'requestId': // Đã xử lý ở trên, giờ chỉ cần đảm bảo so sánh string
+                case 'originalRequestId':
+                    aValue = String(aValue ?? '').toLowerCase();
+                    bValue = String(bValue ?? '').toLowerCase();
+                    break;
+                // case 'processedItemsRatio': đã được xử lý riêng ở trên
+                default:
+                    // Mặc định, nếu là số thì giữ, không thì chuyển sang string để so sánh
+                    if (typeof aValue === 'number' && typeof bValue === 'number') {
+                        // no change
+                    } else {
+                        aValue = String(aValue ?? '').toLowerCase();
+                        bValue = String(bValue ?? '').toLowerCase();
+                    }
+                    break;
+            }
+
+
+            if (aValue < bValue) {
+                return sortConfig.direction === 'ascending' ? -1 : 1;
+            }
+            if (aValue > bValue) {
+                return sortConfig.direction === 'ascending' ? 1 : -1;
+            }
+            return 0;
+        });
+        return sortableArray;
+    }, [allRequestIdsOriginal, requestsData, sortConfig, crawlerType]);
+
+
+    const hasRequestsData = sortedRequestIds.length > 0;
+    const totalPages = Math.ceil(sortedRequestIds.length / ITEMS_PER_PAGE);
     const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
     const endIndex = startIndex + ITEMS_PER_PAGE;
-    const paginatedRequestIds = allRequestIds.slice(startIndex, endIndex);
-
-    const requestsDataForTable = data.requests as { [key: string]: { startTime: string | null; endTime: string | null; status: string | undefined | null; durationSeconds: number | null; } };
+    const paginatedRequestIds = sortedRequestIds.slice(startIndex, endIndex);
 
     const summaryNavButtonBaseClass = "px-4 py-2 text-sm font-medium focus:outline-none transition-colors duration-150 ease-in-out flex items-center";
     const summaryNavButtonActiveClass = "bg-blue-600 text-white";
@@ -93,18 +187,20 @@ const LogRequestsList: React.FC<LogRequestsListProps> = ({
 
             <div
                 id="log-requests-content"
-                className={`transition-max-height duration-500 ease-in-out overflow-hidden ${isExpanded ? 'max-h-[5000px] opacity-100 visible p-4 sm:p-6' : 'max-h-0 opacity-0 invisible'}`} // Tăng max-h
+                className={`transition-max-height duration-500 ease-in-out overflow-hidden ${isExpanded ? 'max-h-[5000px] opacity-100 visible p-4 sm:p-6' : 'max-h-0 opacity-0 invisible'}`}
             >
                 {hasRequestsData ? (
                     <>
                         <RequestsTable
                             requestIds={paginatedRequestIds}
-                            requestsData={requestsDataForTable}
+                            requestsData={requestsData}
                             onSelectRequest={onSelectRequest}
                             formatDateTime={formatDateTime}
                             getStatusChipClass={getStatusChipClass}
                             crawlerType={crawlerType}
                             totalRequestCount={totalRequestCount}
+                            sortConfig={sortConfig}
+                            onSort={onSort}
                         />
                         {totalPages > 1 && (
                             <GeneralPagination
@@ -118,9 +214,8 @@ const LogRequestsList: React.FC<LogRequestsListProps> = ({
                 ) : (
                     <NoDataDisplay message={getNoDataMessage()} icon={<FaInfoCircle size={20} className="mb-2 inline-block" />} />
                 )}
-
-                {/* Overall Summary Section - controlled by isSummaryExpandedOverall */}
-                {hasOverallDataForDisplay && ( // Chỉ hiển thị mục summary nếu có dữ liệu tổng thể
+                
+                {hasOverallDataForDisplay && (
                     <div className="mt-6 border-t pt-4">
                          <div className="flex justify-between items-center mb-4">
                             <h3 className="text-lg font-semibold text-gray-700">
@@ -137,7 +232,6 @@ const LogRequestsList: React.FC<LogRequestsListProps> = ({
 
                         {isSummaryExpandedOverall && (
                             <>
-                                {/* Navigation for Summary Types */}
                                 <div className="mb-4 flex justify-center space-x-1 border border-gray-200 p-1 rounded-lg bg-gray-10 w-auto inline-flex">
                                     <button
                                         onClick={() => setActiveSummaryView('requests')}
@@ -153,7 +247,6 @@ const LogRequestsList: React.FC<LogRequestsListProps> = ({
                                     </button>
                                 </div>
 
-                                {/* Conditional Rendering of Summaries */}
                                 {activeSummaryView === 'requests' && (
                                     <RequestsOverallSummary data={data} />
                                 )}
@@ -161,14 +254,14 @@ const LogRequestsList: React.FC<LogRequestsListProps> = ({
                                     crawlerType === 'conference' ? (
                                         <ConferenceOverallSummary
                                             data={data as ConferenceLogAnalysisResult}
-                                            isExpanded={true} // Luôn expanded khi view này active
-                                            onToggle={() => {}} // Không cần toggle riêng ở đây nữa
+                                            isExpanded={true} 
+                                            onToggle={() => {}} 
                                         />
-                                    ) : ( // crawlerType === 'journal'
+                                    ) : ( 
                                         <JournalOverallSummary
                                             data={data as JournalLogAnalysisResult}
-                                            isExpanded={true} // Luôn expanded khi view này active
-                                            onToggle={() => {}} // Không cần toggle riêng ở đây nữa
+                                            isExpanded={true} 
+                                            onToggle={() => {}} 
                                         />
                                     )
                                 )}

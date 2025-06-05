@@ -1,3 +1,4 @@
+// src/app/[locale]/dashboard/logAnalysis/Analysis.tsx
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
     useLogAnalysisData,
@@ -12,11 +13,15 @@ import { useTranslations } from 'next-intl';
 import AnalysisHeader from './analysis/AnalysisHeader';
 import { ConferenceLogAnalysisResult } from '@/src/models/logAnalysis';
 import { JournalLogAnalysisResult } from '@/src/models/logAnalysis/logAnalysisJournal.types';
-import LogRequestsList from './analysis/LogRequestsList';
+// *** IMPORT SortConfig và RequestSortableKey TỪ LogRequestsList HOẶC ĐỊNH NGHĨA Ở ĐÂY ***
+import LogRequestsList, { SortConfig } from './analysis/LogRequestsList';
+import { RequestSortableKey } from './analysis/RequestsTable'; // Giả sử RequestSortableKey được export từ RequestsTable
 import RequestDetailView from './analysis/RequestDetailView';
 import LoadingScreen from './analysis/LoadingScreen';
 import ErrorScreen from './analysis/ErrorScreen';
 import NoDataDisplay from './analysis/NoDataDisplay';
+
+// formatDateTime và getStatusChipClass giữ nguyên
 
 export const formatDateTime = (isoString: string | null | undefined): string => {
     if (!isoString) {
@@ -63,6 +68,7 @@ export const getStatusChipClass = (status: string | undefined | null): string =>
     }
 };
 
+const DEFAULT_SORT_CONFIG: SortConfig = { key: 'startTime', direction: 'descending' };
 
 const Analysis: React.FC = () => {
     const t = useTranslations('AnalysisPage');
@@ -76,13 +82,15 @@ const Analysis: React.FC = () => {
     const [isSummaryExpanded, setIsSummaryExpanded] = useState(false);
     const [activeCrawler, setActiveCrawler] = useState<CrawlerType>('conference');
     const [isLogRequestsExpanded, setIsLogRequestsExpanded] = useState(true);
-
-    // *** ADD CURRENT PAGE STATE FOR PAGINATION ***
     const [currentPage, setCurrentPage] = useState(1);
 
-    // *** RESET CURRENT PAGE WHEN FILTERS OR CRAWLER TYPE CHANGE ***
+    // *** STATE CHO SẮP XẾP - QUẢN LÝ Ở ANALYSIS.TSX ***
+    const [sortConfig, setSortConfig] = useState<SortConfig>(DEFAULT_SORT_CONFIG);
+
+    // *** RESET CURRENT PAGE VÀ SORT CONFIG KHI FILTERS CHÍNH THAY ĐỔI ***
     useEffect(() => {
         setCurrentPage(1);
+        setSortConfig(DEFAULT_SORT_CONFIG); // Reset sort về mặc định
     }, [timeFilterOption, activeRequestIdFilter, activeCrawler]);
 
 
@@ -109,13 +117,21 @@ const Analysis: React.FC = () => {
         activeRequestIdFilter
     );
 
-    // *** CALLBACK FOR PAGE CHANGE ***
     const handlePageChange = (page: number) => {
         setCurrentPage(page);
-        // Optionally, scroll to top of the list or table
-        // document.getElementById('log-requests-content')?.scrollIntoView({ behavior: 'smooth' });
     };
 
+    // *** HÀM XỬ LÝ SẮP XẾP - QUẢN LÝ Ở ANALYSIS.TSX ***
+    const handleSort = (key: RequestSortableKey) => {
+        let direction: 'ascending' | 'descending' = 'ascending';
+        if (sortConfig && sortConfig.key === key && sortConfig.direction === 'ascending') {
+            direction = 'descending';
+        } else if (sortConfig && sortConfig.key === key && sortConfig.direction === 'descending') {
+            direction = 'ascending'; // Quay lại ascending thay vì bỏ sort
+        }
+        setSortConfig({ key, direction });
+        setCurrentPage(1); // Reset về trang 1 khi sort
+    };
 
     const handleTimeFilterChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
         setTimeFilterOption(event.target.value);
@@ -129,11 +145,13 @@ const Analysis: React.FC = () => {
     const clearActiveFilterAndGoToList = useCallback(() => {
         setRequestIdFilterInput('');
         setActiveRequestIdFilter(undefined);
+        // Sort config sẽ được reset bởi useEffect ở trên
     }, []);
 
     const handleSelectRequestFromList = (reqId: string) => {
         setRequestIdFilterInput(reqId);
         setActiveRequestIdFilter(reqId);
+        // Sort config sẽ được reset bởi useEffect ở trên
     };
 
     const handleToggleSummary = () => setIsSummaryExpanded(prev => !prev);
@@ -146,6 +164,7 @@ const Analysis: React.FC = () => {
     const currentData = data as LogAnalysisResultUnion | null;
 
     const hasOverallDataForDisplay = useMemo(() => {
+        // ... (logic giữ nguyên)
         if (!currentData?.overall) return false;
         if (activeCrawler === 'conference') {
             const confData = currentData as ConferenceLogAnalysisResult;
@@ -159,6 +178,7 @@ const Analysis: React.FC = () => {
     }, [currentData, activeCrawler]);
 
     const hasItemDetailsForDisplay = useMemo(() => {
+        // ... (logic giữ nguyên)
         if (!currentData) return false;
         if (activeCrawler === 'conference') {
             const confData = currentData as ConferenceLogAnalysisResult;
@@ -172,6 +192,7 @@ const Analysis: React.FC = () => {
     }, [currentData, activeCrawler]);
 
     const getNoDataFoundMessage = useCallback((): string => {
+        // ... (logic giữ nguyên)
         if (isDetailView && !hasOverallDataForDisplay) {
             return t('noData.forRequestId', { requestId: activeRequestIdFilter });
         }
@@ -188,11 +209,15 @@ const Analysis: React.FC = () => {
     }, [isDetailView, activeRequestIdFilter, isListView, currentData, hasOverallDataForDisplay, loading, timeFilterOption, t]);
 
     const CrawlerTypeSelector = () => (
+        // ... (logic giữ nguyên)
         <div className="mb-6 flex justify-center">
             <div className="inline-flex rounded-md shadow-sm bg-white border border-gray-300" role="group">
                 <button
                     type="button"
-                    onClick={() => setActiveCrawler('conference')}
+                    onClick={() => {
+                        setActiveCrawler('conference');
+                        // Sort config sẽ được reset bởi useEffect ở trên
+                    }}
                     className={`px-6 py-3 text-sm font-medium rounded-l-md focus:z-10 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-150 ease-in-out
                         ${activeCrawler === 'conference'
                             ? 'bg-blue-600 text-white border-blue-600'
@@ -203,7 +228,10 @@ const Analysis: React.FC = () => {
                 </button>
                 <button
                     type="button"
-                    onClick={() => setActiveCrawler('journal')}
+                    onClick={() => {
+                        setActiveCrawler('journal');
+                        // Sort config sẽ được reset bởi useEffect ở trên
+                    }}
                     className={`px-6 py-3 text-sm font-medium rounded-r-md focus:z-10 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-150 ease-in-out
                         ${activeCrawler === 'journal'
                             ? 'bg-blue-600 text-white border-blue-600'
@@ -218,6 +246,7 @@ const Analysis: React.FC = () => {
 
 
     if (loading && !currentData && !error) {
+        // ... (LoadingScreen giữ nguyên)
         return (
             <LoadingScreen>
                 <CrawlerTypeSelector />
@@ -236,6 +265,7 @@ const Analysis: React.FC = () => {
     }
 
     if (error && !currentData && !loading) {
+        // ... (ErrorScreen giữ nguyên)
         return (
             <ErrorScreen error={error} onRetry={refetchData}>
                 <CrawlerTypeSelector />
@@ -254,9 +284,10 @@ const Analysis: React.FC = () => {
     }
 
     return (
-        <div className="bg-gradient-to-br from-gray-100 to-blue-50 min-h-screen font-sans space-y-6">
+        <div className="bg-gradient-to-br from-gray-100 to-blue-50 min-h-screen font-sans space-y-6"> {/* Sửa lại p-2 nếu bạn muốn */}
             <CrawlerTypeSelector />
             <AnalysisHeader
+                // ... (props giữ nguyên)
                 loading={loading && !!currentData}
                 error={(error && currentData) ? error : null}
                 isConnected={isConnectedToSocket}
@@ -286,12 +317,15 @@ const Analysis: React.FC = () => {
                     crawlerType={activeCrawler}
                     currentPage={currentPage}
                     onPageChange={handlePageChange}
-                    // *** THÊM PROP totalRequestCount ***
                     totalRequestCount={currentData.analyzedRequestIds ? currentData.analyzedRequestIds.length : 0}
+                    // *** TRUYỀN SORT CONFIG VÀ HANDLER XUỐNG ***
+                    sortConfig={sortConfig}
+                    onSort={handleSort}
                 />
             )}
 
             {isDetailView && currentData && (
+                // ... (RequestDetailView giữ nguyên)
                 <RequestDetailView
                     data={currentData}
                     activeRequestIdFilter={activeRequestIdFilter}
@@ -306,7 +340,8 @@ const Analysis: React.FC = () => {
                 />
             )}
 
-            {!loading && currentData === null && !error && (
+            {/* ... (Fallback No Data / Status Messages giữ nguyên) ... */}
+             {!loading && currentData === null && !error && (
                 <NoDataDisplay message={getNoDataFoundMessage()} />
             )}
             {!loading && currentData !== null && !isListView && !isDetailView && (
