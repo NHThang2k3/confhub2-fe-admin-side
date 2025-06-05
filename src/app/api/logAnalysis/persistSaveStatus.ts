@@ -1,7 +1,7 @@
 // src/app/api/logAnalysis/persistSaveStatus.ts
 import axios, { AxiosError } from 'axios';
 
-const API_PERSIST_SAVE_STATUS_ENDPOINT = `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/log/conference-save-event`;
+const API_PERSIST_SAVE_STATUS_ENDPOINT = `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/logs/conference-save-event`;
 
 export interface PersistSaveStatusPayload {
     batchRequestId: string;
@@ -28,7 +28,7 @@ export interface BatchPersistSaveStatusResult {
 
 /**
  * Persists the save status for a batch of conferences.
- * NOTE: This assumes the backend endpoint `/api/v1/log/conference-save-event`
+ * NOTE: This assumes the backend endpoint `/api/v1/logs/conference-save-event`
  * has been updated to accept an array of PersistSaveStatusPayload
  * and ideally returns itemized results.
  *

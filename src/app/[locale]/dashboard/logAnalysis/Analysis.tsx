@@ -6,22 +6,22 @@ import {
     LogAnalysisResultUnion
 } from '../../../../hooks/logAnalysis/useLogAnalysisData';
 import {
-    FaExclamationTriangle, FaSyncAlt, FaBookOpen, FaUsers
+    FaExclamationTriangle, FaSyncAlt, FaBookOpen, FaUsers, FaCheckCircle, FaTimesCircle // Added for deletion status
 } from 'react-icons/fa';
 import { useTranslations } from 'next-intl';
 
 import AnalysisHeader from './analysis/AnalysisHeader';
 import { ConferenceLogAnalysisResult } from '@/src/models/logAnalysis';
 import { JournalLogAnalysisResult } from '@/src/models/logAnalysis/logAnalysisJournal.types';
-// *** IMPORT SortConfig và RequestSortableKey TỪ LogRequestsList HOẶC ĐỊNH NGHĨA Ở ĐÂY ***
 import LogRequestsList, { SortConfig } from './analysis/LogRequestsList';
-import { RequestSortableKey } from './analysis/RequestsTable'; // Giả sử RequestSortableKey được export từ RequestsTable
+import { RequestSortableKey } from './analysis/RequestsTable';
 import RequestDetailView from './analysis/RequestDetailView';
 import LoadingScreen from './analysis/LoadingScreen';
 import ErrorScreen from './analysis/ErrorScreen';
 import NoDataDisplay from './analysis/NoDataDisplay';
+import { useDeleteLogRequests } // Import the hook
+    from '../../../../hooks/logAnalysis/useDeleteLogRequests';
 
-// formatDateTime và getStatusChipClass giữ nguyên
 
 export const formatDateTime = (isoString: string | null | undefined): string => {
     if (!isoString) {
@@ -72,6 +72,7 @@ const DEFAULT_SORT_CONFIG: SortConfig = { key: 'startTime', direction: 'descendi
 
 const Analysis: React.FC = () => {
     const t = useTranslations('AnalysisPage');
+    const tCommon = useTranslations('Common'); // For common translations like "close"
 
     const [timeFilterOption, setTimeFilterOption] = useState<string>('latest');
     const [filterStartTime, setFilterStartTime] = useState<number | undefined>(undefined);
@@ -83,14 +84,26 @@ const Analysis: React.FC = () => {
     const [activeCrawler, setActiveCrawler] = useState<CrawlerType>('conference');
     const [isLogRequestsExpanded, setIsLogRequestsExpanded] = useState(true);
     const [currentPage, setCurrentPage] = useState(1);
-
-    // *** STATE CHO SẮP XẾP - QUẢN LÝ Ở ANALYSIS.TSX ***
     const [sortConfig, setSortConfig] = useState<SortConfig>(DEFAULT_SORT_CONFIG);
 
-    // *** RESET CURRENT PAGE VÀ SORT CONFIG KHI FILTERS CHÍNH THAY ĐỔI ***
+    // State for selected request IDs
+    const [selectedRequestIds, setSelectedRequestIds] = useState<string[]>([]);
+
+    // Hook for deletion logic
+    const {
+        deleteRequests,
+        isLoading: isLoadingDelete,
+        error: deleteError,
+        successMessage: deleteSuccessMessage,
+        detailedResults: deleteDetailedResults,
+        clearMessages: clearDeleteMessages
+    } = useDeleteLogRequests();
+
+
     useEffect(() => {
         setCurrentPage(1);
-        setSortConfig(DEFAULT_SORT_CONFIG); // Reset sort về mặc định
+        setSortConfig(DEFAULT_SORT_CONFIG);
+        setSelectedRequestIds([]); // Clear selection when main filters change
     }, [timeFilterOption, activeRequestIdFilter, activeCrawler]);
 
 
@@ -117,20 +130,22 @@ const Analysis: React.FC = () => {
         activeRequestIdFilter
     );
 
+
+
+
     const handlePageChange = (page: number) => {
         setCurrentPage(page);
     };
 
-    // *** HÀM XỬ LÝ SẮP XẾP - QUẢN LÝ Ở ANALYSIS.TSX ***
     const handleSort = (key: RequestSortableKey) => {
         let direction: 'ascending' | 'descending' = 'ascending';
         if (sortConfig && sortConfig.key === key && sortConfig.direction === 'ascending') {
             direction = 'descending';
         } else if (sortConfig && sortConfig.key === key && sortConfig.direction === 'descending') {
-            direction = 'ascending'; // Quay lại ascending thay vì bỏ sort
+            direction = 'ascending';
         }
         setSortConfig({ key, direction });
-        setCurrentPage(1); // Reset về trang 1 khi sort
+        setCurrentPage(1);
     };
 
     const handleTimeFilterChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
@@ -145,26 +160,106 @@ const Analysis: React.FC = () => {
     const clearActiveFilterAndGoToList = useCallback(() => {
         setRequestIdFilterInput('');
         setActiveRequestIdFilter(undefined);
-        // Sort config sẽ được reset bởi useEffect ở trên
     }, []);
 
-    const handleSelectRequestFromList = (reqId: string) => {
+    const handleSelectRequestFromList = (reqId: string) => { // This is for viewing details
         setRequestIdFilterInput(reqId);
         setActiveRequestIdFilter(reqId);
-        // Sort config sẽ được reset bởi useEffect ở trên
     };
 
     const handleToggleSummary = () => setIsSummaryExpanded(prev => !prev);
     const handleToggleLogRequests = () => setIsLogRequestsExpanded(prev => !prev);
 
+    // Handler for individual checkbox selection
+    const handleToggleRequestSelection = useCallback((requestId: string) => {
+        setSelectedRequestIds(prevSelected =>
+            prevSelected.includes(requestId)
+                ? prevSelected.filter(id => id !== requestId)
+                : [...prevSelected, requestId]
+        );
+    }, []);
+
+    // Handler for "select all on page" or updating selections in bulk
+    const handleUpdateSelectedIds = useCallback((idsToSelect: string[], idsToDeselect: string[]) => {
+        setSelectedRequestIds(prevSelected => {
+            let newSelected = [...prevSelected];
+            idsToSelect.forEach(id => {
+                if (!newSelected.includes(id)) {
+                    newSelected.push(id);
+                }
+            });
+            newSelected = newSelected.filter(id => !idsToDeselect.includes(id));
+            return newSelected;
+        });
+    }, []);
+
+    // Handler for deleting selected requests
+    const handleDeleteSelectedRequests = async () => {
+        if (selectedRequestIds.length === 0 || isLoadingDelete) {
+            return;
+        }
+
+        if (!window.confirm(t('deleteAction.confirmDelete', { count: selectedRequestIds.length }))) {
+            return;
+        }
+
+        clearDeleteMessages();
+        const apiCallSuccessful = await deleteRequests({
+            requestIds: selectedRequestIds,
+            crawlerType: activeCrawler,
+        });
+
+        if (apiCallSuccessful) {
+            // Check if all individual deletions were successful from detailedResults
+            const allItemsFullyDeleted = deleteDetailedResults?.every(r => r.overallSuccess) ?? false;
+            if (allItemsFullyDeleted) {
+                // Optionally show a specific success message if all items were deleted
+                // The hook's successMessage already covers the general API response
+            }
+            setSelectedRequestIds([]); // Clear selection
+            refetchData(); // Refresh the list
+        }
+        // Messages (success/error/detailed) are available from the hook
+        // Auto-clear messages after a delay
+        setTimeout(() => clearDeleteMessages(), 8000); // Increased timeout
+    };
+
 
     const isDetailView = !!activeRequestIdFilter && !!data && data.filterRequestId === activeRequestIdFilter;
     const isListView = !activeRequestIdFilter && !!data && !data.filterRequestId;
 
+
+    // Clear selection when switching to detail view or if data becomes null
+    useEffect(() => {
+        if (isDetailView || !data) {
+            setSelectedRequestIds([]);
+        }
+    }, [isDetailView, data]);
+
     const currentData = data as LogAnalysisResultUnion | null;
 
+    // *** THÊM LOGIC KIỂM TRA NẾU TẤT CẢ REQUESTS BỊ FILTER LOẠI BỎ ***
+    const allRequestsFilteredOutDueToTime = useMemo(() => {
+        if (!currentData || !currentData.requests || !currentData.analyzedRequestIds || currentData.analyzedRequestIds.length === 0) {
+            return false; // Không có request nào để xem xét, hoặc không có dữ liệu
+        }
+        // Kiểm tra nếu có filter thời gian được áp dụng (timeFilterOption không phải 'latest' hoặc filterStartTime/EndTime có giá trị)
+        const hasTimeFilterApplied = timeFilterOption !== 'latest' || filterStartTime !== undefined || filterEndTime !== undefined;
+        if (!hasTimeFilterApplied) {
+            return false; // Không có filter thời gian, không phải trường hợp này
+        }
+
+        // Kiểm tra nếu tất cả các request trong analyzedRequestIds có status là 'NoRequestsAnalyzed'
+        // và có errorMessages chứa "matching filters"
+        return currentData.analyzedRequestIds.every(id => {
+            const req = currentData.requests[id];
+            return req?.status === 'NoRequestsAnalyzed' &&
+                req.errorMessages?.some(msg => msg.toLowerCase().includes('matching filters'));
+        });
+    }, [currentData, timeFilterOption, filterStartTime, filterEndTime]);
+
+
     const hasOverallDataForDisplay = useMemo(() => {
-        // ... (logic giữ nguyên)
         if (!currentData?.overall) return false;
         if (activeCrawler === 'conference') {
             const confData = currentData as ConferenceLogAnalysisResult;
@@ -178,7 +273,6 @@ const Analysis: React.FC = () => {
     }, [currentData, activeCrawler]);
 
     const hasItemDetailsForDisplay = useMemo(() => {
-        // ... (logic giữ nguyên)
         if (!currentData) return false;
         if (activeCrawler === 'conference') {
             const confData = currentData as ConferenceLogAnalysisResult;
@@ -192,13 +286,23 @@ const Analysis: React.FC = () => {
     }, [currentData, activeCrawler]);
 
     const getNoDataFoundMessage = useCallback((): string => {
-        // ... (logic giữ nguyên)
         if (isDetailView && !hasOverallDataForDisplay) {
+            // Nếu request cụ thể không có data (có thể do filter thời gian hoặc request đó thực sự không có log)
+            const requestDetail = currentData?.requests?.[activeRequestIdFilter!];
+            if (requestDetail?.status === 'NoRequestsAnalyzed' && requestDetail.errorMessages?.some(msg => msg.toLowerCase().includes('matching filters'))) {
+                return t('noData.forRequestIdMatchingFilters', { requestId: activeRequestIdFilter });
+            }
             return t('noData.forRequestId', { requestId: activeRequestIdFilter });
         }
+        // *** SỬA ĐỔI Ở ĐÂY ***
+        if (isListView && allRequestsFilteredOutDueToTime) {
+            return t('noData.allRequestsFilteredByTime'); // Thêm key translation này
+        }
         if (isListView && (!currentData?.analyzedRequestIds || currentData.analyzedRequestIds.length === 0)) {
+            // Trường hợp này có thể bao gồm khi BE trả về analyzedRequestIds rỗng (ví dụ: không có file log nào)
             return t('noData.noRequestsForPeriod');
         }
+        // Giữ nguyên các trường hợp khác
         if (!loading && !hasOverallDataForDisplay && timeFilterOption !== 'latest' && !isDetailView) {
             return t('noData.noResultsForPeriod');
         }
@@ -206,17 +310,17 @@ const Analysis: React.FC = () => {
             return t('noData.genericNoResults');
         }
         return t('noData.noSpecificData');
-    }, [isDetailView, activeRequestIdFilter, isListView, currentData, hasOverallDataForDisplay, loading, timeFilterOption, t]);
+    }, [isDetailView, activeRequestIdFilter, isListView, currentData, hasOverallDataForDisplay, loading, timeFilterOption, t, allRequestsFilteredOutDueToTime]);
+
+
 
     const CrawlerTypeSelector = () => (
-        // ... (logic giữ nguyên)
         <div className="mb-6 flex justify-center">
             <div className="inline-flex rounded-md shadow-sm bg-white border border-gray-300" role="group">
                 <button
                     type="button"
                     onClick={() => {
                         setActiveCrawler('conference');
-                        // Sort config sẽ được reset bởi useEffect ở trên
                     }}
                     className={`px-6 py-3 text-sm font-medium rounded-l-md focus:z-10 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-150 ease-in-out
                         ${activeCrawler === 'conference'
@@ -230,7 +334,6 @@ const Analysis: React.FC = () => {
                     type="button"
                     onClick={() => {
                         setActiveCrawler('journal');
-                        // Sort config sẽ được reset bởi useEffect ở trên
                     }}
                     className={`px-6 py-3 text-sm font-medium rounded-r-md focus:z-10 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-150 ease-in-out
                         ${activeCrawler === 'journal'
@@ -244,9 +347,58 @@ const Analysis: React.FC = () => {
         </div>
     );
 
+    // Component to display deletion status messages
+    const DeletionStatusDisplay: React.FC = () => {
+        if (!isLoadingDelete && !deleteError && !deleteSuccessMessage) return null;
+
+        const getStatusColorClasses = () => {
+            if (deleteError) return 'bg-red-100 border-red-300 text-red-700';
+            if (deleteSuccessMessage) {
+                const someFailed = deleteDetailedResults?.some(r => !r.overallSuccess);
+                return someFailed ? 'bg-yellow-100 border-yellow-300 text-yellow-700' : 'bg-green-100 border-green-300 text-green-700';
+            }
+            return 'bg-blue-100 border-blue-300 text-blue-700'; // For loading
+        };
+
+        const Icon = deleteError ? FaTimesCircle : (deleteSuccessMessage && !(deleteDetailedResults?.some(r => !r.overallSuccess)) ? FaCheckCircle : FaExclamationTriangle);
+
+        return (
+            <div className="fixed bottom-4 right-4 z-[100] w-full max-w-md p-1">
+                <div className={`relative p-4 pr-10 rounded-md shadow-lg border ${getStatusColorClasses()}`}>
+                    <button
+                        onClick={clearDeleteMessages}
+                        className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
+                        aria-label={tCommon('close')}
+                    >
+                        <FaTimesCircle size={18} />
+                    </button>
+                    <div className="flex items-start">
+                        <Icon className={`mr-3 h-6 w-6 flex-shrink-0 ${deleteError ? 'text-red-500' : (deleteSuccessMessage && !(deleteDetailedResults?.some(r => !r.overallSuccess)) ? 'text-green-500' : 'text-yellow-500')}`} />
+                        <div>
+                            <p className="font-semibold text-sm">
+                                {isLoadingDelete ? t('deleteAction.loading') : (deleteError ? t('deleteAction.errorTitle') : t('deleteAction.statusTitle'))}
+                            </p>
+                            <p className="text-xs mt-1">
+                                {isLoadingDelete ? t('deleteAction.processing') : (deleteError || deleteSuccessMessage)}
+                            </p>
+                            {deleteDetailedResults && (deleteError || deleteSuccessMessage) && (
+                                <ul className="text-xs mt-2 list-disc list-inside max-h-24 overflow-y-auto">
+                                    {deleteDetailedResults.map(r => (
+                                        <li key={r.requestId} className={r.overallSuccess ? 'text-green-700' : 'text-red-700'}>
+                                            {r.requestId}: {r.overallSuccess ? t('deleteAction.deletedSuccessfully') : (r.errorMessage || t('deleteAction.deletionFailed'))}
+                                        </li>
+                                    ))}
+                                </ul>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    };
+
 
     if (loading && !currentData && !error) {
-        // ... (LoadingScreen giữ nguyên)
         return (
             <LoadingScreen>
                 <CrawlerTypeSelector />
@@ -265,7 +417,6 @@ const Analysis: React.FC = () => {
     }
 
     if (error && !currentData && !loading) {
-        // ... (ErrorScreen giữ nguyên)
         return (
             <ErrorScreen error={error} onRetry={refetchData}>
                 <CrawlerTypeSelector />
@@ -284,10 +435,10 @@ const Analysis: React.FC = () => {
     }
 
     return (
-        <div className="bg-gradient-to-br from-gray-100 to-blue-50 min-h-screen font-sans space-y-6"> {/* Sửa lại p-2 nếu bạn muốn */}
+        <div className="bg-gradient-to-br from-gray-100 to-blue-50 min-h-screen font-sans space-y-6 relative"> {/* Added relative for positioning DeletionStatusDisplay */}
+            <DeletionStatusDisplay />
             <CrawlerTypeSelector />
             <AnalysisHeader
-                // ... (props giữ nguyên)
                 loading={loading && !!currentData}
                 error={(error && currentData) ? error : null}
                 isConnected={isConnectedToSocket}
@@ -300,14 +451,19 @@ const Analysis: React.FC = () => {
                 applyRequestIdFilter={applyRequestIdFilterFromInput}
                 clearRequestIdFilter={clearActiveFilterAndGoToList}
                 crawlerType={activeCrawler}
+                // *** THÊM THÔNG TIN VỀ FILTER ĐỂ HEADER CÓ THỂ HIỂN THỊ THÔNG BÁO PHÙ HỢP ***
+                allRequestsFilteredOut={allRequestsFilteredOutDueToTime && isListView}
+                overallAnalysisStatus={currentData?.status}
+                overallAnalysisErrorMessage={currentData?.errorMessage}
             />
 
-            {isListView && currentData && (
+            {/* *** SỬA ĐỔI LOGIC HIỂN THỊ CHO LogRequestsList *** */}
+            {isListView && currentData && !allRequestsFilteredOutDueToTime && ( // <<<< THÊM ĐIỀU KIỆN NÀY
                 <LogRequestsList
                     isExpanded={isLogRequestsExpanded}
                     onToggle={handleToggleLogRequests}
                     data={currentData}
-                    onSelectRequest={handleSelectRequestFromList}
+                    onSelectRequest={handleSelectRequestFromList} // For viewing details
                     formatDateTime={formatDateTime}
                     getStatusChipClass={getStatusChipClass}
                     isSummaryExpandedOverall={isSummaryExpanded}
@@ -318,17 +474,26 @@ const Analysis: React.FC = () => {
                     currentPage={currentPage}
                     onPageChange={handlePageChange}
                     totalRequestCount={currentData.analyzedRequestIds ? currentData.analyzedRequestIds.length : 0}
-                    // *** TRUYỀN SORT CONFIG VÀ HANDLER XUỐNG ***
                     sortConfig={sortConfig}
                     onSort={handleSort}
+                    // Selection and Deletion props
+                    selectedRequestIds={selectedRequestIds}
+                    onToggleSelectRequest={handleToggleRequestSelection} // For checkbox selection
+                    onDeleteSelected={handleDeleteSelectedRequests}
+                    isLoadingDelete={isLoadingDelete}
+                    onUpdateSelectedIds={handleUpdateSelectedIds}
                 />
             )}
 
+            {/* Hiển thị NoDataDisplay nếu tất cả request bị filter loại bỏ */}
+            {isListView && currentData && allRequestsFilteredOutDueToTime && (
+                <NoDataDisplay message={getNoDataFoundMessage()} />
+            )}
+
             {isDetailView && currentData && (
-                // ... (RequestDetailView giữ nguyên)
                 <RequestDetailView
                     data={currentData}
-                    activeRequestIdFilter={activeRequestIdFilter}
+                    activeRequestIdFilter={activeRequestIdFilter!} // Assert non-null as isDetailView implies it's set
                     onClearFilter={clearActiveFilterAndGoToList}
                     isSummaryExpandedOverall={isSummaryExpanded}
                     onToggleSummaryOverall={handleToggleSummary}
@@ -340,8 +505,7 @@ const Analysis: React.FC = () => {
                 />
             )}
 
-            {/* ... (Fallback No Data / Status Messages giữ nguyên) ... */}
-             {!loading && currentData === null && !error && (
+            {!loading && currentData === null && !error && (
                 <NoDataDisplay message={getNoDataFoundMessage()} />
             )}
             {!loading && currentData !== null && !isListView && !isDetailView && (
@@ -360,6 +524,7 @@ const Analysis: React.FC = () => {
             {error && currentData && (
                 <div className="mt-4 text-red-600 text-sm p-3 bg-red-50 rounded-md border border-red-200">
                     <FaExclamationTriangle className="inline mr-1" /> {t('refreshing.error', { error: error })}
+
                 </div>
             )}
         </div>

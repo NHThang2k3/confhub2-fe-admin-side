@@ -1,7 +1,6 @@
 // src/app/[locale]/dashboard/logAnalysis/analysis/LogRequestsList.tsx
-import React, { useState, useMemo } from 'react';
-import { FaListAlt, FaChevronUp, FaChevronDown, FaInfoCircle, FaChartBar, FaFileAlt } from 'react-icons/fa';
-// Giả sử RequestSortableKey được export từ RequestsTable.tsx
+import React, { useState, useMemo, useCallback } from 'react'; // Added useCallback
+import { FaListAlt, FaChevronUp, FaChevronDown, FaInfoCircle, FaChartBar, FaFileAlt, FaTrash } from 'react-icons/fa';
 import RequestsTable, { RequestSummaryUnionForTable, RequestSortableKey, ConferenceRequestSummaryForTable, JournalRequestSummaryForTable } from './RequestsTable';
 import NoDataDisplay from './NoDataDisplay';
 import { useTranslations } from 'next-intl';
@@ -12,7 +11,6 @@ import { ConferenceLogAnalysisResult } from '@/src/models/logAnalysis';
 import { JournalLogAnalysisResult } from '@/src/models/logAnalysis/logAnalysisJournal.types';
 import RequestsOverallSummary from '../overallSummary/RequestsOverallSummary';
 import GeneralPagination from '../../../utils/GeneralPagination';
-
 
 const ITEMS_PER_PAGE = 10;
 type SummaryViewType = 'requests' | 'details';
@@ -26,7 +24,7 @@ interface LogRequestsListProps {
     isExpanded: boolean;
     onToggle: () => void;
     data: LogAnalysisResultUnion;
-    onSelectRequest: (requestId: string) => void;
+    onSelectRequest: (requestId: string) => void; // For viewing details
     formatDateTime: (isoString: string | null | undefined) => string;
     getStatusChipClass: (status: string | undefined | null) => string;
     isSummaryExpandedOverall: boolean;
@@ -39,6 +37,13 @@ interface LogRequestsListProps {
     totalRequestCount: number;
     sortConfig: SortConfig;
     onSort: (key: RequestSortableKey) => void;
+    
+    // Props for selection and deletion
+    selectedRequestIds: string[];
+    onToggleSelectRequest: (requestId: string) => void; // For checkbox selection
+    onDeleteSelected: () => void;
+    isLoadingDelete: boolean;
+    onUpdateSelectedIds: (idsToSelect: string[], idsToDeselect: string[]) => void;
 }
 
 const LogRequestsList: React.FC<LogRequestsListProps> = ({
@@ -58,6 +63,11 @@ const LogRequestsList: React.FC<LogRequestsListProps> = ({
     totalRequestCount,
     sortConfig,
     onSort,
+    selectedRequestIds,
+    onToggleSelectRequest,
+    onDeleteSelected,
+    isLoadingDelete,
+    onUpdateSelectedIds,
 }) => {
     const t = useTranslations('LogRequestsList');
     const tCommon = useTranslations('Common');
@@ -78,36 +88,28 @@ const LogRequestsList: React.FC<LogRequestsListProps> = ({
             let aValue: any;
             let bValue: any;
 
-            // Xử lý riêng cho 'processedItemsRatio'
             if (sortConfig.key === 'processedItemsRatio') {
                 if (crawlerType === 'conference') {
                     const aConf = aItem as ConferenceRequestSummaryForTable;
                     const bConf = bItem as ConferenceRequestSummaryForTable;
                     aValue = (aConf.totalConferencesInputForRequest ?? 0) > 0 ? (aConf.processedConferencesCountForRequest ?? 0) / aConf.totalConferencesInputForRequest! : -1;
                     bValue = (bConf.totalConferencesInputForRequest ?? 0) > 0 ? (bConf.processedConferencesCountForRequest ?? 0) / bConf.totalConferencesInputForRequest! : -1;
-                } else { // journal
+                } else {
                     const aJourn = aItem as JournalRequestSummaryForTable;
                     const bJourn = bItem as JournalRequestSummaryForTable;
                     aValue = (aJourn.totalJournalsInputForRequest ?? 0) > 0 ? (aJourn.processedJournalsCountForRequest ?? 0) / aJourn.totalJournalsInputForRequest! : -1;
                     bValue = (bJourn.totalJournalsInputForRequest ?? 0) > 0 ? (bJourn.processedJournalsCountForRequest ?? 0) / bJourn.totalJournalsInputForRequest! : -1;
                 }
             } else {
-                // Với các key khác, chúng ta có thể giả định chúng tồn tại trên RequestSummaryShared
-                // hoặc là `requestId` (là key của object, không phải property của aItem/bItem)
                 if (sortConfig.key === 'requestId') {
                     aValue = aId;
                     bValue = bId;
                 } else {
-                    // ép kiểu aItem và bItem thành `any` để TypeScript cho phép truy cập động,
-                    // nhưng cần cẩn thận vì điều này bỏ qua type checking cho các key này.
-                    // Một cách an toàn hơn là kiểm tra key cụ thể và ép kiểu.
                     aValue = (aItem as any)[sortConfig.key];
                     bValue = (bItem as any)[sortConfig.key];
                 }
             }
 
-
-            // Xử lý chuyển đổi kiểu dữ liệu sau khi đã lấy giá trị
             switch (sortConfig.key) {
                 case 'startTime':
                 case 'endTime':
@@ -119,17 +121,12 @@ const LogRequestsList: React.FC<LogRequestsListProps> = ({
                     bValue = bValue ?? (sortConfig.direction === 'ascending' ? Infinity : -Infinity);
                     break;
                 case 'status':
-                    aValue = String(aValue ?? '').toLowerCase();
-                    bValue = String(bValue ?? '').toLowerCase();
-                    break;
-                case 'requestId': // Đã xử lý ở trên, giờ chỉ cần đảm bảo so sánh string
+                case 'requestId':
                 case 'originalRequestId':
                     aValue = String(aValue ?? '').toLowerCase();
                     bValue = String(bValue ?? '').toLowerCase();
                     break;
-                // case 'processedItemsRatio': đã được xử lý riêng ở trên
                 default:
-                    // Mặc định, nếu là số thì giữ, không thì chuyển sang string để so sánh
                     if (typeof aValue === 'number' && typeof bValue === 'number') {
                         // no change
                     } else {
@@ -138,7 +135,6 @@ const LogRequestsList: React.FC<LogRequestsListProps> = ({
                     }
                     break;
             }
-
 
             if (aValue < bValue) {
                 return sortConfig.direction === 'ascending' ? -1 : 1;
@@ -151,12 +147,33 @@ const LogRequestsList: React.FC<LogRequestsListProps> = ({
         return sortableArray;
     }, [allRequestIdsOriginal, requestsData, sortConfig, crawlerType]);
 
-
     const hasRequestsData = sortedRequestIds.length > 0;
     const totalPages = Math.ceil(sortedRequestIds.length / ITEMS_PER_PAGE);
     const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
     const endIndex = startIndex + ITEMS_PER_PAGE;
-    const paginatedRequestIds = sortedRequestIds.slice(startIndex, endIndex);
+    
+    // Use useMemo for paginatedRequestIds as it depends on sortedRequestIds, startIndex, endIndex
+    const paginatedRequestIds = useMemo(() => {
+        return sortedRequestIds.slice(startIndex, endIndex);
+    }, [sortedRequestIds, startIndex, endIndex]);
+
+    // Calculate if all items on the current page are selected
+    const isAllOnPageSelected = useMemo(() => {
+        if (paginatedRequestIds.length === 0) return false;
+        return paginatedRequestIds.every(id => selectedRequestIds.includes(id));
+    }, [paginatedRequestIds, selectedRequestIds]);
+
+    // Handler for "select all on page" checkbox
+    const handleToggleSelectAllOnPage = useCallback(() => {
+        if (isAllOnPageSelected) {
+            // Deselect all on current page
+            onUpdateSelectedIds([], paginatedRequestIds);
+        } else {
+            // Select all on current page (only those not already selected)
+            const idsToSelect = paginatedRequestIds.filter(id => !selectedRequestIds.includes(id));
+            onUpdateSelectedIds(idsToSelect, []);
+        }
+    }, [isAllOnPageSelected, paginatedRequestIds, selectedRequestIds, onUpdateSelectedIds]);
 
     const summaryNavButtonBaseClass = "px-4 py-2 text-sm font-medium focus:outline-none transition-colors duration-150 ease-in-out flex items-center";
     const summaryNavButtonActiveClass = "bg-blue-600 text-white";
@@ -191,16 +208,44 @@ const LogRequestsList: React.FC<LogRequestsListProps> = ({
             >
                 {hasRequestsData ? (
                     <>
+                        {selectedRequestIds.length > 0 && (
+                            <div className="mb-4 p-1 flex justify-end items-center space-x-2">
+                                <span className="text-sm text-gray-600">
+                                    {t('selectedCount', { count: selectedRequestIds.length })}
+                                </span>
+                                <button
+                                    onClick={onDeleteSelected}
+                                    disabled={isLoadingDelete || selectedRequestIds.length === 0}
+                                    className="px-3 py-1.5 bg-red-600 text-white text-xs font-medium rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+                                    aria-label={t('deleteSelectedButtonAria', { count: selectedRequestIds.length })}
+                                    title={t('deleteSelectedButtonAria', { count: selectedRequestIds.length })}
+                                >
+                                    <FaTrash className="mr-1.5 h-3.5 w-3.5" />
+                                    {t('deleteSelectedButton', { count: selectedRequestIds.length })}
+                                    {isLoadingDelete && (
+                                        <svg className="animate-spin ml-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                        </svg>
+                                    )}
+                                </button>
+                            </div>
+                        )}
                         <RequestsTable
-                            requestIds={paginatedRequestIds}
+                            requestIds={paginatedRequestIds} // Pass paginated IDs
                             requestsData={requestsData}
-                            onSelectRequest={onSelectRequest}
+                            onSelectRequest={onSelectRequest} // For viewing details
                             formatDateTime={formatDateTime}
                             getStatusChipClass={getStatusChipClass}
                             crawlerType={crawlerType}
-                            totalRequestCount={totalRequestCount}
+                            totalRequestCount={totalRequestCount} // This is the overall total
                             sortConfig={sortConfig}
                             onSort={onSort}
+                            // Selection props
+                            selectedRequestIds={selectedRequestIds}
+                            onToggleSelectRequest={onToggleSelectRequest} // For checkbox selection
+                            onToggleSelectAllOnPage={handleToggleSelectAllOnPage}
+                            isAllOnPageSelected={isAllOnPageSelected}
                         />
                         {totalPages > 1 && (
                             <GeneralPagination
@@ -214,10 +259,10 @@ const LogRequestsList: React.FC<LogRequestsListProps> = ({
                 ) : (
                     <NoDataDisplay message={getNoDataMessage()} icon={<FaInfoCircle size={20} className="mb-2 inline-block" />} />
                 )}
-                
+
                 {hasOverallDataForDisplay && (
                     <div className="mt-6 border-t pt-4">
-                         <div className="flex justify-between items-center mb-4">
+                        <div className="flex justify-between items-center mb-4">
                             <h3 className="text-lg font-semibold text-gray-700">
                                 {t('overallSummaryTitle')}
                             </h3>
@@ -254,14 +299,14 @@ const LogRequestsList: React.FC<LogRequestsListProps> = ({
                                     crawlerType === 'conference' ? (
                                         <ConferenceOverallSummary
                                             data={data as ConferenceLogAnalysisResult}
-                                            isExpanded={true} 
-                                            onToggle={() => {}} 
+                                            isExpanded={true}
+                                            onToggle={() => { }}
                                         />
-                                    ) : ( 
+                                    ) : (
                                         <JournalOverallSummary
                                             data={data as JournalLogAnalysisResult}
-                                            isExpanded={true} 
-                                            onToggle={() => {}} 
+                                            isExpanded={true}
+                                            onToggle={() => { }}
                                         />
                                     )
                                 )}

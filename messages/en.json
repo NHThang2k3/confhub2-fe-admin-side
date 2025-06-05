@@ -593,20 +593,23 @@
     }
   },
   "LogRequestsList": {
-    "title": "Available Log Analysis Requests",
+    "title": "Log Requests",
     "ariaLabel": {
-      "collapse": "Collapse Log Requests",
-      "expand": "Expand Log Requests"
+      "collapse": "Collapse log requests section",
+      "expand": "Expand log requests section"
     },
     "srOnly": {
-      "collapse": "Collapse",
-      "expand": "Expand"
+      "collapse": "Collapse section",
+      "expand": "Expand section"
     },
-        "overallSummaryTitle": "Overall Summary",
+    "overallSummaryTitle": "Overall Summary",
     "summaryViews": {
-      "requestsLevel": "Requests View",
-      "detailsLevel": "{type} View" 
-    }
+      "requestsLevel": "Requests Level",
+      "detailsLevel": "{type, select, conference {Conference} journal {Journal} other {Details}} Level"
+    },
+    "selectedCount": "{count} selected",
+    "deleteSelectedButton": "Delete ({count})",
+    "deleteSelectedButtonAria": "Delete {count} selected requests"
   },
   "RequestDetailView": {
     "backToListButton": "Back to List of Requests",
@@ -632,15 +635,13 @@
     "common": {
       "na": "N/A"
     },
-    "viewDetailsForOriginalRequestTitle": "View details for original request: {requestId}",
-    "viewDetailsForOriginalRequestAriaLabel": "View details for original request ID {requestId}",
-    "viewDetailsButton": "View Details",
+    "viewDetailsForRequestTitle": "View details for request {requestId}",
     "viewDetailsForRequestAriaLabel": "View details for request {requestId}",
+    "viewDetailsForOriginalRequestTitle": "View details for original request {requestId}",
+    "viewDetailsForOriginalRequestAriaLabel": "View details for original request {requestId}",
     "tableFooter": {
-      "totalSuccessRate": "Total Success Rate (Current Page)",
-      "totalSuccessRateCurrentPage": "Success Rate (Current Page)",
-      "totalAllRequests": "Total Requests: {count}",
-      "statusSummaryOverall": "Status Summary (Overall)"
+      "currentPageSuccessRate": "Current Page Success Rate",
+      "totalAllRequests": "Total Requests: {count}"
     },
     "statusNames": {
       "unknown": "Unknown",
@@ -739,7 +740,10 @@
       "count": "Count",
       "warnings": "Warnings",
       "totalAttempts": "Total Attempts",
-      "requests": "Requests"
+      "requests": "Requests",
+      "selectAllOnPage": "Select all items on this page",
+      "deselectAllOnPage": "Deselect all items on this page",
+      "selectRequest": "Select request {requestId}"
     },
     "generalCharts": {
       "title": "Overall Status & Errors",
@@ -1073,6 +1077,7 @@
       "analysisTitleJournal": "Journal Log Analysis Overview",
       "analysisTitle": "Log Analysis Overview"
     },
+    "logFileAggregate": "Multiple log sources (aggregated)",
     "common": {
       "na": "N/A",
       "unknown": "Unknown"
@@ -1114,12 +1119,26 @@
       "conference": "Conference",
       "journal": "Journal"
     },
+    "deleteAction": {
+      "confirmDelete": "Are you sure you want to delete {count} request(s)? This action cannot be undone and will remove associated log and cache files.",
+      "loading": "Processing Deletion...",
+      "processing": "Please wait while the selected requests are being deleted.",
+      "errorTitle": "Deletion Error",
+      "statusTitle": "Deletion Status",
+      "deletedSuccessfully": "Deleted successfully.",
+      "deletionFailed": "Deletion failed.",
+      "errorGeneric": "Failed to delete one or more requests. Please check details.",
+      "errorNetwork": "A network or unexpected error occurred: {errorDetail}",
+      "successGeneric": "Deletion process completed. Check details for status of each request."
+    },
     "noData": {
       "forRequestId": "No data found for Request ID: \"{{requestId}}\". Please check the ID or adjust time filters.",
       "noRequestsForPeriod": "No log requests found for the selected time period.",
       "noResultsForPeriod": "No analysis results available for the selected time period.",
       "genericNoResults": "No analysis results available.",
-      "noSpecificData": "No specific data to display based on current filters."
+      "noSpecificData": "No specific data to display based on current filters.",
+      "allRequestsFilteredByTime": "No requests match the selected time filter. All considered requests were outside this range.",
+      "forRequestIdMatchingFilters": "No log data for request '{requestId}' matches the current time filter."
     },
     "statusMessages": {
       "dataLoadedCriteriaNotMet": "Data loaded, but current view criteria not met.",

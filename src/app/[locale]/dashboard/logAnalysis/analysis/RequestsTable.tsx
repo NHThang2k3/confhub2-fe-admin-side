@@ -4,6 +4,7 @@ import {
     FaLink, FaClock, FaStopwatch, FaInfoCircle, FaCheckCircle,
     FaTimesCircle, FaQuestionCircle, FaEllipsisH, FaListAlt, FaChartPie, FaExclamationTriangle,
     FaSort, FaSortUp, FaSortDown
+    // FaTrash is not directly used here for row actions anymore, but kept if needed elsewhere
 } from 'react-icons/fa';
 import { useTranslations } from 'next-intl';
 import { CrawlerType } from '@/src/hooks/logAnalysis/useLogAnalysisData';
@@ -16,7 +17,7 @@ export interface RequestSummaryShared {
     status: string | undefined | null;
     originalRequestId?: string | null;
     dataSource?: 'scimago' | 'client' | string;
-    requestId?: string;
+    requestId?: string; // Should be present if it's the key of requestsData
 }
 
 export interface ConferenceRequestSummaryForTable extends RequestSummaryShared {
@@ -41,15 +42,21 @@ export type RequestSortableKey =
     | 'processedItemsRatio';
 
 interface RequestsTableProps {
-    requestIds: string[];
+    requestIds: string[]; // These are the IDs for the current page
     requestsData: { [key: string]: RequestSummaryUnionForTable };
-    onSelectRequest: (requestId: string) => void;
+    onSelectRequest: (requestId: string) => void; // For viewing details by clicking requestId
     formatDateTime: (isoString: string | null | undefined) => string;
     getStatusChipClass: (status: string | undefined | null) => string;
     crawlerType: CrawlerType;
-    totalRequestCount: number;
+    totalRequestCount: number; // Overall total requests for the current filter, not just page
     sortConfig: SortConfig;
     onSort: (key: RequestSortableKey) => void;
+
+    // Props for selection checkboxes
+    selectedRequestIds: string[];
+    onToggleSelectRequest: (requestId: string) => void; // For toggling individual checkbox
+    onToggleSelectAllOnPage: () => void;
+    isAllOnPageSelected: boolean;
 }
 
 const RequestsTable: React.FC<RequestsTableProps> = ({
@@ -62,8 +69,13 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
     totalRequestCount,
     sortConfig,
     onSort,
+    selectedRequestIds,
+    onToggleSelectRequest,
+    onToggleSelectAllOnPage,
+    isAllOnPageSelected,
 }) => {
     const t = useTranslations('RequestsTable');
+    const tCommon = useTranslations('Common'); // For common translations like selectAll
 
     if (!requestIds || requestIds.length === 0) {
         return null;
@@ -96,28 +108,29 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
         return 'bg-red-500';
     };
 
-    let totalProcessedItemsOverall = 0;
-    let totalItemsOverallInput = 0;
+    // Calculate success rate for the current page's items
+    let totalProcessedItemsOnPage = 0;
+    let totalItemsInputOnPage = 0;
 
     requestIds.forEach(reqId => {
         const details = requestsData[reqId];
         if (details) {
             if (crawlerType === 'conference') {
                 const confDetails = details as ConferenceRequestSummaryForTable;
-                totalProcessedItemsOverall += confDetails.processedConferencesCountForRequest ?? 0;
-                totalItemsOverallInput += confDetails.totalConferencesInputForRequest ?? 0;
+                totalProcessedItemsOnPage += confDetails.processedConferencesCountForRequest ?? 0;
+                totalItemsInputOnPage += confDetails.totalConferencesInputForRequest ?? 0;
             } else if (crawlerType === 'journal') {
                 const journalDetails = details as JournalRequestSummaryForTable;
-                totalProcessedItemsOverall += journalDetails.processedJournalsCountForRequest ?? 0;
-                totalItemsOverallInput += journalDetails.totalJournalsInputForRequest ?? 0;
+                totalProcessedItemsOnPage += journalDetails.processedJournalsCountForRequest ?? 0;
+                totalItemsInputOnPage += journalDetails.totalJournalsInputForRequest ?? 0;
             }
         }
     });
 
-    const overallSuccessRatePercentage = totalItemsOverallInput > 0
-        ? ((totalProcessedItemsOverall / totalItemsOverallInput) * 100)
+    const pageSuccessRatePercentage = totalItemsInputOnPage > 0
+        ? ((totalProcessedItemsOnPage / totalItemsInputOnPage) * 100)
         : 0;
-    const overallSuccessRatePercentageString = overallSuccessRatePercentage.toFixed(1);
+    const pageSuccessRatePercentageString = pageSuccessRatePercentage.toFixed(1);
 
     const successRateColumnHeader = crawlerType === 'conference'
         ? t('tableHeaders.conferenceSuccessRate')
@@ -138,6 +151,7 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
             scope="col"
             className={`px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer group ${className}`}
             onClick={() => onSort(columnKey)}
+            aria-sort={sortConfig && sortConfig.key === columnKey ? (sortConfig.direction === 'ascending' ? 'ascending' : 'descending') : 'none'}
         >
             <div className="flex items-center">
                 {children}
@@ -151,6 +165,19 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
             <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-10">
                     <tr>
+                        <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-12">
+                            <label htmlFor="select-all-requests-on-page" className="sr-only">
+                                {isAllOnPageSelected ? tCommon('deselectAllOnPage') : tCommon('selectAllOnPage')}
+                            </label>
+                            <input
+                                id="select-all-requests-on-page"
+                                type="checkbox"
+                                className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 cursor-pointer"
+                                checked={isAllOnPageSelected}
+                                onChange={onToggleSelectAllOnPage}
+                                title={isAllOnPageSelected ? tCommon('deselectAllOnPage') : tCommon('selectAllOnPage')}
+                            />
+                        </th>
                         <SortableHeader columnKey="requestId">
                             <FaListAlt className="mr-1.5 h-3.5 w-3.5 text-gray-400" /> {t('tableHeaders.requestId')}
                         </SortableHeader>
@@ -172,11 +199,7 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
                         <SortableHeader columnKey="processedItemsRatio">
                             <FaChartPie className="mr-1.5 h-3.5 w-3.5 text-gray-400" /> {successRateColumnHeader}
                         </SortableHeader>
-                        {/* REMOVED ACTIONS HEADER
-                        <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            {t('tableHeaders.actions')}
-                        </th>
-                        */}
+                        {/* Action column was removed previously */}
                     </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
@@ -202,15 +225,33 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
                             : 0;
                         const requestSuccessRateString = requestSuccessRateValue.toFixed(1);
                         const textColorForProgressBar = 'text-gray-700';
+                        const isSelected = selectedRequestIds.includes(reqId);
 
                         return (
-                            <tr key={reqId} className="hover:bg-gray-10 transition-colors duration-150">
+                            <tr 
+                                key={reqId} 
+                                className={`transition-colors duration-150 ${isSelected ? 'bg-blue-50 hover:bg-blue-100' : 'hover:bg-gray-10'}`}
+                                aria-selected={isSelected}
+                            >
+                                <td className="px-3 py-3 whitespace-nowrap">
+                                     <label htmlFor={`select-request-${reqId}`} className="sr-only">
+                                        {tCommon('selectRequest', {requestId: reqId})}
+                                    </label>
+                                    <input
+                                        id={`select-request-${reqId}`}
+                                        type="checkbox"
+                                        className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 cursor-pointer"
+                                        checked={isSelected}
+                                        onChange={() => onToggleSelectRequest(reqId)} // This is for checkbox selection
+                                        aria-labelledby={`request-id-label-${reqId}`}
+                                    />
+                                </td>
                                 <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900 break-all">
-                                    {/* MODIFIED: Make requestId clickable */}
                                     <button
-                                        onClick={() => onSelectRequest(reqId)}
+                                        id={`request-id-label-${reqId}`}
+                                        onClick={() => onSelectRequest(reqId)} // This is for viewing details
                                         className="text-blue-600 hover:text-blue-800 hover:underline focus:outline-none font-medium"
-                                        title={t('viewDetailsForRequestAriaLabel', { requestId: reqId })} // Use existing translation or create a new one for title
+                                        title={t('viewDetailsForRequestTitle', { requestId: reqId })}
                                         aria-label={t('viewDetailsForRequestAriaLabel', { requestId: reqId })}
                                     >
                                         {reqId}
@@ -232,19 +273,19 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
                                     )}
                                 </td>
                                 <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">
-                                    {details ? formatDateTime(details.startTime) : t('common.na')}
+                                    {details ? formatDateTime(details.startTime) : tCommon('na')}
                                 </td>
                                 <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">
-                                    {details ? formatDateTime(details.endTime) : t('common.na')}
+                                    {details ? formatDateTime(details.endTime) : tCommon('na')}
                                 </td>
                                 <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">
-                                    {details && details.durationSeconds != null ? `${details.durationSeconds.toFixed(2)}s` : t('common.na')}
+                                    {details && details.durationSeconds != null ? `${details.durationSeconds.toFixed(2)}s` : tCommon('na')}
                                 </td>
                                 <td className="px-4 py-3 whitespace-nowrap text-sm">
                                     {details && details.status ? (
                                         <span className={`px-2.5 py-1 rounded-full text-xs font-semibold flex items-center ${getStatusChipClass(details.status)}`}>
                                             {getStatusIcon(details.status)}
-                                            {t(`statusNames.${details.status.toLowerCase()}`, { defaultMessage: details.status })}
+                                            {t(`statusNames.${details.status.toLowerCase()}`, { defaultValue: details.status })}
                                         </span>
                                     ) : (
                                         <span className={`px-2.5 py-1 rounded-full text-xs font-semibold flex items-center ${getStatusChipClass(null)}`}>
@@ -264,37 +305,30 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
                                             </span>
                                         </div>
                                     ) : (
-                                        <span className="text-gray-400 text-xs">{t('common.na')}</span>
+                                        <span className="text-gray-400 text-xs">{tCommon('na')}</span>
                                     )}
                                 </td>
-                                {/* REMOVED ACTIONS CELL
-                                <td className="px-4 py-3 whitespace-nowrap text-sm font-medium">
-                                    <button
-                                        onClick={() => onSelectRequest(reqId)}
-                                        className="text-blue-600 hover:text-blue-800 hover:underline focus:outline-none flex items-center group"
-                                        aria-label={t('viewDetailsForRequestAriaLabel', { requestId: reqId })}
-                                    >
-                                        {t('viewDetailsButton')} <FaExternalLinkAlt className="ml-1.5 h-3 w-3 text-blue-500 group-hover:text-blue-700 transition-colors duration-150" />
-                                    </button>
-                                </td>
-                                */}
                             </tr>
                         );
                     })}
                 </tbody>
-                {totalItemsOverallInput > 0 && (
+                {totalItemsInputOnPage > 0 && ( // Show footer if there's data on the current page
                     <tfoot className="bg-gray-10 border-t border-gray-200">
                         <tr>
-                            <td colSpan={6} className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                            {/* Checkbox column + 6 data columns = 7 */}
+                            <td colSpan={7} className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
                                 <div className="flex items-center font-semibold">
                                     <FaChartPie className="mr-2 h-4 w-4 text-gray-600" />
-                                    {t('tableFooter.totalSuccessRate')}:
+                                    {t('tableFooter.currentPageSuccessRate')}:
                                 </div>
                             </td>
-                            <td className="px-4 py-3 whitespace-nowrap text-sm text-center pr-8 font-bold text-gray-900">
-                                {totalProcessedItemsOverall} / {totalItemsOverallInput} ({overallSuccessRatePercentageString}%)
+                            <td className="px-4 py-3 whitespace-nowrap text-sm font-bold text-gray-900 text-center">
+                                {totalProcessedItemsOnPage} / {totalItemsInputOnPage} ({pageSuccessRatePercentageString}%)
                             </td>
-                         
+                            {/* This cell is effectively empty as the totalRequestCount is better placed in LogRequestsList or AnalysisHeader */}
+                            {/* <td className="px-4 py-3 whitespace-nowrap text-sm font-semibold text-gray-700 text-right">
+                                {t('tableFooter.totalAllRequests', { count: totalRequestCount })}
+                            </td> */}
                         </tr>
                     </tfoot>
                 )}

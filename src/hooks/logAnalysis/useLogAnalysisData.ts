@@ -3,29 +3,27 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Socket } from 'socket.io-client';
+// *** THAY ĐỔI: Import cả hai kiểu dữ liệu và tạo Union Type ***
+import { ConferenceLogAnalysisResult } from '../../models/logAnalysis/index'; // Adjust path
+import { JournalLogAnalysisResult } from '@/src/models/logAnalysis/logAnalysisJournal.types';
 
-// Conference Types
-import { ConferenceLogAnalysisResult, OverallAnalysis } from '../../models/logAnalysis/index'; // Assuming index.ts exports these from analysis.types.ts
-import { RequestTimings } from '../../models/logAnalysis/common.types'; // Specific import for RequestTimings
-
-// Journal Types
-import {
-    JournalLogAnalysisResult,
-    JournalRequestSummary,
-    JournalOverallAnalysis
-} from '@/src/models/logAnalysis/logAnalysisJournal.types';
-
-import { useAuth } from '@/src/contexts/AuthContext';
+import { useAuth } from '@/src/contexts/AuthContext'; // Adjust path
+// *** THAY ĐỔI: Import hàm fetch chung hoặc hai hàm riêng biệt ***
 import {
     fetchLogAnalysisData as apiFetchConferenceLogAnalysisData,
-} from '@/src/app/api/logAnalysis/conferenceLogAnalysisApi';
+    // Giả sử bạn có hàm fetch cho journal, ví dụ:
+    // fetchJournalLogAnalysisData as apiFetchJournalLogAnalysisData
+} from '@/src/app/api/logAnalysis/conferenceLogAnalysisApi'; // Adjust path
+// *** TẠM THỜI: Giả sử có một hàm fetch cho journal API ***
 import { fetchJournalLogAnalysisData as apiFetchJournalLogAnalysisData } from '@/src/app/api/logAnalysis/journalLogAnalysisApi';
 
-import { getSocketInstance } from '@/src/utils/socket';
+import { getSocketInstance, disconnectSocket } from '@/src/utils/socket'; // Adjust path
 
+// *** THÊM: Định nghĩa CrawlerType ***
 export type CrawlerType = 'conference' | 'journal';
-export type LogAnalysisResultUnion = ConferenceLogAnalysisResult | JournalLogAnalysisResult;
 
+// *** THÊM: Union type cho kết quả phân tích ***
+export type LogAnalysisResultUnion = ConferenceLogAnalysisResult | JournalLogAnalysisResult;
 
 
 // --- Logic tính toán URL và path (giữ nguyên) ---
@@ -53,175 +51,6 @@ if (typeof window !== 'undefined' && LOG_ANALYSIS_SERVICE_URL_CONFIG) {
 // --- Kết thúc Logic tính toán URL và path ---
 
 
-function parseTimestamp(isoDateString?: string | null): number | null {
-    if (!isoDateString) return null;
-    const date = new Date(isoDateString);
-    return isNaN(date.getTime()) ? null : date.getTime();
-}
-
-function filterDataByTimeAndRecalculateOverall(
-    rawData: LogAnalysisResultUnion | null,
-    crawlerType: CrawlerType,
-
-    filterStartTimeMs?: number,
-    filterEndTimeMs?: number
-): LogAnalysisResultUnion | null {
-    if (!rawData) return null;
-
-    if (filterStartTimeMs === undefined && filterEndTimeMs === undefined) {
-        return rawData;
-    }
-
-    const filteredRequests: LogAnalysisResultUnion['requests'] = {};
-    const filteredAnalyzedRequestIds: string[] = [];
-
-    const rawAnalyzedIds = rawData.analyzedRequestIds || [];
-    for (const reqId of rawAnalyzedIds) {
-        const requestSummary = rawData.requests[reqId];
-        if (!requestSummary) continue;
-
-        const reqStartTimeMs = parseTimestamp(requestSummary.startTime);
-        let includeRequest = true;
-
-        if (reqStartTimeMs === null) {
-            if (filterStartTimeMs !== undefined || filterEndTimeMs !== undefined) {
-                includeRequest = false;
-            }
-        } else {
-            if (filterStartTimeMs !== undefined && reqStartTimeMs < filterStartTimeMs) {
-                includeRequest = false;
-            }
-            if (filterEndTimeMs !== undefined && reqStartTimeMs > filterEndTimeMs) {
-                includeRequest = false;
-            }
-        }
-
-        if (includeRequest) {
-            filteredRequests[reqId] = requestSummary;
-            filteredAnalyzedRequestIds.push(reqId);
-        }
-    }
-
-    const filteredData = JSON.parse(JSON.stringify(rawData)) as LogAnalysisResultUnion;
-    filteredData.requests = filteredRequests;
-    filteredData.analyzedRequestIds = filteredAnalyzedRequestIds;
-
-    if (rawData.filterRequestId && filteredAnalyzedRequestIds.length === 0) {
-        if (crawlerType === 'conference' && 'conferenceAnalysis' in filteredData) {
-            delete (filteredData as ConferenceLogAnalysisResult).conferenceAnalysis;
-        } else if (crawlerType === 'journal' && 'journalAnalysis' in filteredData) {
-            delete (filteredData as JournalLogAnalysisResult).journalAnalysis;
-        }
-    }
-
-    let earliestTs: number | null = null;
-    let latestTs: number | null = null;
-    const statusCounts: { [status: string]: number } = {};
-
-    for (const reqId of filteredAnalyzedRequestIds) {
-        const req = filteredRequests[reqId];
-        if (!req) continue;
-
-        const status = req.status?.toLowerCase() || 'unknown';
-        statusCounts[status] = (statusCounts[status] || 0) + 1;
-
-        const reqStartTs = parseTimestamp(req.startTime);
-        const reqEndTs = parseTimestamp(req.endTime); // Using endTime for overall latest time
-
-        if (reqStartTs) {
-            if (earliestTs === null || reqStartTs < earliestTs) earliestTs = reqStartTs;
-        }
-        // For latestTs, consider endTime of request if available, otherwise startTime
-        const relevantTimeForLatest = reqEndTs || reqStartTs;
-        if (relevantTimeForLatest) {
-            if (latestTs === null || relevantTimeForLatest > latestTs) latestTs = relevantTimeForLatest;
-        }
-    }
-
-
-    if (crawlerType === 'conference') {
-        const newOverall: OverallAnalysis = {
-            startTime: null,
-            endTime: null,
-            durationSeconds: null,
-            totalConferencesInput: 0,
-            processedConferencesCount: 0,
-            completedTasks: 0,
-            failedOrCrashedTasks: 0,
-            processingTasks: 0,
-            skippedTasks: 0,
-            successfulExtractions: (rawData.overall as OverallAnalysis)?.successfulExtractions || 0,
-        };
-
-        for (const reqId of filteredAnalyzedRequestIds) {
-            const req = filteredRequests[reqId] as RequestTimings; // Conference requests are RequestTimings
-            if (!req) continue;
-            newOverall.totalConferencesInput += req.totalConferencesInputForRequest || 0;
-            newOverall.processedConferencesCount += req.processedConferencesCountForRequest || 0;
-        }
-
-        newOverall.completedTasks = statusCounts['completed'] || 0;
-        // Interpretation: completedwitherrors and partiallycompleted are not "fully successful" tasks for this metric
-        newOverall.failedOrCrashedTasks = statusCounts['failed'] || 0;
-        newOverall.processingTasks = statusCounts['processing'] || 0;
-        newOverall.skippedTasks = statusCounts['skipped'] || 0;
-
-        if (earliestTs !== null) newOverall.startTime = new Date(earliestTs).toISOString();
-        if (latestTs !== null) newOverall.endTime = new Date(latestTs).toISOString();
-        if (earliestTs !== null && latestTs !== null && latestTs >= earliestTs) {
-            newOverall.durationSeconds = (latestTs - earliestTs) / 1000;
-        }
-
-        filteredData.overall = newOverall;
-
-    } else if (crawlerType === 'journal') {
-        const newOverall: JournalOverallAnalysis = {
-            startTime: null,
-            endTime: null,
-            durationSeconds: null,
-            totalRequestsAnalyzed: 0,
-            dataSourceCounts: { scimago: 0, client: 0, unknown: 0 },
-            totalJournalsInput: 0,
-            totalJournalsProcessed: 0,
-            totalJournalsFailed: 0,
-            totalJournalsSkipped: 0,
-            processedJournalsWithBioxbioSuccess: (rawData.overall as JournalOverallAnalysis)?.processedJournalsWithBioxbioSuccess || 0,
-            processedJournalsWithScimagoDetailsSuccess: (rawData.overall as JournalOverallAnalysis)?.processedJournalsWithScimagoDetailsSuccess || 0,
-            processedJournalsWithImageSearchSuccess: (rawData.overall as JournalOverallAnalysis)?.processedJournalsWithImageSearchSuccess || 0,
-        };
-
-        newOverall.totalRequestsAnalyzed = filteredAnalyzedRequestIds.length;
-
-        for (const reqId of filteredAnalyzedRequestIds) {
-            const req = filteredRequests[reqId] as JournalRequestSummary;
-            if (!req) continue;
-            newOverall.totalJournalsInput += req.totalJournalsInputForRequest || 0;
-            newOverall.totalJournalsProcessed += req.processedJournalsCountForRequest || 0;
-
-            if (req.dataSource) {
-                const ds = req.dataSource.toLowerCase();
-                if (ds === 'scimago') newOverall.dataSourceCounts.scimago++;
-                else if (ds === 'client') newOverall.dataSourceCounts.client++;
-                else newOverall.dataSourceCounts.unknown++; // Or handle other specific known sources
-            }
-        }
-
-        newOverall.totalJournalsFailed = statusCounts['failed'] || 0;
-        newOverall.totalJournalsSkipped = statusCounts['skipped'] || 0;
-        // Note: JournalOverallAnalysis doesn't have granular completed/processing counts like Conference's OverallAnalysis.
-        // It has totalRequestsAnalyzed, totalJournalsProcessed, totalJournalsFailed, totalJournalsSkipped.
-
-        if (earliestTs !== null) newOverall.startTime = new Date(earliestTs).toISOString();
-        if (latestTs !== null) newOverall.endTime = new Date(latestTs).toISOString();
-        if (earliestTs !== null && latestTs !== null && latestTs >= earliestTs) {
-            newOverall.durationSeconds = (latestTs - earliestTs) / 1000;
-        }
-        filteredData.overall = newOverall;
-    }
-    return filteredData;
-}
-
-
 export const useLogAnalysisData = (
     crawlerType: CrawlerType,
     filterStartTime?: number,
@@ -235,19 +64,22 @@ export const useLogAnalysisData = (
     const [isConnected, setIsConnected] = useState<boolean>(false);
     const [fetchError, setFetchError] = useState<string | null>(null);
     const isMountedRef = useRef(true);
+    // const socketListenersRef = useRef<(() => void)[]>([]); // Không cần nữa nếu quản lý trong effect socket
     const initialFetchDoneRef = useRef(false);
-    const socketRef = useRef<Socket | null>(null);
+    const socketRef = useRef<Socket | null>(null); // Tham chiếu đến socket instance
 
     useEffect(() => {
         isMountedRef.current = true;
         return () => {
             isMountedRef.current = false;
+            // Cân nhắc việc cleanup socket listeners ở đây nếu socketRef.current vẫn tồn tại
+            // và component unmount hoàn toàn. Tuy nhiên, việc disconnect khi logout đã xử lý.
         };
     }, []);
 
     const fetchData = useCallback(async (isManualRefresh = false, currentCrawlerType: CrawlerType) => {
         if (!isMountedRef.current) return;
-        console.log(`[useLogAnalysisData] Fetching for ${currentCrawlerType}. Manual: ${isManualRefresh}, StartTs=${filterStartTime}, EndTs=${filterEndTime}, ReqID=${filterRequestId}`);
+        console.log(`[useLogAnalysisData] Fetching for ${currentCrawlerType}. Manual: ${isManualRefresh}, Start=${filterStartTime}, End=${filterEndTime}, ReqID=${filterRequestId}`);
 
         setLoadingData(true);
         setFetchError(null);
@@ -257,32 +89,26 @@ export const useLogAnalysisData = (
             if (isMountedRef.current) {
                 setFetchError("Authentication required.");
                 setLoadingData(false);
-                setData(null);
+                setData(null); // Clear data khi không có token
             }
             return;
         }
         try {
-            let rawResult: LogAnalysisResultUnion | null = null;
+            let result: LogAnalysisResultUnion | null = null;
             if (currentCrawlerType === 'conference') {
-                rawResult = await apiFetchConferenceLogAnalysisData(filterRequestId);
+                result = await apiFetchConferenceLogAnalysisData(filterStartTime, filterEndTime, filterRequestId);
             } else if (currentCrawlerType === 'journal') {
-                rawResult = await apiFetchJournalLogAnalysisData(filterRequestId);
+                result = await apiFetchJournalLogAnalysisData(filterStartTime, filterEndTime, filterRequestId);
             }
 
-            const filteredResult = filterDataByTimeAndRecalculateOverall(
-                rawResult,
-                currentCrawlerType,
-                filterStartTime,
-                filterEndTime
-            );
-
             if (isMountedRef.current) {
-                setData(filteredResult);
+                setData(result);
                 setFetchError(null);
             }
         } catch (err: any) {
             if (isMountedRef.current) {
                 setFetchError(err.message || 'Failed to fetch data');
+                // setData(null); // Cân nhắc clear data khi fetch lỗi
             }
         } finally {
             if (isMountedRef.current) {
@@ -292,8 +118,9 @@ export const useLogAnalysisData = (
                 }
             }
         }
-    }, [filterStartTime, filterEndTime, filterRequestId, getToken]);
+    }, [filterStartTime, filterEndTime, filterRequestId, getToken]); // Bỏ crawlerType ra khỏi đây, sẽ truyền vào khi gọi
 
+    // Effect để fetch data khi filter, crawlerType, hoặc login status thay đổi
     useEffect(() => {
         if (isAuthInitializing) {
             if (isMountedRef.current) setLoadingData(true);
@@ -301,24 +128,28 @@ export const useLogAnalysisData = (
         }
         if (!isLoggedIn) {
             if (isMountedRef.current) {
-                setData(null);
+                setData(null); // Clear data khi logout
                 setLoadingData(false);
                 setFetchError(null);
                 initialFetchDoneRef.current = false;
             }
             return;
         }
+        // Chỉ fetch khi đã login và không còn initializing
         console.log(`[useLogAnalysisData] Triggering fetchData (from data effect) for ${crawlerType}.`);
         fetchData(false, crawlerType);
 
-    }, [isAuthInitializing, isLoggedIn, crawlerType, fetchData]);
+    }, [isAuthInitializing, isLoggedIn, crawlerType, fetchData]); // fetchData ở đây thay đổi khi filter/token thay đổi
 
+    // Effect riêng để quản lý vòng đời của socket
     useEffect(() => {
         if (isAuthInitializing || !isLoggedIn) {
+            // Nếu đang init auth hoặc chưa login, đảm bảo socket bị ngắt và cleanup
             if (socketRef.current) {
                 console.log('[useLogAnalysisData SocketEffect] Disconnecting socket due to auth state change.');
+                // Không cần gọi disconnectSocket() từ utils nữa nếu quản lý instance ở đây
                 socketRef.current.disconnect();
-                socketRef.current = null;
+                socketRef.current = null; // Xóa tham chiếu
                 if (isMountedRef.current) {
                     setIsConnected(false);
                     setSocketError(null);
@@ -327,16 +158,21 @@ export const useLogAnalysisData = (
             return;
         }
 
+        // Đã login và auth đã init xong
         const currentToken = getToken();
-        if (!currentToken) {
+        if (!currentToken) { // Trường hợp hiếm, nhưng để an toàn
             if (socketRef.current) socketRef.current.disconnect();
             socketRef.current = null;
             if (isMountedRef.current) setIsConnected(false);
             return;
         }
 
+        // Lấy hoặc tạo socket instance
+        // Việc getSocketInstance có thể cần được điều chỉnh để không tạo instance mới nếu đã có trong socketRef.current
+        // Hoặc, chúng ta sẽ quản lý instance hoàn toàn trong hook này.
+        // Để đơn giản, giả sử getSocketInstance từ utils vẫn hoạt động tốt và trả về cùng instance nếu token không đổi.
         const socket = getSocketInstance(currentToken);
-        socketRef.current = socket;
+        socketRef.current = socket; // Lưu tham chiếu
 
         if (!socket) {
             if (isMountedRef.current) {
@@ -346,6 +182,7 @@ export const useLogAnalysisData = (
             return;
         }
 
+        // Cập nhật trạng thái isConnected ban đầu
         if (isMountedRef.current && isConnected !== socket.connected) {
             setIsConnected(socket.connected);
         }
@@ -386,7 +223,7 @@ export const useLogAnalysisData = (
             }
         };
 
-        const handleGenericLogAnalysisUpdate = (updatedDataWithCrawlerType: LogAnalysisResultUnion & { crawlerType: CrawlerType }) => {
+         const handleGenericLogAnalysisUpdate = (updatedDataWithCrawlerType: LogAnalysisResultUnion & { crawlerType: CrawlerType }) => {
             console.log('[Socket] Generic Update received for crawler:', updatedDataWithCrawlerType.crawlerType);
             if (isMountedRef.current) {
                 // QUAN TRỌNG: crawlerType ở đây là crawlerType hiện tại của hook instance này
