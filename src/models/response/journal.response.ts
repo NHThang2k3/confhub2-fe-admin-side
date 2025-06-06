@@ -42,14 +42,14 @@ export type JournalResponse = {
   SJR: string;
   "SJR Best Quartile": string; // Thêm trường bị thiếu
   "H index": string; // Cần dấu ngoặc kép
-  "Total Docs. (2023)": string; // Cần dấu ngoặc kép
+  "Total Docs. (2024)": string; // Cần dấu ngoặc kép
   "Total Docs. (3years)": string; // Cần dấu ngoặc kép
-  "Total Refs.": string; // Sửa tên key (xóa (2023)) và cần dấu ngoặc kép
+  "Total Refs.": string; // Sửa tên key (xóa (2024)) và cần dấu ngoặc kép
   "Total Cites (3years)": string; // Cần dấu ngoặc kép
   "Citable Docs. (3years)": string; // Cần dấu ngoặc kép
   "Cites / Doc. (2years)": string; // Cần dấu ngoặc kép
-  "Ref. / Doc.": string; // Sửa tên key (xóa (2023)) và cần dấu ngoặc kép
-  "%Female": string; // Sửa tên key (xóa (2023)) và cần dấu ngoặc kép
+  "Ref. / Doc.": string; // Sửa tên key (xóa (2024)) và cần dấu ngoặc kép
+  "%Female": string; // Sửa tên key (xóa (2024)) và cần dấu ngoặc kép
   Overton: string; // Thêm trường bị thiếu
   SDG: string; // Thêm trường bị thiếu
   Country: string;
