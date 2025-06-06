@@ -14,7 +14,7 @@ import {
   Table,
   ColumnDef,
 } from '@tanstack/react-table';
-import { ChevronUpIcon, ChevronDownIcon, ChevronsUpDown, Search } from 'lucide-react';
+import { ChevronUpIcon, ChevronDownIcon, ChevronsUpDown, Search, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
 import { Button } from '@/src/components/ui/button';
 
 interface JournalSelectionStepProps {
@@ -110,32 +110,37 @@ const JournalSelectionStep: React.FC<JournalSelectionStepProps> = ({
     {
       id: 'select',
       header: () => {
-        const allSelected = parsedData.length > 0 && parsedData.every(journal => 
-          selectedRows[journal.Issn || `row-${parsedData.indexOf(journal)}`]
+        // Get current page rows
+        const currentPageRows = table.getRowModel().rows;
+        
+        // Check if all rows on current page are selected
+        const allSelectedOnPage = currentPageRows.length > 0 && currentPageRows.every(row => 
+          selectedRows[row.id]
         );
-        const someSelected = parsedData.some(journal => 
-          selectedRows[journal.Issn || `row-${parsedData.indexOf(journal)}`]
+        
+        // Check if some rows on current page are selected
+        const someSelectedOnPage = currentPageRows.some(row => 
+          selectedRows[row.id]
         );
 
         return (
           <div className="flex items-center justify-center">
             <input
               type="checkbox"
-              checked={allSelected}
+              checked={allSelectedOnPage}
               ref={input => {
                 if (input) {
-                  input.indeterminate = someSelected && !allSelected;
+                  input.indeterminate = someSelectedOnPage && !allSelectedOnPage;
                 }
               }}
               onChange={() => {
-                if (allSelected) {
-                  handleDeselectAll();
-                } else {
-                  handleSelectAll();
-                }
+                // Toggle selection for all rows on current page
+                currentPageRows.forEach(row => {
+                  handleRowSelectToggle(row.id);
+                });
               }}
               className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
-              aria-label="Select all rows"
+              aria-label="Select all rows on current page"
             />
           </div>
         );
@@ -223,6 +228,9 @@ const JournalSelectionStep: React.FC<JournalSelectionStepProps> = ({
   }, [selectedRows, memoizedData, onSelectionChanged]);
 
   const filteredRowCount = table.getFilteredRowModel().rows.length;
+
+  // Add available page sizes
+  const pageSizeOptions = [10, 20, 50, 100];
 
   return (
     <div className="space-y-4 md:space-y-6 rounded-lg border border-gray-200 p-3 md:p-6 bg-white shadow">
@@ -348,25 +356,88 @@ const JournalSelectionStep: React.FC<JournalSelectionStepProps> = ({
       </div>
 
       <div className="flex items-center justify-between">
-        <div className="text-sm text-gray-700">
-          {selectedRowsCount} of {filteredRowCount} rows selected
-        </div>
         <div className="flex items-center space-x-2">
-          <Button
-            variant="outline"
-            onClick={onPrev}
-            className="border-gray-300 text-gray-700 hover:bg-gray-10"
-          >
-            Previous
-          </Button>
-          <Button
-            onClick={onNext}
-            disabled={!canProceed || selectedRowsCount === 0}
-            className="bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            Next
-          </Button>
+          <p className="text-sm text-gray-700">
+            {selectedRowsCount} of {filteredRowCount} rows selected
+          </p>
+          <div className="flex items-center space-x-2 ml-4">
+            <p className="text-sm text-gray-700">Rows per page:</p>
+            <select
+              value={pagination.pageSize}
+              onChange={e => {
+                setPagination(prev => ({
+                  ...prev,
+                  pageSize: Number(e.target.value),
+                  pageIndex: 0, // Reset to first page when changing page size
+                }));
+              }}
+              className="rounded-md border-gray-300 text-sm focus:border-indigo-500 focus:ring-indigo-500"
+            >
+              {pageSizeOptions.map(pageSize => (
+                <option key={pageSize} value={pageSize}>
+                  {pageSize}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
+
+        <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-2">
+            <Button
+              variant="outline"
+              onClick={() => setPagination(prev => ({ ...prev, pageIndex: 0 }))}
+              disabled={pagination.pageIndex === 0}
+              className="h-8 w-8 p-0"
+            >
+              <ChevronsLeft className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => setPagination(prev => ({ ...prev, pageIndex: prev.pageIndex - 1 }))}
+              disabled={pagination.pageIndex === 0}
+              className="h-8 w-8 p-0"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <span className="text-sm text-gray-700">
+              Page {pagination.pageIndex + 1} of {table.getPageCount()}
+            </span>
+            <Button
+              variant="outline"
+              onClick={() => setPagination(prev => ({ ...prev, pageIndex: prev.pageIndex + 1 }))}
+              disabled={pagination.pageIndex >= table.getPageCount() - 1}
+              className="h-8 w-8 p-0"
+            >
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => setPagination(prev => ({ ...prev, pageIndex: table.getPageCount() - 1 }))}
+              disabled={pagination.pageIndex >= table.getPageCount() - 1}
+              className="h-8 w-8 p-0"
+            >
+              <ChevronsRight className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      <div className="flex items-center justify-end space-x-2">
+        <Button
+          variant="outline"
+          onClick={onPrev}
+          className="border-gray-300 text-gray-700 hover:bg-gray-10"
+        >
+          Previous
+        </Button>
+        <Button
+          onClick={onNext}
+          disabled={!canProceed || selectedRowsCount === 0}
+          className="bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          Next
+        </Button>
       </div>
     </div>
   );

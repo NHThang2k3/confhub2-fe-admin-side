@@ -1,6 +1,6 @@
 // src/app/[locale]/dashboard/crawl/JournalCrawlUploader.tsx
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import { useJournalCrawl } from '@/src/hooks/crawl/journal/useJournalCrawl'
 import JournalSelectionStep from './steps/JournalSelectionStep' // Assuming this is compatible
 import StepperNavigation from './steps/StepperNavigation'
@@ -18,41 +18,45 @@ const JOURNAL_STEPS = [
     { id: 3, name: 'Review & Start Backend Crawl' } // Step 3 is for backend crawl
 ];
 
-// Simplified SCImago Preview Table (from old code, if you want to use scimagoPreviewData)
-const ScimagoPreviewTable: React.FC<{ data: ScimagoJournal[] }> = ({ data }) => (
-  <div className='mt-4 rounded-lg border border-gray-200 shadow-sm'>
-    <h3 className='text-md flex items-center rounded-t-lg border-b border-gray-200 bg-gray-10 p-3 font-semibold text-gray-700'>
-      Preview of Raw SCImago CSV Data ({data.length} items)
-    </h3>
-    <div className='custom-scrollbar max-h-60 overflow-auto'>
-      <table className='min-w-full divide-y divide-gray-200'>
-        <thead className='sticky top-0 z-10 bg-gray-100'>
-          <tr>
-            <th scope='col' className='px-3 py-2 text-left text-xs font-medium uppercase tracking-wider text-gray-600'>Rank</th>
-            <th scope='col' className='min-w-[250px] px-3 py-2 text-left text-xs font-medium uppercase tracking-wider text-gray-600'>Title</th>
-            <th scope='col' className='px-3 py-2 text-left text-xs font-medium uppercase tracking-wider text-gray-600'>ISSN</th>
-          </tr>
-        </thead>
-        <tbody className='divide-y divide-gray-200 bg-white'>
-          {data.map((journal, index) => (
-            <tr key={journal.Sourceid ? `${journal.Sourceid}-${index}` : index} className='hover:bg-gray-10'>
-              <td className='whitespace-nowrap px-3 py-2 text-sm text-gray-500'>{journal.Rank ?? 'N/A'}</td>
-              <td className='px-3 py-2 text-sm text-gray-900'>{journal.Title ?? 'N/A'}</td>
-              <td className='whitespace-nowrap px-3 py-2 text-sm text-gray-500'>{journal.Issn ?? 'N/A'}</td>
+// Memoize the ScimagoPreviewTable component
+const ScimagoPreviewTable = React.memo<{ data: ScimagoJournal[] }>(({ data }) => {
+  const memoizedData = React.useMemo(() => data, [data]);
+  
+  return (
+    <div className='mt-4 rounded-lg border border-gray-200 shadow-sm'>
+      <h3 className='text-md flex items-center rounded-t-lg border-b border-gray-200 bg-gray-10 p-3 font-semibold text-gray-700'>
+        Preview of Raw SCImago CSV Data ({memoizedData.length} items)
+      </h3>
+      <div className='custom-scrollbar max-h-60 overflow-auto'>
+        <table className='min-w-full divide-y divide-gray-200'>
+          <thead className='sticky top-0 z-10 bg-gray-100'>
+            <tr>
+              <th scope='col' className='px-3 py-2 text-left text-xs font-medium uppercase tracking-wider text-gray-600'>Rank</th>
+              <th scope='col' className='min-w-[250px] px-3 py-2 text-left text-xs font-medium uppercase tracking-wider text-gray-600'>Title</th>
+              <th scope='col' className='px-3 py-2 text-left text-xs font-medium uppercase tracking-wider text-gray-600'>ISSN</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody className='divide-y divide-gray-200 bg-white'>
+            {memoizedData.map((journal, index) => (
+              <tr key={journal.Sourceid ? `${journal.Sourceid}-${index}` : index} className='hover:bg-gray-10'>
+                <td className='whitespace-nowrap px-3 py-2 text-sm text-gray-500'>{journal.Rank ?? 'N/A'}</td>
+                <td className='px-3 py-2 text-sm text-gray-900'>{journal.Title ?? 'N/A'}</td>
+                <td className='whitespace-nowrap px-3 py-2 text-sm text-gray-500'>{journal.Issn ?? 'N/A'}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      {memoizedData.length === 0 && <p className='p-4 text-center text-sm text-gray-500'>No SCImago journals found in preview.</p>}
     </div>
-    {data.length === 0 && <p className='p-4 text-center text-sm text-gray-500'>No SCImago journals found in preview.</p>}
-  </div>
-);
+  );
+});
 
+ScimagoPreviewTable.displayName = 'ScimagoPreviewTable';
 
 export const JournalCrawlUploader: React.FC = () => {
   const t = useTranslations('JournalCrawl') // Ensure your translation keys match
   const [currentStep, setCurrentStep] = useState(1);
-  // This selectedJournals state is for journals selected from the DB check results
   const [selectedJournalsForAction, setSelectedJournalsForAction] = useState<JournalWithStatus[]>([]);
 
   const {
@@ -78,45 +82,99 @@ export const JournalCrawlUploader: React.FC = () => {
     resetAll
   } = useJournalCrawl()
 
-  const handleNext = () => {
+  const handleNext = useCallback(() => {
     if (currentStep < JOURNAL_STEPS.length) {
       setCurrentStep(currentStep + 1);
     }
-  };
+  }, [currentStep]);
 
-  const handlePrev = () => {
+  const handlePrev = useCallback(() => {
     if (currentStep > 1) {
       setCurrentStep(currentStep - 1);
     }
-  };
+  }, [currentStep]);
 
-  const handleSelectionChanged = (selectedRows: JournalWithStatus[]) => {
-    setSelectedJournalsForAction(selectedRows);
-  };
+  const handleSelectionChanged = useCallback((selectedRows: JournalWithStatus[]) => {
+    console.log('Selection changed:', selectedRows.length, 'rows selected');
+    setSelectedJournalsForAction(prev => {
+      // Only update if the selection has actually changed
+      const hasChanged = selectedRows.length !== prev.length || 
+        selectedRows.some((row, index) => 
+          row.Issn !== prev[index]?.Issn || 
+          row.Title !== prev[index]?.Title
+        );
+      
+      if (!hasChanged) {
+        console.log('Selection unchanged, skipping update');
+        return prev;
+      }
+      
+      console.log('Updating selection with new rows');
+      return selectedRows;
+    });
+  }, []); // Empty dependency array since we're using functional updates
 
-  const handleUpdateActionType = (actionType: 'crawl' | 'update', journalsToUpdate: JournalWithStatus[]) => {
-    const updatedJournals = journalsToUpdate.map(journal => ({
-      ...journal,
-      actionType
-    }));
-    // Update in parsedDataForSelectionTable if JournalSelectionStep modifies it directly
-    // Or update selectedJournalsForAction if selection step only passes back selected items
-     setSelectedJournalsForAction(prev => 
-      prev.map(journal => {
-        const updated = updatedJournals.find(j => j.Issn === journal.Issn); // Assuming ISSN is unique key
+  const handleUpdateActionType = useCallback((actionType: 'crawl' | 'update', journalsToUpdate: JournalWithStatus[]) => {
+    console.log('Updating action type:', actionType, 'for', journalsToUpdate.length, 'journals');
+    setSelectedJournalsForAction(prev => {
+      const updatedJournals = journalsToUpdate.map(journal => ({
+        ...journal,
+        actionType
+      }));
+      
+      return prev.map(journal => {
+        const updated = updatedJournals.find(j => j.Issn === journal.Issn && j.Title === journal.Title);
         return updated || journal;
-      })
-    );
-  };
+      });
+    });
+  }, []); // Empty dependency array since we're using functional updates
   
-  const isLoading = isReadingFile || isCheckingDB || isCrawlingBackend;
+  // Memoize these values to prevent unnecessary re-renders
+  const isLoading = useMemo(() => 
+    isReadingFile || isCheckingDB || isCrawlingBackend,
+    [isReadingFile, isCheckingDB, isCrawlingBackend]
+  );
 
-  const canProceedToStep2 = file && !isReadingFile && !fileReadError && parsedDataForSelectionTable && !isCheckingDB;
-  const canProceedToStep3 = selectedJournalsForAction.length > 0;
-  const canStartBackendCrawlProcess = rawCsvContent && selectedJournalsForAction.length > 0 && !isLoading;
+  const canProceedToStep2 = useMemo(() => 
+    Boolean(file && !isReadingFile && !fileReadError && parsedDataForSelectionTable && !isCheckingDB),
+    [file, isReadingFile, fileReadError, parsedDataForSelectionTable, isCheckingDB]
+  );
 
+  const canProceedToStep3 = useMemo(() => 
+    selectedJournalsForAction.length > 0,
+    [selectedJournalsForAction.length]
+  );
 
-  const renderStepContent = () => {
+  const canStartBackendCrawlProcess = useMemo(() => 
+    Boolean(rawCsvContent && selectedJournalsForAction.length > 0 && !isLoading),
+    [rawCsvContent, selectedJournalsForAction.length, isLoading]
+  );
+
+  // Memoize the showStatusSection value
+  const showStatusSection = useMemo(() => 
+    Boolean(
+      dbCheckMessages.length > 0 ||
+      checkDBError ||
+      crawlBackendMessages.length > 0 ||
+      crawlBackendError ||
+      isCrawlingBackend ||
+      crawlBackendProgress.status !== 'idle'
+    ),
+    [
+      dbCheckMessages.length,
+      checkDBError,
+      crawlBackendMessages.length,
+      crawlBackendError,
+      isCrawlingBackend,
+      crawlBackendProgress.status
+    ]
+  );
+
+  // Memoize the preview data
+  const memoizedPreviewData = useMemo(() => scimagoPreviewData, [scimagoPreviewData]);
+
+  // Memoize the renderStepContent function
+  const renderStepContent = useCallback(() => {
     switch (currentStep) {
       case 1: // Upload & Check DB
         return (
@@ -161,8 +219,8 @@ export const JournalCrawlUploader: React.FC = () => {
             </div>
             
             {/* Optional SCImago Preview */}
-            {scimagoPreviewData && scimagoPreviewData.length > 0 && !isReadingFile && (
-                <ScimagoPreviewTable data={scimagoPreviewData} />
+            {memoizedPreviewData && memoizedPreviewData.length > 0 && !isReadingFile && (
+              <ScimagoPreviewTable data={memoizedPreviewData} />
             )}
 
             <div className='flex justify-end'>
@@ -230,7 +288,7 @@ export const JournalCrawlUploader: React.FC = () => {
                     {t('back')}
                     </Button>
                     <Button
-                    onClick={startBackendCrawl} // This now calls the backend crawl
+                    onClick={() => startBackendCrawl(selectedJournalsForAction)} // Pass selected journals
                     disabled={!canStartBackendCrawlProcess || isLoading}
                     className='bg-green-600 hover:bg-green-700 text-white'
                     >
@@ -254,15 +312,27 @@ export const JournalCrawlUploader: React.FC = () => {
       default:
         return null;
     }
-  };
-
-  const showStatusSection =
-    dbCheckMessages.length > 0 ||
-    checkDBError ||
-    crawlBackendMessages.length > 0 ||
-    crawlBackendError ||
-    isCrawlingBackend ||
-    crawlBackendProgress.status !== 'idle';
+  }, [
+    currentStep,
+    file,
+    isLoading,
+    fileReadError,
+    parsedDataForSelectionTable,
+    selectedJournalsForAction,
+    canProceedToStep2,
+    canProceedToStep3,
+    canStartBackendCrawlProcess,
+    isCrawlingBackend,
+    memoizedPreviewData,
+    isReadingFile,
+    handleNext,
+    handlePrev,
+    handleSelectionChanged,
+    handleUpdateActionType,
+    startBackendCrawl,
+    resetAll,
+    t
+  ]);
 
   return (
     <div className='mx-auto rounded-lg border border-gray-200 bg-white p-4 shadow-lg md:p-6'>
@@ -277,7 +347,6 @@ export const JournalCrawlUploader: React.FC = () => {
         {renderStepContent()}
       </div>
 
-      {/* Combined Status Section */}
       {showStatusSection && (
         <div className='mt-6 rounded-md border border-gray-200 bg-gray-10 p-4'>
           <h3 className='text-md mb-3 font-semibold text-gray-700'>

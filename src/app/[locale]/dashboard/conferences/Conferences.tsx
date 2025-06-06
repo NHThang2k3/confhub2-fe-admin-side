@@ -16,6 +16,8 @@ import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { DeleteConfirmationDialog } from './DeleteConfirmationDialog';
+import { useToast } from '@/hooks/use-toast';
+import { toast } from 'react-toastify';
 
 // --- Interfaces (Giữ lại các interface này trong file Conferences.tsx) ---
 interface Conference {
@@ -132,6 +134,7 @@ const PaginationControls = ({
 }) => {
   const t = useTranslations('pagination');
   const tCommon = useTranslations('common');
+  const { toast } = useToast();
 
   const [goToPageInput, setGoToPageInput] = useState(''); // State cho input số trang
   const pageNumbers = [];
@@ -860,10 +863,12 @@ export default function Conferences({ locale }: { locale: string }) {
               await axios.delete(`${DATA_API_URL}/api/v1/admin/conferences/history/${selectedOrganization.id}`);
               // Refetch the conference history after successful deletion
               await fetchConferenceHistory(selectedConference.id);
+              toast.success("Successfully deleted conference history");
               // Close the delete dialog
               setDeleteDialogOpen(false);
             } catch (error) {
               console.error('Error deleting conference history:', error);
+              toast.error("Failed to delete conference history");
             } finally {
               setHistoryLoading(false);
             }

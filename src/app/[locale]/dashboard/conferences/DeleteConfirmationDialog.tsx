@@ -9,7 +9,7 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { useToast } from '@/hooks/use-toast';
+
 
 interface DeleteConfirmationDialogProps {
   open: boolean;
@@ -25,24 +25,16 @@ export function DeleteConfirmationDialog({
   title,
 }: DeleteConfirmationDialogProps) {
   const [loading, setLoading] = useState(false);
-  const { toast } = useToast();
+  
 
   const handleConfirm = async () => {
     setLoading(true);
     try {
       await onConfirm();
-      toast({
-        title: "Successfully deleted conference history",
-        variant: "default"
-      });
       onOpenChange(false);
     } catch (error) {
       console.error('Error deleting:', error);
-      toast({
-        title: "Failed to delete conference history",
-        description: error instanceof Error ? error.message : 'An error occurred',
-        variant: "destructive"
-      });
+      throw new Error('Error deleting:' + error);
     } finally {
       setLoading(false);
     }
