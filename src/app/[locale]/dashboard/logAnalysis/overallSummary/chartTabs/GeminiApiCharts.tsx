@@ -41,16 +41,20 @@ const GeminiApiCharts: React.FC<GeminiApiChartsProps> = ({
 
   // --- Tính toán tổng cộng cho bảng (không cần dùng t trong này) ---
   const totals = React.useMemo(() => {
-    let totalCalls = 0;
+    let totalCalls = 0; // Sẽ tính tổng số lượt gọi vật lý
     let totalSuccesses = 0;
     let totalFailures = 0;
-    let totalRetries = 0;
+    let totalRetries = 0; // Vẫn giữ để hiển thị tổng ở cột Retries
     let totalTokens = 0;
     let totalSafetyBlocks = 0;
 
     Object.values(geminiModelUsageRawData).forEach(models => {
       Object.values(models).forEach(stats => {
-        totalCalls += stats.calls || 0;
+        // SỬA LỖI: "Total Calls" phải bao gồm cả "calls" (lượt thử chính/dự phòng) và "retries"
+        // Dựa trên dữ liệu ví dụ: sum(stats.calls) = 567, sum(stats.retries) = 39. Total = 606.
+        totalCalls += (stats.calls || 0) + (stats.retries || 0);
+
+        // Các tính toán khác giữ nguyên
         totalSuccesses += stats.successes || 0;
         totalFailures += stats.failures || 0;
         totalRetries += stats.retries || 0;
@@ -60,10 +64,10 @@ const GeminiApiCharts: React.FC<GeminiApiChartsProps> = ({
     });
 
     return {
-      totalCalls,
+      totalCalls,         // Giá trị mới sẽ là 606
       totalSuccesses,
       totalFailures,
-      totalRetries,
+      totalRetries,       // Giá trị vẫn là 39
       totalTokens,
       totalSafetyBlocks,
     };
@@ -87,13 +91,13 @@ const GeminiApiCharts: React.FC<GeminiApiChartsProps> = ({
             dataExists={geminiOrchestrationData.length > 0}
             noDataMessage={t('section1.noOrchestrationData')}
           />
-           {geminiFallbackSuccessRateData.length > 0 && geminiFallbackSuccessRateData.some(d => d.value > 0) && (
+          {geminiFallbackSuccessRateData.length > 0 && geminiFallbackSuccessRateData.some(d => d.value > 0) && (
             <ChartCard
-                option={getPieChartOption(t('section1.fallbackModelSuccessRateStandalone'), geminiFallbackSuccessRateData, ['#91cc75', '#ee6666'])}
-                dataExists={true}
-                noDataMessage={t('section1.noFallbackData')}
+              option={getPieChartOption(t('section1.fallbackModelSuccessRateStandalone'), geminiFallbackSuccessRateData, ['#91cc75', '#ee6666'])}
+              dataExists={true}
+              noDataMessage={t('section1.noFallbackData')}
             />
-           )}
+          )}
         </div>
       </div>
 

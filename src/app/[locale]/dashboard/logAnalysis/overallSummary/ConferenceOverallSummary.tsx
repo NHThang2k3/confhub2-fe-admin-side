@@ -91,7 +91,11 @@ const ConferenceOverallSummary: React.FC<ConferenceOverallSummaryProps> = ({
 
   const totalGeminiCallsWithRetries = useMemo(() => {
     if (!geminiApiData) return 0;
-    return (geminiApiData.totalCalls || 0) + (geminiApiData.fallbackModelStats.attempts || 0);
+    // SỬA LỖI: Thêm totalRetries để có tổng số lượt gọi vật lý chính xác.
+    // Dựa trên dữ liệu ví dụ: 503 (totalCalls/primary) + 64 (fallback) + 39 (retries) = 606
+    return (geminiApiData.primaryModelStats.attempts || 0) + 
+           (geminiApiData.fallbackModelStats.attempts || 0) + 
+           (geminiApiData.totalRetries || 0);
   }, [geminiApiData]);
 
   // THÊM: Dữ liệu raw cho bảng Model Usage
