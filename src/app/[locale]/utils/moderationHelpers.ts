@@ -4,11 +4,11 @@ import { ConferenceStatus } from '@/src/types';
 
 export const getStatusColorClass = (status: ConferenceStatus): string => {
     switch (status) {
-      case 'APPROVEDr':
+      case 'APPROVED':
         return 'text-green-700 bg-green-100';
-      case 'REJECTEDr':
+      case 'REJECTED':
         return 'text-red-700 bg-red-100';
-      case 'PENDINGr':
+      case 'PENDING':
         return 'text-yellow-700 bg-yellow-100';
       default:
         return 'text-gray-700 bg-gray-100';
@@ -17,11 +17,11 @@ export const getStatusColorClass = (status: ConferenceStatus): string => {
 
 export const getStatusBgClass = (status: ConferenceStatus): string => {
     switch (status) {
-      case 'APPROVEDr':
+      case 'APPROVED':
         return 'bg-green-50';
-      case 'REJECTEDr':
+      case 'REJECTED':
         return 'bg-red-50';
-      case 'PENDINGr':
+      case 'PENDING':
         return 'bg-yellow-50';
       default:
         return 'bg-white-pure';

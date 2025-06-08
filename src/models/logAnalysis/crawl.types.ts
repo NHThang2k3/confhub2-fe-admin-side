@@ -8,6 +8,7 @@
  * - 'tuned': Refers to a fine-tuned version of a Gemini model, optimized for specific tasks.
  */
 export type CrawlModelType = 'non-tuned' | 'tuned';
+export type ApiName = "determineLinks" | "extractInfo" | "extractCfp";
 
 /**
  * Specifies the AI model preferences for each stage of the crawling pipeline.
@@ -15,11 +16,11 @@ export type CrawlModelType = 'non-tuned' | 'tuned';
  */
 export interface ApiModels {
     /** The model type to be used for the 'determineLinks' API stage. */
-    determineLinks: CrawlModelType;
+    determineLinks: CrawlModelType | null;
     /** The model type to be used for the 'extractInfo' API stage. */
-    extractInfo: CrawlModelType;
+    extractInfo: CrawlModelType | null;
     /** The model type to be used for the 'extractCfp' API stage. */
-    extractCfp: CrawlModelType;
+    extractCfp: CrawlModelType | null;
 }
 
 // --------------------- INITIAL INPUT DATA TYPES ---------------------

@@ -2,7 +2,7 @@ import React from 'react';
 import { useTranslations } from 'next-intl';
 import { Input } from '@/src/components/ui/input';
 import { Checkbox } from '@/src/components/ui/checkbox';
-import { JournalWithStatus } from '@/src/hooks/crawl/journal/useJournalCrawl';
+import { JournalWithStatus } from '@/src/models/logAnalysis/importJournalCrawl';
 
 type SortableColumn = keyof JournalWithStatus;
 

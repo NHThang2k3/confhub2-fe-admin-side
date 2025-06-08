@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback, useEffect } from 'react';
-import { JournalWithStatus } from './useJournalCrawl';
+import { JournalWithStatus } from '@/src/models/logAnalysis/importJournalCrawl';
 
 interface UseJournalTableSelectionProps {
   data: JournalWithStatus[];

@@ -1,5 +1,6 @@
 // src/app/[locale]/auth/callback/page.tsx
 'use client';
+
 import { useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/src/contexts/AuthContext'; // <<<< THAY ĐỔI QUAN TRỌNG

@@ -1,8 +1,8 @@
 import React from 'react';
-import { JournalWithStatus } from '@/src/hooks/crawl/journal/useJournalCrawl';
 import { JournalTableHeader } from './JournalTableHeader';
 import { JournalTableRow } from './JournalTableRow';
 import { useTranslations } from 'next-intl';
+import { JournalWithStatus } from '@/src/models/logAnalysis/importJournalCrawl';
 
 type SortableColumn = keyof JournalWithStatus;
 

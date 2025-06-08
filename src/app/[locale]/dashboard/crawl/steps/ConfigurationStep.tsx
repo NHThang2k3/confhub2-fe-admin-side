@@ -1,7 +1,6 @@
 import React, { useState, useMemo } from 'react';
-import { ApiName, CrawlModelType } from '@/src/hooks/crawl/conference/useConferenceCrawl';
 import { useTranslations } from 'next-intl'; // Import useTranslations
-
+import { ApiName, CrawlModelType } from '@/src/models/logAnalysis/crawl.types';
 interface ApiStepConfig {
   name: ApiName;
   displayName: string;

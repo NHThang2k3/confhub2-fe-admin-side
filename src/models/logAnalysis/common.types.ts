@@ -243,10 +243,27 @@ export interface LogError {
      * @property {string} [sourceService] - Tùy chọn: Dịch vụ hoặc thành phần nguồn gây ra lỗi.
      */
     sourceService?: string;
+
     /**
-     * @property {'DataParsing' | 'Network' | 'APIQuota' | 'Logic' | 'FileSystem' | 'SafetyBlock' | 'Configuration' | 'Unknown' | 'ThirdPartyAPI'} [errorType] - Tùy chọn: Loại lỗi được phân loại.
+     * @property {string} [errorType] - Optional: The categorized type of error.
+     * --- UPDATED to merge types from both files ---
      */
-    errorType?: 'DataParsing' | 'Network' | 'APIQuota' | 'Logic' | 'FileSystem' | 'SafetyBlock' | 'Configuration' | 'Unknown' | 'ThirdPartyAPI';
+    errorType?:
+    | 'Network'
+    | 'API'             // From logAnalysisJournal.types.ts
+    | 'APIQuota'
+    | 'Playwright'      // From logAnalysisJournal.types.ts
+    | 'FileSystem'
+    | 'Validation'      // From logAnalysisJournal.types.ts
+    | 'Logic'
+    | 'Cache'           // From logAnalysisJournal.types.ts
+    | 'SafetyBlock'
+    | 'Configuration'
+    | 'DataParsing'
+    | 'ThirdParty'      // From logAnalysisJournal.types.ts
+    | 'ThirdPartyAPI'
+    | 'Unknown';
+
     /**
      * @property {boolean} [isRecovered] - Tùy chọn: True nếu lỗi này đã được khắc phục bởi một hành động sau đó (ví dụ: fallback).
      */

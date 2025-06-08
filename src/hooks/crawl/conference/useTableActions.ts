@@ -6,7 +6,8 @@ import {
   MainSavingStatus,
   RowSaveStatus
 } from './useConferenceTableManager';
-import { ApiModels, useConferenceCrawl } from './useConferenceCrawl';
+import { useConferenceCrawl } from './useConferenceCrawl';
+import { ApiModels } from '@/src/models/logAnalysis/importConferenceCrawl';
 import {
     saveConferencesToDB, // Updated import
     ConferenceToSavePayload,

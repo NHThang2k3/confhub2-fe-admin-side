@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "next dev --port 1314",
     "build": "next build",
-    "start": "next start",
+    "start": "next start --port 1314",
+    "start:prod": "npm run build && npm run start",
     "lint": "next lint",
     "test": "jest",
     "test:watch": "jest --watch"

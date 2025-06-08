@@ -1,4 +1,4 @@
-// src/components/Moderation/ConferenceList.tsx
+// src/app/[locale]/dashboard/moderation/ConferenceList.tsx
 'use client'; // <-- Add directive
 
 import React from 'react';
@@ -21,28 +21,30 @@ const formatDateTimeDisplay = (date: Date | undefined) => {
     });
 }
 
-// Helper to format a date range (uses Date objects and needs access to 't' for "N/A", "onwards", "until")
-const formatDateRangeDisplay = (fromDate: Date | undefined, toDate: Date | undefined, t: ReturnType<typeof useTranslations>) => {
-     const formattedFrom = fromDate && !isNaN(fromDate.getTime()) ? formatDateTimeDisplay(fromDate).split(', ')[0] : t('Common_NA'); // <-- Use t() for N/A
-     const formattedTo = toDate && !isNaN(toDate.getTime()) ? formatDateTimeDisplay(toDate).split(', ')[0] : t('Common_NA'); // <-- Use t() for N/A
 
-     if (formattedFrom === t('Common_NA') && formattedTo === t('Common_NA')) return t('Common_NA'); // <-- Use t() for N/A
+// FIXED: Changed the type of the `t` parameter from `ReturnType<typeof useTranslations>`
+// to `(key: string) => string` to resolve the 'never' type inference issue.
+const formatDateRangeDisplay = (fromDate: Date | undefined, toDate: Date | undefined, t: (key: string) => string) => {
+     const formattedFrom = fromDate && !isNaN(fromDate.getTime()) ? formatDateTimeDisplay(fromDate).split(', ')[0] : t('Common_NA');
+     const formattedTo = toDate && !isNaN(toDate.getTime()) ? formatDateTimeDisplay(toDate).split(', ')[0] : t('Common_NA');
+
+     if (formattedFrom === t('Common_NA') && formattedTo === t('Common_NA')) return t('Common_NA');
      if (formattedFrom === formattedTo && formattedFrom !== t('Common_NA')) return formattedFrom;
-     if (formattedFrom !== t('Common_NA') && formattedTo === t('Common_NA')) return `${formattedFrom} ${t('DateRange_Onwards')}`; // <-- Use t() for 'onwards'
-     if (formattedFrom === t('Common_NA') && formattedTo !== t('Common_NA')) return `${t('DateRange_Until')} ${formattedTo}`; // <-- Use t() for 'until'
+     if (formattedFrom !== t('Common_NA') && formattedTo === t('Common_NA')) return `${formattedFrom} ${t('DateRange_Onwards')}`;
+     if (formattedFrom === t('Common_NA') && formattedTo !== t('Common_NA')) return `${t('DateRange_Until')} ${formattedTo}`;
 
      return `${formattedFrom} - ${formattedTo}`;
 };
 
-// Helper to display a single location (needs access to 't' for "N/A")
-const formatLocationDisplay = (location: Location | undefined | null, t: ReturnType<typeof useTranslations>) => {
-     if (!location) return t('Common_NA'); // <-- Use t() for N/A
+// FIXED: Applied the same type fix to this helper for consistency.
+const formatLocationDisplay = (location: Location | undefined | null, t: (key: string) => string) => {
+     if (!location) return t('Common_NA');
      const parts = [];
      if (location.address) parts.push(location.address);
      if (location.cityStateProvince) parts.push(location.cityStateProvince);
      if (location.country) parts.push(location.country);
      if (location.continent && parts.length === 0 && !location.country && !location.cityStateProvince && !location.address) parts.push(location.continent);
-     return parts.length > 0 ? parts.filter(p => p != null).join(', ') : t('Common_NA'); // <-- Use t() for N/A
+     return parts.length > 0 ? parts.filter(p => p != null).join(', ') : t('Common_NA');
 };
 
 
@@ -50,19 +52,17 @@ interface ConferenceListProps {
     conferences: Conference[];
     onModerateClick: (conferenceId: string, status: ConferenceStatus) => void;
     showCommentModal: boolean;
-    // If using namespaces, pass the 't' function related to this component's namespace
-    // t: ReturnType<typeof useTranslations>; // Or get t inside the component
 }
 
 const ConferenceList: React.FC<ConferenceListProps> = ({
     conferences,
     onModerateClick,
     showCommentModal,
-    // If receiving t as prop: t,
 }) => {
-     // Call useTranslations hook here
-     const t = useTranslations('ConferenceList'); // <-- Added hook call (using a namespace example)
-     // Alternatively, if passing t from parent: const { t } = props;
+     // `t` for component-specific keys
+     const t = useTranslations('ConferenceList');
+     // `tCommon` for shared keys like 'Common_NA'
+     const tCommon = useTranslations('Common');
 
     if (!conferences || conferences.length === 0) {
         return null;
@@ -81,68 +81,55 @@ const ConferenceList: React.FC<ConferenceListProps> = ({
                         className={`border-b border-gray-20 py-0 px-0 last:border-b-0 ${getStatusBgClass(conference.status)}`}
                     >
                         <div className="p-4">
-                             {/* Display details fetch error if it occurred for this item */}
                              {conference.detailsFetchError && (
                                  <div className="mb-3 text-sm text-red-600 italic">
-                                     {/* Translate error label */}
-                                     {t('Error_DetailsLoadFailed_Label')}: {conference.detailsFetchError} {/* <-- Translated label */}
+                                     {t('Error_DetailsLoadFailed_Label')}: {conference.detailsFetchError}
                                  </div>
                              )}
 
                             <div className='mb-3 flex items-start justify-between'>
                                 <div>
                                     <h3 className='text-xl font-semibold '>
-                                        {/* Translate default title if missing */}
-                                        {conference.title || t('Default_UntitledConference')} {/* <-- Translated default */}
+                                        {conference.title || t('Default_UntitledConference')}
                                         {conference.acronym && conference.acronym.trim() !== '' && (
                                              <span className="font-normal "> ({conference.acronym})</span>
                                         )}
                                     </h3>
 
-                                     {/* Display main conference link */}
                                      {mainOrganization?.link && mainOrganization.link.trim() !== '' && (
                                          <p className='text-sm text-blue-600 hover:underline'>
                                              <a href={mainOrganization.link} target="_blank" rel="noopener noreferrer">{mainOrganization.link}</a>
                                          </p>
                                      )}
 
-                                     {/* Display access type */}
                                      {mainOrganization?.accessType && (
                                           <p className='text-sm italic '>
-                                            {mainOrganization.accessType} {/* Assume accessType itself is a key or handled by backend */}
+                                            {mainOrganization.accessType}
                                           </p>
                                      )}
 
-                                    {/* Display request creation and update dates */}
                                     <p className='text-xs  mt-1'>
-                                        {/* Translate labels */}
-                                        {t('Requested_Label')}: {formatDateTimeDisplay(conference.createdAt)} {/* <-- Translated label */}
+                                        {t('Requested_Label')}: {formatDateTimeDisplay(conference.createdAt)}
                                     </p>
                                      <p className='text-xs '>
-                                        {/* Translate labels */}
-                                        {t('LastUpdated_Label')}: {formatDateTimeDisplay(conference.updatedAt)} {/* <-- Translated label */}
+                                        {t('LastUpdated_Label')}: {formatDateTimeDisplay(conference.updatedAt)}
                                     </p>
-                                    {/* Optionally display user info with translated label */}
-                                    {/* <p className='text-xs '>{t('UserById_Label')}: {conference.userId}</p> */}
                                 </div>
                                 <span
                                     className={`ml-4 inline-block rounded-full px-3 py-1 text-sm font-medium ${getStatusColorClass(conference.status)}`}
                                 >
-                                    {/* Translate status string using t() */}
-                                    {t(`Status_${conference.status}`)} {/* <-- Translated status */}
+                                    {t(`Status_${conference.status}`)}
                                 </span>
                             </div>
 
-                             {/* Display Conference Dates */}
                              {mainConferenceDates && mainConferenceDates.length > 0 && (
                                  <div className="mb-3 text-sm ">
-                                    <p><strong>{t('ImportantDates_Label')}:</strong></p> {/* <-- Translated label */}
+                                    <p><strong>{t('ImportantDates_Label')}:</strong></p>
                                      <ul className="list-disc list-inside ml-4">
                                          {mainConferenceDates.map((dateItem, index) => (
                                              dateItem && (
                                                 <li key={index}>
-                                                    {/* Translate default label if name/type missing */}
-                                                    {dateItem.name || dateItem.type || t('DateRange_DefaultLabel')}: {formatDateRangeDisplay(dateItem.fromDate, dateItem.toDate, t)} {/* <-- Pass t() to helper */}
+                                                    {dateItem.name || dateItem.type || t('DateRange_DefaultLabel')}: {formatDateRangeDisplay(dateItem.fromDate, dateItem.toDate, tCommon)}
                                                 </li>
                                              )
                                          ))}
@@ -150,42 +137,36 @@ const ConferenceList: React.FC<ConferenceListProps> = ({
                                  </div>
                              )}
 
-                            {/* Display Location Details */}
-                            {mainLocation && formatLocationDisplay(mainLocation, t) !== t('Common_NA') && (
+                            {mainLocation && formatLocationDisplay(mainLocation, tCommon) !== tCommon('Common_NA') && (
                                 <div className="mb-3 text-sm ">
-                                    <p><strong>{t('Location_Label')}:</strong> {formatLocationDisplay(mainLocation, t)}</p> {/* <-- Translated label, Pass t() to helper */}
+                                    <p><strong>{t('Location_Label')}:</strong> {formatLocationDisplay(mainLocation, tCommon)}</p>
                                 </div>
                              )}
 
-                             {/* Display Topics */}
                              {mainOrganization?.topics && mainOrganization.topics.length > 0 && (
                                  <div className="mb-3 text-sm ">
-                                     <p><strong>{t('Topics_Label')}:</strong> {mainOrganization.topics.join(', ')}</p> {/* <-- Translated label */}
+                                     <p><strong>{t('Topics_Label')}:</strong> {mainOrganization.topics.join(', ')}</p>
                                  </div>
                              )}
 
-                            {/* Display Description */}
                             {(mainOrganization?.summary && mainOrganization.summary.trim() !== "") && (
                                 <div className="mb-3 text-sm ">
-                                    <p><strong>{t('Summary_Label')}:</strong> {mainOrganization.summary}</p> {/* <-- Translated label */}
+                                    <p><strong>{t('Summary_Label')}:</strong> {mainOrganization.summary}</p>
                                 </div>
                             )}
 
-                            {/* Display User's Original Message */}
                             {conference.message && conference.message.trim() !== '' && (
                                  <div className="mb-3 text-sm  italic">
-                                     <p><strong>{t('UserMessage_Label')}:</strong> {conference.message}</p> {/* <-- Translated label */}
+                                     <p><strong>{t('UserMessage_Label')}:</strong> {conference.message}</p>
                                  </div>
                             )}
 
-                            {/* Display comment (client-side managed) */}
                             {conference.comment && conference.comment.trim() !== '' && (
                                 <div className="mb-4 text-sm  italic">
-                                    <strong>{t('ModerationComment_Label')}:</strong> {conference.comment} {/* <-- Translated label */}
+                                    <strong>{t('ModerationComment_Label')}:</strong> {conference.comment}
                                 </div>
                             )}
 
-                            {/* Moderation Action Buttons */}
                             <div className='flex flex-wrap gap-3'>
                                 {conference.status !== 'APPROVED' && (
                                     <button
@@ -193,8 +174,7 @@ const ConferenceList: React.FC<ConferenceListProps> = ({
                                         className='rounded bg-green-500 px-4 py-2 text-sm text-white transition duration-150 ease-in-out hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed'
                                         disabled={showCommentModal}
                                     >
-                                        {/* Translate button text */}
-                                        {t('Approve_Button')} {/* <-- Translated */}
+                                        {t('Approve_Button')}
                                     </button>
                                 )}
 
@@ -204,8 +184,7 @@ const ConferenceList: React.FC<ConferenceListProps> = ({
                                         className='rounded bg-red-500 px-4 py-2 text-sm text-white transition duration-150 ease-in-out hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed'
                                         disabled={showCommentModal}
                                     >
-                                        {/* Translate button text */}
-                                        {t('Reject_Button')} {/* <-- Translated */}
+                                        {t('Reject_Button')}
                                     </button>
                                 )}
 
@@ -215,8 +194,7 @@ const ConferenceList: React.FC<ConferenceListProps> = ({
                                         className='rounded bg-gray-30 px-4 py-2 text-sm  transition duration-150 ease-in-out hover:bg-gray-40 disabled:opacity-50 disabled:cursor-not-allowed'
                                         disabled={showCommentModal}
                                     >
-                                        {/* Translate button text */}
-                                        {t('SetPending_Button')} {/* <-- Translated */}
+                                        {t('SetPending_Button')}
                                     </button>
                                 )}
                             </div>

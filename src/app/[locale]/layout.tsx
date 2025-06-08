@@ -1,4 +1,5 @@
 // src/app/[locale]/layout.tsx (hoặc đường dẫn tương tự)
+import { unstable_setRequestLocale } from 'next-intl/server'; // <<< 1. IMPORT HÀM NÀY
 
 import React from 'react'
 import { ThemeProvider } from '@/src/app/[locale]/utils/ThemeProvider'
@@ -98,6 +99,10 @@ export default async function RootLayout({
   children: React.ReactNode
   params: { locale: string }
 }) {
+
+  // <<< 2. THÊM DÒNG NÀY VÀO ĐẦU COMPONENT
+  unstable_setRequestLocale(locale);
+
   let messages: AbstractIntlMessages
   try {
     messages = (await import(`../../../messages/${locale}.json`)).default
@@ -105,7 +110,7 @@ export default async function RootLayout({
     console.error(`Failed to load messages for locale: ${locale}`, error)
     messages = (await import(`../../../messages/en.json`)).default
   }
-  
+
   return (
     <html
       lang={locale}

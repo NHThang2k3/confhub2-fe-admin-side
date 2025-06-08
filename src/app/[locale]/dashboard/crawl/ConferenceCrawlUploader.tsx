@@ -1,7 +1,7 @@
 // src/components/crawl/ConferenceCrawlUploader.tsx
 import React, { useState, useMemo } from 'react';
-import { useConferenceCrawl, ApiName } from '@/src/hooks/crawl/conference/useConferenceCrawl';
-
+import { useConferenceCrawl } from '@/src/hooks/crawl/conference/useConferenceCrawl';
+import { ApiName } from '@/src/models/logAnalysis/crawl.types';
 // Import các component con cho từng bước
 import FileUploadStep from './steps/FileUploadStep';
 import ConferenceSelectionStep from './steps/ConferenceSelectionStep';

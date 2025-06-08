@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { CrawlModelType, ApiModels, ApiName } from '@/src/hooks/crawl/conference/useConferenceCrawl';
 import { ConferenceForAction } from '@/src/models/logAnalysis/importConferenceCrawl'; // Import ConferenceForAction
+import { CrawlModelType, ApiName, ApiModels } from '@/src/models/logAnalysis/crawl.types';
 
 interface ProcessActionModalProps {
   isOpen: boolean;
   onClose: () => void;
-  // onConfirm giờ nhận ConferenceForAction[] đã được cập nhật crawlType
   onConfirm: (processedItems: ConferenceForAction[], selectedModels: ApiModels) => void;
-  itemsToProcess: ConferenceForAction[]; // Danh sách các item được chọn từ bảng
+  itemsToProcess: ConferenceForAction[];
 }
 
 const apiSteps: { name: ApiName, displayName: string, description: string }[] = [
@@ -27,7 +26,6 @@ const ProcessActionModal: React.FC<ProcessActionModalProps> = ({
     extractInfo: null,
     extractCfp: null,
   });
-  // State để lưu trữ lựa chọn action type cho batch
   const [batchActionType, setBatchActionType] = useState<'crawl' | 'update'>('crawl');
   const [showValidationError, setShowValidationError] = useState(false);
   const [showLinkWarning, setShowLinkWarning] = useState(false);
@@ -41,7 +39,7 @@ const ProcessActionModal: React.FC<ProcessActionModalProps> = ({
         extractInfo: null,
         extractCfp: null,
       });
-      setBatchActionType('crawl'); // Reset action type khi modal mở
+      setBatchActionType('crawl');
       setShowValidationError(false);
       setShowLinkWarning(false);
     }
@@ -64,25 +62,20 @@ const ProcessActionModal: React.FC<ProcessActionModalProps> = ({
       return;
     }
 
-    // Cập nhật crawlType cho tất cả items dựa trên batchActionType
     const updatedItems = itemsToProcess.map(item => ({
       ...item,
       crawlType: batchActionType,
     }));
 
-    // Kiểm tra link nếu action là 'update'
     if (batchActionType === 'update') {
       const itemsMissingLinkForUpdate = updatedItems.filter(item => !item.link || item.link.trim() === '');
       if (itemsMissingLinkForUpdate.length > 0) {
-        // Có thể hiển thị cảnh báo chi tiết hơn, hoặc chỉ một cảnh báo chung
         console.warn(`Warning: ${itemsMissingLinkForUpdate.length} item(s) marked for UPDATE are missing a 'link'. They will be processed as 'crawl'.`);
-        setShowLinkWarning(true); // Hiển thị cảnh báo chung trong modal
-        // Không chặn confirm, hook useConferenceCrawl sẽ xử lý fallback
+        setShowLinkWarning(true);
       }
     }
 
     onConfirm(updatedItems, selectedApiModels);
-    // onClose(); // Parent sẽ gọi onClose sau khi onConfirm hoàn tất
   };
 
   if (!isOpen) return null;
@@ -98,7 +91,6 @@ const ProcessActionModal: React.FC<ProcessActionModalProps> = ({
           Please choose the action type and model for each API operation.
         </p>
 
-        {/* Action Type Selection */}
         <div className="mb-6 p-3 border rounded-md bg-gray-5">
           <label htmlFor="action-type-select" className="block text-md font-medium text-gray-800 mb-1">
             Action Type for All Selected:
@@ -114,7 +106,7 @@ const ProcessActionModal: React.FC<ProcessActionModalProps> = ({
           </select>
           {batchActionType === 'update' && (
             <p className="text-xs text-gray-500 mt-1">
-              'Update' requires the 'Link' field to be present for each conference. Missing links will default to 'Crawl'.
+              {'Update'} requires the {'Link'} field to be present for each conference. Missing links will default to {'Crawl'}.
             </p>
           )}
         </div>
@@ -146,12 +138,12 @@ const ProcessActionModal: React.FC<ProcessActionModalProps> = ({
                     checked={selectedApiModels[step.name] === 'tuned'}
                     onChange={() => handleModelChange(step.name, 'tuned')}
                     className="h-4 w-4 text-indigo-600 border-gray-300 focus:ring-indigo-500"
-                    disabled={step.name === 'extractCfp'} // Khóa nếu là 'extractCfp'
+                    disabled={step.name === 'extractCfp'}
                   />
                   <span className="ml-2 block text-sm font-medium text-gray-700">Tuned</span>
                 </label>
                 {step.name === 'extractCfp' && selectedApiModels[step.name] === 'tuned' && (
-                    <p className="ml-2 text-xs text-red-500">Temporarily disabled</p> // Thông báo cho người dùng
+                    <p className="ml-2 text-xs text-red-500">Temporarily disabled</p>
                 )}
               </div>
             </div>
@@ -165,7 +157,7 @@ const ProcessActionModal: React.FC<ProcessActionModalProps> = ({
         )}
         {showLinkWarning && batchActionType === 'update' && (
             <p className="text-sm text-amber-700 bg-amber-100 p-2 rounded-md mb-3 text-center">
-                Warning: Some items selected for 'Update' are missing a main link. They will be processed as 'Crawl' instead.
+                Warning: Some items selected for {'Update'} are missing a main link. They will be processed as {'Crawl'} instead.
             </p>
         )}
 

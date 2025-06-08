@@ -1,7 +1,7 @@
 import React from 'react';
-import { JournalWithStatus } from '@/src/hooks/crawl/journal/useJournalCrawl';
 import { Checkbox } from '@/src/components/ui/checkbox';
 import { ChevronDown, ChevronRight } from 'lucide-react';
+import { JournalWithStatus } from '@/src/models/logAnalysis/importJournalCrawl';
 
 interface JournalTableRowProps {
     journalData: JournalWithStatus;

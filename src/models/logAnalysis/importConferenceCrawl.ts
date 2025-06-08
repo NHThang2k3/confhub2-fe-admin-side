@@ -58,6 +58,51 @@ export type ConferenceApiPayloadItem =
         originalRequestId?: string;
     };
 
-// This was previously SendToCrawlConference, renamed for clarity if needed elsewhere,
-// but ConferenceForAction is more descriptive for the hook's selected items.
-// For simplicity, we'll primarily use ConferenceForAction in the hook.
+
+export type CrawlModelType = 'non-tuned' | 'tuned';
+export type ApiName = "determineLinks" | "extractInfo" | "extractCfp";
+
+export interface ApiModels {
+    determineLinks: CrawlModelType | null;
+    extractInfo: CrawlModelType | null;
+    extractCfp: CrawlModelType | null;
+}
+
+const initialApiModels: ApiModels = {
+    determineLinks: null,
+    extractInfo: null,
+    extractCfp: null,
+};
+
+// New interface for the overall request payload
+export interface CrawlRequestPayload {
+    description?: string;
+    items: ConferenceApiPayloadItem[];
+    models: ApiModels;
+}
+
+export interface UseConferenceCrawlReturn {
+    file: File | null;
+    parsedData: Conference[] | null;
+    isParsing: boolean;
+    parseError: string | null;
+    enableChunking: boolean;
+    chunkSize: number;
+    apiModels: ApiModels;
+    isCrawling: boolean;
+    crawlError: string | null;
+    crawlProgress: CrawlProgress;
+    crawlMessages: string[];
+    selectedCsvRows: ConferenceForAction[];
+    selectedCsvRowsCount: number;
+    handleFileChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+    setEnableChunking: (enabled: boolean) => void;
+    setChunkSize: (size: number) => void;
+    setApiModel: (apiName: ApiName, model: CrawlModelType) => void;
+    startCrawlFromCsv: (description?: string) => Promise<void>; // Modified signature
+    startCrawlItems: (items: ConferenceForAction[], modelsToUse: ApiModels, description?: string) => Promise<void>; // Added description
+    resetCrawl: () => void;
+    onCsvSelectionChanged: (selectedRows: Conference[]) => void;
+    updateActionTypeOfSelectedRows: (actionType: 'crawl' | 'update', selectedRows: Conference[]) => void;
+    onRowSelectionChange: (selectedRows: Conference[]) => void;
+}
