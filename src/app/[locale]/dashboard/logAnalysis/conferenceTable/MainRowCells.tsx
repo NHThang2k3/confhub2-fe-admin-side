@@ -38,14 +38,25 @@ export const MainRowCells: React.FC<MainRowCellsProps> = ({
   if (linkAttemptedCount > 0) {
     linkIconAttempted = true;
     if (linkSuccessCount === linkAttemptedCount) {
-      linkIconSuccess = true;
+      linkIconSuccess = true; // Tất cả thành công -> Xanh
     } else if (linkSuccessCount > 0) {
-      linkIconSuccess = null;
+      linkIconSuccess = null; // Một vài thành công, một vài thất bại -> Vàng
       linkIconHasAttempts = true;
-    } else {
-      linkIconSuccess = false;
+    } else { // linkSuccessCount === 0, tức là chưa có cái nào thành công
+      // >>> LOGIC SỬA ĐỔI NẰM Ở ĐÂY <<<
+      if (status === 'processing') {
+        // Nếu vẫn đang xử lý, chúng ta không kết luận vội.
+        // Hiển thị trạng thái trung gian (Vàng) để cho biết "đã thử nhưng chưa có thành công nào".
+        linkIconSuccess = null;
+        linkIconHasAttempts = true;
+      } else {
+        // Nếu đã kết thúc (completed, failed, v.v.) và vẫn không có thành công nào,
+        // thì mới kết luận là thất bại hoàn toàn.
+        linkIconSuccess = false; // -> Đỏ
+      }
     }
   }
+
 
   const crawlTypeDisplay = crawlType && typeof crawlType === 'string' && crawlType.length > 0
     ? crawlType.charAt(0).toUpperCase() + crawlType.slice(1)
