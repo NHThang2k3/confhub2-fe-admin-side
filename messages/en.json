@@ -863,7 +863,7 @@
         "model": "Model",
         "calls": "Calls",
         "successes": "Successes",
-        "failures": "Failures",
+        "failures": "Fallbacks",
         "retries": "Retries",
         "tokens": "Tokens",
         "safetyBlocks": "Safety Blocks"
