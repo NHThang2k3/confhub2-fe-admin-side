@@ -707,6 +707,7 @@
       "primaryCalls": "Primary Calls",
       "successFailSubText": "{s}S / {f}F",
       "fallbackCalls": "Fallback Calls",
+      "apiRetries": "Retries Calls",
       "safetyBlocks": "Safety Blocks",
       "totalTokensUsed": "Total Tokens Used",
       "thousandSuffix": "k",

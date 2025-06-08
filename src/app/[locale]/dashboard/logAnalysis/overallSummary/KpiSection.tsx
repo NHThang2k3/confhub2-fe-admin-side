@@ -43,7 +43,9 @@ const KpiSection: React.FC<KpiSectionProps> = ({
   const gSearchStats = data.googleSearch;
 
   const actualTotalGeminiCallsWithRetries = geminiApiData
-    ? (geminiApiData.totalCalls || 0) + (geminiApiData.fallbackModelStats.attempts || 0)
+    ? (geminiApiData.primaryModelStats.attempts || 0) +
+    (geminiApiData.fallbackModelStats.attempts || 0) +
+    (geminiApiData.totalRetries || 0)
     : 0;
 
   const geminiInit = geminiApiData?.serviceInitialization;
@@ -70,6 +72,18 @@ const KpiSection: React.FC<KpiSectionProps> = ({
   const fallbackFailures = geminiFallback?.failures || 0;
   const fallbackSuccesses = geminiFallback?.successes || 0;
   const fallbackAttempts = geminiFallback?.attempts || 0;
+
+  // THÊM: Lấy dữ liệu cho KPI Retries
+  const totalRetries = geminiApiData?.totalRetries || 0;
+  const retriesByType = geminiApiData?.retriesByType;
+
+
+  let retriesSubText: string | undefined = undefined;
+  if (retriesByType && Object.keys(retriesByType).length > 0) {
+    retriesSubText = Object.entries(retriesByType)
+      .map(([type, count]) => `${type}: ${count}`)
+      .join(', ');
+  }
 
   const totalConfigSetupErrors = geminiApiData ?
     (geminiApiData.configErrors?.modelListMissing || 0) +
@@ -127,7 +141,7 @@ const KpiSection: React.FC<KpiSectionProps> = ({
               subText={geminiInitFailures > 0 ? t('geminiApiKpis.failedSubText', { count: geminiInitFailures }) : undefined}
               subTextColor={geminiInitFailures > 0 ? "text-xs text-red-500" : undefined}
             />
-             <KpiCard
+            <KpiCard
               icon={<KpiIcon bgColor="bg-sky-100" textColor="text-sky-600"><FaTools className='h-5 w-5' /></KpiIcon>}
               label={t('geminiApiKpis.primaryCalls')}
               value={primaryAttempts}
@@ -141,6 +155,17 @@ const KpiSection: React.FC<KpiSectionProps> = ({
               subText={t('geminiApiKpis.successFailSubText', { s: fallbackSuccesses, f: fallbackFailures })}
               subTextColor={fallbackFailures > 0 ? "text-xs text-red-500" : "text-xs text-green-500"}
             />
+
+             {/* THÊM: Thẻ KPI mới cho Retries */}
+            <KpiCard
+              icon={<KpiIcon bgColor="bg-yellow-100" textColor="text-yellow-600"><FaSyncAlt className='h-5 w-5' /></KpiIcon>}
+              label={t('geminiApiKpis.apiRetries')}
+              value={totalRetries}
+              valueColor={totalRetries > 0 ? "text-yellow-600" : undefined}
+              subText={retriesSubText}
+              subTextColor={retriesSubText ? "text-xs text-gray-500" : undefined}
+            />
+            
             <KpiCard
               icon={<KpiIcon bgColor="bg-pink-100" textColor="text-pink-600"><FaBan className='h-5 w-5' /></KpiIcon>}
               label={t('geminiApiKpis.safetyBlocks')}
@@ -159,19 +184,19 @@ const KpiSection: React.FC<KpiSectionProps> = ({
               valueDenominator={geminiCache?.cacheDecisionStats?.cacheUsageAttempts || 0}
               subText={t('geminiApiKpis.attemptedToUseCache')}
             />
-             <KpiCard
+            <KpiCard
               icon={<KpiIcon bgColor="bg-orange-100" textColor="text-orange-600"><FaWrench className='h-5 w-5' /></KpiIcon>}
               label={t('geminiApiKpis.configSetupErrors')}
               value={totalConfigSetupErrors}
               valueColor={totalConfigSetupErrors > 0 ? "text-orange-600" : undefined}
             />
-             <KpiCard
+            <KpiCard
               icon={<KpiIcon bgColor="bg-red-100" textColor="text-red-600"><FaBolt className='h-5 w-5' /></KpiIcon>}
               label={t('geminiApiKpis.intermediateErrors')}
               value={geminiApiData.intermediateErrors || 0}
               valueColor={(geminiApiData.intermediateErrors || 0) > 0 ? "text-red-500" : undefined}
             />
-             <KpiCard
+            <KpiCard
               icon={<KpiIcon bgColor="bg-gray-100" textColor="text-gray-600"><FaFileAlt className='h-5 w-5' /></KpiIcon>}
               label={t('geminiApiKpis.responseProcIssues')}
               value={totalResponseProcessingIssues}
