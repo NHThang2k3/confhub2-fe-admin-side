@@ -269,7 +269,6 @@ const Moderation: React.FC = () => {
         }
     }, [comment, conferenceToModerateId, targetStatus, fetchConferences, handleModalCancel, t]);
 
-
     // Handler for sorting by title (Client-side sort on processedConferences)
     const handleSortByTitle = useCallback(() => {
         if (sortKey === 'title') {

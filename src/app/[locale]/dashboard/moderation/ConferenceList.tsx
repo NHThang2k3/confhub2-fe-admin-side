@@ -150,8 +150,8 @@ const ConferenceList: React.FC<ConferenceListProps> = ({
                              )}
 
                             {(mainOrganization?.summary && mainOrganization.summary.trim() !== "") && (
-                                <div className="mb-3 text-sm ">
-                                    <p><strong>{t('Summary_Label')}:</strong> {mainOrganization.summary}</p>
+                                <div className="mb-3 text-sm w-full">
+                                    <p className="whitespace-normal break-words"><strong>{t('Summary_Label')}:</strong> {mainOrganization.summary}</p>
                                 </div>
                             )}
 
