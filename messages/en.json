@@ -214,6 +214,7 @@
     "ellipsis": "...",
     "yes": "Yes",
     "no": "No",
+    "na": "N/A",
     "notApplicable": "N/A",
     "success": "Success",
     "failed": "Failed",
@@ -819,7 +820,8 @@
     "expand": "Expand",
     "collapse": "Collapse",
     "conference": "Conference",
-    "journal": "Journal"
+    "journal": "Journal",
+    "na":"N/A"
   },
   "ValidationQualityCharts": {
     "warningsByField": {
