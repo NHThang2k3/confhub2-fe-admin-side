@@ -1,3 +1,5 @@
+// src/app/[locale]/dashboard/logAnalysis/analysis/ProcessActionModal.tsx
+
 import React, { useState, useEffect } from 'react';
 import { ConferenceForAction } from '@/src/models/logAnalysis/importConferenceCrawl'; // Import ConferenceForAction
 import { CrawlModelType, ApiName, ApiModels } from '@/src/models/logAnalysis/crawl.types';
@@ -72,10 +74,12 @@ const ProcessActionModal: React.FC<ProcessActionModalProps> = ({
       if (itemsMissingLinkForUpdate.length > 0) {
         console.warn(`Warning: ${itemsMissingLinkForUpdate.length} item(s) marked for UPDATE are missing a 'link'. They will be processed as 'crawl'.`);
         setShowLinkWarning(true);
+        // Không return ở đây, chỉ cảnh báo và tiếp tục
       }
     }
 
     onConfirm(updatedItems, selectedApiModels);
+    onClose(); // <-- ĐÃ THÊM
   };
 
   if (!isOpen) return null;
