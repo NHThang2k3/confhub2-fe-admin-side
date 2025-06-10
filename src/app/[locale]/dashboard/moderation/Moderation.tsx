@@ -110,7 +110,7 @@ const Moderation: React.FC = () => {
                      console.warn(`Request ${request.id} is missing conferenceId. Skipping details fetch.`);
                      return { request, details: null, error: t('Error_MissingConferenceId') };
                 }
-                const detailsUrl = `${API_BASE_URL}/api/v1/conference/${conferenceId}`;
+                const detailsUrl = `${API_BASE_URL}/api/v1/conference/${conferenceId}?force=true`;
 
                 try {
                     const detailsResponse = await fetch(detailsUrl);
