@@ -28,34 +28,47 @@ export const MainRowCells: React.FC<MainRowCellsProps> = ({
     dataQualityInsightCount, crawlType, persistedSaveStatus, persistedSaveTimestamp
   } = confData;
 
+    // <<<< LOGIC ĐÃ SỬA LẠI THEO YÊU CẦU >>>>
+
   const linkAttemptedCount = steps?.link_processing_attempted_count ?? 0;
   const linkSuccessCount = steps?.link_processing_success_count ?? 0;
+  
+  // Lấy số link thực sự được đưa vào xử lý sau khi áp dụng giới hạn.
+  // Đây là con số quyết định thành công/thất bại của bước này.
+  const linksToProcessCount = steps?.search_limited_count ?? 0;
 
   let linkIconSuccess: boolean | null = null;
   let linkIconAttempted: boolean = false;
   let linkIconHasAttempts: boolean = false;
 
-  if (linkAttemptedCount > 0) {
-    linkIconAttempted = true;
-    if (linkSuccessCount === linkAttemptedCount) {
-      linkIconSuccess = true; // Tất cả thành công -> Xanh
-    } else if (linkSuccessCount > 0) {
-      linkIconSuccess = null; // Một vài thành công, một vài thất bại -> Vàng
-      linkIconHasAttempts = true;
-    } else { // linkSuccessCount === 0, tức là chưa có cái nào thành công
-      // >>> LOGIC SỬA ĐỔI NẰM Ở ĐÂY <<<
-      if (status === 'processing') {
-        // Nếu vẫn đang xử lý, chúng ta không kết luận vội.
-        // Hiển thị trạng thái trung gian (Vàng) để cho biết "đã thử nhưng chưa có thành công nào".
-        linkIconSuccess = null;
+  // Chỉ đánh giá trạng thái khi có link được giao để xử lý.
+  if (linksToProcessCount > 0) {
+    // Bước này được coi là "đã thử" ngay khi có ít nhất 1 link được thử.
+    if (linkAttemptedCount > 0) {
+      linkIconAttempted = true;
+    }
+
+    // 1. THÀNH CÔNG (XANH): Đã xử lý thành công TẤT CẢ các link được giao.
+    if (linkSuccessCount === linksToProcessCount) {
+      linkIconSuccess = true;
+    }
+    // 2. THẤT BẠI (ĐỎ): Không có thành công nào VÀ đã thử hết số link được giao VÀ tác vụ đã kết thúc.
+    else if (linkSuccessCount === 0 && linkAttemptedCount >= linksToProcessCount && status !== 'processing') {
+      linkIconSuccess = false;
+    }
+    // 3. TRUNG GIAN (VÀNG): Tất cả các trường hợp còn lại.
+    //    - Có thành công nhưng chưa đủ.
+    //    - Chưa có thành công nào nhưng vẫn đang xử lý.
+    else {
+      linkIconSuccess = null; // Vàng
+      // Đặt cờ này để đảm bảo icon hiển thị màu vàng thay vì xám nếu đã có attempt.
+      if (linkAttemptedCount > 0) {
         linkIconHasAttempts = true;
-      } else {
-        // Nếu đã kết thúc (completed, failed, v.v.) và vẫn không có thành công nào,
-        // thì mới kết luận là thất bại hoàn toàn.
-        linkIconSuccess = false; // -> Đỏ
       }
     }
   }
+  // Nếu linksToProcessCount === 0, tất cả các biến cờ sẽ giữ giá trị mặc định (false/null),
+  // dẫn đến icon Xám (chưa thử), đây là hành vi đúng.
 
 
   const crawlTypeDisplay = crawlType && typeof crawlType === 'string' && crawlType.length > 0

@@ -159,6 +159,7 @@ export interface ConferenceAnalysisDetail {
         search_attempts_count: number;
         search_results_count: number | null;
         search_filtered_count: number | null;
+        search_limited_count: number | null; // <<<< THÊM TRƯỜNG MỚI
 
         html_save_attempted: boolean;
         html_save_success: boolean | 'skipped' | null;
