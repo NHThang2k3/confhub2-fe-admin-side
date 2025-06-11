@@ -114,7 +114,7 @@ const ProcessActionModal: React.FC<ProcessActionModalProps> = ({
                     name="recrawlDescription"
                     rows={2}
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2"
-                    placeholder="e.g., 'Re-crawling failed items'"
+                    placeholder="e.g., Re-crawling failed items"
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                     maxLength={MAX_DESCRIPTION_LENGTH}
@@ -138,7 +138,7 @@ const ProcessActionModal: React.FC<ProcessActionModalProps> = ({
                 </select>
                 {batchActionType === 'update' && (
                     <p className="text-xs text-gray-500 mt-2">
-                    {'Update'} requires a 'Link'. Missing links will default to {'Crawl'}.
+                    {'Update'} requires a Link. Missing links will default to {'Crawl'}.
                     </p>
                 )}
             </div>
@@ -197,7 +197,7 @@ const ProcessActionModal: React.FC<ProcessActionModalProps> = ({
         )}
         {showLinkWarning && batchActionType === 'update' && (
             <p className="text-sm text-amber-700 bg-amber-100 p-2 rounded-md mb-4 text-center">
-                Warning: Some items for 'Update' are missing a link and will be processed as 'Crawl'.
+                Warning: Some items for Update are missing a link and will be processed as Crawl.
             </p>
         )}
 
