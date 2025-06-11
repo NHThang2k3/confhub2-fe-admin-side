@@ -1,13 +1,14 @@
 // src/app/[locale]/dashboard/logAnalysis/analysis/ProcessActionModal.tsx
 
 import React, { useState, useEffect } from 'react';
-import { ConferenceForAction } from '@/src/models/logAnalysis/importConferenceCrawl'; // Import ConferenceForAction
+import { ConferenceForAction } from '@/src/models/logAnalysis/importConferenceCrawl';
 import { CrawlModelType, ApiName, ApiModels } from '@/src/models/logAnalysis/crawl.types';
+import { FaInfoCircle } from 'react-icons/fa';
 
 interface ProcessActionModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onConfirm: (processedItems: ConferenceForAction[], selectedModels: ApiModels) => void;
+  onConfirm: (processedItems: ConferenceForAction[], selectedModels: ApiModels, description?: string) => void;
   itemsToProcess: ConferenceForAction[];
 }
 
@@ -16,6 +17,8 @@ const apiSteps: { name: ApiName, displayName: string, description: string }[] = 
     { name: "extractInfo", displayName: "Extract Information", description: "Extracting key details from conference pages." },
     { name: "extractCfp", displayName: "Extract CFP", description: "Extracting Call for Papers information." },
 ];
+
+const MAX_DESCRIPTION_LENGTH = 200;
 
 const ProcessActionModal: React.FC<ProcessActionModalProps> = ({
   isOpen,
@@ -29,19 +32,18 @@ const ProcessActionModal: React.FC<ProcessActionModalProps> = ({
     extractCfp: null,
   });
   const [batchActionType, setBatchActionType] = useState<'crawl' | 'update'>('crawl');
+  const [description, setDescription] = useState<string>('');
   const [showValidationError, setShowValidationError] = useState(false);
   const [showLinkWarning, setShowLinkWarning] = useState(false);
+  const [showTooltip, setShowTooltip] = useState<boolean>(false);
 
   const itemCount = itemsToProcess.length;
 
   useEffect(() => {
     if (isOpen) {
-      setSelectedApiModels({
-        determineLinks: null,
-        extractInfo: null,
-        extractCfp: null,
-      });
+      setSelectedApiModels({ determineLinks: null, extractInfo: null, extractCfp: null });
       setBatchActionType('crawl');
+      setDescription('');
       setShowValidationError(false);
       setShowLinkWarning(false);
     }
@@ -63,113 +65,147 @@ const ProcessActionModal: React.FC<ProcessActionModalProps> = ({
       setShowValidationError(true);
       return;
     }
-
-    const updatedItems = itemsToProcess.map(item => ({
-      ...item,
-      crawlType: batchActionType,
-    }));
-
+    const updatedItems = itemsToProcess.map(item => ({ ...item, crawlType: batchActionType }));
     if (batchActionType === 'update') {
       const itemsMissingLinkForUpdate = updatedItems.filter(item => !item.link || item.link.trim() === '');
       if (itemsMissingLinkForUpdate.length > 0) {
-        console.warn(`Warning: ${itemsMissingLinkForUpdate.length} item(s) marked for UPDATE are missing a 'link'. They will be processed as 'crawl'.`);
         setShowLinkWarning(true);
-        // Không return ở đây, chỉ cảnh báo và tiếp tục
       }
     }
-
-    onConfirm(updatedItems, selectedApiModels);
-    onClose(); // <-- ĐÃ THÊM
+    onConfirm(updatedItems, selectedApiModels, description.trim() || undefined);
+    onClose();
   };
 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 transition-opacity duration-300">
-      <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-lg transform transition-all duration-300 scale-100">
-        <h3 className="text-lg font-semibold leading-6 text-gray-900 mb-2">
+    <div className="fixed inset-0 z-50 mt-12 flex items-center justify-center bg-black bg-opacity-50 transition-opacity duration-300">
+      <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-2xl transform transition-all duration-300 scale-100">
+        <h3 className="text-xl font-semibold leading-6 text-gray-900 mb-2">
           Re-process Selected Conferences
         </h3>
-        <p className="text-sm text-gray-600 mb-4">
-          You are about to re-process <strong>{itemCount}</strong> selected conference(s).
-          Please choose the action type and model for each API operation.
+        <p className="text-sm text-gray-600 mb-6">
+          You are about to re-process <strong>{itemCount}</strong> conference(s).
         </p>
 
-        <div className="mb-6 p-3 border rounded-md bg-gray-5">
-          <label htmlFor="action-type-select" className="block text-md font-medium text-gray-800 mb-1">
-            Action Type for All Selected:
-          </label>
-          <select
-            id="action-type-select"
-            value={batchActionType}
-            onChange={handleActionTypeChange}
-            className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
-          >
-            <option value="crawl">Crawl (New Data)</option>
-            <option value="update">Update (Existing Data with Links)</option>
-          </select>
-          {batchActionType === 'update' && (
-            <p className="text-xs text-gray-500 mt-1">
-              {'Update'} requires the {'Link'} field to be present for each conference. Missing links will default to {'Crawl'}.
-            </p>
-          )}
-        </div>
-
-        <div className="space-y-4 mb-6">
-          {apiSteps.map(step => (
-            <div key={step.name} className="p-3 border rounded-md bg-gray-5">
-              <p className="text-md font-medium text-gray-800">{step.displayName}:</p>
-              <p className="text-xs text-gray-500 mb-2">{step.description}</p>
-              <div className="flex space-x-4">
-                <label htmlFor={`${step.name}-non-tuned`} className="flex items-center cursor-pointer">
-                  <input
-                    type="radio"
-                    id={`${step.name}-non-tuned`}
-                    name={step.name}
-                    value="non-tuned"
-                    checked={selectedApiModels[step.name] === 'non-tuned'}
-                    onChange={() => handleModelChange(step.name, 'non-tuned')}
-                    className="h-4 w-4 text-indigo-600 border-gray-300 focus:ring-indigo-500"
-                  />
-                  <span className="ml-2 block text-sm font-medium text-gray-700">Non-Tuned</span>
+        {/* --- Bố cục 2 cột cho các thiết lập chung --- */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 mb-6">
+            {/* Cột 1: Description */}
+            <div className="p-3 rounded-md border border-blue-100 bg-blue-50">
+                <label htmlFor="recrawlDescription" className="block text-sm font-semibold text-blue-800 mb-1">
+                    Request Description
+                    <span className="text-gray-500 font-normal ml-1 text-xs">(Optional)</span>
+                    <span
+                        className="ml-1 inline-flex items-center cursor-help relative"
+                        onMouseEnter={() => setShowTooltip(true)}
+                        onMouseLeave={() => setShowTooltip(false)}
+                    >
+                        <FaInfoCircle className="h-3.5 w-3.5 text-blue-500" />
+                        {showTooltip && (
+                        <div className="absolute left-1/2 -translate-x-1/2 mt-2 w-max max-w-xs p-2 bg-gray-800 text-white text-xs rounded-md shadow-lg z-10 bottom-full mb-2">
+                            Provide a note for this re-crawl request to help track it in logs.
+                            <div className="absolute bottom-[-5px] left-1/2 -translate-x-1/2 w-0 h-0 border-l-4 border-l-transparent border-r-4 border-r-transparent border-t-4 border-t-gray-800"></div>
+                        </div>
+                        )}
+                    </span>
                 </label>
-                <label htmlFor={`${step.name}-tuned`} className={`flex items-center cursor-pointer ${step.name === 'extractCfp' ? 'opacity-50 cursor-not-allowed' : ''}`}>
-                  <input
-                    type="radio"
-                    id={`${step.name}-tuned`}
-                    name={step.name}
-                    value="tuned"
-                    checked={selectedApiModels[step.name] === 'tuned'}
-                    onChange={() => handleModelChange(step.name, 'tuned')}
-                    className="h-4 w-4 text-indigo-600 border-gray-300 focus:ring-indigo-500"
-                    disabled={step.name === 'extractCfp'}
-                  />
-                  <span className="ml-2 block text-sm font-medium text-gray-700">Tuned</span>
-                </label>
-                {step.name === 'extractCfp' && selectedApiModels[step.name] === 'tuned' && (
-                    <p className="ml-2 text-xs text-red-500">Temporarily disabled</p>
-                )}
-              </div>
+                <textarea
+                    id="recrawlDescription"
+                    name="recrawlDescription"
+                    rows={2}
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2"
+                    placeholder="e.g., 'Re-crawling failed items'"
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    maxLength={MAX_DESCRIPTION_LENGTH}
+                />
+                <p className="mt-1 text-xs text-gray-600 text-right">{description.length}/{MAX_DESCRIPTION_LENGTH}</p>
             </div>
-          ))}
+
+            {/* Cột 2: Action Type */}
+            <div className="p-3 border rounded-md bg-gray-10">
+                <label htmlFor="action-type-select" className="block text-sm font-semibold text-gray-800 mb-1">
+                    Action Type for All:
+                </label>
+                <select
+                    id="action-type-select"
+                    value={batchActionType}
+                    onChange={handleActionTypeChange}
+                    className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+                >
+                    <option value="crawl">Crawl (New Data)</option>
+                    <option value="update">Update (Existing Data)</option>
+                </select>
+                {batchActionType === 'update' && (
+                    <p className="text-xs text-gray-500 mt-2">
+                    {'Update'} requires a 'Link'. Missing links will default to {'Crawl'}.
+                    </p>
+                )}
+            </div>
         </div>
 
+        {/* --- Bố cục dạng bảng/lưới cho lựa chọn Model --- */}
+        <div className="mb-6 p-4 border rounded-md">
+            <h4 className="text-md font-semibold text-gray-800 mb-3">Model Selection for API Steps</h4>
+            <div className="space-y-3">
+                {apiSteps.map(step => (
+                    <div key={step.name} className="grid grid-cols-3 items-center gap-4 p-2 rounded-md hover:bg-gray-10">
+                        {/* Tên và mô tả API Step */}
+                        <div className="col-span-1">
+                            <p className="text-sm font-medium text-gray-800">{step.displayName}</p>
+                            <p className="text-xs text-gray-500">{step.description}</p>
+                        </div>
+                        
+                        {/* Các lựa chọn Model */}
+                        <div className="col-span-2 flex items-center space-x-6">
+                            <label htmlFor={`${step.name}-non-tuned`} className="flex items-center cursor-pointer p-2 rounded-md hover:bg-indigo-50">
+                                <input
+                                    type="radio"
+                                    id={`${step.name}-non-tuned`}
+                                    name={step.name}
+                                    value="non-tuned"
+                                    checked={selectedApiModels[step.name] === 'non-tuned'}
+                                    onChange={() => handleModelChange(step.name, 'non-tuned')}
+                                    className="h-4 w-4 text-indigo-600 border-gray-300 focus:ring-indigo-500"
+                                />
+                                <span className="ml-2 block text-sm font-medium text-gray-700">Non-Tuned</span>
+                            </label>
+                            <label htmlFor={`${step.name}-tuned`} className={`flex items-center p-2 rounded-md ${step.name === 'extractCfp' ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:bg-indigo-50'}`}>
+                                <input
+                                    type="radio"
+                                    id={`${step.name}-tuned`}
+                                    name={step.name}
+                                    value="tuned"
+                                    checked={selectedApiModels[step.name] === 'tuned'}
+                                    onChange={() => handleModelChange(step.name, 'tuned')}
+                                    className="h-4 w-4 text-indigo-600 border-gray-300 focus:ring-indigo-500"
+                                    disabled={step.name === 'extractCfp'}
+                                />
+                                <span className="ml-2 block text-sm font-medium text-gray-700">Tuned</span>
+                            </label>
+                        </div>
+                    </div>
+                ))}
+            </div>
+        </div>
+
+        {/* --- Cảnh báo và Nút bấm --- */}
         {showValidationError && (
-            <p className="text-sm text-red-600 mb-3 text-center">
+            <p className="text-sm text-red-600 mb-4 text-center font-medium">
                 Please select a model for all API steps.
             </p>
         )}
         {showLinkWarning && batchActionType === 'update' && (
-            <p className="text-sm text-amber-700 bg-amber-100 p-2 rounded-md mb-3 text-center">
-                Warning: Some items selected for {'Update'} are missing a main link. They will be processed as {'Crawl'} instead.
+            <p className="text-sm text-amber-700 bg-amber-100 p-2 rounded-md mb-4 text-center">
+                Warning: Some items for 'Update' are missing a link and will be processed as 'Crawl'.
             </p>
         )}
 
-        <div className="flex justify-end space-x-3">
+        <div className="flex justify-end space-x-3 border-t pt-4 mt-4">
           <button
             type="button"
             onClick={onClose}
-            className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-5 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+            className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-10 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
           >
             Cancel
           </button>

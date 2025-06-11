@@ -9,15 +9,15 @@ import {
 import { useConferenceCrawl } from './useConferenceCrawl';
 import { ApiModels } from '@/src/models/logAnalysis/importConferenceCrawl';
 import {
-    saveConferencesToDB, // Updated import
-    ConferenceToSavePayload,
-    BatchSaveConferenceItemResult
+  saveConferencesToDB, // Updated import
+  ConferenceToSavePayload,
+  BatchSaveConferenceItemResult
 } from '@/src/app/api/logAnalysis/saveConferences';
 import {
-    persistBatchConferenceSaveStatus, // Updated import
-    persistSingleConferenceSaveStatus, // Keep for fallback or if backend not ready for batch
-    PersistSaveStatusPayload,
-    BatchPersistItemResult
+  persistBatchConferenceSaveStatus, // Updated import
+  persistSingleConferenceSaveStatus, // Keep for fallback or if backend not ready for batch
+  PersistSaveStatusPayload,
+  BatchPersistItemResult
 } from '@/src/app/api/logAnalysis/persistSaveStatus';
 import { ConferenceForAction } from '@/src/models/logAnalysis/importConferenceCrawl';
 
@@ -203,16 +203,24 @@ export const useTableActions = ({
     }
   }, [selectedRowIds, allConferenceData]);
 
+  // ====================================================================
+  // === ĐÂY LÀ HÀM CẦN THAY ĐỔI ========================================
+  // ====================================================================
   const handleConfirmProcessWithActionAndModels = useCallback(async (
     processedItemsFromModal: ConferenceForAction[],
-    selectedModels: ApiModels
+    selectedModels: ApiModels,
+    // MODIFIED: Thêm tham số 'description' tùy chọn
+    description?: string
   ) => {
     if (processedItemsFromModal.length > 0) {
-      await startCrawlItems(processedItemsFromModal, selectedModels);
+      // MODIFIED: Truyền 'description' vào hàm startCrawlItems
+      await startCrawlItems(processedItemsFromModal, selectedModels, description);
     }
     setIsProcessModalOpen(false);
     setItemsToProcessWithAction([]);
-  }, [startCrawlItems]);
+  }, [startCrawlItems]); // Phụ thuộc không thay đổi
+
+
 
   return {
     mainSaveStatus,
