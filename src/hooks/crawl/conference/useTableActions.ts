@@ -1,29 +1,24 @@
 // src/hooks/useTableActions.ts
-
 import { useState, useMemo, useCallback, useEffect } from 'react';
 import {
   ConferenceTableData,
   MainSavingStatus,
   RowSaveStatus
 } from './useConferenceTableManager';
-import { useConferenceCrawl } from './useConferenceCrawl';
+import { useConferenceCrawl } from './useConferenceCrawl'; // Hook chính
 import { ApiModels } from '@/src/models/logAnalysis/importConferenceCrawl';
 import {
-  saveConferencesToDB, // Updated import
+  saveConferencesToDB,
   ConferenceToSavePayload,
-  BatchSaveConferenceItemResult
 } from '@/src/app/api/logAnalysis/saveConferences';
 import {
-  persistBatchConferenceSaveStatus, // Updated import
-  persistSingleConferenceSaveStatus, // Keep for fallback or if backend not ready for batch
+  persistBatchConferenceSaveStatus,
+  persistSingleConferenceSaveStatus,
   PersistSaveStatusPayload,
-  BatchPersistItemResult
 } from '@/src/app/api/logAnalysis/persistSaveStatus';
 import { ConferenceForAction } from '@/src/models/logAnalysis/importConferenceCrawl';
 
-// A flag to control whether to use batch persistence.
-// Set this to false if your backend /api/v1/log/conference-save-event doesn't support batch yet.
-const USE_BATCH_PERSISTENCE = true; // <<<< IMPORTANT: Configure this
+const USE_BATCH_PERSISTENCE = true;
 
 interface UseTableActionsProps {
   selectedRowIds: string[];
@@ -43,7 +38,13 @@ export const useTableActions = ({
   const [isProcessModalOpen, setIsProcessModalOpen] = useState(false);
   const [itemsToProcessWithAction, setItemsToProcessWithAction] = useState<ConferenceForAction[]>([]);
 
-  const { startCrawlItems } = useConferenceCrawl();
+  // --- THAY ĐỔI 1: LẤY CÁC HÀM VÀ CONFIG CẦN THIẾT ---
+  const {
+    processCrawlRequest, // Thay thế startCrawlItems
+    enableChunking,      // Config cần thiết
+    chunkSize,           // Config cần thiết
+    chunkDelay,          // Config cần thiết
+  } = useConferenceCrawl();
 
   useEffect(() => {
     setMainSaveStatus('idle');
@@ -51,7 +52,8 @@ export const useTableActions = ({
     setRowSaveErrors({});
     setIsProcessModalOpen(false);
     setItemsToProcessWithAction([]);
-  }, resetDependencies);
+  }, [resetDependencies]);
+
 
   const isSelectedWithProblem = useMemo(() => {
     if (selectedRowIds.length === 0) return false;
@@ -178,7 +180,6 @@ export const useTableActions = ({
 
   }, [isSaveEnabled, selectedRowIds, allConferenceData, /* rowSaveStatus, rowSaveErrors removed as they are set inside */]);
 
-  // ... rest of the hook (handleProcessAgainClick, etc.) remains the same
   const handleProcessAgainClick = useCallback(() => {
     if (selectedRowIds.length === 0) {
       alert("No items selected to re-process.");
@@ -203,24 +204,34 @@ export const useTableActions = ({
     }
   }, [selectedRowIds, allConferenceData]);
 
-  // ====================================================================
-  // === ĐÂY LÀ HÀM CẦN THAY ĐỔI ========================================
-  // ====================================================================
+  // --- THAY ĐỔI 2: CẬP NHẬT HÀM XỬ LÝ ---
   const handleConfirmProcessWithActionAndModels = useCallback(async (
     processedItemsFromModal: ConferenceForAction[],
     selectedModels: ApiModels,
-    // MODIFIED: Thêm tham số 'description' tùy chọn
     description?: string
   ) => {
     if (processedItemsFromModal.length > 0) {
-      // MODIFIED: Truyền 'description' vào hàm startCrawlItems
-      await startCrawlItems(processedItemsFromModal, selectedModels, description);
+      // Gọi trực tiếp processCrawlRequest với đầy đủ các tham số
+      await processCrawlRequest(
+        processedItemsFromModal,
+        selectedModels,
+        enableChunking, // Sử dụng config từ useConferenceCrawl
+        chunkSize,      // Sử dụng config từ useConferenceCrawl
+        chunkDelay,     // Sử dụng config từ useConferenceCrawl
+        "Programmatic Re-Crawl from Table", // Mô tả nguồn
+        description
+      );
+      // Sau khi gọi, một modal khác (ví dụ: modal tiến trình crawl) có thể sẽ hiển thị
+      // hoặc người dùng sẽ thấy log messages được cập nhật.
     }
     setIsProcessModalOpen(false);
     setItemsToProcessWithAction([]);
-  }, [startCrawlItems]); // Phụ thuộc không thay đổi
-
-
+  }, [
+    processCrawlRequest,
+    enableChunking,
+    chunkSize,
+    chunkDelay
+  ]); // Thêm các phụ thuộc mới
 
   return {
     mainSaveStatus,

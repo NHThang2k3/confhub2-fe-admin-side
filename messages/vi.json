@@ -454,7 +454,9 @@
       "enableCheckbox": "Bật phân đoạn tài liệu",
       "enableDescription": "Chọn tùy chọn này để tự động chia tài liệu thành các đoạn nhỏ hơn.",
       "sizeLabel": "Kích thước đoạn ({min}-{max}):",
-      "sizeDescription": "Xác định số đơn vị văn bản tối đa cho mỗi đoạn. Các đoạn nhỏ hơn có thể làm tăng thời gian xử lý nhưng cải thiện độ chính xác."
+      "sizeDescription": "Xác định số đơn vị văn bản tối đa cho mỗi đoạn. Các đoạn nhỏ hơn có thể làm tăng thời gian xử lý nhưng cải thiện độ chính xác.",
+      "delayLabel": "Độ trễ giữa các chunk (giây, tối thiểu: {min}, tối đa: {max})",
+      "delayDescription": "Thời gian chờ trước khi tự động gửi chunk tiếp theo."
     },
     "apiSelection": {
       "title": "Lựa chọn mô hình API",
@@ -529,7 +531,15 @@
       "restartProcess": "Khởi động lại quy trình",
       "startProcessing": "Bắt đầu xử lý",
       "resetAllTitle": "Đặt lại tất cả cấu hình, dữ liệu và quay lại bước đầu tiên",
-      "resetAll": "Đặt lại tất cả & Bắt đầu lại"
+      "resetAll": "Đặt lại tất cả & Bắt đầu lại",
+      "stopProcess": "Dừng tiến trình",
+      "stopProcessTitle": "Dừng tiến trình crawl hiện tại"
+    },
+    "controlPanel": {
+      "title": "Đã tạm dừng gửi",
+      "autoResumeMessage": "Tự động tiếp tục sau...",
+      "resumeOneButton": "Tiếp tục (1 Lô)",
+      "resumeNButton": "Tiếp tục ({count} Lô)"
     },
     "statusLog": {
       "title": "Trạng thái & Nhật ký quy trình",
@@ -538,7 +548,10 @@
       "processingItems": "Đang xử lý các mục, vui lòng chờ...",
       "processingErrorLabel": "Lỗi xử lý",
       "processCompletedSuccessfully": "Quá trình hoàn thành thành công!",
-      "processFailedOrStopped": "Quá trình thất bại hoặc đã dừng. Vui lòng xem lại nhật ký ở trên."
+      "processFailedOrStopped": "Quá trình thất bại hoặc đã dừng. Vui lòng xem lại nhật ký ở trên.",
+      "nextChunkCountdown": "Lô tiếp theo sẽ được gửi sau {seconds} giây...",
+      "processStoppedByUser": "Tiến trình đã được người dùng dừng lại.",
+      "processFailed": "Tiến trình thất bại do có lỗi."
     },
     "navigation": {
       "previousStep": "Trước: Cấu hình cài đặt"

@@ -471,7 +471,9 @@
       "enableCheckbox": "Enable Document Chunking",
       "enableDescription": "Select this option to automatically split documents into smaller chunks.",
       "sizeLabel": "Chunk Size ({min}-{max}):",
-      "sizeDescription": "Defines the maximum number of text units per chunk. Smaller chunks may increase processing time but improve accuracy."
+      "sizeDescription": "Defines the maximum number of text units per chunk. Smaller chunks may increase processing time but improve accuracy.",
+      "delayLabel": "Delay between chunks (seconds, min: {min}, max: {max})",
+      "delayDescription": "Time to wait before automatically sending the next chunk."
     },
     "apiSelection": {
       "title": "API Model Selection",
@@ -546,7 +548,15 @@
       "restartProcess": "Restart Process",
       "startProcessing": "Start Processing",
       "resetAllTitle": "Reset all configurations, data, and return to the first step",
-      "resetAll": "Reset All & Start Over"
+      "resetAll": "Reset All & Start Over",
+      "stopProcess": "Stop Process",
+      "stopProcessTitle": "Stop the current crawl process"
+    },
+    "controlPanel": {
+      "title": "Submission Paused",
+      "autoResumeMessage": "Automatically resuming in...",
+      "resumeOneButton": "Continue (1 Batch)",
+      "resumeNButton": "Resume ({count, plural, =1 {# Batch} other {# Batches}})"
     },
     "descriptionInput": {
       "label": "Crawl Description",
@@ -562,7 +572,10 @@
       "processingItems": "Processing items, please wait...",
       "processingErrorLabel": "Processing Error",
       "processCompletedSuccessfully": "Process completed successfully!",
-      "processFailedOrStopped": "Process failed or was stopped. Please review the logs above."
+      "processFailedOrStopped": "Process failed or was stopped. Please review the logs above.",
+      "nextChunkCountdown": "Next batch will be sent in {seconds} seconds...",
+      "processStoppedByUser": "Process stopped by user.",
+      "processFailed": "Process failed due to an error."
     },
     "navigation": {
       "previousStep": "Previous: Configure Settings"
@@ -821,7 +834,7 @@
     "collapse": "Collapse",
     "conference": "Conference",
     "journal": "Journal",
-    "na":"N/A"
+    "na": "N/A"
   },
   "ValidationQualityCharts": {
     "warningsByField": {
