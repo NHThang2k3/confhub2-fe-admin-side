@@ -15,7 +15,7 @@ export const useRowExpansion = ({ resetDependencies = [] }: UseRowExpansionProps
   // Reset state khi dependencies thay đổi (ví dụ: logAnalysisResult mới)
   useEffect(() => {
     setExpandedRow(null);
-  }, resetDependencies);
+  }, [...resetDependencies]); // <--- THAY ĐỔI QUAN TRỌNG Ở ĐÂY
 
   const toggleExpand = useCallback((uniqueRowId: string) => {
     setExpandedRow(prev => (prev === uniqueRowId ? null : uniqueRowId));

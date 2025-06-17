@@ -834,7 +834,10 @@
     "collapse": "Collapse",
     "conference": "Conference",
     "journal": "Journal",
-    "na": "N/A"
+    "na": "N/A",
+    "selectAllOnPage": "Select all items on this page",
+    "deselectAllOnPage": "Deselect all items on this page",
+    "selectRequest": "Select request {requestId}"
   },
   "ValidationQualityCharts": {
     "warningsByField": {

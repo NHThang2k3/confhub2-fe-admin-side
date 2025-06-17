@@ -32,7 +32,7 @@ export const useTableSortingAndFiltering = ({
     setSortDirection('asc');
     setSearchQuery('');
     setColumnFilters({});
-  }, resetDependencies);
+  }, [...resetDependencies]); // <--- THAY ĐỔI QUAN TRỌNG Ở ĐÂY
 
   const handleColumnFilterChange = useCallback(
     (column: keyof ColumnFiltersState, value: string) => {

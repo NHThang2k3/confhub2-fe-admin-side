@@ -52,7 +52,7 @@ export const useTableActions = ({
     setRowSaveErrors({});
     setIsProcessModalOpen(false);
     setItemsToProcessWithAction([]);
-  }, [resetDependencies]);
+  }, [...resetDependencies]); // <--- THAY ĐỔI QUAN TRỌNG Ở ĐÂY
 
 
   const isSelectedWithProblem = useMemo(() => {

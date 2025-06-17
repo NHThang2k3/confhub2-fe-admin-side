@@ -829,7 +829,10 @@
   },
   "Common": {
     "count": "Số lượng",
-    "warnings": "Cảnh báo"
+    "warnings": "Cảnh báo",
+    "selectAllOnPage": "Chọn tất cả trên trang",
+    "deselectAllOnPage": "Bỏ chọn tất cả trên trang",
+    "selectRequest": "Chọn yêu cầu {requestId}"
   },
   "ValidationQualityCharts": {
     "warningsByField": {

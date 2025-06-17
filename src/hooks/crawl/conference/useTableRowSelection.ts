@@ -20,7 +20,7 @@ export const useTableRowSelection = ({
   // Reset state khi dependencies thay đổi (ví dụ: logAnalysisResult mới)
   useEffect(() => {
     setSelectedRows({});
-  }, resetDependencies);
+  }, [...resetDependencies]); // <--- THAY ĐỔI QUAN TRỌNG Ở ĐÂY
 
   const selectedRowIds = useMemo(() => {
     return Object.entries(selectedRows)
