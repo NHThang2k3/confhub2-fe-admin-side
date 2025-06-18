@@ -183,7 +183,7 @@ const CronUpdateCard = () => {
 
     const fetchCronStatus = async () => {
         try {
-            const response = await api.get(apiUrl+"api/v1/conference-crawl-job/cron-status");
+            const response = await api.get(apiUrl+"/api/v1/conference-crawl-job/cron-status");
             setCronStatus(response.data);
         } catch (error) {
             console.error("Error fetching cron status:", error);
