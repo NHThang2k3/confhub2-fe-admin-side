@@ -14,10 +14,10 @@ export interface RequestSummaryShared {
     durationSeconds: number | null;
     status: string | undefined | null;
     originalRequestId?: string | null;
-    description?: string | null; // <<< THÊM DÒNG NÀY
+    description?: string | null;
 
     dataSource?: 'scimago' | 'client' | string;
-    requestId?: string; // Should be present if it's the key of requestsData
+    requestId?: string;
 }
 
 export interface ConferenceRequestSummaryForTable extends RequestSummaryShared {
@@ -32,30 +32,29 @@ export interface JournalRequestSummaryForTable extends RequestSummaryShared {
 
 export type RequestSummaryUnionForTable = ConferenceRequestSummaryForTable | JournalRequestSummaryForTable;
 
+// <<< THAY ĐỔI: Xóa 'endTime' khỏi các khóa có thể sắp xếp >>>
 export type RequestSortableKey =
     | 'requestId'
     | 'originalRequestId'
-    | 'description' // <<< THÊM DÒNG NÀY
-    | 'startTime'
-    | 'endTime'
+    | 'description'
+    | 'startTime' // Cột gộp sẽ sắp xếp theo startTime
+    // | 'endTime' // <<< XÓA DÒNG NÀY
     | 'durationSeconds'
     | 'status'
     | 'processedItemsRatio';
 
 interface RequestsTableProps {
-    requestIds: string[]; // These are the IDs for the current page
+    requestIds: string[];
     requestsData: { [key: string]: RequestSummaryUnionForTable };
-    onSelectRequest: (requestId: string) => void; // For viewing details by clicking requestId
+    onSelectRequest: (requestId: string) => void;
     formatDateTime: (isoString: string | null | undefined) => string;
     getStatusChipClass: (status: string | undefined | null) => string;
     crawlerType: CrawlerType;
-    totalRequestCount: number; // Overall total requests for the current filter, not just page
+    totalRequestCount: number;
     sortConfig: SortConfig;
     onSort: (key: RequestSortableKey) => void;
-
-    // Props for selection checkboxes
     selectedRequestIds: string[];
-    onToggleSelectRequest: (requestId: string) => void; // For toggling individual checkbox
+    onToggleSelectRequest: (requestId: string) => void;
     onToggleSelectAllOnPage: () => void;
     isAllOnPageSelected: boolean;
 }
@@ -76,10 +75,22 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
     isAllOnPageSelected,
 }) => {
     const t = useTranslations('RequestsTable');
-    const tCommon = useTranslations('Common'); // For common translations like selectAll
+    const tCommon = useTranslations('Common');
 
-    // Define the character limit for truncation in the table
-    const TRUNCATE_LIMIT = 50; // Ví dụ: cắt bớt nếu description dài hơn 50 ký tự
+    const TRUNCATE_LIMIT = 50;
+
+     // <<< THAY ĐỔI 1: Định nghĩa độ rộng các cột trong một object để dễ quản lý >>>
+    // Bạn có thể tùy chỉnh các giá trị này cho phù hợp với nhu cầu
+    const columnWidths = {
+        select: 'w-12',                 // Cột checkbox, cố định
+        requestId: 'min-w-[160px]',     // ID có thể dài, đặt min-width và cho phép co giãn
+        originalRequestId: 'min-w-[160px]', // Tương tự requestId
+        description: 'w-1/10',           // Cột mô tả chiếm 1/3 không gian còn lại, cho phép wrap text
+        timeRange: 'w-[200px]',         // Cố định cho ngày giờ
+        duration: 'w-[60px]',          // Cố định cho thời gian chạy (vd: "12.34s")
+        status: 'w-[200px]',            // Cố định cho chip trạng thái
+        processedItemsRatio: 'w-[180px]'// Cố định cho thanh progress bar
+    };
 
     if (!requestIds || requestIds.length === 0) {
         return null;
@@ -112,7 +123,6 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
         return 'bg-red-500';
     };
 
-    // Helper function to truncate description
     const truncateDescription = (description: string | null | undefined, limit: number): string => {
         if (!description) return '';
         if (description.length > limit) {
@@ -121,8 +131,6 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
         return description;
     };
 
-
-    // Calculate success rate for the current page's items
     let totalProcessedItemsOnPage = 0;
     let totalItemsInputOnPage = 0;
 
@@ -176,10 +184,12 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
 
     return (
         <div className="overflow-x-auto border border-gray-200 rounded-lg shadow-sm">
-            <table className="min-w-full divide-y divide-gray-200">
+            {/* <<< THAY ĐỔI 2: Thêm class `table-fixed` để áp dụng layout cố định >>> */}
+            <table className="min-w-full divide-y divide-gray-200 table-fixed">
                 <thead className="bg-gray-10">
                     <tr>
-                        <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-12">
+                        {/* <<< THAY ĐỔI 3: Áp dụng các class độ rộng cho từng header (th) >>> */}
+                        <th scope="col" className={`px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider ${columnWidths.select}`}>
                             <label htmlFor="select-all-requests-on-page" className="sr-only">
                                 {isAllOnPageSelected ? tCommon('deselectAllOnPage') : tCommon('selectAllOnPage')}
                             </label>
@@ -192,32 +202,27 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
                                 title={isAllOnPageSelected ? tCommon('deselectAllOnPage') : tCommon('selectAllOnPage')}
                             />
                         </th>
-                        <SortableHeader columnKey="requestId">
+                        <SortableHeader columnKey="requestId" className={columnWidths.requestId}>
                             <FaListAlt className="mr-1.5 h-3.5 w-3.5 text-gray-400" /> {t('tableHeaders.requestId')}
                         </SortableHeader>
-                        <SortableHeader columnKey="originalRequestId">
+                        <SortableHeader columnKey="originalRequestId" className={columnWidths.originalRequestId}>
                             <FaLink className="mr-1.5 h-3.5 w-3.5 text-gray-400" /> {t('tableHeaders.originalRequestId')}
                         </SortableHeader>
-                         {/* <<< THÊM HEADER CHO DESCRIPTION >>> */}
-                        <SortableHeader columnKey="description">
+                        <SortableHeader columnKey="description" className={columnWidths.description}>
                             <FaCommentAlt className="mr-1.5 h-3.5 w-3.5 text-gray-400" /> {t('tableHeaders.description')}
                         </SortableHeader>
-                        <SortableHeader columnKey="startTime">
-                            <FaClock className="mr-1.5 h-3.5 w-3.5 text-gray-400" /> {t('tableHeaders.startTime')}
+                        <SortableHeader columnKey="startTime" className={columnWidths.timeRange}>
+                            <FaClock className="mr-1.5 h-3.5 w-3.5 text-gray-400" /> {t('tableHeaders.timeRange')}
                         </SortableHeader>
-                        <SortableHeader columnKey="endTime">
-                            <FaClock className="mr-1.5 h-3.5 w-3.5 text-gray-400" /> {t('tableHeaders.endTime')}
-                        </SortableHeader>
-                        <SortableHeader columnKey="durationSeconds">
+                        <SortableHeader columnKey="durationSeconds" className={columnWidths.duration}>
                             <FaStopwatch className="mr-1.5 h-3.5 w-3.5 text-gray-400" /> {t('tableHeaders.duration')}
                         </SortableHeader>
-                        <SortableHeader columnKey="status">
+                        <SortableHeader columnKey="status" className={columnWidths.status}>
                             <FaInfoCircle className="mr-1.5 h-3.5 w-3.5 text-gray-400" /> {t('tableHeaders.status')}
                         </SortableHeader>
-                        <SortableHeader columnKey="processedItemsRatio">
+                        <SortableHeader columnKey="processedItemsRatio" className={columnWidths.processedItemsRatio}>
                             <FaChartPie className="mr-1.5 h-3.5 w-3.5 text-gray-400" /> {successRateColumnHeader}
                         </SortableHeader>
-                        {/* Action column was removed previously */}
                     </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
@@ -245,54 +250,50 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
                         const textColorForProgressBar = 'text-gray-700';
                         const isSelected = selectedRequestIds.includes(reqId);
 
-                        return (
+                         return (
                             <tr
                                 key={reqId}
                                 className={`transition-colors duration-150 ${isSelected ? 'bg-blue-50 hover:bg-blue-100' : 'hover:bg-gray-10'}`}
                                 aria-selected={isSelected}
                             >
-                                <td className="px-3 py-3 whitespace-nowrap">
-                                    <label htmlFor={`select-request-${reqId}`} className="sr-only">
-                                        {tCommon('selectRequest', { requestId: reqId })}
-                                    </label>
+                                <td className="px-3 py-3">
+                                    {/* Checkbox cell */}
                                     <input
                                         id={`select-request-${reqId}`}
                                         type="checkbox"
                                         className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 cursor-pointer"
                                         checked={isSelected}
-                                        onChange={() => onToggleSelectRequest(reqId)} // This is for checkbox selection
+                                        onChange={() => onToggleSelectRequest(reqId)}
                                         aria-labelledby={`request-id-label-${reqId}`}
                                     />
                                 </td>
-                                <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900 break-all">
+                                {/* <<< LƯU Ý: class `break-all` rất quan trọng cho các cột có ID dài khi dùng table-fixed >>> */}
+                                <td className="px-4 py-3 text-sm font-medium text-gray-900 break-all">
                                     <button
                                         id={`request-id-label-${reqId}`}
-                                        onClick={() => onSelectRequest(reqId)} // This is for viewing details
+                                        onClick={() => onSelectRequest(reqId)}
                                         className="text-blue-600 hover:text-blue-800 hover:underline focus:outline-none font-medium"
                                         title={t('viewDetailsForRequestTitle', { requestId: reqId })}
-                                        aria-label={t('viewDetailsForRequestAriaLabel', { requestId: reqId })}
                                     >
                                         {reqId}
                                     </button>
                                 </td>
-                                <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600 break-all">
+                                <td className="px-4 py-3 text-sm text-gray-600 break-all">
                                     {details?.originalRequestId ? (
                                         <button
                                             onClick={() => onSelectRequest(details.originalRequestId!)}
                                             className="text-blue-600 hover:text-blue-800 hover:underline focus:outline-none flex items-center group"
                                             title={t('viewDetailsForOriginalRequestTitle', { requestId: details.originalRequestId })}
-                                            aria-label={t('viewDetailsForOriginalRequestAriaLabel', { requestId: details.originalRequestId })}
                                         >
-                                            <FaLink className="mr-1.5 h-3 w-3 text-blue-500 group-hover:text-blue-700 transition-colors duration-150" />
+                                            <FaLink className="mr-1.5 h-3 w-3 text-blue-500 group-hover:text-blue-700" />
                                             {details.originalRequestId}
                                         </button>
                                     ) : (
                                         <span className="text-gray-400">-</span>
                                     )}
                                 </td>
-
-                                 {/* <<< THÊM CELL CHO DESCRIPTION - VỚI TRUNCATE VÀ TITLE >>> */}
-                                <td className="px-4 py-3 text-sm text-gray-600 max-w-xs break-words">
+                                {/* <<< LƯU Ý: class `break-words` phù hợp cho cột mô tả >>> */}
+                                <td className="px-4 py-3 text-sm text-gray-600 break-words">
                                     {details?.description ? (
                                         <span title={details.description}>
                                             {truncateDescription(details.description, TRUNCATE_LIMIT)}
@@ -301,24 +302,33 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
                                         <span className="text-gray-400">-</span>
                                     )}
                                 </td>
-
-                                <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">
-                                    {details ? formatDateTime(details.startTime) : tCommon('na')}
+                                <td className="px-4 py-3 text-sm text-gray-600">
+                                    {details ? (
+                                        <div>
+                                            <div className="flex items-center text-xs" title={t('tableHeaders.startTime')}>
+                                                <span className="font-semibold text-gray-500 w-6 text-right mr-3">Start:</span>
+                                                <span>{formatDateTime(details.startTime)}</span>
+                                            </div>
+                                            <div className="flex items-center text-xs mt-1" title={t('tableHeaders.endTime')}>
+                                                <span className="font-semibold text-gray-500 w-6 text-right mr-3">End:</span>
+                                                <span>{formatDateTime(details.endTime)}</span>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <span className="text-gray-400">{tCommon('na')}</span>
+                                    )}
                                 </td>
-                                <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">
-                                    {details ? formatDateTime(details.endTime) : tCommon('na')}
-                                </td>
-                                <td className="px-4 py-3 whitespace-nowrap text-center text-sm text-gray-600">
+                                <td className="px-4 py-3 text-center text-sm text-gray-600">
                                     {details && details.durationSeconds != null ? `${details.durationSeconds.toFixed(2)}s` : tCommon('na')}
                                 </td>
-                                <td className="px-4 py-3 whitespace-nowrap text-sm">
+                                <td className="px-4 py-3 text-sm">
                                     {details && details.status ? (
-                                        <span className={`px-2.5 py-1 rounded-full text-xs font-semibold flex items-center ${getStatusChipClass(details.status)}`}>
+                                        <span className={`px-2.5 py-1 rounded-full text-xs font-semibold flex items-center justify-center ${getStatusChipClass(details.status)}`}>
                                             {getStatusIcon(details.status)}
                                             {t(`statusNames.${details.status.toLowerCase()}`, { defaultValue: details.status })}
                                         </span>
                                     ) : (
-                                        <span className={`px-2.5 py-1 rounded-full text-xs font-semibold flex items-center ${getStatusChipClass(null)}`}>
+                                        <span className={`px-2.5 py-1 rounded-full text-xs font-semibold flex items-center justify-center ${getStatusChipClass(null)}`}>
                                             <FaQuestionCircle className="mr-1" /> {t('statusNames.unknown')}
                                         </span>
                                     )}
@@ -342,11 +352,11 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
                         );
                     })}
                 </tbody>
-                {totalItemsInputOnPage > 0 && ( // Show footer if there's data on the current page
+                {totalItemsInputOnPage > 0 && (
                     <tfoot className="bg-gray-10 border-t border-gray-200">
                         <tr>
-                            {/* Cập nhật colspan cho phù hợp với cột description đã thêm */}
-                            <td colSpan={8} className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                            {/* <<< THAY ĐỔI: Cập nhật colspan từ 8 xuống 7 vì đã gộp 1 cột >>> */}
+                            <td colSpan={7} className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
                                 <div className="flex items-center font-semibold">
                                     <FaChartPie className="mr-2 h-4 w-4 text-gray-600" />
                                     {t('tableFooter.currentPageSuccessRate')}:

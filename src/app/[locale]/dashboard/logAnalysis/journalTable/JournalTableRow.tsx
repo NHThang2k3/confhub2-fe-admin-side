@@ -82,27 +82,27 @@ const MainJournalRowCells: React.FC<MainJournalRowCellsProps> = ({
           <span className="truncate" title={journalTitle}>{journalTitle}</span>
         </div>
       </td>
-      <td className='px-3 py-2 text-sm text-gray-500 max-w-[100px] truncate' title={sourceId}>{sourceId || '-'}</td>
+      {/* <td className='px-3 py-2 text-sm text-gray-500 max-w-[100px] truncate' title={sourceId}>{sourceId || '-'}</td> */}
       <td className='px-3 py-2 text-sm text-gray-500 max-w-[100px] truncate' title={dataSource}>{dataSource}</td>
       <td className='whitespace-nowrap px-3 py-2 text-sm'>
         <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold leading-5 ${getStatusChipClass(status)}`}>
           {statusDisplay}
         </span>
       </td>
-      <td className='whitespace-nowrap px-3 py-2 text-sm text-gray-500 text-center'>
+      {/* <td className='whitespace-nowrap px-3 py-2 text-sm text-gray-500 text-center'>
         {durationSeconds != null ? `${durationSeconds.toFixed(1)}s` : '-'}
-      </td>
+      </td> */}
       {/* Aligning step icons like conference */}
-      <td className='whitespace-nowrap px-3 text-center text-lg'><StatusStepIcon success={steps.bioxbio_success} attempted={steps.bioxbio_attempted} /></td>
-      <td className='whitespace-nowrap px-3 text-center text-lg'><StatusStepIcon success={steps.scimago_details_success} attempted={steps.scimago_details_attempted} /></td>
-      <td className='whitespace-nowrap px-3 text-center text-lg'><StatusStepIcon success={steps.image_search_success} attempted={steps.image_search_attempted} /></td>
-      <td className='whitespace-nowrap px-3 text-center text-lg'><StatusStepIcon success={steps.jsonl_write_success} attempted={!!steps.jsonl_write_success || errorCount > 0 || status === 'completed' || status === 'failed'} /></td>
+      <td className='whitespace-nowrap px-6 text-center text-lg'><StatusStepIcon success={steps.bioxbio_success} attempted={steps.bioxbio_attempted} /></td>
+      <td className='whitespace-nowrap px-6 text-center text-lg'><StatusStepIcon success={steps.scimago_details_success} attempted={steps.scimago_details_attempted} /></td>
+      <td className='whitespace-nowrap px-6 text-center text-lg'><StatusStepIcon success={steps.image_search_success} attempted={steps.image_search_attempted} /></td>
+      <td className='whitespace-nowrap px-6 text-center text-lg'><StatusStepIcon success={steps.jsonl_write_success} attempted={!!steps.jsonl_write_success || errorCount > 0 || status === 'completed' || status === 'failed'} /></td>
       <td className={`whitespace-nowrap px-3 py-2 text-center text-sm font-medium ${errorCount > 0 ? 'text-red-600' : 'text-green-600'}`}>
         {errorCount > 0 && <FaTimesCircle className='mb-0.5 mr-1 inline text-red-500' title={t('errorCountTooltip', { count: errorCount })} />}
         {errorCount}
       </td>
       {/* Save Status Column */}
-      <td className="whitespace-nowrap px-3 py-2 text-center text-sm">
+      <td className="whitespace-nowrap px-10 py-2 text-center text-sm">
         {renderSaveStatusIcon()}
       </td>
     </>

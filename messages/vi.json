@@ -664,6 +664,7 @@
       "originalRequestId": "ID yêu cầu gốc",
       "startTime": "Thời gian bắt đầu",
       "endTime": "Thời gian kết thúc",
+      "timeRange": "Thời gian",
       "duration": "Thời lượng",
       "status": "Trạng thái",
       "successRate": "Tỷ lệ thành công",
