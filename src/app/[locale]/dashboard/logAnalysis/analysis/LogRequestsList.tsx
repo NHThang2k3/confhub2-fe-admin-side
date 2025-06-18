@@ -112,7 +112,6 @@ const LogRequestsList: React.FC<LogRequestsListProps> = ({
 
             switch (sortConfig.key) {
                 case 'startTime':
-                case 'endTime':
                     aValue = aValue ? new Date(aValue).getTime() : (sortConfig.direction === 'ascending' ? Infinity : -Infinity);
                     bValue = bValue ? new Date(bValue).getTime() : (sortConfig.direction === 'ascending' ? Infinity : -Infinity);
                     break;
