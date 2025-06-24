@@ -1,26 +1,22 @@
-// src/app/[locale]/dashboard/logAnalysis/hooks/useAnalysisDataProcessor.ts
 import { useMemo, useCallback } from 'react';
 import {
     LogAnalysisResultUnion,
     CrawlerType,
-    
-    
 } from '@/src/hooks/logAnalysis/useLogAnalysisData';
 import { ConferenceLogAnalysisResult } from '@/src/models/logAnalysis';
 import { JournalLogAnalysisResult } from '@/src/models/logAnalysis/logAnalysisJournal.types';
 
-// Định nghĩa một kiểu tổng quát cho hàm dịch
 type TranslationFunction = (key: string, values?: Record<string, any>) => string;
 
 interface UseAnalysisDataProcessorProps {
     rawData: LogAnalysisResultUnion | null;
-    activeRequestIdFilter?: string;
+    activeRequestIdFilter?: string; // This is the activeTextFilter from the parent
     timeFilterOption: string;
     filterStartTime?: number;
     filterEndTime?: number;
     activeCrawler: CrawlerType;
     loading: boolean;
-    t: TranslationFunction; // Sử dụng kiểu đã định nghĩa
+    t: TranslationFunction;
 }
 
 export const useAnalysisDataProcessor = ({
@@ -33,7 +29,6 @@ export const useAnalysisDataProcessor = ({
     loading,
     t,
 }: UseAnalysisDataProcessorProps) => {
-    // ... (phần còn lại của hook giữ nguyên)
 
     const currentData = useMemo(() => rawData as LogAnalysisResultUnion | null, [rawData]);
 
@@ -42,10 +37,15 @@ export const useAnalysisDataProcessor = ({
         [activeRequestIdFilter, currentData]
     );
 
-    const isListView = useMemo(
-        () => !activeRequestIdFilter && !!currentData && !currentData.filterRequestId,
-        [activeRequestIdFilter, currentData]
-    );
+    const isListView = useMemo(() => {
+        if (!currentData) {
+            return false;
+        }
+        const isGeneralList = !activeRequestIdFilter && !currentData.filterRequestId;
+        const isFilteredList = !!activeRequestIdFilter && !currentData.filterRequestId;
+        
+        return isGeneralList || isFilteredList;
+    }, [activeRequestIdFilter, currentData]);
 
     const allRequestsFilteredOutDueToTime = useMemo(() => {
         if (!currentData || !currentData.requests || !currentData.analyzedRequestIds || currentData.analyzedRequestIds.length === 0) {
@@ -66,23 +66,38 @@ export const useAnalysisDataProcessor = ({
         if (!currentData || !currentData.requests || !currentData.analyzedRequestIds) {
             return null;
         }
+        
+        // --- START OF CORRECTION ---
+        // This logic now explicitly filters out all known "placeholder" request types.
         const filteredIds = currentData.analyzedRequestIds.filter(id => {
             const req = currentData.requests[id];
-            if (!req) return false;
-            if (req.status !== 'NoRequestsAnalyzed') {
-                return true;
+
+            // Rule 1: Filter out if request data is missing or has no status.
+            // This handles the Conference backend's empty objects `{}`.
+            if (!req || !req.status) {
+                return false;
             }
-            const isFilteredByTime = req.errorMessages?.some(msg => msg.toLowerCase().includes('matching filters'));
-            return !isFilteredByTime;
+
+            // Rule 2: Filter out if the status indicates it was not found.
+            // This handles the Journal backend's specific placeholder status.
+            // We assume the status string is 'NotFoundInAggregation' based on the UI.
+            if (req.status === 'NotFoundInAggregation') {
+                return false;
+            }
+
+            // Rule 3: Filter out the generic placeholder for when no requests match the time filter.
+            // This object should not appear as a row in the table.
+            if (req.status === 'NoRequestsAnalyzed' && req.errorMessages?.some(msg => msg.toLowerCase().includes('matching filters'))) {
+                return false;
+            }
+
+            // If none of the above placeholder conditions are met, it's a real request.
+            return true;
         });
+        // --- END OF CORRECTION ---
 
         if (filteredIds.length === 0 && currentData.analyzedRequestIds.length > 0 && allRequestsFilteredOutDueToTime) {
             return null;
-        }
-
-        const hasTimeFilterApplied = timeFilterOption !== 'latest' || filterStartTime !== undefined || filterEndTime !== undefined;
-        if (!hasTimeFilterApplied) {
-            return currentData;
         }
 
         const newRequestsMap: typeof currentData.requests = {};
@@ -97,7 +112,7 @@ export const useAnalysisDataProcessor = ({
             requests: newRequestsMap,
             analyzedRequestIds: filteredIds,
         } as LogAnalysisResultUnion;
-    }, [currentData, allRequestsFilteredOutDueToTime, timeFilterOption, filterStartTime, filterEndTime]);
+    }, [currentData, allRequestsFilteredOutDueToTime]);
 
     const hasOverallDataForDisplay = useMemo(() => {
         if (!currentData?.overall) return false;

@@ -1,9 +1,9 @@
-// src/app/[locale]/dashboard/logAnalysis/Analysis.tsx
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useLogAnalysisData } from '../../../../hooks/logAnalysis/useLogAnalysisData';
 import { FaExclamationTriangle, FaSyncAlt } from 'react-icons/fa';
 import { useTranslations } from 'next-intl';
 
+// CHANGED: Import the redesigned header component
 import AnalysisHeader from './analysis/AnalysisHeader';
 import LogRequestsList from './analysis/LogRequestsList';
 import RequestDetailView from './analysis/RequestDetailView';
@@ -24,105 +24,107 @@ import { useAnalysisDataProcessor } from '@/src/hooks/logAnalysis/useAnalysisDat
 const Analysis: React.FC = () => {
     const t = useTranslations('AnalysisPage');
 
-    // Hook for managing filters
+    // --- Hooks (No changes needed here) ---
     const {
         timeFilterOption, filterStartTime, filterEndTime,
-        requestIdFilterInput, activeRequestIdFilter, activeCrawler,
-        handleTimeFilterChange, setRequestIdFilterInput,
-        applyRequestIdFilterFromInput, clearActiveFilterAndGoToList,
-        setActiveCrawler, setActiveRequestIdFilter,
+        textFilterInput, activeTextFilter, activeCrawler,
+        tempCustomStartDate, setTempCustomStartDate,
+        tempCustomEndDate, setTempCustomEndDate,
+        applyCustomDateFilter,
+        handleTimeFilterChange, setTextFilterInput,
+        clearActiveTextFilter,
+        setActiveCrawler,
     } = useAnalysisFilters('conference');
 
-    // Data fetching hook
     const {
         data: rawData, loading, error, isConnectedToSocket, refetchData
-    } = useLogAnalysisData(activeCrawler, filterStartTime, filterEndTime, activeRequestIdFilter);
+    } = useLogAnalysisData(activeCrawler, filterStartTime, filterEndTime, activeTextFilter);
 
-    // Hook for processing data and deriving view states
     const {
         currentData, isDetailView, isListView,
         allRequestsFilteredOutDueToTime, actuallyAnalyzedRequestsData,
         hasOverallDataForDisplay, hasItemDetailsForDisplay,
         getNoDataFoundMessage,
     } = useAnalysisDataProcessor({
-        rawData, activeRequestIdFilter, timeFilterOption, filterStartTime,
+        rawData, activeRequestIdFilter: activeTextFilter,
+        timeFilterOption, filterStartTime,
         filterEndTime, activeCrawler, loading, t
     });
 
-    // Hook for list view state management (pagination, sorting, selection)
     const {
         currentPage, sortConfig, selectedRequestIds,
         handlePageChange, handleSort,
         handleToggleRequestSelection, handleUpdateSelectedIds,
-        setSelectedRequestIds, // Used by delete handler
-        resetListView,
+        setSelectedRequestIds,
     } = useListViewManagement({
-        timeFilterOption, activeRequestIdFilter, activeCrawler,
+        timeFilterOption, activeRequestIdFilter: activeTextFilter,
+        activeCrawler,
         isDetailView, hasData: !!currentData
     });
 
-    // Hook for deletion logic
     const {
         deleteRequests, isLoading: isLoadingDelete, error: deleteError,
         successMessage: deleteSuccessMessage, detailedResults: deleteDetailedResults,
         clearMessages: clearDeleteMessages
     } = useDeleteLogRequests();
 
-    // UI State specific to Analysis component (can be kept here or moved if complex)
+    // --- UI State & Handlers (No changes needed here) ---
     const [isSummaryExpanded, setIsSummaryExpanded] = useState(false);
     const [isLogRequestsExpanded, setIsLogRequestsExpanded] = useState(true);
 
     const handleToggleSummary = () => setIsSummaryExpanded(prev => !prev);
     const handleToggleLogRequests = () => setIsLogRequestsExpanded(prev => !prev);
 
-    // Handler to select a request from the list to view its details
     const handleSelectRequestFromList = (reqId: string) => {
-        setRequestIdFilterInput(reqId); // Update input for consistency if user navigates back
-        setActiveRequestIdFilter(reqId); // This will trigger data refetch for the specific ID
+        setTextFilterInput(reqId);
     };
 
-    // Handler for deleting selected requests
     const handleDeleteSelectedRequests = async () => {
-        if (selectedRequestIds.length === 0 || isLoadingDelete) {
-            return;
-        }
-        if (!window.confirm(t('deleteAction.confirmDelete', { count: selectedRequestIds.length }))) {
-            return;
-        }
+        if (selectedRequestIds.length === 0 || isLoadingDelete) return;
+        if (!window.confirm(t('deleteAction.confirmDelete', { count: selectedRequestIds.length }))) return;
+
         clearDeleteMessages();
         const apiCallSuccessful = await deleteRequests({
             requestIds: selectedRequestIds,
             crawlerType: activeCrawler,
         });
         if (apiCallSuccessful) {
-            setSelectedRequestIds([]); // Clear selection in the list view management hook
-            refetchData(); // Refresh the list
+            setSelectedRequestIds([]);
+            refetchData();
         }
         setTimeout(() => clearDeleteMessages(), 8000);
     };
 
-    // Props for AnalysisHeader, common across different states
-    const commonHeaderProps = {
+    // NEW: Create the 'controls' object for the new header props structure
+    const filterControls = {
         timeFilterOption,
         handleFilterChange: handleTimeFilterChange,
-        refetchData,
-        requestIdFilterInput,
-        setRequestIdFilterInput,
-        applyRequestIdFilter: applyRequestIdFilterFromInput,
-        clearRequestIdFilter: () => {
-            clearActiveFilterAndGoToList();
-            resetListView(); // Also reset list view when clearing request ID filter
-        },
-        crawlerType: activeCrawler,
+        textFilterInput,
+        setTextFilterInput,
+        tempCustomStartDate,
+        setTempCustomStartDate,
+        tempCustomEndDate,
+        setTempCustomEndDate,
+        applyCustomDateFilter,
     };
+
+    // REMOVED: The old 'commonHeaderProps' object is no longer needed.
+
+    // --- Render Logic ---
 
     if (loading && !currentData && !error) {
         return (
             <LoadingScreen>
                 <CrawlerTypeSelector activeCrawler={activeCrawler} onSelectCrawler={setActiveCrawler} />
+                {/* CHANGED: Use the new component with the new props structure */}
                 <AnalysisHeader
-                    {...commonHeaderProps}
-                    loading={true} error={null} isConnected={isConnectedToSocket} data={null}
+                    loading={true}
+                    error={null}
+                    isConnected={isConnectedToSocket}
+                    data={null}
+                    crawlerType={activeCrawler}
+                    refetchData={refetchData}
+                    controls={filterControls}
                 />
             </LoadingScreen>
         );
@@ -132,9 +134,15 @@ const Analysis: React.FC = () => {
         return (
             <ErrorScreen error={error} onRetry={refetchData}>
                 <CrawlerTypeSelector activeCrawler={activeCrawler} onSelectCrawler={setActiveCrawler} />
+                {/* CHANGED: Use the new component with the new props structure */}
                 <AnalysisHeader
-                    {...commonHeaderProps}
-                    loading={false} error={error} isConnected={isConnectedToSocket} data={null}
+                    loading={false}
+                    error={error}
+                    isConnected={isConnectedToSocket}
+                    data={null}
+                    crawlerType={activeCrawler}
+                    refetchData={refetchData}
+                    controls={filterControls}
                 />
             </ErrorScreen>
         );
@@ -153,20 +161,22 @@ const Analysis: React.FC = () => {
                 activeCrawler={activeCrawler}
                 onSelectCrawler={(crawler) => {
                     setActiveCrawler(crawler);
-                    // No need to call resetListView here, as it's an effect dependency in useListViewManagement
                 }}
             />
+            {/* CHANGED: Use the new component with the new props structure */}
             <AnalysisHeader
-                {...commonHeaderProps}
-                loading={loading && !!currentData} // Show loading spinner on header if data exists but is refreshing
-                error={(error && currentData) ? error : null} // Show error on header if data exists but refresh failed
+                loading={loading && !!currentData}
+                error={(error && currentData) ? error : null}
                 isConnected={isConnectedToSocket}
                 data={currentData}
+                crawlerType={activeCrawler}
+                refetchData={refetchData}
+                controls={filterControls}
                 allRequestsFilteredOut={allRequestsFilteredOutDueToTime && isListView}
-                overallAnalysisStatus={currentData?.status}
                 overallAnalysisErrorMessage={currentData?.errorMessage}
             />
 
+            {/* --- The rest of the component remains the same --- */}
             {isListView && actuallyAnalyzedRequestsData && actuallyAnalyzedRequestsData.analyzedRequestIds.length > 0 && (
                 <LogRequestsList
                     isExpanded={isLogRequestsExpanded}
@@ -200,11 +210,8 @@ const Analysis: React.FC = () => {
             {isDetailView && currentData && (
                 <RequestDetailView
                     data={currentData}
-                    activeRequestIdFilter={activeRequestIdFilter!}
-                    onClearFilter={() => {
-                        clearActiveFilterAndGoToList();
-                        // resetListView will be triggered by useEffect in useListViewManagement
-                    }}
+                    activeRequestIdFilter={activeTextFilter!}
+                    onClearFilter={clearActiveTextFilter}
                     isSummaryExpandedOverall={isSummaryExpanded}
                     onToggleSummaryOverall={handleToggleSummary}
                     getNoDataMessage={getNoDataFoundMessage}
@@ -225,13 +232,13 @@ const Analysis: React.FC = () => {
                 />
             )}
 
-            {loading && currentData && ( // Show this only if data exists but is refreshing
+            {loading && currentData && (
                 <div className="mt-6 text-center text-blue-600">
                     <FaSyncAlt className="inline mr-2 animate-spin" />
-                    {activeRequestIdFilter ? t('refreshing.details', { requestId: activeRequestIdFilter }) : t('refreshing.analysisData')}
+                    {activeTextFilter ? t('refreshing.details', { requestId: activeTextFilter }) : t('refreshing.analysisData')}
                 </div>
             )}
-            {error && currentData && ( // Show this only if data exists but refresh failed
+            {error && currentData && (
                 <div className="mt-4 text-red-600 text-sm p-3 bg-red-50 rounded-md border border-red-200">
                     <FaExclamationTriangle className="inline mr-1" /> {t('refreshing.error', { error: error.toString() })}
                 </div>

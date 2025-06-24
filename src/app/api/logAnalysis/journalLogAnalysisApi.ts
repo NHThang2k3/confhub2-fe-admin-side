@@ -6,14 +6,14 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 export const fetchJournalLogAnalysisData = async (
     filterStartTime?: number, // Milliseconds
     filterEndTime?: number,   // Milliseconds
-    requestId?: string // <<< NEW
+    textFilter?: string
 
 ): Promise<JournalLogAnalysisResult> => {
     // Xây dựng URL với các tham số query nếu chúng tồn tại
     const url = new URL(`${API_BASE_URL}/api/v1/logs/analysis/journal/latest`);
     if (filterStartTime !== undefined) { url.searchParams.append('filterStartTime', filterStartTime.toString()); }
     if (filterEndTime !== undefined) { url.searchParams.append('filterEndTime', filterEndTime.toString()); }
-    if (requestId !== undefined) url.searchParams.append('requestId', requestId); // <<< NEW
+    if (textFilter) { url.searchParams.append('textFilter', textFilter); }
 
 
     console.log(`Fetching log analysis data from: ${url.toString()}`); // Log URL để debug

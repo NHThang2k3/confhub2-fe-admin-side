@@ -1,5 +1,3 @@
-// src/models/logAnalysis/common.types.ts
-
 /**
  * @fileoverview Định nghĩa các kiểu dữ liệu và interface chung được sử dụng trên toàn bộ ứng dụng,
  * đặc biệt là cho việc ghi nhật ký, theo dõi thời gian và quản lý lỗi.
@@ -143,6 +141,9 @@ export interface RequestLogData {
      * @property {number | null} endTime - Dấu thời gian Unix mới nhất (mili giây) được tìm thấy cho yêu cầu này.
      */
     endTime: number | null;
+    // Thêm các trường mới để lưu trữ thông tin được trích xuất sớm
+    description?: string;
+    originalRequestId?: string;
 }
 
 /**
@@ -243,27 +244,10 @@ export interface LogError {
      * @property {string} [sourceService] - Tùy chọn: Dịch vụ hoặc thành phần nguồn gây ra lỗi.
      */
     sourceService?: string;
-
     /**
-     * @property {string} [errorType] - Optional: The categorized type of error.
-     * --- UPDATED to merge types from both files ---
+     * @property {'DataParsing' | 'Network' | 'APIQuota' | 'Logic' | 'FileSystem' | 'SafetyBlock' | 'Configuration' | 'Unknown' | 'ThirdPartyAPI'} [errorType] - Tùy chọn: Loại lỗi được phân loại.
      */
-    errorType?:
-    | 'Network'
-    | 'API'             // From logAnalysisJournal.types.ts
-    | 'APIQuota'
-    | 'Playwright'      // From logAnalysisJournal.types.ts
-    | 'FileSystem'
-    | 'Validation'      // From logAnalysisJournal.types.ts
-    | 'Logic'
-    | 'Cache'           // From logAnalysisJournal.types.ts
-    | 'SafetyBlock'
-    | 'Configuration'
-    | 'DataParsing'
-    | 'ThirdParty'      // From logAnalysisJournal.types.ts
-    | 'ThirdPartyAPI'
-    | 'Unknown';
-
+    errorType?: 'DataParsing' | 'Network' | 'APIQuota' | 'Logic' | 'FileSystem' | 'SafetyBlock' | 'Configuration' | 'Unknown' | 'ThirdPartyAPI';
     /**
      * @property {boolean} [isRecovered] - Tùy chọn: True nếu lỗi này đã được khắc phục bởi một hành động sau đó (ví dụ: fallback).
      */

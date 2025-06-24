@@ -1,6 +1,22 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+@import "react-datepicker/dist/react-datepicker.css";
+
+/* Thêm một vài style tùy chỉnh để DatePicker đẹp hơn với Tailwind */
+.react-datepicker-wrapper {
+    display: inline-block;
+    width: auto;
+}
+
+.react-datepicker__input-container input {
+    @apply w-full p-2 border border-gray-300 rounded-md bg-white shadow-sm text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-700;
+}
+
+.react-datepicker__time-container .react-datepicker__time .react-datepicker__time-box ul.react-datepicker__time-list {
+    padding-left: 0;
+    padding-right: 0;
+}
 
 @layer base {
   :root {

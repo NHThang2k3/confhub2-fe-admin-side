@@ -1119,28 +1119,28 @@
       "title": "Bioxbio Data Fetching",
       "fetchesAttempted": "Fetches Attempted",
       "fetchesSucceeded": "Fetches Succeeded",
-      "failedSubText": "{{count}} Failed",
+      "failedSubText": "{count} Failed",
       "cacheHits": "Cache Hits"
     },
     "scimagoKpis": {
       "title": "Scimago Detail Page Fetching",
       "detailPagesAttempted": "Detail Pages Attempted",
       "detailPagesSucceeded": "Detail Pages Succeeded",
-      "failedSubText": "{{count}} Failed",
+      "failedSubText": "{count} Failed",
       "detailPagesSkipped": "Detail Pages Skipped (Null URL)"
     },
     "imageSearchKpis": {
       "title": "Image Search (Google) Operations",
       "searchesAttempted": "Searches Attempted",
       "searchesSucceeded": "Searches Succeeded",
-      "failedSubText": "{{count}} Failed after retries",
+      "failedSubText": "{count} Failed after retries",
       "apiKeyRotations": "API Key Rotations",
-      "exhaustedSubText": "{{count}} Exhausted"
+      "exhaustedSubText": "{count} Exhausted"
     },
     "fileOutputKpis": {
       "title": "File Output Operations",
       "jsonlWritten": "JSONL Records Written",
-      "errorsSubText": "{{count}} Errors",
+      "errorsSubText": "{count} Errors",
       "clientCsvParsed": "Client CSV Parsed"
     }
   },
@@ -1186,21 +1186,23 @@
     "errorLabel": "Error",
     "logFile": "Log File",
     "filter": {
-      "requestIdFilterTitle": "Filter by Request ID",
-      "requestIdPlaceholder": "Filter by Request ID (e.g., batch-request-123)",
-      "clearInputTitle": "Clear input",
+      "textSearchTitle": "Filter by Request ID, Original ID, or Description",
+      "textSearchPlaceholder": "Search by ID or description...",
+      "applyFilterTitle": "Apply filter",
       "clearActiveFilterTitle": "Clear active filter",
-      "enterRequestIdTitle": "Enter a request ID to apply filter",
-      "applyFilterTitle": "Apply filter to request ID",
+      "clearInputTitle": "Clear input",
       "applyButton": "Apply",
-      "timeFilterTitle": "Filter by time range"
+      "timeFilterTitle": "Filter by time range",
+      "startDatePlaceholder": "Start date & time",
+      "endDatePlaceholder": "End date & time"
     },
     "timeOptions": {
       "allTime": "All Time",
       "lastHour": "Last Hour",
       "last6Hours": "Last 6 Hours",
       "last24Hours": "Last 24 Hours",
-      "last7Days": "Last 7 Days"
+      "last7Days": "Last 7 Days",
+      "custom": "Custom Range..."
     },
     "refreshButton": {
       "refreshingTitle": "Refreshing data...",
@@ -1233,7 +1235,7 @@
     },
     "noData": {
       "noRequestsMatchingFiltersOrPeriod": "No requests match the current filters or time period.",
-      "forRequestId": "No data found for Request ID: \"{{requestId}}\". Please check the ID or adjust time filters.",
+      "forRequestId": "No data found for Request ID: \"{requestId}\". Please check the ID or adjust time filters.",
       "noRequestsForPeriod": "No log requests found for the selected time period.",
       "noResultsForPeriod": "No analysis results available for the selected time period.",
       "genericNoResults": "No analysis results available.",
@@ -1243,13 +1245,13 @@
     },
     "statusMessages": {
       "dataLoadedCriteriaNotMet": "Data loaded, but current view criteria not met.",
-      "dataIsForRequestId": "The data displayed is for Request ID: {{requestId}}.",
+      "dataIsForRequestId": "The data displayed is for Request ID: {requestId}.",
       "dataIsGeneralSummary": "The data displayed is a general summary."
     },
     "refreshing": {
-      "details": "Refreshing details for Request ID: {{requestId}}...",
+      "details": "Refreshing details for Request ID: {requestId}...",
       "analysisData": "Refreshing log analysis data...",
-      "error": "Error during refresh: {{error}}"
+      "error": "Error during refresh: {error}"
     },
     "statusNames": {
       "completed": "Completed",
