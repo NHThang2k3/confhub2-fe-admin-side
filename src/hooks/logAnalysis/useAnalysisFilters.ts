@@ -10,7 +10,6 @@ export interface AnalysisFilterState {
     textFilterInput: string;
     activeTextFilter?: string;
     activeCrawler: CrawlerType;
-    // State tạm thời để người dùng chọn
     tempCustomStartDate: Date | null;
     tempCustomEndDate: Date | null;
 }
@@ -18,12 +17,12 @@ export interface AnalysisFilterState {
 export interface AnalysisFilterHandlers {
     handleTimeFilterChange: (event: React.ChangeEvent<HTMLSelectElement>) => void;
     setTextFilterInput: React.Dispatch<React.SetStateAction<string>>;
+    // THÊM MỚI: Hàm để áp dụng filter ngay lập tức
+    setTextFilterAndApplyImmediately: (value: string) => void;
     clearActiveTextFilter: () => void;
     setActiveCrawler: React.Dispatch<React.SetStateAction<CrawlerType>>;
-    // Handlers cho state tạm thời
     setTempCustomStartDate: (date: Date | null) => void;
     setTempCustomEndDate: (date: Date | null) => void;
-    // Hàm để áp dụng filter
     applyCustomDateFilter: () => void;
 }
 
@@ -37,21 +36,25 @@ export const useAnalysisFilters = (initialCrawler: CrawlerType = 'conference') =
     
     const [activeCrawler, setActiveCrawler] = useState<CrawlerType>(initialCrawler);
 
-    // State chính thức để lọc
     const [customStartDate, setCustomStartDate] = useState<Date | null>(null);
     const [customEndDate, setCustomEndDate] = useState<Date | null>(null);
-    // State tạm thời cho UI
     const [tempCustomStartDate, setTempCustomStartDate] = useState<Date | null>(null);
     const [tempCustomEndDate, setTempCustomEndDate] = useState<Date | null>(null);
 
+    // Debounce này chỉ dành cho việc người dùng gõ phím
     const debouncedFilterTerm = useDebounce(textFilterInput, 400);
 
+    // useEffect này xử lý việc cập nhật filter khi người dùng gõ phím
     useEffect(() => {
-        if (debouncedFilterTerm !== activeTextFilter) {
-            setActiveTextFilter(debouncedFilterTerm.trim() || undefined);
+        const debouncedValue = debouncedFilterTerm.trim() || undefined;
+        // Chỉ cập nhật nếu giá trị debounced khác với filter đang active
+        // để tránh trigger lại khi filter được set ngay lập tức từ nơi khác.
+        if (debouncedValue !== activeTextFilter) {
+            setActiveTextFilter(debouncedValue);
         }
-    }, [debouncedFilterTerm, activeTextFilter]);
+    }, [debouncedFilterTerm]); // Chỉ phụ thuộc vào giá trị đã debounce
 
+    // useEffect xử lý filter thời gian
     useEffect(() => {
         const now = new Date();
         let start: Date | null = null;
@@ -71,7 +74,6 @@ export const useAnalysisFilters = (initialCrawler: CrawlerType = 'conference') =
                 start = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
                 break;
             case 'custom':
-                // Luôn sử dụng giá trị từ state chính thức để lọc
                 start = customStartDate;
                 end = customEndDate;
                 break;
@@ -82,26 +84,33 @@ export const useAnalysisFilters = (initialCrawler: CrawlerType = 'conference') =
                 break;
         }
 
-           setFilterStartTime(start ? start.getTime() : undefined);
+        setFilterStartTime(start ? start.getTime() : undefined);
         setFilterEndTime(end ? end.getTime() : undefined);
 
-    }, [timeFilterOption, customStartDate, customEndDate]); // Chỉ phụ thuộc vào state chính thức
+    }, [timeFilterOption, customStartDate, customEndDate]);
 
     const handleTimeFilterChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
         const newOption = event.target.value;
         setTimeFilterOption(newOption);
-        // Nếu người dùng chuyển khỏi chế độ "Custom", xóa các giá trị custom đã áp dụng
         if (newOption !== 'custom') {
             setCustomStartDate(null);
             setCustomEndDate(null);
         }
     };
 
+    // CẬP NHẬT: Hàm này giờ sẽ có hiệu lực ngay lập tức
     const clearActiveTextFilter = useCallback(() => {
         setTextFilterInput('');
+        setActiveTextFilter(undefined); // Cập nhật active filter ngay
     }, []);
 
-    // Hàm mới để áp dụng date range
+    // THÊM MỚI: Hàm để set filter và áp dụng ngay, bỏ qua debounce
+    const setTextFilterAndApplyImmediately = useCallback((value: string) => {
+        const trimmedValue = value.trim() || undefined;
+        setTextFilterInput(value); // Cập nhật UI input
+        setActiveTextFilter(trimmedValue); // Cập nhật active filter ngay để fetch data
+    }, []);
+
     const applyCustomDateFilter = useCallback(() => {
         setCustomStartDate(tempCustomStartDate);
         setCustomEndDate(tempCustomEndDate);
@@ -120,7 +129,8 @@ export const useAnalysisFilters = (initialCrawler: CrawlerType = 'conference') =
 
     const handlers: AnalysisFilterHandlers = {
         handleTimeFilterChange,
-        setTextFilterInput,
+        setTextFilterInput, // Dùng cho ô input để có debounce
+        setTextFilterAndApplyImmediately, // Dùng cho các hành động cần hiệu lực ngay
         clearActiveTextFilter,
         setActiveCrawler,
         setTempCustomStartDate,

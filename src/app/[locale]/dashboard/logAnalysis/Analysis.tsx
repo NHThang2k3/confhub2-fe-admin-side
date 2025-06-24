@@ -1,9 +1,9 @@
+// Analysis.tsx
 import React, { useState } from 'react';
 import { useLogAnalysisData } from '../../../../hooks/logAnalysis/useLogAnalysisData';
 import { FaExclamationTriangle, FaSyncAlt } from 'react-icons/fa';
 import { useTranslations } from 'next-intl';
 
-// CHANGED: Import the redesigned header component
 import AnalysisHeader from './analysis/AnalysisHeader';
 import LogRequestsList from './analysis/LogRequestsList';
 import RequestDetailView from './analysis/RequestDetailView';
@@ -24,7 +24,7 @@ import { useAnalysisDataProcessor } from '@/src/hooks/logAnalysis/useAnalysisDat
 const Analysis: React.FC = () => {
     const t = useTranslations('AnalysisPage');
 
-    // --- Hooks (No changes needed here) ---
+    // --- Hooks ---
     const {
         timeFilterOption, filterStartTime, filterEndTime,
         textFilterInput, activeTextFilter, activeCrawler,
@@ -32,6 +32,8 @@ const Analysis: React.FC = () => {
         tempCustomEndDate, setTempCustomEndDate,
         applyCustomDateFilter,
         handleTimeFilterChange, setTextFilterInput,
+        // THAY ĐỔI: Lấy hàm mới từ hook
+        setTextFilterAndApplyImmediately,
         clearActiveTextFilter,
         setActiveCrawler,
     } = useAnalysisFilters('conference');
@@ -68,7 +70,7 @@ const Analysis: React.FC = () => {
         clearMessages: clearDeleteMessages
     } = useDeleteLogRequests();
 
-    // --- UI State & Handlers (No changes needed here) ---
+    // --- UI State & Handlers ---
     const [isSummaryExpanded, setIsSummaryExpanded] = useState(false);
     const [isLogRequestsExpanded, setIsLogRequestsExpanded] = useState(true);
 
@@ -76,7 +78,8 @@ const Analysis: React.FC = () => {
     const handleToggleLogRequests = () => setIsLogRequestsExpanded(prev => !prev);
 
     const handleSelectRequestFromList = (reqId: string) => {
-        setTextFilterInput(reqId);
+        // THAY ĐỔI: Sử dụng hàm mới để cập nhật filter ngay lập tức, bỏ qua debounce
+        setTextFilterAndApplyImmediately(reqId);
     };
 
     const handleDeleteSelectedRequests = async () => {
@@ -95,11 +98,13 @@ const Analysis: React.FC = () => {
         setTimeout(() => clearDeleteMessages(), 8000);
     };
 
-    // NEW: Create the 'controls' object for the new header props structure
+    // 'controls' object cho props của header
     const filterControls = {
         timeFilterOption,
         handleFilterChange: handleTimeFilterChange,
         textFilterInput,
+        // QUAN TRỌNG: Vẫn truyền `setTextFilterInput` gốc vào header
+        // để việc gõ phím vẫn có debounce.
         setTextFilterInput,
         tempCustomStartDate,
         setTempCustomStartDate,
@@ -108,15 +113,12 @@ const Analysis: React.FC = () => {
         applyCustomDateFilter,
     };
 
-    // REMOVED: The old 'commonHeaderProps' object is no longer needed.
-
     // --- Render Logic ---
 
     if (loading && !currentData && !error) {
         return (
             <LoadingScreen>
                 <CrawlerTypeSelector activeCrawler={activeCrawler} onSelectCrawler={setActiveCrawler} />
-                {/* CHANGED: Use the new component with the new props structure */}
                 <AnalysisHeader
                     loading={true}
                     error={null}
@@ -134,7 +136,6 @@ const Analysis: React.FC = () => {
         return (
             <ErrorScreen error={error} onRetry={refetchData}>
                 <CrawlerTypeSelector activeCrawler={activeCrawler} onSelectCrawler={setActiveCrawler} />
-                {/* CHANGED: Use the new component with the new props structure */}
                 <AnalysisHeader
                     loading={false}
                     error={error}
@@ -149,7 +150,7 @@ const Analysis: React.FC = () => {
     }
 
     return (
-        <div className="bg-gradient-to-br from-gray-100 to-blue-50 min-h-screen font-sans space-y-6 relative">
+        <div className="bg-gradient-to-br from-gray-100 to-blue-50 min-h-screen font-sans space-y-6 relative p-4">
             <DeletionStatusDisplay
                 isLoading={isLoadingDelete}
                 error={deleteError}
@@ -163,7 +164,6 @@ const Analysis: React.FC = () => {
                     setActiveCrawler(crawler);
                 }}
             />
-            {/* CHANGED: Use the new component with the new props structure */}
             <AnalysisHeader
                 loading={loading && !!currentData}
                 error={(error && currentData) ? error : null}
@@ -176,7 +176,6 @@ const Analysis: React.FC = () => {
                 overallAnalysisErrorMessage={currentData?.errorMessage}
             />
 
-            {/* --- The rest of the component remains the same --- */}
             {isListView && actuallyAnalyzedRequestsData && actuallyAnalyzedRequestsData.analyzedRequestIds.length > 0 && (
                 <LogRequestsList
                     isExpanded={isLogRequestsExpanded}
