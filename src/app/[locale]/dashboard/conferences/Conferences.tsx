@@ -821,7 +821,7 @@ export default function Conferences({ locale }: { locale: string }) {
       {isModalVisible && selectedConference && (
          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-[100] transition-all duration-300">
           <div className="bg-white-pure rounded-lg p-6 w-full max-w-4xl max-h-[calc(100vh-8rem)] overflow-y-auto relative">
-            <div className="flex justify-between items-center mb-4 sticky top-0 bg-white-pure pb-4 z-10 border-b">
+            <div className="flex justify-between items-center mb-4  top-0 bg-white-pure pb-4 z-10 border-b">
               <h2 className="text-xl font-bold">
                 {t('modal.historyTitle', { conferenceTitle: selectedConference.title })}
               </h2>
