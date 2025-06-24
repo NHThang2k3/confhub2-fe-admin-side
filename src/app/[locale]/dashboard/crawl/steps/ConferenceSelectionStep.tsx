@@ -43,7 +43,9 @@ const ConferenceSelectionStep: React.FC<ConferenceSelectionStepProps> = ({
   onUpdateActionTypeForSelected,
 }) => {
   const t = useTranslations('ConferenceSelectionStep');
-
+  useEffect(() => {
+    console.log("Rendering ConferenceSelectionStep with parsedData:", parsedData);
+  }, [parsedData]);
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
@@ -73,7 +75,7 @@ const ConferenceSelectionStep: React.FC<ConferenceSelectionStepProps> = ({
       if (Array.isArray(cleanedConference.researchFields)) {
         // Lọc bỏ các string 'UNDEFINED' (không phải undefined của JS)
         cleanedConference.researchFields = cleanedConference.researchFields.filter(
-          field => typeof field === 'string' && field.trim().toUpperCase() !== 'UNDEFINED'
+          field => typeof field === 'string'
         );
       } else {
         // Nếu researchFields không phải mảng, hoặc là undefined/null, coi như mảng rỗng để lọc ở bước sau
@@ -185,6 +187,7 @@ const ConferenceSelectionStep: React.FC<ConferenceSelectionStepProps> = ({
   // Các biến đếm cho UI
   const totalSelectedRowCount = table.getSelectedRowModel().rows.length;
   const pageRows = table.getRowModel().rows;
+
   const pageSelectedRowCount = pageRows.filter(row => row.getIsSelected()).length;
   const canApplyToPage = pageRows.length > 0;
 

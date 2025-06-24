@@ -533,6 +533,19 @@ export default function Conferences({ locale }: { locale: string }) {
     fetchConferenceHistory(conference.id);
   }, [fetchConferenceHistory]);
 
+  const handDeleteConference = useCallback( (conferenceId: string) => {
+    axios.delete(`${DATA_API_URL}/api/v1/admin/conferences/remove/${conferenceId}`)
+      .then(() => {
+        toast.success(tCommon('deleteSuccess'));
+        setRowData(prev => prev.filter(conf => conf.id !== conferenceId));
+        setDeleteDialogOpen(false);
+      })
+      .catch(error => {
+        console.error('Error deleting conference:', error);
+        toast.error(tCommon('deleteError'));
+      });
+  }, []);
+
   const columnDefs: ColDef[] = useMemo(() => [
     {
       field: 'title',
@@ -619,15 +632,27 @@ export default function Conferences({ locale }: { locale: string }) {
       flex: 1,
       minWidth: 120,
       cellRenderer: (params: ICellRendererParams) => (
+        <div className="flex items-center gap-2">
         <button
           className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
           onClick={() => handleViewHistory(params.data)}
         >
           {t('viewHistoryButton')}
         </button>
+
+        <button
+          className="shrink-0 ml-2 px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
+          onClick={() => {
+            setSelectedConference(params.data);
+            handDeleteConference(params.data.id);
+          }}
+        >
+            delete
+          </button>
+          </div>
       ),
     },
-  ], [t, handleViewHistory]);
+  ], [t, handleViewHistory, handDeleteConference]);
 
   const defaultColDef = useMemo(() => ({
     sortable: true,

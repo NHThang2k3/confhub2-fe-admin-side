@@ -46,6 +46,7 @@ export const useFileParser = () => {
                     id: conf.id || `${conf.acronym || 'conf'}-${Date.now()}-${index}`,
                     crawlType: 'crawl',
                 }));
+                console.log("Parsed conferences:", conferencesWithDefaults);
                 setParsedData(conferencesWithDefaults);
                 return { data: conferencesWithDefaults, message: `File uploaded and parsed successfully. ${conferencesWithDefaults.length} records found.` };
             } else {
