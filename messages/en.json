@@ -271,6 +271,7 @@
     },
     "viewHistoryButton": "View History",
     "modal": {
+      "noHistory": "No history found for this conference.",
       "historyTitle": "Conference History - {conferenceTitle}",
       "organizationDetails": {
         "yearHeader": "Year {year}",
