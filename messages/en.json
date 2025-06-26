@@ -928,7 +928,15 @@
     "context": "Context"
   },
   "JournalDetailsPage": {
-    "title": "Detailed Journal Analysis"
+    "title": "Journal Details",
+    "collapseDetailsTitle": "Collapse Details",
+    "expandDetailsTitle": "Expand Details",
+    "srOnly": {
+      "collapse": "Collapse section",
+      "expand": "Expand section"
+    },
+    "noDataMessage": "No journal analysis data available.",
+    "noFilterMatchMessage": "No journals match your current filters."
   },
   "JournalCrawl": {
     "fileLabel": "Upload Journal List (CSV, Semicolon-delimited ';')",
@@ -1032,24 +1040,26 @@
     }
   },
   "JournalTableHeader": {
+    "sortTooltip": "Sort by {column}",
+    "filterByCountLevelTitle": "Filter {field} by count level",
+    "filterByDataSourceTitle": "Filter by data source",
+    "filterPlaceholder": "Filter by {column}...",
+    "selectAllTooltip": "Select all visible journals",
     "columnTitles": {
       "select": "Select",
       "journalTitle": "Journal Title",
       "sourceId": "Source ID",
+      "batchRequestId": "Batch Request ID",
       "dataSource": "Data Source",
       "status": "Status",
       "duration": "Duration",
       "bioxbio": "Bioxbio",
-      "scimagoDetails": "Scimago",
-      "imageSearch": "Image",
-      "jsonlWrite": "JSONL",
+      "scimagoDetails": "Scimago Details",
+      "imageSearch": "Image Search",
+      "jsonlWrite": "JSONL Write",
       "errors": "Errors",
-      "save": "Save Status"
+      "save": "Save"
     },
-    "sortTooltip": "Sort by {column}",
-    "filterPlaceholder": "Filter {column}...",
-    "filterByCountLevelTitle": "Filter by {field} count level",
-    "filterByDataSourceTitle": "Filter by data source",
     "filterOptions": {
       "all": "All",
       "any": "Any",
@@ -1058,8 +1068,7 @@
     "dataSourceOptions": {
       "scimago": "Scimago",
       "client": "Client"
-    },
-    "selectAllTooltip": "Select/Deselect all visible rows"
+    }
   },
   "ScimagoCharts": {
     "detailPageStatusTitle": "Scimago Detail Page Status",
