@@ -1,75 +1,47 @@
-// src/app/api/logAnalysis/saveJournals.ts (NEW FILE)
 import axios, { AxiosError } from 'axios';
 
-const API_SAVE_JOURNAL_ENDPOINT = `${process.env.NEXT_PUBLIC_DATABASE_URL}/api/v1/admin/journals/import`;
+// Endpoint của Backend, không phải của Database
+const API_IMPORT_JOURNALS_ENDPOINT = `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/journals/import-from-log`;
 
-export interface JournalImportPayload {
-  sourceId: string;
-  title: string;
-  [key: string]: any; // Represents the structure of journalData.dataToSave
-}
-
-export interface SaveJournalResult {
-  success: boolean;
-  message: string;
-  identifier?: string;
-}
-
-export const saveJournalToDB = async (
-  sourceId: string,
-  title: string,
-  dataToSave: any // This should be the structured journal data object
-): Promise<SaveJournalResult> => {
-  const identifier = `${sourceId} - ${title}`;
-
-  if (!sourceId || !title) {
-    return { identifier, success: false, message: `Source ID ('${sourceId}') or Title ('${title}') is missing.` };
-  }
-  if (!dataToSave || typeof dataToSave !== 'object' || Object.keys(dataToSave).length === 0) {
-    return { identifier, success: false, message: `Data to save for journal ${identifier} is missing or invalid.` };
-  }
-
-  const payload: JournalImportPayload[] = [{
-    sourceId: dataToSave.sourceId || sourceId,
-    title: dataToSave.title || title,
-    ...dataToSave
-  }];
-
-  console.log(`API Call: Saving Journal ${identifier} with payload:`, payload);
-
-  try {
-    const response = await axios.post<{
-      success: boolean;
-      message: string;
-      results?: Array<{ sourceId?: string; title?: string; success: boolean; message: string; id?: string; }>;
-    }>(API_SAVE_JOURNAL_ENDPOINT, payload);
-
-    console.log(`API Response for Journal ${identifier}:`, response.data);
-
-    if (response.data.results && response.data.results.length > 0) {
-      const itemResult = response.data.results[0];
-      return {
-        identifier: itemResult.sourceId || sourceId,
-        success: itemResult.success,
-        message: itemResult.message || (itemResult.success ? 'Journal saved (backend).' : 'Journal save failed (backend).'),
-      };
-    }
-    return {
-      identifier,
-      success: response.data.success,
-      message: response.data.message || (response.data.success ? 'Journal saved (backend).' : 'Journal save failed (backend).'),
+// Interface cho kết quả trả về từ Backend
+export interface BackendImportResult {
+  results: Array<{
+    success: boolean;
+    message: string;
+    
+    data?: {
+      id: string;
+      title: string;
+      issn: string;
     };
+    // Backend nên trả về một định danh để khớp với dữ liệu trên UI
+    // Giả sử nó trả về sourceId hoặc title từ dữ liệu gốc
+    sourceId: string;
+    title?: string;
+  }>;
+  totalProcessed: number;
+  totalSuccess: number;
+  totalFailed: number;
+}
+
+/**
+ * Gửi yêu cầu đến Backend để bắt đầu quá trình import từ file log.
+ * @param batchRequestId ID của batch cần import.
+ */
+export const importJournalsFromLog = async (
+  batchRequestId: string
+): Promise<BackendImportResult> => {
+  try {
+    const response = await axios.post<BackendImportResult>(
+      API_IMPORT_JOURNALS_ENDPOINT,
+      { batchRequestId } // Payload chỉ cần batchRequestId
+    );
+    return response.data;
   } catch (err) {
     const error = err as AxiosError<{ message?: string }>;
-    let errorMessage = 'Unknown network/server error saving journal.';
-    if (error.response) {
-      errorMessage = (error.response.data as any)?.message || `Server error: ${error.response.status}`;
-    } else if (error.request) {
-      errorMessage = 'No response from server for journal save.';
-    } else {
-      errorMessage = error.message;
-    }
-    console.error(`API Error saving journal ${identifier}:`, errorMessage, error.response?.data);
-    return { identifier, success: false, message: errorMessage };
+    const errorMessage = error.response?.data?.message || error.message || 'Failed to trigger journal import.';
+    console.error('API Error triggering journal import:', errorMessage, error.response?.data);
+    // Ném lỗi để hook có thể bắt và xử lý
+    throw new Error(errorMessage);
   }
 };

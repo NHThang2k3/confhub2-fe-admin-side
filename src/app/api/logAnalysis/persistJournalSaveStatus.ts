@@ -1,7 +1,7 @@
 // src/app/api/logAnalysis/persistJournalSaveStatus.ts (NEW FILE)
 import axios, { AxiosError } from 'axios';
 
-const API_PERSIST_JOURNAL_SAVE_STATUS_ENDPOINT = `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/log/journal-save-event`;
+const API_PERSIST_JOURNAL_SAVE_STATUS_ENDPOINT = `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/log/journ`;
 
 export interface PersistJournalSaveStatusPayload {
   batchRequestId: string;

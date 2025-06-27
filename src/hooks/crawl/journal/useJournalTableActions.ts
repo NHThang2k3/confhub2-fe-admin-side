@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useEffect, useMemo } from 'react';
 import { JournalTableData, MainSavingStatus, RowSaveStatus, JournalForAction } from './journalTableManagerTypes';
-import { saveJournalToDB } from '@/src/app/api/logAnalysis/saveJournals';
+import { importJournalsFromLog, BackendImportResult } from '@/src/app/api/logAnalysis/saveJournals';
 import { persistJournalSaveStatus, PersistJournalSaveStatusPayload } from '@/src/app/api/logAnalysis/persistJournalSaveStatus';
 
 interface UseJournalTableActionsProps {
@@ -29,7 +29,7 @@ export const useJournalTableActions = ({
     setRowSaveErrors({});
     setIsReCrawlModalOpen(false);
     setItemsToReCrawl([]);
-  }, resetDependencies);
+  }, [resetDependencies]); // Sửa lại dependency cho đúng
 
   const isSelectedWithProblem = useMemo(() => {
     if (selectedRowIds.length === 0) return false;
@@ -41,97 +41,93 @@ export const useJournalTableActions = ({
   const isSaveEnabled = useMemo(() => {
     if (selectedRowIds.length === 0 || mainSaveStatus === 'saving') return false;
     const selectedJournals = allJournalData.filter(j => selectedRowIds.includes(j.uniqueRowId));
+    // Chỉ cần kiểm tra xem có journal nào đã được lưu chưa
     const anyAlreadyPersisted = selectedJournals.some(j => j.persistedSaveStatus === 'SAVED_TO_DATABASE');
     return !isSelectedWithProblem && !anyAlreadyPersisted;
   }, [selectedRowIds, mainSaveStatus, allJournalData, isSelectedWithProblem]);
 
+  // SỬA LẠI HOÀN TOÀN HÀM NÀY
   const handleBulkSave = useCallback(async (onSaveSuccess?: () => void) => {
-    if (!isSaveEnabled) return;
+    // Lấy batchRequestId từ item đầu tiên trong toàn bộ dữ liệu, không chỉ các item được chọn
+    const batchRequestId = allJournalData.length > 0 ? allJournalData[0].batchRequestId : null;
+
+    if (!isSaveEnabled || !batchRequestId) {
+      console.error("Cannot save: Save is not enabled or batchRequestId is missing.");
+      setMainSaveStatus('error');
+      return;
+    }
 
     setMainSaveStatus('saving');
-    const currentSelection = [...selectedRowIds];
-    const nextRowStatus: Record<string, RowSaveStatus> = {};
-    const nextRowErrors: Record<string, string> = {};
-    currentSelection.forEach(id => {
-      nextRowStatus[id] = 'saving';
-      delete nextRowErrors[id]; // Clear previous errors for these items
-    });
-    setRowSaveStatus(prev => ({ ...prev, ...nextRowStatus }));
-    setRowSaveErrors(prev => { // More robust error clearing
-        const updatedErrors = {...prev};
-        currentSelection.forEach(id => delete updatedErrors[id]);
-        return updatedErrors;
-    });
+    setRowSaveErrors({}); // Xóa lỗi cũ
 
-    const itemsToSave = allJournalData.filter(
-      journal => currentSelection.includes(journal.uniqueRowId) && journal.dataToSave && journal.batchRequestId
-    );
-
-    if (itemsToSave.length === 0 && currentSelection.length > 0) {
-        setMainSaveStatus('error');
-        currentSelection.forEach(id => {
-            setRowSaveStatus(prev => ({...prev, [id]: "error"}));
-            setRowSaveErrors(prev => ({...prev, [id]: "Missing data or batchRequestId."}));
-        });
-        console.error("No valid items to save from selection (missing dataToSave or batchRequestId).");
-        return;
-    }
-    
-    const persistStatusPromises: Promise<any>[] = [];
-    const results = await Promise.allSettled(
-      itemsToSave.map(journal =>
-        saveJournalToDB(journal.sourceId, journal.journalTitle, journal.dataToSave)
-          .then(dbSaveResult => ({ journal, dbSaveResult }))
-      )
-    );
-
-    const finalRowStatusUpdate: Record<string, RowSaveStatus> = {};
-    const finalRowErrorsUpdate: Record<string, string> = {};
-    let overallSuccess = true;
-
-    results.forEach(settledResult => {
-      if (settledResult.status === 'fulfilled') {
-        const { journal, dbSaveResult } = settledResult.value;
-        if (dbSaveResult.success) {
-          finalRowStatusUpdate[journal.uniqueRowId] = 'success';
-          const persistPayload: PersistJournalSaveStatusPayload = {
-            batchRequestId: journal.batchRequestId, // Assumes batchRequestId is on JournalTableData
-            sourceId: journal.sourceId,
-            journalTitle: journal.journalTitle,
-            status: 'SAVED_TO_DATABASE',
-            clientTimestamp: new Date().toISOString(),
-          };
-          persistStatusPromises.push(
-            persistJournalSaveStatus(persistPayload).catch(err => {
-              console.warn(`Failed to persist save status for journal ${journal.sourceId}:`, err);
-            })
-          );
-        } else {
-          overallSuccess = false;
-          finalRowStatusUpdate[journal.uniqueRowId] = 'error';
-          finalRowErrorsUpdate[journal.uniqueRowId] = dbSaveResult.message || 'Save failed.';
+    // Đặt trạng thái 'saving' cho tất cả các hàng chưa được lưu
+    // Sử dụng functional update để tránh dependency vào state cũ
+    setRowSaveStatus(currentStatus => {
+      const nextStatus = { ...currentStatus };
+      allJournalData.forEach(journal => {
+        if (journal.persistedSaveStatus !== 'SAVED_TO_DATABASE') {
+          nextStatus[journal.uniqueRowId] = 'saving';
         }
-      } else {
-        overallSuccess = false;
-        // Attempt to find which journal failed if possible, otherwise log general error
-        console.error("Unexpected rejection in saveJournalToDb promise:", settledResult.reason);
-        // For now, we can't easily map this back to a specific row ID without more info in reason
-      }
+      });
+      return nextStatus;
     });
 
-    setRowSaveStatus(prev => ({ ...prev, ...finalRowStatusUpdate }));
-    setRowSaveErrors(prev => ({ ...prev, ...finalRowErrorsUpdate }));
-    setMainSaveStatus(overallSuccess ? 'success' : 'error');
+    try {
+      const result = await importJournalsFromLog(batchRequestId);
 
-    if (overallSuccess && onSaveSuccess) {
-      onSaveSuccess();
+      // Cập nhật trạng thái dựa trên kết quả
+      // Sử dụng functional update để không cần phụ thuộc vào state cũ trong mảng dependency của useCallback
+      setRowSaveStatus(currentStatus => {
+        const nextStatus = { ...currentStatus };
+        result.results.forEach(itemResult => {
+          // Khớp bằng sourceId - cách đáng tin cậy nhất
+          const matchingJournal = allJournalData.find(j => j.sourceId === itemResult.sourceId);
+          if (matchingJournal) {
+            nextStatus[matchingJournal.uniqueRowId] = itemResult.success ? 'success' : 'error';
+          }
+        });
+        return nextStatus;
+      });
+
+      setRowSaveErrors(currentErrors => {
+        const nextErrors = { ...currentErrors };
+        result.results.forEach(itemResult => {
+          if (!itemResult.success) {
+            const matchingJournal = allJournalData.find(j => j.sourceId === itemResult.sourceId);
+            if (matchingJournal) {
+              nextErrors[matchingJournal.uniqueRowId] = itemResult.message || 'Save failed.';
+            }
+          }
+        });
+        return nextErrors;
+      });
+
+      const overallSuccess = result.totalFailed === 0;
+      setMainSaveStatus(overallSuccess ? 'success' : 'error');
+
+      if (overallSuccess && onSaveSuccess) {
+        onSaveSuccess();
+      }
+
+    } catch (error) {
+      const err = error as Error;
+      setMainSaveStatus('error');
+
+      // Đặt lỗi cho tất cả các hàng đang 'saving'
+      setRowSaveStatus(currentStatus => {
+        const nextStatus = { ...currentStatus };
+        Object.keys(nextStatus).forEach(key => {
+          if (nextStatus[key] === 'saving') {
+            nextStatus[key] = 'error';
+          }
+        });
+        return nextStatus;
+      });
+      // Có thể set một lỗi chung cho tất cả
+      // setRowSaveErrors(...);
+      console.error("Bulk save failed:", err);
     }
-
-    Promise.all(persistStatusPromises)
-      .then(() => console.log("All persist journal save status calls completed."))
-      .catch(err => console.error("Error during batch persisting journal save statuses:", err));
-
-  }, [isSaveEnabled, selectedRowIds, allJournalData]); // Removed rowSaveStatus, rowSaveErrors from deps
+  }, [isSaveEnabled, allJournalData, onSaveSuccess]); // Giữ allJournalData vì cần nó để khớp
 
   const handleReCrawlSelectedClick = useCallback(() => {
     if (selectedRowIds.length === 0) {
@@ -141,10 +137,10 @@ export const useJournalTableActions = ({
     const items: JournalForAction[] = allJournalData
       .filter(j => selectedRowIds.includes(j.uniqueRowId))
       .map(j => ({
-          id: j.uniqueRowId,
-          journalTitle: j.journalTitle,
-          sourceId: j.sourceId,
-          originalRequestId: j.batchRequestId, // Map batchRequestId
+        id: j.uniqueRowId,
+        journalTitle: j.journalTitle,
+        sourceId: j.sourceId,
+        originalRequestId: j.batchRequestId, // Map batchRequestId
       }));
     if (items.length > 0) {
       setItemsToReCrawl(items);
