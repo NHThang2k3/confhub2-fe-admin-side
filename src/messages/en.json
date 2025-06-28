@@ -52,5 +52,34 @@
         }
       }
     }
+  },
+  "JournalTableHeader" : {
+    "title": "Title",
+    "publisher": "Publisher",
+    "year": "Year",
+    "accessType": "Access Type",
+    "summary": "Summary",
+    "callForPaper": "Call for Papers",
+    "mainLink": "Main Link",
+    "cfpLink": "CFP Link",
+    "importantLink": "Important Link",
+    "locations": "Locations",
+    "topics": "Topics",
+    "dates": "Dates",
+    "columnTitles": {
+      "year": "Year",
+      "accessType": "Access Type",
+      "publisher": "Publisher",
+      "summary": "Summary",
+      "callForPaper": "Call for Papers",
+      "mainLink": "Main Link",
+      "cfpLink": "CFP Link",
+      "importantLink": "Important Link",
+      "locations": "Locations",
+      "topics": "Topics",
+      "dates": "Dates",
+      "errorCount": "Error Count",
+      "issn": "ISSN"
+    }
   }
 } 

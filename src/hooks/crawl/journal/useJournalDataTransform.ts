@@ -37,6 +37,7 @@ export const useJournalDataTransform = ({
         batchRequestId: entryRequestId,
         journalTitle: data.journalTitle,
         sourceId: data.sourceId,
+        issn: data.issn, // Giả sử data có trường này
         dataSource: data.dataSource,
         originalInput: data.originalInput,
         status: data.status,

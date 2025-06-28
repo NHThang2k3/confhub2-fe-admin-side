@@ -31,7 +31,6 @@ export interface JournalColumnFiltersState {
 // Dữ liệu cho mỗi hàng trong bảng journal
 export interface JournalTableData extends Omit<JournalAnalysisDetail, 'errors' | 'steps' | 'finalResultPreview' | 'finalResult'> {
   uniqueRowId: string; // e.g., `${batchRequestId}-${sourceId || journalTitle}`
-
   errors: LogError[];          // Detailed errors for expansion view
   errorCount: number;          // Total number of errors for quick view and filtering
   steps: JournalAnalysisDetail['steps'] & { // Keep detailed steps for expansion, and add specific success flags

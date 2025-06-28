@@ -1058,6 +1058,7 @@
       "imageSearch": "Image Search",
       "jsonlWrite": "JSONL Write",
       "errors": "Errors",
+      "errorCount": "Error Count",
       "save": "Save"
     },
     "filterOptions": {

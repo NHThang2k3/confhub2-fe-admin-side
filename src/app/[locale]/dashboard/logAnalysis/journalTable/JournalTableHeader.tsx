@@ -128,6 +128,16 @@ export const JournalTableHeader: React.FC<JournalTableHeaderProps> = ({
   const columnsConfig = [
     { key: 'sel', title: t('columnTitles.select'), sortable: false, filterable: false, className: 'w-12 text-center' },
     { key: 'journalTitle', title: t('columnTitles.journalTitle'), sortable: true, sortKey: 'journalTitle' as JournalSortableColumn, filterable: true, filterKey: 'journalTitle' as keyof JournalColumnFiltersState, className: 'min-w-[250px]' },
+    {
+      key : 'issn',
+      title: 'ISSN',
+      sortable: true,
+      sortKey: 'issn' as JournalSortableColumn,
+      filterable: true,
+      filterKey: 'issn' as keyof JournalColumnFiltersState,
+      className: 'min-w-[120px] max-w-[150px]',
+      filterType: 'text', // Thêm loại filter nếu cần
+    },
     // { key: 'sourceId', title: t('columnTitles.sourceId'), sortable: true, sortKey: 'sourceId' as JournalSortableColumn, filterable: true, filterKey: 'sourceId' as keyof JournalColumnFiltersState, className: 'min-w-[100px] max-w-[150px]' },
     // { key: 'batchRequestId', title: t('columnTitles.batchRequestId'), sortable: true, sortKey: 'batchRequestId' as JournalSortableColumn, filterable: true, filterKey: 'batchRequestId' as keyof JournalColumnFiltersState, className: 'min-w-[180px]' },
     { key: 'dataSource', title: t('columnTitles.dataSource'), sortable: true, sortKey: 'dataSource' as JournalSortableColumn, filterable: true, filterKey: 'dataSource' as keyof JournalColumnFiltersState, filterType: 'dataSource', className: 'min-w-[120px]' },
@@ -137,7 +147,7 @@ export const JournalTableHeader: React.FC<JournalTableHeaderProps> = ({
     { key: 'scimago', title: t('columnTitles.scimagoDetails'), sortable: false, filterable: false, className: 'min-w-[120px] text-left' },
     { key: 'image', title: t('columnTitles.imageSearch'), sortable: false, filterable: false, className: 'min-w-[100px] text-left' },
     { key: 'jsonl', title: t('columnTitles.jsonlWrite'), sortable: false, filterable: false, className: 'min-w-[100px] text-left' },
-    { key: 'errorCount', title: t('columnTitles.errors'), sortable: true, sortKey: 'errorCount' as JournalSortableColumn, filterable: true, filterKey: 'errorCount' as keyof JournalColumnFiltersState, filterType: 'count', className: 'min-w-[80px] text-center' },
+    { key: 'errorCount', title: t('columnTitles.errorCount'), sortable: true, sortKey: 'errorCount' as JournalSortableColumn, filterable: true, filterKey: 'errorCount' as keyof JournalColumnFiltersState, filterType: 'count', className: 'min-w-[80px] text-center' },
     { key: 'save', title: t('columnTitles.save'), sortable: false, filterable: false, className: 'min-w-[80px] text-center' },
 
   ];

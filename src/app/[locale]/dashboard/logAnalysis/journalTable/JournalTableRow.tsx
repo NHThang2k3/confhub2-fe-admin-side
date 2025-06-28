@@ -36,9 +36,10 @@ const MainJournalRowCells: React.FC<MainJournalRowCellsProps> = ({
 }) => {
   const {
     uniqueRowId, journalTitle, sourceId, dataSource, status,
+    issn, // Added ISSN
     durationSeconds, steps, errorCount
   } = journalData;
-
+  console.log ('issn', issn);
   const statusDisplay = status
     ? t(`statusNames.${status.toLowerCase()}`, { defaultValue: status })
     : t('statusNames.unknown');
@@ -83,6 +84,7 @@ const MainJournalRowCells: React.FC<MainJournalRowCellsProps> = ({
         </div>
       </td>
       {/* <td className='px-3 py-2 text-sm text-gray-500 max-w-[100px] truncate' title={sourceId}>{sourceId || '-'}</td> */}
+      <td className='px-3 py-2 text-sm text-gray-500 max-w-[150px] truncate' title={issn}>{issn || '-'}</td>
       <td className='px-3 py-2 text-sm text-gray-500 max-w-[100px] truncate' title={dataSource}>{dataSource}</td>
       <td className='whitespace-nowrap px-3 py-2 text-sm'>
         <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold leading-5 ${getStatusChipClass(status)}`}>
@@ -186,6 +188,7 @@ export const JournalTableRow: React.FC<JournalTableRowProps> = ({
   journalData, isSelected, isExpanded, onSelectToggle, onToggleExpand, formatDateTime, getStatusChipClass,
   saveStatus, saveError // Destructure
 }) => {
+  console.log('JournalTableRow', journalData);
   const t = useTranslations('JournalTableRow');
   const { status, errorCount, persistedSaveStatus, uniqueRowId } = journalData;
 

@@ -29,12 +29,15 @@ export interface BackendImportResult {
  * @param batchRequestId ID của batch cần import.
  */
 export const importJournalsFromLog = async (
-  batchRequestId: string
+  batchRequestId: string,
+  imports : any[] // Mảng các đối tượng import, có thể chứa title, issn, v.v.
 ): Promise<BackendImportResult> => {
   try {
     const response = await axios.post<BackendImportResult>(
       API_IMPORT_JOURNALS_ENDPOINT,
-      { batchRequestId } // Payload chỉ cần batchRequestId
+      { batchRequestId,
+        imports
+       } // Payload chỉ cần batchRequestId
     );
     return response.data;
   } catch (err) {

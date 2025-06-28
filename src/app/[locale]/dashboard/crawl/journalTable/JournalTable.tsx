@@ -38,7 +38,7 @@ export const JournalTable: React.FC<JournalTableProps> = ({
     onSelectAll,
 }) => {
     const t = useTranslations('JournalTable');
-
+    console.log('JournalTable data:', data);
     return (
         <div className="bg-white shadow-lg rounded-lg overflow-x-auto border border-gray-200">
             <table className="min-w-full divide-y divide-gray-200">

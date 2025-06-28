@@ -29,7 +29,7 @@ export const useJournalTableActions = ({
     setRowSaveErrors({});
     setIsReCrawlModalOpen(false);
     setItemsToReCrawl([]);
-  }, [resetDependencies]); // Sửa lại dependency cho đúng
+  }, []); // Sửa lại dependency cho đúng
 
   const isSelectedWithProblem = useMemo(() => {
     if (selectedRowIds.length === 0) return false;
@@ -50,6 +50,8 @@ export const useJournalTableActions = ({
   const handleBulkSave = useCallback(async (onSaveSuccess?: () => void) => {
     // Lấy batchRequestId từ item đầu tiên trong toàn bộ dữ liệu, không chỉ các item được chọn
     const batchRequestId = allJournalData.length > 0 ? allJournalData[0].batchRequestId : null;
+    const imports = allJournalData
+      .filter(journal => selectedRowIds.includes(journal.uniqueRowId))
 
     if (!isSaveEnabled || !batchRequestId) {
       console.error("Cannot save: Save is not enabled or batchRequestId is missing.");
@@ -64,7 +66,7 @@ export const useJournalTableActions = ({
     // Sử dụng functional update để tránh dependency vào state cũ
     setRowSaveStatus(currentStatus => {
       const nextStatus = { ...currentStatus };
-      allJournalData.forEach(journal => {
+      imports.forEach(journal => {
         if (journal.persistedSaveStatus !== 'SAVED_TO_DATABASE') {
           nextStatus[journal.uniqueRowId] = 'saving';
         }
@@ -73,7 +75,10 @@ export const useJournalTableActions = ({
     });
 
     try {
-      const result = await importJournalsFromLog(batchRequestId);
+      const result = await importJournalsFromLog(batchRequestId, imports.map(j => ({
+        title : j.journalTitle,
+        issn : j.issn, // Giả sử có trường này
+      })));
 
       // Cập nhật trạng thái dựa trên kết quả
       // Sử dụng functional update để không cần phụ thuộc vào state cũ trong mảng dependency của useCallback
@@ -81,7 +86,7 @@ export const useJournalTableActions = ({
         const nextStatus = { ...currentStatus };
         result.results.forEach(itemResult => {
           // Khớp bằng sourceId - cách đáng tin cậy nhất
-          const matchingJournal = allJournalData.find(j => j.sourceId === itemResult.sourceId);
+          const matchingJournal = imports.find(j => j.journalTitle === itemResult.data?.title && j.issn === itemResult.data?.issn);
           if (matchingJournal) {
             nextStatus[matchingJournal.uniqueRowId] = itemResult.success ? 'success' : 'error';
           }
@@ -127,7 +132,7 @@ export const useJournalTableActions = ({
       // setRowSaveErrors(...);
       console.error("Bulk save failed:", err);
     }
-  }, [isSaveEnabled, allJournalData, onSaveSuccess]); // Giữ allJournalData vì cần nó để khớp
+  }, [isSaveEnabled, allJournalData]); // Giữ allJournalData vì cần nó để khớp
 
   const handleReCrawlSelectedClick = useCallback(() => {
     if (selectedRowIds.length === 0) {

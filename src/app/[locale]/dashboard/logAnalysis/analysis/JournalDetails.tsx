@@ -14,6 +14,7 @@ interface JournalDetailsProps {
 const JournalDetails: React.FC<JournalDetailsProps> = ({
   logAnalysisResult
 }) => {
+  console.log('JournalDetails logAnalysisResult:', logAnalysisResult);
   const t = useTranslations('JournalDetailsPage');
   const [isExpanded, setIsExpanded] = useState(true);
 
@@ -87,10 +88,26 @@ const JournalDetails: React.FC<JournalDetailsProps> = ({
               <>
                 <JournalTableControls
                   selectedCount={tableManager.selectedRowsCount} // Use selectedRowsCount for the count
-                  onSelectAll={tableManager.handleSelectAll}
-                  onSelectNoError={tableManager.handleSelectNoError}
-                  onSelectError={tableManager.handleSelectError}
-                  onDeselectAll={tableManager.handleDeselectAll}
+                  onSelectAll={() => {
+                    console.debug('[JournalDetails] Select All clicked. Current selected count:', tableManager.selectedRowsCount);
+                    tableManager.handleSelectAll();
+                    console.debug('[JournalDetails] After Select All. New selected count:', tableManager.selectedRowsCount);
+                  }}
+                  onSelectNoError={() => {
+                    console.log('[JournalDetails] Select No Error clicked. Current selected count:', tableManager.selectedRowsCount);
+                    tableManager.handleSelectNoError();
+                    console.log('[JournalDetails] After Select No Error. New selected count:', tableManager.selectedRowsCount);
+                  }}
+                  onSelectError={() => {
+                    console.debug('[JournalDetails] Select Error clicked. Current selected count:', tableManager.selectedRowsCount);
+                    tableManager.handleSelectError();
+                    console.debug('[JournalDetails] After Select Error. New selected count:', tableManager.selectedRowsCount);
+                  }}
+                  onDeselectAll={() => {
+                    console.debug('[JournalDetails] Deselect All clicked. Current selected count:', tableManager.selectedRowsCount);
+                    tableManager.handleDeselectAll();
+                    console.debug('[JournalDetails] After Deselect All. New selected count:', tableManager.selectedRowsCount);  
+                  }}
                   searchTerm={tableManager.searchQuery}
                   onSearchChange={tableManager.setSearchQuery}
                   onReCrawlSelected={tableManager.handleReCrawlSelectedClick}
@@ -98,7 +115,13 @@ const JournalDetails: React.FC<JournalDetailsProps> = ({
                   // Save related controls
                   mainSaveStatus={tableManager.mainSaveStatus}
                   isSaveEnabled={tableManager.isSaveEnabled}
-                  onSaveSelected={tableManager.handleBulkSave} // Pass the save handler
+                  onSaveSelected={() => {
+                    console.log('[JournalDetails] Bulk Save clicked. Selected items count:', tableManager.selectedRowsCount);
+                    console.log('[JournalDetails] Selected items details:', Object.keys(tableManager.selectedRows).filter(key => tableManager.selectedRows[key]));
+                    const select = tableManager.sortedData.filter(journal => tableManager.selectedRows[journal.uniqueRowId]);
+                    console.log('selected rows', select);
+                    tableManager.handleBulkSave();
+                  }}
                 />
                 <JournalTable
                   data={tableManager.sortedData} // Pass sortedData, could be empty if filters result in no matches
@@ -108,7 +131,14 @@ const JournalDetails: React.FC<JournalDetailsProps> = ({
                   sortDirection={tableManager.sortDirection}
                   onSort={tableManager.handleSort}
                   onToggleExpand={tableManager.toggleExpand}
-                  onSelectToggle={tableManager.handleRowSelectToggle}
+                  onSelectToggle={(uniqueRowId: string) => {
+                    const currentlySelected = tableManager.selectedRows[uniqueRowId] || false;
+                    const willBeSelected = !currentlySelected;
+                    console.debug('[JournalDetails] Row select toggle:', { uniqueRowId, currentlySelected, willBeSelected, currentSelectedCount: tableManager.selectedRowsCount });
+                    tableManager.handleRowSelectToggle(uniqueRowId);
+                    // Note: The count will update after the state change
+                    console.debug('[JournalDetails] Row select toggle completed for:', uniqueRowId);
+                  }}
                   columnFilters={tableManager.columnFilters}
                   onColumnFilterChange={tableManager.handleColumnFilterChange}
                   totalRowsCount={tableManager.totalRowsCount}

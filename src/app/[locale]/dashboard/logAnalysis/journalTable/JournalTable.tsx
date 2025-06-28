@@ -57,7 +57,7 @@ export const JournalTable: React.FC<JournalTableProps> = ({
   // The number of columns defined in JournalTableHeader.tsx is 12
   // (Sel, Title, SourceID, DataSource, Status, Duration, Bioxbio, Scimago, Image, JSONL, Errors, Save)
   const noDataColSpan = 12;
-
+  console.log('JournalTable data:', data);
   return (
     <div className="bg-white shadow-lg rounded-lg overflow-x-auto border border-gray-200">
       <table className="min-w-full divide-y divide-gray-200">
