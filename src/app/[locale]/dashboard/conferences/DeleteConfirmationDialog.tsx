@@ -26,11 +26,15 @@ export function DeleteConfirmationDialog({
 }: DeleteConfirmationDialogProps) {
   const [loading, setLoading] = useState(false);
   
+  // Add debugging
+  console.log('DeleteConfirmationDialog props:', { open, title });
 
   const handleConfirm = async () => {
+    console.log('Delete confirmation handleConfirm called');
     setLoading(true);
     try {
       await onConfirm();
+      console.log('Delete confirmation successful');
       onOpenChange(false);
     } catch (error) {
       console.error('Error deleting:', error);
@@ -42,13 +46,13 @@ export function DeleteConfirmationDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent className="z-[9999]">
         <DialogHeader>
-          <DialogTitle>Delete Conference History</DialogTitle>
+          <DialogTitle>Delete Conference</DialogTitle>
         </DialogHeader>
         <div className="py-4">
           <p>
-            Are you sure you want to delete the history for {title}? This action cannot be undone.
+            Are you sure you want to delete &ldquo;{title}&rdquo;? This action cannot be undone.
           </p>
         </div>
         <DialogFooter>

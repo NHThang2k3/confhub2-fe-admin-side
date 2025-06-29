@@ -16,6 +16,7 @@ import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { DeleteConfirmationDialog } from './DeleteConfirmationDialog';
+import { ActionDropdown } from './ActionDropdown';
 import { useToast } from '@/hooks/use-toast';
 import { toast } from 'react-toastify';
 
@@ -506,6 +507,12 @@ export default function Conferences({ locale }: { locale: string }) {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedOrganization, setSelectedOrganization] = useState<any>(null);
 
+  // Add debugging for dialog state changes
+  useEffect(() => {
+    console.log('DeleteDialogOpen state changed:', deleteDialogOpen);
+    console.log('Selected conference for deletion:', selectedConference);
+  }, [deleteDialogOpen, selectedConference]);
+
   // Add new state for conference history
   const [conferenceHistory, setConferenceHistory] = useState<Organization[]>([]);
   // Add loading state for history
@@ -544,7 +551,7 @@ export default function Conferences({ locale }: { locale: string }) {
         console.error('Error deleting conference:', error);
         toast.error(tCommon('deleteError'));
       });
-  }, []);
+  }, [tCommon]);
 
   const columnDefs: ColDef[] = useMemo(() => [
     {
@@ -629,30 +636,28 @@ export default function Conferences({ locale }: { locale: string }) {
     },
     {
       headerName: t('columnHeaders.actions'),
-      flex: 1,
-      minWidth: 120,
+      width: 80,
+      minWidth: 80,
+      maxWidth: 80,
+      resizable: false,
+      sortable: false,
+      filter: false,
+      cellClass: 'actions-cell',
       cellRenderer: (params: ICellRendererParams) => (
-        <div className="flex items-center gap-2">
-        <button
-          className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
-          onClick={() => handleViewHistory(params.data)}
-        >
-          {t('viewHistoryButton')}
-        </button>
-
-        <button
-          className="shrink-0 ml-2 px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
-          onClick={() => {
-            setSelectedConference(params.data);
-            handDeleteConference(params.data.id);
-          }}
-        >
-            delete
-          </button>
-          </div>
+        <div className="flex items-center justify-center h-full">
+          <ActionDropdown
+            onViewHistory={() => handleViewHistory(params.data)}
+            onDelete={() => {
+              console.log('Delete button clicked for conference:', params.data);
+              setSelectedConference(params.data);
+              setDeleteDialogOpen(true);
+              console.log('Dialog should open now, deleteDialogOpen set to true');
+            }}
+          />
+        </div>
       ),
     },
-  ], [t, handleViewHistory, handDeleteConference]);
+  ], [t, handleViewHistory]);
 
   const defaultColDef = useMemo(() => ({
     sortable: true,
@@ -817,7 +822,7 @@ export default function Conferences({ locale }: { locale: string }) {
 
       <div className="w-full h-[600px]">
         <AgGridReact
-          className='ag-theme-alpine '
+          className='ag-theme-alpine'
           rowData={rowData}
           columnDefs={columnDefs}
           defaultColDef={defaultColDef}
@@ -828,8 +833,63 @@ export default function Conferences({ locale }: { locale: string }) {
           rowSelection="single"
           animateRows={true}
           suppressPaginationPanel={true}
+          rowHeight={60}
         />
       </div>
+
+      <style jsx global>{`
+        .ag-theme-alpine .actions-cell {
+          display: flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          padding: 0 !important;
+          overflow: visible !important;
+        }
+        
+        .ag-theme-alpine .ag-cell {
+          display: flex;
+          align-items: center;
+          overflow: visible;
+        }
+        
+        .ag-theme-alpine .ag-row {
+          border-bottom: 1px solid #e5e7eb;
+          overflow: visible;
+        }
+        
+        .ag-theme-alpine .ag-row:hover {
+          background-color: #f9fafb;
+          z-index: 1;
+        }
+        
+        .ag-theme-alpine .ag-center-cols-container {
+          overflow: visible;
+        }
+        
+        .ag-theme-alpine .ag-center-cols-viewport {
+          overflow: visible;
+        }
+        
+        .ag-theme-alpine .ag-body-viewport {
+          overflow-x: auto;
+          overflow-y: auto;
+        }
+        
+        .ag-theme-alpine .ag-header {
+          background-color: #f8fafc;
+          border-bottom: 2px solid #e5e7eb;
+        }
+        
+        .ag-theme-alpine .ag-header-cell {
+          font-weight: 600;
+          color: #374151;
+        }
+
+        /* Fix for dropdown appearing behind table rows */
+        .ag-theme-alpine .ag-cell-focus {
+          z-index: 2;
+        }
+      `}</style>
 
       {loading && (
           <div className="text-center py-4">{tCommon('loading')}</div>
@@ -880,20 +940,23 @@ export default function Conferences({ locale }: { locale: string }) {
       <DeleteConfirmationDialog
         open={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}
-        title={selectedOrganization?.title || ''}
+        title={selectedConference?.title || ''}
         onConfirm={async () => {
-          if (selectedOrganization && selectedConference) {
+          console.log('Delete confirmed for conference:', selectedConference);
+          if (selectedConference) {
             try {
+              console.log('Attempting to delete conference:', selectedConference.id);
               setHistoryLoading(true);
-              await axios.delete(`${DATA_API_URL}/api/v1/admin/conferences/history/${selectedOrganization.id}`);
-              // Refetch the conference history after successful deletion
-              await fetchConferenceHistory(selectedConference.id);
-              toast.success("Successfully deleted conference history");
+              await axios.delete(`${DATA_API_URL}/api/v1/admin/conferences/remove/${selectedConference.id}`);
+              // Remove from local state after successful deletion
+              setRowData(prev => prev.filter(conf => conf.id !== selectedConference.id));
+              toast.success("Successfully deleted conference");
+              console.log('Conference deleted successfully');
               // Close the delete dialog
               setDeleteDialogOpen(false);
             } catch (error) {
-              console.error('Error deleting conference history:', error);
-              toast.error("Failed to delete conference history");
+              console.error('Error deleting conference:', error);
+              toast.error("Failed to delete conference");
             } finally {
               setHistoryLoading(false);
             }

@@ -102,11 +102,14 @@ export default function TopicsTable({ topics, onTopicsChange, disabled = false }
             filter: true,
             resizable: true,
           }}
-          animateRows={true}
+          animateRows={false}
           rowSelection="multiple"
           suppressRowClickSelection={true}
           pagination={true}
           paginationPageSize={10}
+          suppressScrollOnNewData={true}
+          maintainColumnOrder={true}
+          suppressColumnMoveAnimation={true}
         />
       </div>
     </div>

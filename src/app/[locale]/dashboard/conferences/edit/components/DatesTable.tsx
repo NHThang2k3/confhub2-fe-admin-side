@@ -3,7 +3,7 @@
 import { useTranslations } from 'next-intl';
 import { AgGridReact } from 'ag-grid-react';
 import { AllCommunityModule, ColDef, GridReadyEvent, ICellRendererParams, ModuleRegistry, IRowNode, RowSelectionModule } from 'ag-grid-community';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, useMemo } from 'react';
 import { useFieldArray, Control, UseFormWatch } from 'react-hook-form';
 import { DatePicker } from 'antd';
 import dayjs from 'dayjs';
@@ -47,6 +47,18 @@ export default function DatesTable({ control, watch, name, onRefetch }: DatesTab
     name
   });
 
+  // Optimize cell value changes to prevent unnecessary re-renders
+  const handleCellValueChanged = useCallback((params: any, fieldName: string) => {
+    const index = fields.findIndex(field => field.id === params.data.id);
+    if (index !== -1) {
+      const updatedData = { ...params.data, [fieldName]: params.newValue || null };
+      update(index, updatedData);
+    }
+  }, [fields, update]);
+
+  // Memoize row data to prevent unnecessary re-renders
+  const rowData = useMemo(() => fields, [fields]);
+
   const handleCancel = async () => {
     if (onRefetch) {
       try {
@@ -71,7 +83,7 @@ export default function DatesTable({ control, watch, name, onRefetch }: DatesTab
     });
   };
 
-  const columnDefs: ColDef[] = [
+  const columnDefs: ColDef[] = useMemo(() => [
     {
       field: 'type',
       headerName: t('modal.editForm.dateType'),
@@ -86,10 +98,7 @@ export default function DatesTable({ control, watch, name, onRefetch }: DatesTab
         return params.value;
       },
       onCellValueChanged: (params) => {
-        const index = fields.findIndex(field => field.id === params.data.id);
-        if (index !== -1) {
-          update(index, { ...params.data, type: params.newValue || null });
-        }
+        handleCellValueChanged(params, 'type');
       }
     },
     {
@@ -106,10 +115,7 @@ export default function DatesTable({ control, watch, name, onRefetch }: DatesTab
         return params.value;
       },
       onCellValueChanged: (params) => {
-        const index = fields.findIndex(field => field.id === params.data.id);
-        if (index !== -1) {
-          update(index, { ...params.data, name: params.newValue || null });
-        }
+        handleCellValueChanged(params, 'name');
       }
     },
     {
@@ -130,10 +136,7 @@ export default function DatesTable({ control, watch, name, onRefetch }: DatesTab
         return dayjs(params.newValue).format('YYYY-MM-DD');
       },
       onCellValueChanged: (params) => {
-        const index = fields.findIndex(field => field.id === params.data.id);
-        if (index !== -1) {
-          update(index, { ...params.data, startDate: params.newValue || null });
-        }
+        handleCellValueChanged(params, 'startDate');
       }
     },
     {
@@ -154,10 +157,7 @@ export default function DatesTable({ control, watch, name, onRefetch }: DatesTab
         return dayjs(params.newValue).format('YYYY-MM-DD');
       },
       onCellValueChanged: (params) => {
-        const index = fields.findIndex(field => field.id === params.data.id);
-        if (index !== -1) {
-          update(index, { ...params.data, endDate: params.newValue || null });
-        }
+        handleCellValueChanged(params, 'endDate');
       }
     },
     {
@@ -177,7 +177,7 @@ export default function DatesTable({ control, watch, name, onRefetch }: DatesTab
         );
       },
     },
-  ];
+  ], [t, fields, remove, handleCellValueChanged]);
 
   return (
     <div className="space-y-4">
@@ -205,19 +205,23 @@ export default function DatesTable({ control, watch, name, onRefetch }: DatesTab
       <div className="ag-theme-alpine w-full" style={{ height: 400 }}>
         <AgGridReact
           ref={gridRef}
-          rowData={fields}
+          rowData={rowData}
           columnDefs={columnDefs}
           defaultColDef={{
             sortable: true,
             filter: true,
             resizable: true,
           }}
-          animateRows={true}
+          animateRows={false}
           rowSelection="multiple"
           suppressRowClickSelection={true}
           pagination={true}
           paginationPageSize={20}
           paginationPageSizeSelector={[20, 50, 100]}
+          suppressScrollOnNewData={true}
+          maintainColumnOrder={true}
+          suppressColumnMoveAnimation={true}
+          getRowId={(params) => params.data.id}
         />
       </div>
     </div>
