@@ -85,25 +85,26 @@ const ConferenceSelectionStep: React.FC<ConferenceSelectionStepProps> = ({
     });
 
     // Bước 2: Lọc bỏ các hội nghị không hợp lệ dựa trên các điều kiện
-    return cleanedData.filter(conference => {
-      // 1. Kiểm tra researchFields: Phải là mảng và không rỗng SAU KHI làm sạch
-      const hasValidResearchFields = Array.isArray(conference.researchFields) &&
-                                     conference.researchFields.length > 0;
+    return cleanedData
+    // .filter(conference => {
+    //   // 1. Kiểm tra researchFields: Phải là mảng và không rỗng SAU KHI làm sạch
+    //   const hasValidResearchFields = Array.isArray(conference.researchFields) &&
+    //                                  conference.researchFields.length > 0;
 
-      // 2. Kiểm tra ranks: Phải là mảng, không rỗng, và chứa các giá trị string không rỗng
-      const hasValidRank = Array.isArray(conference.ranks) &&
-                           conference.ranks.length > 0 &&
-                           conference.ranks.every(rank => typeof rank === 'string' && rank.trim() !== '');
+    //   // 2. Kiểm tra ranks: Phải là mảng, không rỗng, và chứa các giá trị string không rỗng
+    //   const hasValidRank = Array.isArray(conference.ranks) &&
+    //                        conference.ranks.length > 0 &&
+    //                        conference.ranks.every(rank => typeof rank === 'string' && rank.trim() !== '');
 
-      // 3. Kiểm tra core (từ sources): Phải là mảng, không rỗng, và có ít nhất một nguồn bắt đầu bằng 'CORE'
-      const hasValidCoreSource = Array.isArray(conference.sources) &&
-                                 conference.sources.some(source =>
-                                    typeof source === 'string' && source.trim().toUpperCase().startsWith('CORE')
-                                 );
+    //   // 3. Kiểm tra core (từ sources): Phải là mảng, không rỗng, và có ít nhất một nguồn bắt đầu bằng 'CORE'
+    //   const hasValidCoreSource = Array.isArray(conference.sources) &&
+    //                              conference.sources.some(source =>
+    //                                 typeof source === 'string' && source.trim().toUpperCase().startsWith('CORE')
+    //                              );
 
-      // Chỉ giữ lại dòng nếu tất cả các điều kiện đều đúng
-      return hasValidResearchFields && hasValidRank && hasValidCoreSource;
-    });
+    //   // Chỉ giữ lại dòng nếu tất cả các điều kiện đều đúng
+    //   return hasValidResearchFields && hasValidRank && hasValidCoreSource;
+    // });
   }, [parsedData]);
 
   const table: Table<Conference> = useReactTable({
