@@ -72,15 +72,15 @@ const ConferenceSelectionStep: React.FC<ConferenceSelectionStepProps> = ({
       // Tạo một bản sao của đối tượng conference để không sửa đổi dữ liệu gốc
       const cleanedConference = { ...conference };
 
-      if (Array.isArray(cleanedConference.researchFields)) {
-        // Lọc bỏ các string 'UNDEFINED' (không phải undefined của JS)
-        cleanedConference.researchFields = cleanedConference.researchFields.filter(
-          field => typeof field === 'string'
-        );
-      } else {
-        // Nếu researchFields không phải mảng, hoặc là undefined/null, coi như mảng rỗng để lọc ở bước sau
-        cleanedConference.researchFields = [];
-      }
+      // if (Array.isArray(cleanedConference.researchFields)) {
+      //   // Lọc bỏ các string 'UNDEFINED' (không phải undefined của JS)
+      //   cleanedConference.researchFields = cleanedConference.researchFields.filter(
+      //     field => typeof field === 'string'
+      //   );
+      // } else {
+      //   // Nếu researchFields không phải mảng, hoặc là undefined/null, coi như mảng rỗng để lọc ở bước sau
+      //   cleanedConference.researchFields = [];
+      // }
       return cleanedConference;
     });
 
