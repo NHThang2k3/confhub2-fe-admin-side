@@ -1,7 +1,8 @@
 // src/components/crawl/ConferenceCrawlUploader.tsx
 import React, { useState, useMemo } from 'react';
 import { useConferenceCrawl } from '@/src/hooks/crawl/conference/useConferenceCrawl';
-import { ApiName } from '@/src/models/logAnalysis/crawl.types';
+import { ApiName } from '@/src/models/logAnalysis/crawl.types'; // <<< THÊM ConferenceForAction
+import { ConferenceForAction } from '@/src/models/logAnalysis/importConferenceCrawl';
 // Import các component con cho từng bước
 import FileUploadStep from './steps/FileUploadStep';
 import ConferenceSelectionStep from './steps/ConferenceSelectionStep';
@@ -184,6 +185,7 @@ export const ConferenceCrawlUploader: React.FC = () => {
             onResetAll={handleReset}
             canStartProcess={canStartProcessing}
             onPrev={handlePrevStep}
+            selectedConferences={selectedCsvRows} // <<< THÊM MỚI: Truyền danh sách đã chọn xuống
           />
         )}
       </div>

@@ -1,12 +1,12 @@
 // src/app/[locale]/dashboard/crawl/steps/ProcessingStep.tsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react'; // <<< THÊM useEffect
 import {
-  FaSpinner, FaPlay, FaRedo, FaCheckCircle, FaTimesCircle, 
+  FaSpinner, FaPlay, FaRedo, FaCheckCircle, FaTimesCircle,
   FaExclamationTriangle, FaChevronLeft, FaInfoCircle, FaStopCircle, FaPauseCircle, FaArrowRight
 } from 'react-icons/fa';
 import { CrawlProgress } from '@/src/models/logAnalysis/importConferenceCrawl';
 import { useTranslations } from 'next-intl';
-
+import { ConferenceForAction } from '@/src/models/logAnalysis/importConferenceCrawl';
 // Giả định bạn có các class CSS này trong file global.css hoặc dùng utility-first như Tailwind
 // Ví dụ với Tailwind:
 const btnBase = "inline-flex items-center justify-center px-5 py-2.5 border border-transparent text-sm font-medium rounded-md shadow-sm transition-all duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-60 disabled:cursor-not-allowed";
@@ -28,6 +28,8 @@ interface ProcessingStepProps {
   onResetAll: () => void;
   canStartProcess: boolean;
   onPrev: () => void;
+  selectedConferences: ConferenceForAction[]; // <<< THÊM MỚI
+
 }
 
 const ProcessingStep: React.FC<ProcessingStepProps> = ({
@@ -44,6 +46,7 @@ const ProcessingStep: React.FC<ProcessingStepProps> = ({
   onResetAll,
   canStartProcess,
   onPrev,
+  selectedConferences
 }) => {
   const t = useTranslations('ProcessingStep');
   const [crawlDescription, setCrawlDescription] = useState<string>('');
@@ -52,9 +55,28 @@ const ProcessingStep: React.FC<ProcessingStepProps> = ({
 
   const MAX_DESCRIPTION_LENGTH = 200;
 
+  // <<< THÊM MỚI: LOGIC TẠO DESCRIPTION MẶC ĐỊNH
+  useEffect(() => {
+    if (selectedConferences && selectedConferences.length > 0) {
+      if (selectedConferences.length < 12) {
+        // Lấy tên viết tắt và nối chúng bằng dấu phẩy
+        const acronyms = selectedConferences.map(conf => conf.Acronym).join(', ');
+        setCrawlDescription(acronyms);
+      } else {
+        // Nếu lớn hơn hoặc bằng 12, đặt giá trị mặc định
+        setCrawlDescription('Admin Crawl');
+      }
+    } else {
+      // Nếu không có conference nào được chọn, reset description
+      setCrawlDescription('');
+    }
+  }, [selectedConferences]); // Chạy lại hiệu ứng khi danh sách conference thay đổi
+
   const handleStartProcessClick = () => {
+    // Người dùng vẫn có thể chỉnh sửa description, nên chúng ta sẽ dùng giá trị hiện tại của state
     onStartProcess(crawlDescription.trim() || undefined);
   };
+
 
   const handleResumeClick = () => {
     onResume(chunksToResume);
@@ -144,7 +166,7 @@ const ProcessingStep: React.FC<ProcessingStepProps> = ({
             <FaPlay className='-ml-1 mr-2 h-4 w-4' /> {t('buttons.startProcessing')}
           </button>
         )}
-        
+
         {isCrawling && (
           <button onClick={onStopProcess} className={btnDanger}>
             <FaStopCircle className='-ml-1 mr-2 h-4 w-4' /> {t('buttons.stopProcess')}
@@ -224,7 +246,7 @@ const ProcessingStep: React.FC<ProcessingStepProps> = ({
 
       {/* Nút Previous */}
       <div className="mt-6 flex justify-start">
-         <button type="button" onClick={onPrev} disabled={isCrawling} className={btnSecondary}>
+        <button type="button" onClick={onPrev} disabled={isCrawling} className={btnSecondary}>
           <FaChevronLeft className="mr-2 h-3.5 w-3.5" /> {t('navigation.previousStep')}
         </button>
       </div>

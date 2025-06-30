@@ -42,7 +42,7 @@ export const useAnalysisFilters = (initialCrawler: CrawlerType = 'conference') =
     const [tempCustomEndDate, setTempCustomEndDate] = useState<Date | null>(null);
 
     // Debounce này chỉ dành cho việc người dùng gõ phím
-    const debouncedFilterTerm = useDebounce(textFilterInput, 400);
+    const debouncedFilterTerm = useDebounce(textFilterInput, 600);
 
     // useEffect này xử lý việc cập nhật filter khi người dùng gõ phím
     useEffect(() => {
