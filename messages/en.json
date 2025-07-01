@@ -648,7 +648,8 @@
       "conferenceDetails": "Conference Details",
       "journalDetails": "Journal Details"
     },
-    "noDetailsMessage": "No specific Conference analysis details available for this request."
+    "noDetailsMessage": "No specific Conference analysis details available for this request.",
+    "noDetailsMessageConference": "No specific Conference analysis details available for this request."
   },
   "RequestsTable": {
     "tableHeaders": {
