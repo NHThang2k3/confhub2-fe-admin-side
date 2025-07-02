@@ -9,11 +9,19 @@
   "Signing_in": "Signing in...",
   "Sign_In": "Sign In",
   "By_continuing_you_agree_to_our_Terms_of_Service_and_Privacy_Policy": "By continuing you agree to our Terms of Service and Privacy Policy",
+  "Submit_Paper_Admin": "Submit Paper",
+  "SubmitPapersPage": {
+    "AuthStatus_Loading": "Loading authentication status...",
+    "Feature_Under_Development_Title": "Feature Under Development",
+    "Feature_Under_Development_Message": "This feature is currently under development and will be available soon. We are working hard to bring you the best experience.",
+    "Thank_You_For_Patience": "Thank you for your patience!"
+  },
   "ModerationPage": {
     "AuthStatus_Loading": "Loading authentication status...",
     "Error_FailedToLoadDataGeneric": "Failed to load data",
     "AuthStatus_Redirecting": "Redirecting to login..."
   },
+
   "Moderation": {
     "Moderation": "Moderation",
     "Error_BackendUrlNotConfigured": "Backend URL is not configured (NEXT_PUBLIC_DATABASE_URL)",

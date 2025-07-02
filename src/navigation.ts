@@ -19,6 +19,7 @@ export const pathnames = {
   '/dashboard/logAnalysis': '/dashboard/logAnalysis',
   '/dashboard/crawl': '/dashboard/crawl',
   '/dashboard/conferences': '/dashboard/conferences',
+  '/dashboard/submitPapers': '/dashboard/submitPapers',
   '/dashboard/accounts/users': '/dashboard/accounts/users', // <-- Add this line
   '/auth/login': '/auth/login',
   '/auth/verify-email': '/auth/verify-email',

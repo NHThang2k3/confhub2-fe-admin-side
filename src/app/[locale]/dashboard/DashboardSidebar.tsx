@@ -4,8 +4,8 @@
 
 import React from 'react';
 import { useTranslations } from 'next-intl';
-import { Link, AppPathname } from '@/src/navigation'; // Import AppPathname
-import { usePathname } from 'next/navigation'; // This is from next/navigation (includes locale)
+import { Link, AppPathname } from '@/src/navigation';
+import { usePathname } from 'next/navigation';
 import GlobeIcon from '@/src/app/icons/globe';
 
 // Import React Icons
@@ -16,12 +16,13 @@ import {
   FaBookOpen,
   FaKey,
   FaUser,
-} from 'react-icons/fa';
+  FaPaperPlane // Import icon cho Submit Paper
+} from 'react-icons/fa'; // Hoặc dùng Send từ lucide-react nếu bạn muốn nhất quán
 
 interface MenuItem {
   label: string;
   icon: JSX.Element;
-  href: AppPathname; // Changed from hrefSegment to href, and typed as AppPathname
+  href: AppPathname;
 }
 
 interface DashboardSidebarProps {
@@ -33,38 +34,38 @@ interface DashboardSidebarProps {
 
 export default function DashboardSidebar({ isSidebarOpen, locale, sidebarWidth, headerHeight }: DashboardSidebarProps) {
   const t = useTranslations('');
-  const currentPathname = usePathname(); // from next/navigation, e.g., /en/dashboard/crawl
+  const currentPathname = usePathname();
 
   const menuItems: MenuItem[] = [
     {
       label: t('Crawl'),
       icon: <FaDatabase className="h-5 w-5" />,
-      href: '/dashboard/crawl', // Use the full, typed path
+      href: '/dashboard/crawl',
     },
     {
       label: t('Analysis'),
       icon: <FaChartBar className="h-5 w-5" />,
-      href: '/dashboard/logAnalysis', // Use the full, typed path
+      href: '/dashboard/logAnalysis',
     },
     {
       label: t('Moderation.Moderation'),
       icon: <FaShieldAlt className="h-5 w-5" />,
-      href: '/dashboard/moderation', // Use the full, typed path
+      href: '/dashboard/moderation',
     },
     {
       label: t('Conferences'),
       icon: <FaBookOpen className="h-5 w-5" />,
-      href: '/dashboard/conferences', // Use the full, typed path
+      href: '/dashboard/conferences',
     },
-    // {
-    //   label: t('Request_Admin'),
-    //   icon: <FaKey className="h-5 w-5" />,
-    //   href: '/dashboard/requestAdminTab', // This is already an AppPathname
-    // },
+    {
+      label: t('Submit_Paper_Admin'), // Key mới cho sidebar
+      icon: <FaPaperPlane className="h-5 w-5" />, // Icon mới
+      href: '/dashboard/submitPapers', // Đường dẫn mới
+    },
     {
       label: t('Accounts'),
       icon: <FaUser className="h-5 w-5" />,
-      href: '/dashboard/accounts/users', // Use the full, typed path
+      href: '/dashboard/accounts/users',
     },
   ];
 
@@ -76,7 +77,7 @@ export default function DashboardSidebar({ isSidebarOpen, locale, sidebarWidth, 
     bg-background
     shadow-md
     z-20
-    w-[${sidebarWidth}px] 
+    w-[${sidebarWidth}px]
     ${isSidebarOpen ? 'translate-x-0' : `-translate-x-full`}
   `;
 
@@ -110,14 +111,15 @@ export default function DashboardSidebar({ isSidebarOpen, locale, sidebarWidth, 
       <nav className='w-full py-2'>
         <ul className='w-full'>
           {menuItems.map(item => {
-            // item.href is now an AppPathname, e.g., "/dashboard/crawl"
-            const fullHrefForCheck = `/${locale}${item.href}`; // e.g., "/en/dashboard/crawl"
+            const fullHrefForCheck = `/${locale}${item.href}`;
+            // Kiểm tra nếu đường dẫn hiện tại bắt đầu bằng fullHrefForCheck
+            // Điều này giúp xử lý các đường dẫn con (ví dụ: /dashboard/accounts/users khi item.href là /dashboard/accounts)
             const isActive = currentPathname === fullHrefForCheck || currentPathname.startsWith(`${fullHrefForCheck}/`);
 
             return (
-              <li className='w-full' key={item.href}> {/* Use item.href as key */}
+              <li className='w-full' key={item.href}>
                 <Link
-                  href={item.href} // Pass item.href directly (it's already AppPathname)
+                  href={item.href}
                   locale={locale}
                   className={`
                     flex h-12 w-full items-center px-4

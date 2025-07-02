@@ -9,6 +9,13 @@
   "Signing_in": "Đang đăng nhập...",
   "Sign_In": "Đăng nhập",
   "By_continuing_you_agree_to_our_Terms_of_Service_and_Privacy_Policy": "Bằng việc tiếp tục, bạn đồng ý với Điều khoản dịch vụ và Chính sách bảo mật của chúng tôi",
+  "Submit_Paper_Admin": "Nộp bài",
+  "SubmitPapersPage": {
+    "AuthStatus_Loading": "Đang tải trạng thái xác thực...",
+    "Feature_Under_Development_Title": "Tính năng đang phát triển",
+    "Feature_Under_Development_Message": "Tính năng này hiện đang được phát triển và sẽ sớm ra mắt. Chúng tôi đang nỗ lực để mang đến cho bạn trải nghiệm tốt nhất.",
+    "Thank_You_For_Patience": "Cảm ơn sự kiên nhẫn của bạn!"
+  },
   "ModerationPage": {
     "AuthStatus_Loading": "Đang tải trạng thái xác thực...",
     "AuthStatus_Redirecting": "Đang chuyển hướng đến trang đăng nhập..."
