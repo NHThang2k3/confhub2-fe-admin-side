@@ -108,8 +108,8 @@ const GeminiApiCharts: React.FC<GeminiApiChartsProps> = ({
             <FaRandom className="mr-2 text-green-500" /> {t('section2.title')}
           </h4>
           <div className="overflow-x-auto shadow-md sm:rounded-lg">
-            <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
-              <thead className="text-xs text-gray-700 uppercase dark:bg-gray-700 dark:text-gray-400">
+            <table className="w-full text-sm text-left text-gray-500 ">
+              <thead className="text-xs text-gray-700 uppercase ">
                 <tr>
                   <th scope="col" className="px-6 py-3">{t('section2.tableHeaders.apiType')}</th>
                   <th scope="col" className="px-6 py-3">{t('section2.tableHeaders.model')}</th>
@@ -124,8 +124,8 @@ const GeminiApiCharts: React.FC<GeminiApiChartsProps> = ({
               <tbody>
                 {Object.entries(geminiModelUsageRawData).map(([apiType, models]) => (
                   Object.entries(models as GeminiApiAnalysis['modelUsageByApiType'][string]).map(([modelIdentifier, stats]) => (
-                    <tr key={`${apiType}-${modelIdentifier}`} className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-5 dark:hover:bg-gray-600">
-                      <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                    <tr key={`${apiType}-${modelIdentifier}`} className="bg-white border-b  hover:bg-gray-5 ">
+                      <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap ">
                         {apiType}
                       </td>
                       <td className="px-6 py-4">
@@ -143,7 +143,7 @@ const GeminiApiCharts: React.FC<GeminiApiChartsProps> = ({
               </tbody>
               {/* --- Total row --- */}
               <tfoot>
-                <tr className="font-semibold text-gray-900 dark:text-white bg-gray-100 dark:bg-gray-700">
+                <tr className="font-semibold text-gray-900  bg-gray-100 ">
                   <th scope="row" colSpan={2} className="px-6 py-3 text-base">{t('section2.tableFooters.total')}</th>
                   <td className="px-6 py-3 text-center">{totals.totalCalls}</td>
                   <td className="px-6 py-3 text-center">{totals.totalSuccesses}</td>

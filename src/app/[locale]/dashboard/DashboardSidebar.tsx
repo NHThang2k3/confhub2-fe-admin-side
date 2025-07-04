@@ -118,7 +118,7 @@ export default function DashboardSidebar({ locale, sidebarWidth, headerHeight }:
                     border-l-4
                     ${isActive
                       ? 'border-primary bg-accent text-accent-foreground font-bold'
-                      : 'border-transparent text-foreground hover:bg-gray-100 dark:hover:bg-gray-700'
+                      : 'border-transparent text-foreground hover:bg-gray-100 '
                     }
                   `}
                   // REMOVED: Inline style không cần thiết nữa
@@ -126,7 +126,7 @@ export default function DashboardSidebar({ locale, sidebarWidth, headerHeight }:
                   {/* CHANGE: Đơn giản hóa cấu trúc span, giống client */}
                   <span className="mr-3">
                     {React.cloneElement(item.icon, {
-                      className: `${item.icon.props.className || ''} ${isActive ? 'text-primary' : 'text-gray-600 dark:text-gray-300'}`
+                      className: `${item.icon.props.className || ''} ${isActive ? 'text-primary' : 'text-gray-600 '}`
                     })}
                   </span>
                   

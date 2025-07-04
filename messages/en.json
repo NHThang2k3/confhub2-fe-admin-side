@@ -227,7 +227,9 @@
     "success": "Success",
     "failed": "Failed",
     "attempted": "Attempted",
-    "cacheUsed": "Cache Used"
+    "cacheUsed": "Cache Used",
+    "deleteSuccess": "Item deleted successfully.",
+    "deleteError": "Error deleting item."
   },
   "pagination": {
     "perPage": "{count} per page",
@@ -694,7 +696,8 @@
       "partiallycompleted": "Partially Completed",
       "skipped": "Skipped",
       "notfoundinaggregation": "Not Found in Aggregation",
-      "norequestsanalyzed": "No Requests Analyzed"
+      "norequestsanalyzed": "No Requests Analyzed",
+      "pending": "Pending"
     },
     "noRequestsOnCurrentPage": "No requests to display on this page."
   },
@@ -848,7 +851,14 @@
     "na": "N/A",
     "selectAllOnPage": "Select all items on this page",
     "deselectAllOnPage": "Deselect all items on this page",
-    "selectRequest": "Select request {requestId}"
+    "selectRequest": "Select request {requestId}",
+    "unknown": "Unknown",
+    "close": "Close",
+    "dateRange": {
+      "onwards": "onwards",
+      "until": "until",
+      "defaultLabel": "Date"
+    }
   },
   "ValidationQualityCharts": {
     "warningsByField": {
@@ -1197,24 +1207,27 @@
       "analysisTitleJournal": "Journal Log Analysis Overview",
       "analysisTitle": "Log Analysis Overview"
     },
+    "realtime": "Real-time",
+    "connectionStatus": {
+      "connected": "Connected",
+      "disconnected": "Disconnected"
+    },
+    "logFile": "Log File",
     "logFileAggregate": "Multiple log sources (aggregated)",
     "common": {
       "na": "N/A",
       "unknown": "Unknown"
     },
-    "lastAnalysis": "Last Analysis",
-    "errorLabel": "Error",
-    "logFile": "Log File",
     "filter": {
       "textSearchTitle": "Filter by Request ID, Original ID, or Description",
       "textSearchPlaceholder": "Search by ID or description...",
-      "applyFilterTitle": "Apply filter",
-      "clearActiveFilterTitle": "Clear active filter",
       "clearInputTitle": "Clear input",
-      "applyButton": "Apply",
+      "clearActiveFilterTitle": "Clear active filter",
       "timeFilterTitle": "Filter by time range",
       "startDatePlaceholder": "Start date & time",
-      "endDatePlaceholder": "End date & time"
+      "endDatePlaceholder": "End date & time",
+      "applyFilterTitle": "Apply filter",
+      "applyButton": "Apply"
     },
     "timeOptions": {
       "allTime": "All Time",
@@ -1230,11 +1243,8 @@
       "refreshing": "Refreshing...",
       "refreshNow": "Refresh Now"
     },
-    "realtime": "Real-time",
-    "connectionStatus": {
-      "connected": "Connected",
-      "disconnected": "Disconnected"
-    }
+    "lastAnalysis": "Last Analysis",
+    "errorLabel": "Error"
   },
   "AnalysisPage": {
     "crawlerTypes": {

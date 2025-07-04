@@ -37,10 +37,10 @@ const MobileNavigation: FC<Props> = ({
       {/* Bọc chúng trong một div để layout tốt hơn nếu cần */}
       {isClient && (
         <>
-          <div className='px-2 hover:bg-gray-10 dark:hover:bg-gray-70'>
+          <div className='px-2 hover:bg-gray-10 '>
             <ThemeSwitch />
           </div>
-          <div className='px-2 hover:bg-gray-10 dark:hover:bg-gray-70'>
+          <div className='px-2 hover:bg-gray-10 '>
             <LangSwitcher />
           </div>
         </>
@@ -55,7 +55,7 @@ const MobileNavigation: FC<Props> = ({
             <Link
               href={`/auth/login`}
               locale={locale}
-              className='px-4 py-2 hover:bg-gray-10 dark:hover:bg-gray-70'
+              className='px-4 py-2 hover:bg-gray-10 '
             >
               {t('Login')}
             </Link>
