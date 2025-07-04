@@ -128,26 +128,27 @@ export default async function RootLayout({
       </head>
       <body>
         <AuthProvider>
-          <ThemeProvider
-            enableSystem
-            attribute='class'
-            defaultTheme='light'
-            themes={['light']}
-          >
-            {/* --- ToastContainer đặt ở đây --- */}
-            {/* Có thể thêm props để tùy chỉnh, ví dụ: position, autoClose, theme */}
-            <ToastContainer
-              position='top-right' // Vị trí hiển thị (phổ biến)
-              autoClose={3000} // Tự động đóng sau 3 giây
-              hideProgressBar={false}
-              newestOnTop={false}
-              closeOnClick
-              rtl={locale === 'ar' || locale === 'fa'} // Hỗ trợ RTL nếu cần
-              pauseOnFocusLoss
-              draggable
-              pauseOnHover
-              theme='colored' 
-            />
+          <SidebarProvider>
+            <ThemeProvider
+              enableSystem
+              attribute='class'
+              defaultTheme='light'
+              themes={['light']}
+            >
+              {/* --- ToastContainer đặt ở đây --- */}
+              {/* Có thể thêm props để tùy chỉnh, ví dụ: position, autoClose, theme */}
+              <ToastContainer
+                position='top-right' // Vị trí hiển thị (phổ biến)
+                autoClose={3000} // Tự động đóng sau 3 giây
+                hideProgressBar={false}
+                newestOnTop={false}
+                closeOnClick
+                rtl={locale === 'ar' || locale === 'fa'} // Hỗ trợ RTL nếu cần
+                pauseOnFocusLoss
+                draggable
+                pauseOnHover
+                theme='colored'
+              />
 
               {/* --- NextIntlClientProvider --- */}
               <NextIntlClientProvider
