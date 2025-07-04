@@ -7,7 +7,7 @@ import { ConferenceTableControls } from '../conferenceTable/ConferenceTableContr
 import { ConferenceTable } from '../conferenceTable/ConferenceTable';
 import { useConferenceCrawl } from '@/src/hooks/crawl/conference/useConferenceCrawl';
 import ProcessActionModal from '../conferenceTable/ProcessActionModal';
-import { useTranslations } from 'next-intl'; // Import useTranslations
+import { useTranslations } from 'next-intl';
 
 interface ConferenceDetailsProps {
   logAnalysisResult: ConferenceLogAnalysisResult | null | undefined;
@@ -16,11 +16,10 @@ interface ConferenceDetailsProps {
 const ConferenceDetails: React.FC<ConferenceDetailsProps> = ({
   logAnalysisResult
 }) => {
-  // Khởi tạo t với namespace 'ConferenceDetails'
   const t = useTranslations('ConferenceDetails');
-
   const [isExpanded, setIsExpanded] = useState(true);
-  const { isCrawling: isGlobalProcessing } = useConferenceCrawl();
+  // <<< THAY ĐỔI 1: Lấy recordFile từ hook
+  const { isCrawling: isGlobalProcessing, recordFile: globalRecordFile } = useConferenceCrawl();
 
   const handleToggleExpand = () => {
     setIsExpanded(prev => !prev);
@@ -29,8 +28,6 @@ const ConferenceDetails: React.FC<ConferenceDetailsProps> = ({
   const tableManager = useConferenceTableManager({ logAnalysisResult });
   const hasData = tableManager.sortedData && tableManager.sortedData.length > 0;
   const rowSaveErrorsCount = Object.keys(tableManager.rowSaveErrors).length;
-
-  // Kiểm tra xem có filter cột nào đang được áp dụng không
   const hasActiveColumnFilters = Object.values(tableManager.columnFilters).some(value => value && typeof value === 'string' && value.trim() !== '');
 
   return (
@@ -41,7 +38,7 @@ const ConferenceDetails: React.FC<ConferenceDetailsProps> = ({
           onClick={handleToggleExpand}
         >
           <h2 className='text-xl font-semibold text-gray-800 whitespace-nowrap'>
-            {t('title')} {/* Sử dụng t() */}
+            {t('title')}
           </h2>
           <button
             className='rounded p-1 text-gray-500 hover:bg-gray-100 hover:text-blue-600 focus:outline-none'
@@ -54,53 +51,17 @@ const ConferenceDetails: React.FC<ConferenceDetailsProps> = ({
             }}
           >
             {isExpanded ? <FaChevronUp size={18} /> : <FaChevronDown size={18} />}
-            <span className='sr-only'>{isExpanded ? t('srOnly.collapse') : t('srOnly.expand')}</span> {/* Sử dụng t() */}
+            <span className='sr-only'>{isExpanded ? t('srOnly.collapse') : t('srOnly.expand')}</span>
           </button>
         </div>
 
         {isExpanded && (
           <div id='conference-details-content'>
+            {/* ... (phần UI còn lại giữ nguyên) ... */}
             {!logAnalysisResult?.conferenceAnalysis || Object.keys(logAnalysisResult.conferenceAnalysis).length === 0 ? (
               <p className='text-center text-gray-500 py-8'>
-                {t('noDataMessage')} {/* Sử dụng t() */}
+                {t('noDataMessage')}
               </p>
-            ) : !hasData && (tableManager.searchQuery || hasActiveColumnFilters) ? (
-              <>
-                <ConferenceTableControls
-                  selectedCount={tableManager.selectedRowIds.length}
-                  isSaveEnabled={tableManager.isSaveEnabled}
-                  mainSaveStatus={tableManager.mainSaveStatus}
-                  rowSaveErrorsCount={rowSaveErrorsCount}
-                  onSave={tableManager.handleBulkSave}
-                  onProcessAgain={tableManager.handleProcessAgainClick}
-                  isProcessing={isGlobalProcessing}
-                  onSelectAll={tableManager.handleSelectAll}
-                  onSelectNoError={tableManager.handleSelectNoError}
-                  onSelectError={tableManager.handleSelectError}
-                  onSelectWithoutWarningsOrErrors={tableManager.onSelectWithoutWarningsOrErrors}
-                  onSelectWarning={tableManager.handleSelectWarning}
-                  onDeselectAll={tableManager.handleDeselectAll}
-                  searchTerm={tableManager.searchQuery}
-                  onSearchChange={tableManager.setSearchQuery}
-                />
-                 <ConferenceTable
-                  data={[]}
-                  selectedRows={{}}
-                  expandedRowUniqueId={null}
-                  sortColumn={tableManager.sortColumn}
-                  sortDirection={tableManager.sortDirection}
-                  rowSaveStatus={{}}
-                  rowSaveErrors={{}}
-                  onSort={tableManager.handleSort}
-                  onToggleExpand={tableManager.toggleExpand}
-                  onSelectToggle={tableManager.handleRowSelectToggle}
-                  columnFilters={tableManager.columnFilters}
-                  onColumnFilterChange={tableManager.handleColumnFilterChange}
-                  totalRowsCount={tableManager.totalRowsCount}
-                  selectedRowsCount={tableManager.selectedRowsCount}
-                  onSelectAll={tableManager.handleSelectAll}
-                />
-              </>
             ) : (
               <>
                 <ConferenceTableControls
@@ -148,6 +109,8 @@ const ConferenceDetails: React.FC<ConferenceDetailsProps> = ({
         onClose={() => tableManager.setIsProcessModalOpen(false)}
         onConfirm={tableManager.handleConfirmProcessWithActionAndModels}
         itemsToProcess={tableManager.itemsToProcessFromTable}
+        // <<< THAY ĐỔI 2: Truyền prop mới xuống modal
+        globalRecordFile={globalRecordFile}
       />
     </>
   );

@@ -8,8 +8,16 @@ import { FaInfoCircle } from 'react-icons/fa';
 interface ProcessActionModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onConfirm: (processedItems: ConferenceForAction[], selectedModels: ApiModels, description?: string) => void;
+  // <<< THAY ĐỔI 1: Cập nhật signature của onConfirm
+  onConfirm: (
+    processedItems: ConferenceForAction[],
+    selectedModels: ApiModels,
+    description: string | undefined,
+    recordFileOverride: boolean // Thêm tham số mới
+  ) => void;
   itemsToProcess: ConferenceForAction[];
+  // <<< THAY ĐỔI 2: Nhận giá trị recordFile chung
+  globalRecordFile: boolean;
 }
 
 const apiSteps: { name: ApiName, displayName: string, description: string }[] = [
@@ -25,6 +33,7 @@ const ProcessActionModal: React.FC<ProcessActionModalProps> = ({
   onClose,
   onConfirm,
   itemsToProcess,
+  globalRecordFile, // <<< Nhận prop mới
 }) => {
   const [selectedApiModels, setSelectedApiModels] = useState<ApiModels>({
     determineLinks: null,
@@ -33,6 +42,8 @@ const ProcessActionModal: React.FC<ProcessActionModalProps> = ({
   });
   const [batchActionType, setBatchActionType] = useState<'crawl' | 'update'>('crawl');
   const [description, setDescription] = useState<string>('');
+  // <<< THAY ĐỔI 3: Thêm state cục bộ cho recordFile
+  const [localRecordFile, setLocalRecordFile] = useState<boolean>(globalRecordFile);
   const [showValidationError, setShowValidationError] = useState(false);
   const [showLinkWarning, setShowLinkWarning] = useState(false);
   const [showTooltip, setShowTooltip] = useState<boolean>(false);
@@ -41,13 +52,16 @@ const ProcessActionModal: React.FC<ProcessActionModalProps> = ({
 
   useEffect(() => {
     if (isOpen) {
+      // Reset state khi modal mở
       setSelectedApiModels({ determineLinks: null, extractInfo: null, extractCfp: null });
       setBatchActionType('crawl');
       setDescription('');
+      // <<< THAY ĐỔI 4: Đồng bộ state cục bộ với giá trị chung
+      setLocalRecordFile(globalRecordFile);
       setShowValidationError(false);
       setShowLinkWarning(false);
     }
-  }, [isOpen]);
+  }, [isOpen, globalRecordFile]);
 
   const handleModelChange = (apiName: ApiName, model: CrawlModelType) => {
     setSelectedApiModels(prev => ({ ...prev, [apiName]: model }));
@@ -72,7 +86,8 @@ const ProcessActionModal: React.FC<ProcessActionModalProps> = ({
         setShowLinkWarning(true);
       }
     }
-    onConfirm(updatedItems, selectedApiModels, description.trim() || undefined);
+    // <<< THAY ĐỔI 5: Truyền giá trị localRecordFile ra ngoài
+    onConfirm(updatedItems, selectedApiModels, description.trim() || undefined, localRecordFile);
     onClose();
   };
 
@@ -88,9 +103,7 @@ const ProcessActionModal: React.FC<ProcessActionModalProps> = ({
           You are about to re-process <strong>{itemCount}</strong> conference(s).
         </p>
 
-        {/* --- Bố cục 2 cột cho các thiết lập chung --- */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 mb-6">
-            {/* Cột 1: Description */}
             <div className="p-3 rounded-md border border-blue-100 bg-blue-50">
                 <label htmlFor="recrawlDescription" className="block text-sm font-semibold text-blue-800 mb-1">
                     Request Description
@@ -122,41 +135,46 @@ const ProcessActionModal: React.FC<ProcessActionModalProps> = ({
                 <p className="mt-1 text-xs text-gray-600 text-right">{description.length}/{MAX_DESCRIPTION_LENGTH}</p>
             </div>
 
-            {/* Cột 2: Action Type */}
-            <div className="p-3 border rounded-md bg-gray-10">
-                <label htmlFor="action-type-select" className="block text-sm font-semibold text-gray-800 mb-1">
-                    Action Type for All:
-                </label>
-                <select
-                    id="action-type-select"
-                    value={batchActionType}
-                    onChange={handleActionTypeChange}
-                    className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
-                >
-                    <option value="crawl">Crawl (New Data)</option>
-                    <option value="update">Update (Existing Data)</option>
-                </select>
-                {batchActionType === 'update' && (
-                    <p className="text-xs text-gray-500 mt-2">
-                    {'Update'} requires a Link. Missing links will default to {'Crawl'}.
-                    </p>
-                )}
+            <div className="p-3 border rounded-md bg-gray-10 space-y-2">
+                <div>
+                    <label htmlFor="action-type-select" className="block text-sm font-semibold text-gray-800 mb-1">
+                        Action Type for All:
+                    </label>
+                    <select
+                        id="action-type-select"
+                        value={batchActionType}
+                        onChange={handleActionTypeChange}
+                        className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+                    >
+                        <option value="crawl">Crawl (New Data)</option>
+                        <option value="update">Update (Existing Data)</option>
+                    </select>
+                </div>
+                {/* <<< THAY ĐỔI 6: Thêm checkbox cho recordFile */}
+                <div className="flex items-center pt-2">
+                    <input
+                        id="record-file-override"
+                        type="checkbox"
+                        className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
+                        checked={localRecordFile}
+                        onChange={(e) => setLocalRecordFile(e.target.checked)}
+                    />
+                    <label htmlFor="record-file-override" className="ml-2 text-sm font-medium text-gray-800 cursor-pointer">
+                        Save output file on server
+                    </label>
+                </div>
             </div>
         </div>
 
-        {/* --- Bố cục dạng bảng/lưới cho lựa chọn Model --- */}
         <div className="mb-6 p-4 border rounded-md">
             <h4 className="text-md font-semibold text-gray-800 mb-3">Model Selection for API Steps</h4>
             <div className="space-y-3">
                 {apiSteps.map(step => (
                     <div key={step.name} className="grid grid-cols-3 items-center gap-4 p-2 rounded-md hover:bg-gray-10">
-                        {/* Tên và mô tả API Step */}
                         <div className="col-span-1">
                             <p className="text-sm font-medium text-gray-800">{step.displayName}</p>
                             <p className="text-xs text-gray-500">{step.description}</p>
                         </div>
-                        
-                        {/* Các lựa chọn Model */}
                         <div className="col-span-2 flex items-center space-x-6">
                             <label htmlFor={`${step.name}-non-tuned`} className="flex items-center cursor-pointer p-2 rounded-md hover:bg-indigo-50">
                                 <input
@@ -189,7 +207,6 @@ const ProcessActionModal: React.FC<ProcessActionModalProps> = ({
             </div>
         </div>
 
-        {/* --- Cảnh báo và Nút bấm --- */}
         {showValidationError && (
             <p className="text-sm text-red-600 mb-4 text-center font-medium">
                 Please select a model for all API steps.

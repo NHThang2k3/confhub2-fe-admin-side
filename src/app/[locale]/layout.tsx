@@ -19,6 +19,7 @@ import './globals.css'
 import { AuthProvider } from '@/src/contexts/AuthContext'; // Điều chỉnh path nếu cần
 import { Toaster } from 'react-hot-toast'
 import ClientLayout from './ClientLayout'
+import { SidebarProvider } from '@/src/contexts/SidebarContext';
 
 // ... (Phần định nghĩa fonts: spaceGrotesk, inter, rubik)
 const spaceGrotesk = localFont({
@@ -127,48 +128,50 @@ export default async function RootLayout({
       </head>
       <body>
         <AuthProvider>
-          <ThemeProvider
-            enableSystem
-            attribute='class'
-            defaultTheme='light'
-            themes={['light', 'dark']}
-          >
-            {/* --- ToastContainer đặt ở đây --- */}
-            {/* Có thể thêm props để tùy chỉnh, ví dụ: position, autoClose, theme */}
-            <ToastContainer
-              position='top-right' // Vị trí hiển thị (phổ biến)
-              autoClose={3000} // Tự động đóng sau 3 giây
-              hideProgressBar={false}
-              newestOnTop={false}
-              closeOnClick
-              rtl={locale === 'ar' || locale === 'fa'} // Hỗ trợ RTL nếu cần
-              pauseOnFocusLoss
-              draggable
-              pauseOnHover
-              theme='colored' // Sử dụng theme màu ('light', 'dark', 'colored') - 'colored' sẽ có màu theo type (success, error,...)
-            />
-
-            {/* --- NextIntlClientProvider --- */}
-            <NextIntlClientProvider
-              locale={locale}
-              messages={messages}
+          <SidebarProvider>
+            <ThemeProvider
+              enableSystem
+              attribute='class'
+              defaultTheme='light'
+              themes={['light', 'dark']}
             >
-              <ClientLayout locale={locale}>
-                <NextTopLoader
-                  initialPosition={0.08}
-                  crawlSpeed={200}
-                  height={3}
-                  crawl={true}
-                  easing='ease'
-                  speed={200}
-                  shadow='0 0 10px #2299DD,0 0 5px #2299DD'
-                  color='var(--primary)'
-                  showSpinner={false}
-                />
-                <main className='mx-auto max-w-screen-2xl'>{children}</main>
-              </ClientLayout>
-            </NextIntlClientProvider>
-          </ThemeProvider>
+              {/* --- ToastContainer đặt ở đây --- */}
+              {/* Có thể thêm props để tùy chỉnh, ví dụ: position, autoClose, theme */}
+              <ToastContainer
+                position='top-right' // Vị trí hiển thị (phổ biến)
+                autoClose={3000} // Tự động đóng sau 3 giây
+                hideProgressBar={false}
+                newestOnTop={false}
+                closeOnClick
+                rtl={locale === 'ar' || locale === 'fa'} // Hỗ trợ RTL nếu cần
+                pauseOnFocusLoss
+                draggable
+                pauseOnHover
+                theme='colored' // Sử dụng theme màu ('light', 'dark', 'colored') - 'colored' sẽ có màu theo type (success, error,...)
+              />
+
+              {/* --- NextIntlClientProvider --- */}
+              <NextIntlClientProvider
+                locale={locale}
+                messages={messages}
+              >
+                <ClientLayout locale={locale}>
+                  <NextTopLoader
+                    initialPosition={0.08}
+                    crawlSpeed={200}
+                    height={3}
+                    crawl={true}
+                    easing='ease'
+                    speed={200}
+                    shadow='0 0 10px #2299DD,0 0 5px #2299DD'
+                    color='var(--primary)'
+                    showSpinner={false}
+                  />
+                  <main className='mx-auto max-w-screen-2xl'>{children}</main>
+                </ClientLayout>
+              </NextIntlClientProvider>
+            </ThemeProvider>
+          </SidebarProvider>
         </AuthProvider>
       </body>
     </html>

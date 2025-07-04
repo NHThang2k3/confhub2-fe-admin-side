@@ -1,75 +1,80 @@
-// src/app/[locate]/dashboard/layout.tsx
+// src/app/[locale]/dashboard/layout.tsx
+
 'use client';
 
-import React, { useState, useEffect } from 'react'; // useEffect có thể không cần thiết nữa nếu không dùng resize listener
-import { Header } from '@/src/app/[locale]/utils/Header';
+import React from 'react';
+import { Header } from '@/src/app/[locale]/utils/Header'; // Giả định Header đã được cập nhật để dùng useSidebar
 import DashboardSidebar from './DashboardSidebar';
+import { useSidebar } from '@/src/contexts/SidebarContext'; // CHANGE: Import useSidebar
 
 export default function DashboardLayout({
   children,
-  params: { locale } // Keep locale prop
+  params: { locale }
 }: {
   children: React.ReactNode;
   params: { locale: string };
 }) {
-  // Trạng thái sidebar chỉ được điều khiển bởi người dùng.
-  // Khởi tạo là true nếu muốn sidebar mặc định mở khi tải trang.
-  // Khởi tạo là false nếu muốn sidebar mặc định đóng khi tải trang.
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true); // <--- Đặt giá trị mặc định mong muốn ở đây
-
   const SIDEBAR_WIDTH_PX = 208;
   const HEADER_HEIGHT_PX = 60;
 
-  // Loại bỏ hoàn toàn useEffect lắng nghe sự kiện resize.
-  // Điều này đảm bảo trạng thái isSidebarOpen không bị thay đổi tự động
-  // khi kích thước màn hình thay đổi.
-  // Bạn có thể giữ lại useEffect nếu bạn muốn xử lý các logic khác liên quan đến window
-  // nhưng không ảnh hưởng đến isSidebarOpen.
+  // CHANGE: Lấy trạng thái và hàm toggle từ context, không dùng useState cục bộ nữa
+  const { isSidebarOpen, toggleSidebar } = useSidebar();
 
-  const toggleSidebar = () => {
-    setIsSidebarOpen(!isSidebarOpen);
+  // CHANGE: Sử dụng CSS variables, giống hệt pattern của client
+  const layoutStyles: React.CSSProperties & {
+    '--sidebar-width': string;
+    '--header-height': string;
+  } = {
+    '--sidebar-width': `${SIDEBAR_WIDTH_PX}px`,
+    '--header-height': `${HEADER_HEIGHT_PX}px`,
   };
 
-  const contentLeftOffset = isSidebarOpen ? SIDEBAR_WIDTH_PX : 0;
-
-  // LƯU Ý QUAN TRỌNG:
-  // Với cách tiếp cận này, sidebar sẽ MẶC ĐỊNH LÀ MỞ (nếu useState(true))
-  // ngay cả trên thiết bị di động. Bạn sẽ cần đảm bảo UI của bạn xử lý tốt điều này,
-  // hoặc điều chỉnh thiết kế để ẩn/hiện sidebar trên mobile một cách hợp lý
-  // mà không phụ thuộc vào kích thước màn hình trong logic JS.
-  // Ví dụ: trên mobile, bạn có thể muốn Sidebar luôn ở dạng overlay và Header có nút hamburger.
-
   return (
-    <div className='relative min-h-screen bg-background'>
+    // CHANGE: Cấu trúc layout flex, giống client
+    <div 
+      className='relative flex min-h-screen bg-muted/40'
+      style={layoutStyles}
+    >
+      {/* CHANGE: Thêm lớp phủ (overlay) cho màn hình mobile, giống client */}
+      {isSidebarOpen && (
+        <div
+          onClick={toggleSidebar}
+          className="fixed inset-0 z-20 bg-black/50 lg:hidden"
+          aria-hidden="true"
+        />
+      )}
 
-      {/* Dashboard Sidebar - Receives locale but handles its own translations */}
-      <DashboardSidebar
-          isSidebarOpen={isSidebarOpen} // isSidebarOpen giờ chỉ thay đổi khi người dùng toggle
-          locale={locale}
-          sidebarWidth={SIDEBAR_WIDTH_PX}
-          headerHeight={HEADER_HEIGHT_PX}
-      />
-
-      {/* Header - Receives locale but should handle its own translations */}
+      {/* Header sẽ nằm trên cùng và chiếm toàn bộ chiều rộng */}
       <Header
           locale={locale}
-          toggleSidebar={toggleSidebar}
-          isSidebarOpen={isSidebarOpen}
+          // REMOVED: Không cần truyền isSidebarOpen và toggleSidebar nữa
+          // Header sẽ tự lấy chúng từ useSidebar()
           headerHeight={HEADER_HEIGHT_PX}
-          sidebarWidth={SIDEBAR_WIDTH_PX}
       />
 
-      {/* Main Content (children pages) - The children components should handle their own translations */}
+      {/* Sidebar sẽ nhận các props cần thiết */}
+      <DashboardSidebar
+          locale={locale}
+          sidebarWidth={SIDEBAR_WIDTH_PX}
+          headerHeight={HEADER_HEIGHT_PX}
+          // REMOVED: Không cần truyền isSidebarOpen nữa
+      />
+
+      {/* Main Content (children pages) */}
       <main
-        className='absolute bottom-0 right-0 overflow-y-auto p-4'
-        style={{
-           top: `${HEADER_HEIGHT_PX}px`,
-           left: `${contentLeftOffset}px`,
-           transition: 'left 300ms ease-in-out',
-           zIndex: 0,
-        }}
+        className={`
+          flex-1 transition-all duration-300 ease-in-out
+          w-full
+          mt-[var(--header-height)] // CHANGE: Đẩy content xuống dưới Header
+          ${isSidebarOpen 
+            ? 'lg:pl-[var(--sidebar-width)]' // CHANGE: Chỉ đẩy content trên màn hình lớn
+            : 'lg:pl-0'
+          }
+        `}
       >
-        {children}
+        <div className="p-4 md:p-6">
+          {children}
+        </div>
       </main>
     </div>
   );

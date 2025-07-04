@@ -1,3 +1,4 @@
+// src/hooks/crawl/conference/useCrawlRunner.ts
 'use client';
 import { useState, useCallback, useRef, useEffect } from 'react';
 import axios, { AxiosError } from 'axios';
@@ -6,9 +7,9 @@ import {
     CrawlProgress,
     ConferenceForAction,
     ConferenceApiPayloadItem,
+    CrawlRequestPayload, // <<< IMPORT TYPE NÀY
 } from '../../../models/logAnalysis/importConferenceCrawl';
 import { ApiModels } from '@/src/models/logAnalysis/crawl.types';
-import { CrawlRequestPayload } from '../../../models/logAnalysis/importConferenceCrawl';
 import { chunkArray } from '../../../utils/arrayUtils';
 import { API_CONFERENCE_ENDPOINT, MAX_ITEMS_PER_CRAWL_REQUEST } from '../constants';
 
@@ -20,29 +21,26 @@ type ApiCrawlAcceptedResponse = {
     description?: string;
 };
 
-// Định nghĩa kiểu cho bộ điều khiển crawl
 type CrawlController = {
     chunks: ConferenceForAction[][];
     currentIndex: number;
     models: ApiModels;
     description: string | undefined;
     chunkDelay: number;
-    isSubmitting: boolean; // Cờ chống gọi resume nhiều lần cùng lúc
+    recordFile?: boolean; // <<< THÊM VÀO CONTROLLER
+    isSubmitting: boolean;
 };
 
 export const useCrawlRunner = () => {
-    // --- State cho trạng thái chung ---
     const [isCrawling, setIsCrawling] = useState<boolean>(false);
     const [crawlError, setCrawlError] = useState<string | null>(null);
     const [crawlProgress, setCrawlProgress] = useState<CrawlProgress>({ current: 0, total: 0, status: 'idle' });
     const [crawlMessages, setCrawlMessages] = useState<string[]>([]);
     const [currentBatchId, setCurrentBatchId] = useState<string | null>(null);
-
-    // --- State và Ref cho hệ thống điều khiển mới ---
     const [isPaused, setIsPaused] = useState(false);
     const [countdown, setCountdown] = useState(0);
     const timeoutIdRef = useRef<NodeJS.Timeout | null>(null);
-    const intervalIdRef = useRef<number | null>(null); // <<< THAY ĐỔI 1: Sửa NodeJS.Timer thành number
+    const intervalIdRef = useRef<number | null>(null);
     const crawlControllerRef = useRef<CrawlController | null>(null);
 
     const addCrawlMessage = useCallback((message: string) => {
@@ -53,9 +51,9 @@ export const useCrawlRunner = () => {
         items: ConferenceForAction[],
         modelsForRequest: ApiModels,
         batchContextDescription: string,
-        overallRequestDescription?: string
+        overallRequestDescription?: string,
+        recordFile?: boolean // <<< THÊM THAM SỐ
     ): Promise<{ success: boolean; batchId: string | null }> => {
-        // ... (code hàm này giữ nguyên, đã chính xác)
         const apiPayloadItems: ConferenceApiPayloadItem[] = [];
         for (const item of items) {
             const commonPayload = { Title: item.Title, Acronym: item.Acronym, originalRequestId: item.originalRequestId };
@@ -74,8 +72,20 @@ export const useCrawlRunner = () => {
             if (items.length > 0) addCrawlMessage(`No valid items to send for "${batchContextDescription}".`);
             return { success: items.length === 0, batchId: null };
         }
-        const payload: CrawlRequestPayload = { items: apiPayloadItems, models: modelsForRequest };
-        if (overallRequestDescription) payload.description = overallRequestDescription;
+
+        // Xây dựng payload
+        const payload: CrawlRequestPayload = {
+            items: apiPayloadItems,
+            models: modelsForRequest,
+        };
+        if (overallRequestDescription) {
+            payload.description = overallRequestDescription;
+        }
+        // <<< LOGIC MỚI: Thêm recordFile vào payload nếu nó là true
+        if (recordFile === true) {
+            payload.recordFile = true;
+        }
+
         try {
             const response = await axios.post<ApiCrawlAcceptedResponse>(API_CONFERENCE_ENDPOINT, payload, {
                 params: { dataSource: 'client' },
@@ -96,8 +106,7 @@ export const useCrawlRunner = () => {
 
     const clearTimers = useCallback(() => {
         if (timeoutIdRef.current) clearTimeout(timeoutIdRef.current);
-        // Bây giờ clearInterval sẽ không báo lỗi nữa
-        if (intervalIdRef.current) clearInterval(intervalIdRef.current); // <<< LỖI ĐÃ ĐƯỢC SỬA
+        if (intervalIdRef.current) clearInterval(intervalIdRef.current);
         timeoutIdRef.current = null;
         intervalIdRef.current = null;
         setCountdown(0);
@@ -125,7 +134,14 @@ export const useCrawlRunner = () => {
             addCrawlMessage(`Submitting Batch ${chunkIndex + 1}/${controller.chunks.length}...`);
             setCrawlProgress(prev => ({ ...prev, current: chunkIndex + 1 }));
 
-            const { success, batchId } = await sendApiRequest(chunk, controller.models, `Batch ${chunkIndex + 1}/${controller.chunks.length}`, controller.description);
+            // <<< TRUYỀN recordFile từ controller vào sendApiRequest
+            const { success, batchId } = await sendApiRequest(
+                chunk,
+                controller.models,
+                `Batch ${chunkIndex + 1}/${controller.chunks.length}`,
+                controller.description,
+                controller.recordFile
+            );
 
             if (chunkIndex === 0 && batchId && !currentBatchId) {
                 setCurrentBatchId(batchId);
@@ -141,38 +157,29 @@ export const useCrawlRunner = () => {
             controller.currentIndex++;
         }
 
-        // --- BẮT ĐẦU SỬA LỖI LOGIC ---
         if (controller.currentIndex < controller.chunks.length) {
-            // Vẫn còn chunk, vào trạng thái Paused
             setIsPaused(true);
             addCrawlMessage(`Submission paused. Waiting for next action or timeout.`);
-
             let count = controller.chunkDelay;
             setCountdown(count);
-            // Ép kiểu kết quả của setInterval để TypeScript không báo lỗi
-            intervalIdRef.current = setInterval(() => setCountdown(prev => Math.max(0, prev - 1)), 1000) as any as number; // <<< THAY ĐỔI 2: Ép kiểu
-
+            intervalIdRef.current = setInterval(() => setCountdown(prev => Math.max(0, prev - 1)), 1000) as any as number;
             timeoutIdRef.current = setTimeout(() => resumeCrawl(1), controller.chunkDelay * 1000);
-
         } else {
-            // ĐÃ GỬI HẾT TẤT CẢ CÁC CHUNK
             addCrawlMessage("All batches have been successfully submitted to the backend for processing.");
             addCrawlMessage("You can now monitor the progress on the Analysis page.");
-
-            // Cập nhật trạng thái để kết thúc giao diện "đang chạy"
             setIsCrawling(false);
             setIsPaused(false);
-            setCrawlProgress(prev => ({ ...prev, status: 'success' })); // Chuyển sang success
-            crawlControllerRef.current = null; // Dọn dẹp controller
+            setCrawlProgress(prev => ({ ...prev, status: 'success' }));
+            crawlControllerRef.current = null;
         }
 
-        if (crawlControllerRef.current) { // Cần kiểm tra lại vì nó có thể là null
+        if (crawlControllerRef.current) {
             controller.isSubmitting = false;
         }
-        // --- KẾT THÚC SỬA LỖI LOGIC ---
     }, [currentBatchId, sendApiRequest, addCrawlMessage, clearTimers]);
 
     const stopCrawlProcess = useCallback(async () => {
+        // ... (logic hàm này giữ nguyên)
         clearTimers();
         crawlControllerRef.current = null;
         setIsPaused(false);
@@ -199,6 +206,7 @@ export const useCrawlRunner = () => {
         enableChunking: boolean,
         chunkSize: number,
         chunkDelayInSeconds: number,
+        recordFile: boolean, // <<< THÊM THAM SỐ MỚI
         sourceDescription: string,
         userProvidedDescription?: string
     ) => {
@@ -218,50 +226,42 @@ export const useCrawlRunner = () => {
             const chunks = chunkArray(itemsToCrawl, effectiveChunkSize);
             setCrawlProgress({ current: 0, total: chunks.length, status: 'crawling' });
 
-            // --- BẮT ĐẦU SỬA LỖI LOGIC ---
-
-            // TRƯỜNG HỢP 1: CÓ CHIA CHUNK NHƯNG THỰC TẾ CHỈ CÓ 1 CHUNK
             if (chunks.length <= 1) {
                 addCrawlMessage("All items will be submitted in a single batch.");
                 setCrawlProgress({ current: 1, total: 1, status: 'crawling' });
-                const { success, batchId } = await sendApiRequest(itemsToCrawl, modelsToUse, `Batch (all items)`, userProvidedDescription);
+                // <<< TRUYỀN recordFile
+                const { success, batchId } = await sendApiRequest(itemsToCrawl, modelsToUse, `Batch (all items)`, userProvidedDescription, recordFile);
                 if (success && batchId) {
                     setCurrentBatchId(batchId);
-                    // ĐÃ GỬI XONG BATCH DUY NHẤT
                     addCrawlMessage("All items have been successfully submitted in a single batch.");
                     addCrawlMessage("You can now monitor the progress on the Analysis page.");
-                    setIsCrawling(false); // Kết thúc trạng thái chạy
+                    setIsCrawling(false);
                     setCrawlProgress(prev => ({ ...prev, status: 'success' }));
                 } else {
                     setIsCrawling(false);
                     setCrawlProgress(prev => ({ ...prev, status: 'error' }));
                 }
-            }
-            // TRƯỜNG HỢP 2: CÓ NHIỀU HƠN 1 CHUNK -> KÍCH HOẠT BẢNG ĐIỀU KHIỂN
-            else {
-                // Thiết lập bộ điều khiển
+            } else {
+                // Thiết lập bộ điều khiển, bao gồm cả recordFile
                 crawlControllerRef.current = {
                     chunks,
                     currentIndex: 0,
                     models: modelsToUse,
                     description: userProvidedDescription,
                     chunkDelay: chunkDelayInSeconds,
+                    recordFile: recordFile, // <<< LƯU VÀO CONTROLLER
                     isSubmitting: false,
                 };
-                // Bắt đầu quá trình bằng cách gửi chunk đầu tiên
                 resumeCrawl(1);
             }
-            // --- KẾT THÚC SỬA LỖI LOGIC ---
-
         } else {
-            // TRƯỜNG HỢP 3: KHÔNG BẬT CHUNKING (logic này đã đúng)
-            const { success, batchId } = await sendApiRequest(itemsToCrawl, modelsToUse, `Batch (all items)`, userProvidedDescription);
+            // <<< TRUYỀN recordFile
+            const { success, batchId } = await sendApiRequest(itemsToCrawl, modelsToUse, `Batch (all items)`, userProvidedDescription, recordFile);
             if (success && batchId) {
                 setCurrentBatchId(batchId);
-                // ĐÃ GỬI XONG BATCH DUY NHẤT
                 addCrawlMessage("All items have been successfully submitted in a single batch.");
                 addCrawlMessage("You can now monitor the progress on the Analysis page.");
-                setIsCrawling(false); // Kết thúc trạng thái chạy
+                setIsCrawling(false);
                 setCrawlProgress({ current: 1, total: 1, status: 'success' });
             } else {
                 setIsCrawling(false);
@@ -271,6 +271,7 @@ export const useCrawlRunner = () => {
     }, [isCrawling, sendApiRequest, addCrawlMessage, clearTimers, resumeCrawl]);
 
     const reset = useCallback(() => {
+        // ... (logic hàm này giữ nguyên)
         clearTimers();
         crawlControllerRef.current = null;
         setIsCrawling(false);
@@ -292,7 +293,7 @@ export const useCrawlRunner = () => {
         processCrawlRequest,
         resumeCrawl,
         stopCrawlProcess,
-        addCrawlMessage, // <<< ĐẢM BẢO DÒNG NÀY TỒN TẠI
+        addCrawlMessage,
         reset,
     };
 };

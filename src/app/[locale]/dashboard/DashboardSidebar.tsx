@@ -6,18 +6,17 @@ import React from 'react';
 import { useTranslations } from 'next-intl';
 import { Link, AppPathname } from '@/src/navigation';
 import { usePathname } from 'next/navigation';
-import GlobeIcon from '@/src/app/icons/globe';
+import { useSidebar } from '@/src/contexts/SidebarContext'; // CHANGE: Import useSidebar
 
-// Import React Icons
+// Import React Icons (giữ nguyên)
 import {
   FaDatabase,
   FaChartBar,
   FaShieldAlt,
   FaBookOpen,
-  FaKey,
   FaUser,
-  FaPaperPlane // Import icon cho Submit Paper
-} from 'react-icons/fa'; // Hoặc dùng Send từ lucide-react nếu bạn muốn nhất quán
+  FaPaperPlane
+} from 'react-icons/fa';
 
 interface MenuItem {
   label: string;
@@ -26,17 +25,19 @@ interface MenuItem {
 }
 
 interface DashboardSidebarProps {
-  isSidebarOpen: boolean;
+  // REMOVED: isSidebarOpen không còn được truyền qua props
   locale: string;
   sidebarWidth: number;
   headerHeight: number;
 }
 
-export default function DashboardSidebar({ isSidebarOpen, locale, sidebarWidth, headerHeight }: DashboardSidebarProps) {
+export default function DashboardSidebar({ locale, sidebarWidth, headerHeight }: DashboardSidebarProps) {
   const t = useTranslations('');
   const currentPathname = usePathname();
+  const { isSidebarOpen } = useSidebar(); // CHANGE: Lấy trạng thái từ context
 
   const menuItems: MenuItem[] = [
+    // ... (mảng menuItems giữ nguyên)
     {
       label: t('Crawl'),
       icon: <FaDatabase className="h-5 w-5" />,
@@ -58,9 +59,9 @@ export default function DashboardSidebar({ isSidebarOpen, locale, sidebarWidth, 
       href: '/dashboard/conferences',
     },
     {
-      label: t('Submit_Paper_Admin'), // Key mới cho sidebar
-      icon: <FaPaperPlane className="h-5 w-5" />, // Icon mới
-      href: '/dashboard/submitPapers', // Đường dẫn mới
+      label: t('Submit_Paper_Admin'),
+      icon: <FaPaperPlane className="h-5 w-5" />,
+      href: '/dashboard/submitPapers',
     },
     {
       label: t('Accounts'),
@@ -69,51 +70,41 @@ export default function DashboardSidebar({ isSidebarOpen, locale, sidebarWidth, 
     },
   ];
 
+  // CHANGE: Cập nhật class để khớp với client pattern
   const sidebarClasses = `
-    fixed top-0 left-0
-    h-screen
+    fixed left-0
     overflow-y-auto
     transition-transform duration-300 ease-in-out
     bg-background
     shadow-md
-    z-20
-    w-[${sidebarWidth}px]
-    ${isSidebarOpen ? 'translate-x-0' : `-translate-x-full`}
+    z-30 // CHANGE: Tăng z-index để nằm trên overlay
+    w-[var(--sidebar-width)]
+    ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
   `;
 
-  const contentStyles = {
-    opacity: isSidebarOpen ? 1 : 0,
-    pointerEvents: isSidebarOpen ? 'auto' : 'none',
-    visibility: isSidebarOpen ? 'visible' : 'hidden',
+  // CHANGE: Áp dụng style để sidebar nằm dưới header, giống client
+  const sidebarStyles: React.CSSProperties & {
+    '--sidebar-width': string;
+  } = {
+    '--sidebar-width': `${sidebarWidth}px`,
+    top: `${headerHeight}px`,
+    height: `calc(100vh - ${headerHeight}px)`,
   };
+  
+  // REMOVED: contentStyles không còn cần thiết
 
   return (
-    <aside className={sidebarClasses}>
-      {/* Logo and Title area */}
-      <div
-        className='flex items-center p-2 border-b border-gray-200 dark:border-gray-700 transition-opacity duration-300 ease-in-out'
-        style={{
-          ...contentStyles,
-          height: `${headerHeight}px`,
-          display: 'flex',
-        } as React.CSSProperties}
-      >
-        <div className='flex items-center w-full'>
-          <div className='h-8 w-8 mr-2'>
-            <GlobeIcon />
-          </div>
-          <strong className='text-sm font-bold whitespace-nowrap text-foreground'>
-            {t('GlobalConferenceHub_Title')}
-          </strong>
-        </div>
-      </div>
+    <aside
+      className={sidebarClasses}
+      style={sidebarStyles} // CHANGE: Sử dụng style object
+    >
+      {/* REMOVED: Phần Logo và Title đã được chuyển ra Header chung */}
 
-      <nav className='w-full py-2'>
-        <ul className='w-full'>
+      {/* CHANGE: Thêm <nav> và transition opacity giống client */}
+      <nav className={`h-full overflow-y-auto transition-opacity duration-300 ${isSidebarOpen ? 'opacity-100' : 'opacity-0'}`}>
+        <ul className='w-full py-2'>
           {menuItems.map(item => {
             const fullHrefForCheck = `/${locale}${item.href}`;
-            // Kiểm tra nếu đường dẫn hiện tại bắt đầu bằng fullHrefForCheck
-            // Điều này giúp xử lý các đường dẫn con (ví dụ: /dashboard/accounts/users khi item.href là /dashboard/accounts)
             const isActive = currentPathname === fullHrefForCheck || currentPathname.startsWith(`${fullHrefForCheck}/`);
 
             return (
@@ -130,18 +121,16 @@ export default function DashboardSidebar({ isSidebarOpen, locale, sidebarWidth, 
                       : 'border-transparent text-foreground hover:bg-gray-100 dark:hover:bg-gray-700'
                     }
                   `}
-                  style={{
-                    ...contentStyles,
-                    display: 'flex',
-                  } as React.CSSProperties}
+                  // REMOVED: Inline style không cần thiết nữa
                 >
-                  <span className={`${isSidebarOpen ? 'mr-2' : 'mr-0'} transition-margin duration-300 ease-in-out`}>
+                  {/* CHANGE: Đơn giản hóa cấu trúc span, giống client */}
+                  <span className="mr-3">
                     {React.cloneElement(item.icon, {
                       className: `${item.icon.props.className || ''} ${isActive ? 'text-primary' : 'text-gray-600 dark:text-gray-300'}`
                     })}
                   </span>
                   
-                  <span className={`whitespace-nowrap text-sm ${isSidebarOpen ? '' : 'hidden'}`}>
+                  <span className="whitespace-nowrap text-sm">
                     {item.label}
                   </span>
                 </Link>

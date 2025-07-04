@@ -1,3 +1,4 @@
+// src/hooks/crawl/conference/useCrawlConfig.ts
 'use client';
 import { useState, useCallback } from 'react';
 import { MAX_ITEMS_PER_CRAWL_REQUEST } from '../constants';
@@ -16,16 +17,17 @@ const initialApiModels: ApiModels = {
 
 /**
  * Hook quản lý tất cả các cấu hình liên quan đến việc thực thi crawl.
- * Bao gồm lựa chọn model, cài đặt chunking, và độ trễ giữa các chunk.
+ * Bao gồm lựa chọn model, cài đặt chunking, độ trễ, và tùy chọn lưu file.
  */
 export const useCrawlConfig = () => {
     // --- State hiện có ---
-    const [enableChunking, setEnableChunking] = useState<boolean>(true); // Mặc định bật chunking để các cài đặt liên quan hiển thị
+    const [enableChunking, setEnableChunking] = useState<boolean>(true);
     const [chunkSize, setChunkSizeState] = useState<number>(MAX_ITEMS_PER_CRAWL_REQUEST);
     const [apiModels, setApiModels] = useState<ApiModels>({ ...initialApiModels });
-
-    // --- State mới cho độ trễ giữa các chunk ---
     const [chunkDelay, setChunkDelayState] = useState<number>(DEFAULT_CHUNK_DELAY);
+
+    // --- STATE MỚI CHO VIỆC LƯU FILE ---
+    const [recordFile, setRecordFile] = useState<boolean>(false); // Mặc định là false
 
     const setApiModel = useCallback((apiName: ApiName, model: CrawlModelType) => {
         setApiModels(prev => ({ ...prev, [apiName]: model }));
@@ -36,20 +38,18 @@ export const useCrawlConfig = () => {
         setChunkSizeState(newSize);
     }, []);
 
-    // --- Hàm setter mới cho độ trễ, đã bao gồm validation ---
     const setChunkDelay = useCallback((delayInSeconds: number) => {
-        // Đảm bảo giá trị luôn nằm trong khoảng cho phép
         const newDelay = Math.max(MIN_CHUNK_DELAY, Math.min(delayInSeconds, MAX_CHUNK_DELAY));
         setChunkDelayState(newDelay);
     }, []);
 
     const reset = useCallback(() => {
         setApiModels({ ...initialApiModels });
-        // Reset cả các cài đặt chunking về mặc định
         setEnableChunking(true);
         setChunkSizeState(MAX_ITEMS_PER_CRAWL_REQUEST);
         setChunkDelayState(DEFAULT_CHUNK_DELAY);
-        console.log("Crawl config (API models, chunking settings, delay) has been reset.");
+        setRecordFile(false); // Reset cả state mới
+        console.log("Crawl config (API models, chunking, delay, recordFile) has been reset.");
     }, []);
 
     return {
@@ -57,13 +57,15 @@ export const useCrawlConfig = () => {
         enableChunking,
         chunkSize,
         apiModels,
+        chunkDelay,
         setEnableChunking,
         setChunkSize,
         setApiModel,
-        
-        // State và hàm mới
-        chunkDelay,
         setChunkDelay,
+
+        // State và hàm mới
+        recordFile,
+        setRecordFile,
 
         // Hàm reset đã được cập nhật
         reset,

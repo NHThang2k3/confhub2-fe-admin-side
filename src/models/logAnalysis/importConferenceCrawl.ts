@@ -78,7 +78,8 @@ const initialApiModels: ApiModels = {
 export interface CrawlRequestPayload {
     description?: string;
     items: ConferenceApiPayloadItem[];
-    models: ApiModels;
+    models?: ApiModels;
+    recordFile?: boolean;
 }
 
 export interface UseConferenceCrawlReturn {

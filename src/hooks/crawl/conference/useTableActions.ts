@@ -5,7 +5,7 @@ import {
   MainSavingStatus,
   RowSaveStatus
 } from './useConferenceTableManager';
-import { useConferenceCrawl } from './useConferenceCrawl'; // Hook chính
+import { useConferenceCrawl } from './useConferenceCrawl';
 import { ApiModels } from '@/src/models/logAnalysis/importConferenceCrawl';
 import {
   saveConferencesToDB,
@@ -38,12 +38,12 @@ export const useTableActions = ({
   const [isProcessModalOpen, setIsProcessModalOpen] = useState(false);
   const [itemsToProcessWithAction, setItemsToProcessWithAction] = useState<ConferenceForAction[]>([]);
 
-  // --- THAY ĐỔI 1: LẤY CÁC HÀM VÀ CONFIG CẦN THIẾT ---
   const {
-    processCrawlRequest, // Thay thế startCrawlItems
-    enableChunking,      // Config cần thiết
-    chunkSize,           // Config cần thiết
-    chunkDelay,          // Config cần thiết
+    processCrawlRequest,
+    enableChunking,
+    chunkSize,
+    chunkDelay,
+    recordFile, // Vẫn giữ lại để có giá trị mặc định
   } = useConferenceCrawl();
 
   useEffect(() => {
@@ -52,9 +52,9 @@ export const useTableActions = ({
     setRowSaveErrors({});
     setIsProcessModalOpen(false);
     setItemsToProcessWithAction([]);
-  }, [...resetDependencies]); // <--- THAY ĐỔI QUAN TRỌNG Ở ĐÂY
+  }, [...resetDependencies]);
 
-
+  // ... (các hàm isSelectedWithProblem, isSaveEnabled, handleBulkSave giữ nguyên) ...
   const isSelectedWithProblem = useMemo(() => {
     if (selectedRowIds.length === 0) return false;
     const selectedOriginalData = allConferenceData.filter(
@@ -80,10 +80,10 @@ export const useTableActions = ({
     setMainSaveStatus('saving');
     const initialRowStatus: Record<string, RowSaveStatus> = {};
     selectedRowIds.forEach(id => {
-      initialRowStatus[id] = 'idle'; // Mark as pending/processing for UI
+      initialRowStatus[id] = 'idle';
     });
     setRowSaveStatus(initialRowStatus);
-    setRowSaveErrors({}); // Clear previous errors
+    setRowSaveErrors({});
 
     const conferencesToSave = allConferenceData.filter(
       conf => selectedRowIds.includes(conf.uniqueRowId)
@@ -92,7 +92,6 @@ export const useTableActions = ({
     const conferencePayloads: ConferenceToSavePayload[] = conferencesToSave.map(conf => ({
       acronym: conf.acronym,
       title: conf.title,
-      // uniqueRowId: conf.uniqueRowId, // Pass if saveConferencesToDB uses it for mapping
       extractedData: conf.finalResultPreview || conf.finalResult,
     }));
 
@@ -100,18 +99,15 @@ export const useTableActions = ({
 
     const finalRowStatusUpdate: Record<string, RowSaveStatus> = {};
     const finalRowErrorsUpdate: Record<string, string> = {};
-    let overallSuccess = dbSaveBatchResult.overallSuccess; // Start with API call success
+    let overallSuccess = dbSaveBatchResult.overallSuccess;
     const successfullySavedItemsForPersistence: PersistSaveStatusPayload[] = [];
 
-    // Process results from saveConferencesToDB
     dbSaveBatchResult.itemResults.forEach(itemResult => {
-      // Find the original conference to get its uniqueRowId
       const originalConf = conferencesToSave.find(
         c => c.acronym === itemResult.acronym && c.title === itemResult.title
       );
       if (!originalConf) {
         console.warn("Could not map DB save result back to a table row:", itemResult);
-        // This shouldn't happen if mapping logic in saveConferencesToDB is correct
         return;
       }
       const rowId = originalConf.uniqueRowId;
@@ -119,14 +115,14 @@ export const useTableActions = ({
       if (itemResult.success) {
         finalRowStatusUpdate[rowId] = 'success';
         successfullySavedItemsForPersistence.push({
-          batchRequestId: originalConf.requestId, // Assuming requestId is the batchRequestId
+          batchRequestId: originalConf.requestId,
           acronym: itemResult.acronym,
           title: itemResult.title,
           status: 'SAVED_TO_DATABASE',
           clientTimestamp: new Date().toISOString(),
         });
       } else {
-        overallSuccess = false; // If any item fails, the overall batch operation is not fully successful
+        overallSuccess = false;
         finalRowStatusUpdate[rowId] = 'error';
         finalRowErrorsUpdate[rowId] = itemResult.message || 'Save failed (unknown reason).';
       }
@@ -135,7 +131,6 @@ export const useTableActions = ({
     setRowSaveStatus(prev => ({ ...prev, ...finalRowStatusUpdate }));
     setRowSaveErrors(prev => ({ ...prev, ...finalRowErrorsUpdate }));
 
-    // Persist save statuses
     if (successfullySavedItemsForPersistence.length > 0) {
       console.log(`Attempting to persist status for ${successfullySavedItemsForPersistence.length} items.`);
       if (USE_BATCH_PERSISTENCE) {
@@ -146,14 +141,11 @@ export const useTableActions = ({
         persistBatchResult.itemResults.forEach(itemPersistResult => {
           if (!itemPersistResult.success) {
             console.warn(`Failed to persist save status for ${itemPersistResult.acronym} - ${itemPersistResult.title}: ${itemPersistResult.message}`);
-            // Optionally, update row status or add a specific warning if persistence fails
-            // For now, we just log it. The main save status is already set.
           } else {
             console.log(`Successfully persisted save status for ${itemPersistResult.acronym} - ${itemPersistResult.title}`);
           }
         });
       } else {
-        // Fallback to single persistence calls if batch is not enabled/ready
         console.log("Using single persistence calls as fallback.");
         const persistPromises = successfullySavedItemsForPersistence.map(payload =>
           persistSingleConferenceSaveStatus(payload).then(result => {
@@ -168,17 +160,15 @@ export const useTableActions = ({
       }
     }
 
-    // Determine final mainSaveStatus
-    // If dbSaveBatchResult.overallSuccess is false, it means the API call itself failed, so it's an error.
-    // If true, then check if all individual items were successful.
     const allItemsSucceeded = dbSaveBatchResult.itemResults.every(item => item.success);
     setMainSaveStatus(dbSaveBatchResult.overallSuccess && allItemsSucceeded ? 'success' : 'error');
 
     if (dbSaveBatchResult.overallSuccess && allItemsSucceeded && onSaveSuccess) {
-      onSaveSuccess(); // e.g., deselect rows
+      onSaveSuccess();
     }
 
-  }, [isSaveEnabled, selectedRowIds, allConferenceData, /* rowSaveStatus, rowSaveErrors removed as they are set inside */]);
+  }, [isSaveEnabled, selectedRowIds, allConferenceData]);
+
 
   const handleProcessAgainClick = useCallback(() => {
     if (selectedRowIds.length === 0) {
@@ -204,25 +194,26 @@ export const useTableActions = ({
     }
   }, [selectedRowIds, allConferenceData]);
 
-  // --- THAY ĐỔI 2: CẬP NHẬT HÀM XỬ LÝ ---
+  // <<< THAY ĐỔI: Cập nhật signature và logic của hàm
   const handleConfirmProcessWithActionAndModels = useCallback(async (
     processedItemsFromModal: ConferenceForAction[],
     selectedModels: ApiModels,
-    description?: string
+    description: string | undefined,
+    recordFileOverride: boolean // Nhận giá trị ghi đè
   ) => {
     if (processedItemsFromModal.length > 0) {
-      // Gọi trực tiếp processCrawlRequest với đầy đủ các tham số
       await processCrawlRequest(
         processedItemsFromModal,
         selectedModels,
-        enableChunking, // Sử dụng config từ useConferenceCrawl
-        chunkSize,      // Sử dụng config từ useConferenceCrawl
-        chunkDelay,     // Sử dụng config từ useConferenceCrawl
-        "Programmatic Re-Crawl from Table", // Mô tả nguồn
+        enableChunking,
+        chunkSize,
+        chunkDelay,
+        // Sử dụng giá trị ghi đè từ modal.
+        // Giá trị `recordFile` từ useConferenceCrawl không còn được dùng trực tiếp ở đây.
+        recordFileOverride,
+        "Programmatic Re-Crawl from Table",
         description
       );
-      // Sau khi gọi, một modal khác (ví dụ: modal tiến trình crawl) có thể sẽ hiển thị
-      // hoặc người dùng sẽ thấy log messages được cập nhật.
     }
     setIsProcessModalOpen(false);
     setItemsToProcessWithAction([]);
@@ -230,8 +221,9 @@ export const useTableActions = ({
     processCrawlRequest,
     enableChunking,
     chunkSize,
-    chunkDelay
-  ]); // Thêm các phụ thuộc mới
+    chunkDelay,
+    // Không cần `recordFile` ở đây nữa vì chúng ta nhận giá trị ghi đè
+  ]);
 
   return {
     mainSaveStatus,

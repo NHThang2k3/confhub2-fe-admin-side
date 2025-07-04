@@ -1,4 +1,3 @@
-// src/app/[locale]/dashboard/logAnalysis/steps/ConferenceSelectionStep.tsx
 import React, { useMemo, useState, useCallback, useEffect, useRef } from 'react';
 import { Conference } from '@/src/models/logAnalysis/importConferenceCrawl';
 import {
@@ -20,6 +19,8 @@ import { getConferenceTableColumns } from './conferenceTable/conferenceTable.col
 import GlobalActionControls from './conferenceTable/GlobalActionControls';
 import TableFilters from './conferenceTable/TableFilters';
 import TablePagination from './conferenceTable/TablePagination';
+// Import hàm helper từ hook để đảm bảo tính nhất quán
+import { getConferenceIdentifier } from '@/src/hooks/crawl/conference/useSelectionManager';
 
 interface ConferenceSelectionStepProps {
   parsedData: Conference[];
@@ -30,10 +31,13 @@ interface ConferenceSelectionStepProps {
   onUpdateActionTypeForSelected: (actionType: 'crawl' | 'update', selectedRows: Conference[]) => void;
 }
 
-const getConferenceRowId = (originalRow: Conference, index: number): string => {
-  return originalRow.id || originalRow.acronym || `row-${index}`;
-};
+const LOG_PREFIX = '[ConferenceSelectionStep]';
 
+const getConferenceRowId = (originalRow: Conference, index: number): string => {
+  const id = getConferenceIdentifier(originalRow) || `unidentified-row-${index}`;
+  // console.log(`${LOG_PREFIX} getRowId for row index ${index}: '${id}'`); // This can be very noisy, enable if needed
+  return id;
+};
 const ConferenceSelectionStep: React.FC<ConferenceSelectionStepProps> = ({
   parsedData,
   onSelectionChanged,
@@ -43,9 +47,7 @@ const ConferenceSelectionStep: React.FC<ConferenceSelectionStepProps> = ({
   onUpdateActionTypeForSelected,
 }) => {
   const t = useTranslations('ConferenceSelectionStep');
-  useEffect(() => {
-    console.log("Rendering ConferenceSelectionStep with parsedData:", parsedData);
-  }, [parsedData]);
+
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
@@ -55,7 +57,18 @@ const ConferenceSelectionStep: React.FC<ConferenceSelectionStepProps> = ({
     pageSize: 10,
   });
 
+  const prevParsedDataRef = useRef<Conference[]>();
+
+  console.log(`${LOG_PREFIX} Component Rendering...`);
+  console.log(`${LOG_PREFIX} Current rowSelection state:`, rowSelection);
+
+  const memoizedData = useMemo(() => {
+    console.log(`${LOG_PREFIX} Rememoizing data. Data length: ${parsedData?.length || 0}`);
+    return parsedData || [];
+  }, [parsedData]);
+
   const handleUpdateActionTypeForRow = useCallback((actionType: 'crawl' | 'update', conference: Conference) => {
+    console.log(`${LOG_PREFIX} handleUpdateActionTypeForRow called for row:`, getConferenceIdentifier(conference));
     onUpdateActionTypeForSelected(actionType, [conference]);
   }, [onUpdateActionTypeForSelected]);
 
@@ -64,51 +77,8 @@ const ConferenceSelectionStep: React.FC<ConferenceSelectionStepProps> = ({
     [handleUpdateActionTypeForRow]
   );
 
-  const memoizedData = useMemo(() => {
-    if (!parsedData) return [];
-
-    // Bước 1: Làm sạch mảng researchFields, loại bỏ các giá trị 'UNDEFINED'
-    const cleanedData = parsedData.map(conference => {
-      // Tạo một bản sao của đối tượng conference để không sửa đổi dữ liệu gốc
-      const cleanedConference = { ...conference };
-
-      // if (Array.isArray(cleanedConference.researchFields)) {
-      //   // Lọc bỏ các string 'UNDEFINED' (không phải undefined của JS)
-      //   cleanedConference.researchFields = cleanedConference.researchFields.filter(
-      //     field => typeof field === 'string'
-      //   );
-      // } else {
-      //   // Nếu researchFields không phải mảng, hoặc là undefined/null, coi như mảng rỗng để lọc ở bước sau
-      //   cleanedConference.researchFields = [];
-      // }
-      return cleanedConference;
-    });
-
-    // Bước 2: Lọc bỏ các hội nghị không hợp lệ dựa trên các điều kiện
-    return cleanedData
-    // .filter(conference => {
-    //   // 1. Kiểm tra researchFields: Phải là mảng và không rỗng SAU KHI làm sạch
-    //   const hasValidResearchFields = Array.isArray(conference.researchFields) &&
-    //                                  conference.researchFields.length > 0;
-
-    //   // 2. Kiểm tra ranks: Phải là mảng, không rỗng, và chứa các giá trị string không rỗng
-    //   const hasValidRank = Array.isArray(conference.ranks) &&
-    //                        conference.ranks.length > 0 &&
-    //                        conference.ranks.every(rank => typeof rank === 'string' && rank.trim() !== '');
-
-    //   // 3. Kiểm tra core (từ sources): Phải là mảng, không rỗng, và có ít nhất một nguồn bắt đầu bằng 'CORE'
-    //   const hasValidCoreSource = Array.isArray(conference.sources) &&
-    //                              conference.sources.some(source =>
-    //                                 typeof source === 'string' && source.trim().toUpperCase().startsWith('CORE')
-    //                              );
-
-    //   // Chỉ giữ lại dòng nếu tất cả các điều kiện đều đúng
-    //   return hasValidResearchFields && hasValidRank && hasValidCoreSource;
-    // });
-  }, [parsedData]);
-
   const table: Table<Conference> = useReactTable({
-    data: memoizedData, // Dữ liệu đã được làm sạch và lọc
+    data: memoizedData,
     columns,
     state: {
       sorting,
@@ -117,7 +87,13 @@ const ConferenceSelectionStep: React.FC<ConferenceSelectionStepProps> = ({
       pagination,
     },
     enableRowSelection: true,
-    onRowSelectionChange: setRowSelection,
+    onRowSelectionChange: (updater) => {
+      console.log(`${LOG_PREFIX} onRowSelectionChange triggered.`);
+      // `updater` can be a function, so we resolve it to get the new state
+      const newSelection = typeof updater === 'function' ? updater(rowSelection) : updater;
+      console.log(`${LOG_PREFIX} New selection state will be:`, newSelection);
+      setRowSelection(newSelection);
+    },
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     onPaginationChange: setPagination,
@@ -126,31 +102,51 @@ const ConferenceSelectionStep: React.FC<ConferenceSelectionStepProps> = ({
     getFilteredRowModel: getFilteredRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getRowId: getConferenceRowId,
-    manualPagination: false,
   });
 
-  // Effect để thông báo cho component cha về thay đổi lựa chọn
   useEffect(() => {
+    console.log(`${LOG_PREFIX} useEffect[rowSelection] - Syncing selection to parent.`);
     const currentlySelectedOriginalRows = table.getSelectedRowModel().rows.map(row => row.original);
     onSelectionChanged(currentlySelectedOriginalRows);
   }, [rowSelection, table, onSelectionChanged]);
 
-  // Hành động cho "Apply to All Selected" (áp dụng cho tất cả các dòng hiện đang được chọn, bất kể trang hay bộ lọc)
+  useEffect(() => {
+    console.log(`${LOG_PREFIX} useEffect[parsedData] - Checking if table state needs reset.`);
+
+    const oldData = prevParsedDataRef.current;
+    const newData = parsedData;
+
+    // Điều kiện để reset:
+    // 1. Dữ liệu cũ không tồn tại VÀ dữ liệu mới tồn tại (lần tải đầu tiên).
+    // 2. Hoặc, độ dài của dữ liệu mới khác với độ dài dữ liệu cũ (tải file mới).
+    // Chúng ta chỉ reset khi có sự thay đổi cấu trúc lớn, không phải update tại chỗ.
+    const isNewFileLoad = oldData && oldData.length !== newData.length;
+
+    if (isNewFileLoad) {
+      console.log(`${LOG_PREFIX} New file detected (data length changed from ${oldData.length} to ${newData.length}). Resetting table state.`);
+      setRowSelection({});
+      setColumnFilters([]);
+      setPagination(p => ({ ...p, pageIndex: 0 }));
+    } else {
+      console.log(`${LOG_PREFIX} Data updated, but it's an in-place update or initial load. No reset performed.`);
+    }
+
+    // Luôn cập nhật ref cho lần so sánh tiếp theo.
+    prevParsedDataRef.current = parsedData;
+  }, [parsedData]);
+
   const handleApplyGlobalActionToAllSelected = useCallback(() => {
-    const selectedRowModels = table.getSelectedRowModel().rows;
-    if (selectedRowModels.length > 0) {
-      const conferencesToUpdate = selectedRowModels.map(row => row.original);
-      onUpdateActionTypeForSelected(globalActionType, conferencesToUpdate);
+    const selectedRows = table.getSelectedRowModel().rows.map(row => row.original);
+    console.log(`${LOG_PREFIX} Applying global action '${globalActionType}' to all ${selectedRows.length} selected rows.`);
+    if (selectedRows.length > 0) {
+      onUpdateActionTypeForSelected(globalActionType, selectedRows);
     } else {
       alert(t('alerts.noConferenceSelectedForAction'));
     }
   }, [table, globalActionType, onUpdateActionTypeForSelected, t]);
 
-  // Hành động cho "Apply to Page Selected" (áp dụng cho các dòng được chọn trên trang hiện tại)
   const handleApplyGlobalActionToPageSelected = useCallback(() => {
-    const pageRows = table.getRowModel().rows;
-    const selectedOnPage = pageRows.filter(row => row.getIsSelected()).map(row => row.original);
-
+    const selectedOnPage = table.getRowModel().rows.filter(row => row.getIsSelected()).map(row => row.original);
     if (selectedOnPage.length > 0) {
       onUpdateActionTypeForSelected(globalActionType, selectedOnPage);
     } else {
@@ -158,7 +154,6 @@ const ConferenceSelectionStep: React.FC<ConferenceSelectionStepProps> = ({
     }
   }, [table, globalActionType, onUpdateActionTypeForSelected, t]);
 
-  // NEW: Chọn tất cả các dòng *đã được lọc*
   const handleSelectAllFilteredRows = useCallback(() => {
     const filteredRowIds = table.getFilteredRowModel().rows.reduce((acc, row) => {
       acc[row.id] = true;
@@ -167,42 +162,25 @@ const ConferenceSelectionStep: React.FC<ConferenceSelectionStepProps> = ({
     table.setRowSelection(filteredRowIds);
   }, [table]);
 
-  // Bỏ chọn TẤT CẢ các dòng (xóa tất cả lựa chọn)
   const handleDeselectAllDataRows = useCallback(() => {
     table.setRowSelection({});
   }, [table]);
 
-  // Reset lựa chọn và phân trang nếu parsedData thay đổi đáng kể (ví dụ: file mới)
-  const prevParsedDataRef = useRef<Conference[]>();
-  useEffect(() => {
-    if (prevParsedDataRef.current !== parsedData) {
-      if (!parsedData || parsedData.length === 0) {
-        setRowSelection({});
-        setColumnFilters([]); // Reset filters
-        setPagination(prev => ({ ...prev, pageIndex: 0 }));
-      }
-    }
-    prevParsedDataRef.current = parsedData;
-  }, [parsedData]);
-
   // Các biến đếm cho UI
-  const totalSelectedRowCount = table.getSelectedRowModel().rows.length;
+  const totalSelectedRowCount = Object.keys(rowSelection).length;
   const pageRows = table.getRowModel().rows;
-
   const pageSelectedRowCount = pageRows.filter(row => row.getIsSelected()).length;
-  const canApplyToPage = pageRows.length > 0;
+  const filteredRowCount = table.getFilteredRowModel().rows.length;
+  const isAllFilteredDataSelected = filteredRowCount > 0 && filteredRowCount === totalSelectedRowCount;
 
-  // NEW: Logic cho "is all filtered data selected" và số lượng dòng đã lọc
-  const filteredRows = table.getFilteredRowModel().rows;
-  const filteredRowCount = filteredRows.length;
-  const isAllFilteredDataSelected = filteredRowCount > 0 && filteredRows.every(row => row.getIsSelected());
+  // Thêm một log cuối cùng trước khi render để xem trạng thái cuối cùng
+  console.log(`${LOG_PREFIX} Final state before render. Total selected: ${totalSelectedRowCount}, Can proceed: ${canProceed}`);
+
 
   return (
     <div className="space-y-4 md:space-y-6 rounded-lg border border-gray-200 p-3 md:p-6 bg-white shadow">
       <h3 className="text-base md:text-lg font-medium leading-6 text-gray-900">{t('title')}</h3>
-      <p className="text-xs md:text-sm text-gray-600">
-        {t('description')}
-      </p>
+      <p className="text-xs md:text-sm text-gray-600">{t('description')}</p>
 
       <GlobalActionControls
         globalActionType={globalActionType}
@@ -211,7 +189,7 @@ const ConferenceSelectionStep: React.FC<ConferenceSelectionStepProps> = ({
         onApplyGlobalActionToPageSelected={handleApplyGlobalActionToPageSelected}
         totalSelectedRowCount={totalSelectedRowCount}
         pageSelectedRowCount={pageSelectedRowCount}
-        canApplyToPage={canApplyToPage}
+        canApplyToPage={pageRows.length > 0}
         onSelectAllDataRows={handleSelectAllFilteredRows}
         onDeselectAllDataRows={handleDeselectAllDataRows}
         isAllDataSelected={isAllFilteredDataSelected}
@@ -223,8 +201,7 @@ const ConferenceSelectionStep: React.FC<ConferenceSelectionStepProps> = ({
       <div className="w-full rounded-lg border border-gray-200">
         <div className="overflow-x-auto">
           <div className="inline-block min-w-full align-middle">
-            {/* <div className="overflow-y-auto" style={{ maxHeight: 'calc(100vh - 520px)' }}> */}
-            <div className="overflow-y-auto max-h-[560px]" >
+            <div className="overflow-y-auto max-h-[560px]">
               <table className="min-w-full divide-y divide-gray-200 table-fixed">
                 <thead className="bg-blue-50 sticky top-0 z-10">
                   {table.getHeaderGroups().map(headerGroup => (
@@ -245,10 +222,7 @@ const ConferenceSelectionStep: React.FC<ConferenceSelectionStepProps> = ({
                                 onClick: header.column.getToggleSortingHandler(),
                               }}
                             >
-                              {flexRender(
-                                header.column.columnDef.header,
-                                header.getContext()
-                              )}
+                              {flexRender(header.column.columnDef.header, header.getContext())}
                               {header.column.getCanSort() && (
                                 <>
                                   {{
@@ -269,7 +243,7 @@ const ConferenceSelectionStep: React.FC<ConferenceSelectionStepProps> = ({
                 <tbody className="divide-y divide-gray-200 bg-white">
                   {table.getRowModel().rows.length > 0 ? (
                     table.getRowModel().rows.map(row => (
-                      <tr key={row.id} className={`hover:bg-gray-5 transition-colors ${row.getIsSelected() ? 'bg-indigo-50' : ''}`}>
+                      <tr key={row.id} className={`hover:bg-gray-20 transition-colors ${row.getIsSelected() ? 'bg-indigo-50' : ''}`}>
                         {row.getVisibleCells().map(cell => (
                           <td
                             key={cell.id}
@@ -307,7 +281,7 @@ const ConferenceSelectionStep: React.FC<ConferenceSelectionStepProps> = ({
         <button
           type="button"
           onClick={onPrev}
-          className="w-full sm:w-auto rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-5 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+          className="w-full sm:w-auto rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-20 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
         >
           {t('navigation.previousStep')}
         </button>
