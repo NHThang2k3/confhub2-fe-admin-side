@@ -31,7 +31,7 @@ const Pagination: React.FC<PaginationProps> = ({
       <button
         onClick={() => paginate(currentPage - 1)}
         disabled={currentPage === 1}
-        className='mr-2 rounded-md bg-gray-200 px-2 py-1 hover:bg-gray-300  disabled:cursor-not-allowed disabled:opacity-50 dark:bg-gray-800 dark:hover:bg-gray-900'
+        className='mr-2 rounded-md bg-gray-200 px-2 py-1 hover:bg-gray-300  disabled:cursor-not-allowed disabled:opacity-50  '
       >
         {t('Previous')}
       </button>
@@ -47,7 +47,7 @@ const Pagination: React.FC<PaginationProps> = ({
             <button
               key={number}
               onClick={() => paginate(number)}
-              className={`mr-1 rounded-md bg-gray-200 px-2 py-1 hover:bg-gray-300  dark:bg-gray-800 dark:hover:bg-gray-900  ${isCurrent ? 'bg-gray-400 font-bold dark:bg-black' : ''}`}
+              className={`mr-1 rounded-md bg-gray-200 px-2 py-1 hover:bg-gray-300     ${isCurrent ? 'bg-gray-400 font-bold ' : ''}`}
             >
               {number}
             </button>
@@ -66,7 +66,7 @@ const Pagination: React.FC<PaginationProps> = ({
       <button
         onClick={() => paginate(currentPage + 1)}
         disabled={currentPage === totalPages}
-        className='rounded-md bg-gray-200 px-2 py-1 hover:bg-gray-300 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-gray-800 dark:hover:bg-gray-900'
+        className='rounded-md bg-gray-200 px-2 py-1 hover:bg-gray-300 disabled:cursor-not-allowed disabled:opacity-50  '
       >
         {t('Next')}
       </button>

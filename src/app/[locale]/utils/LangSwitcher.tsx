@@ -73,7 +73,7 @@ const LangSwitcher: React.FC = () => {
     <div className='w-full'>
       <div className='relative' ref={dropdownRef}>
         <button
-          className='text-destructive inline-flex w-full items-center justify-between gap-2 rounded px-2 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 md:px-4'
+          className='text-destructive inline-flex w-full items-center justify-between gap-2 rounded px-2 py-2 text-sm hover:bg-gray-100 md:px-4'
           onClick={() => setIsOptionsExpanded(!isOptionsExpanded)}
           aria-haspopup='true'
           aria-expanded={isOptionsExpanded}

@@ -161,7 +161,7 @@ const UserDropdown: FC<Props> = ({
 
       {isClient && (
         <div
-          className={`absolute right-0 top-full z-50 mt-2 w-48 rounded-md border border-gray-200 bg-white shadow-lg focus:outline-none dark:border-gray-700 dark:bg-gray-800 ${
+          className={`absolute right-0 top-full z-50 mt-2 w-48 rounded-md border border-gray-200 bg-white shadow-lg focus:outline-none  ${
             isUserDropdownOpen ? '' : 'hidden'
           }`}
           aria-labelledby='user-menu-button'
@@ -181,7 +181,7 @@ const UserDropdown: FC<Props> = ({
             {/* <Link
               href={{ pathname: `/dashboard/crawl` }}
               locale={locale} // Pass locale
-              className='block px-2 py-2 text-sm  hover:bg-gray-100  dark:hover:bg-gray-700'
+              className='block px-2 py-2 text-sm  hover:bg-gray-100  '
               onClick={handleLinkClick} // Use the click handler
             >
               {t('Crawl')} 
@@ -189,7 +189,7 @@ const UserDropdown: FC<Props> = ({
             <Link
               href={{ pathname: `/dashboard/logAnalysis` }}
               locale={locale} // Pass locale
-              className='block px-2 py-2 text-sm  hover:bg-gray-100  dark:hover:bg-gray-700'
+              className='block px-2 py-2 text-sm  hover:bg-gray-100  '
               onClick={handleLinkClick} // Use the click handler
             >
               {t('Analysis')}
@@ -197,7 +197,7 @@ const UserDropdown: FC<Props> = ({
             <Link
               href={{ pathname: `/dashboard/moderation`}}
               locale={locale} // Pass locale
-              className='block px-2 py-2 text-sm  hover:bg-gray-100  dark:hover:bg-gray-700'
+              className='block px-2 py-2 text-sm  hover:bg-gray-100  '
               onClick={handleLinkClick} // Use the click handler
             >
               {t('Moderation.Moderation')} 
@@ -205,7 +205,7 @@ const UserDropdown: FC<Props> = ({
             <Link
               href={{ pathname: `/dashboard/conferences` }}
               locale={locale} // Pass locale
-              className='block px-2 py-2 text-sm  hover:bg-gray-100  dark:hover:bg-gray-700'
+              className='block px-2 py-2 text-sm  hover:bg-gray-100  '
               onClick={handleLinkClick} // Use the click handler
             >
               {t('Conferences')} 
@@ -216,7 +216,7 @@ const UserDropdown: FC<Props> = ({
                 query: { tab: 'requestadmintab' }
               }}
               locale={locale} // Pass locale
-              className='block px-2 py-2 text-sm  hover:bg-gray-100  dark:hover:bg-gray-700'
+              className='block px-2 py-2 text-sm  hover:bg-gray-100  '
               onClick={handleLinkClick} // Use the click handler
             >
               {t('Request_Admin_Tab')}
@@ -224,7 +224,7 @@ const UserDropdown: FC<Props> = ({
             {/* <Link
               href={{ pathname: `/dashboard`, query: { tab: 'profile' } }}
               locale={locale} // Pass locale
-              className='block px-2 py-2 text-sm  hover:bg-gray-100  dark:hover:bg-gray-700'
+              className='block px-2 py-2 text-sm  hover:bg-gray-100  '
               onClick={handleLinkClick} // Use the click handler
             >
               {t('Profile')}
@@ -236,14 +236,14 @@ const UserDropdown: FC<Props> = ({
                 query: { tab: 'notifications' }
               }}
               locale={locale} // Pass locale
-              className='block px-2 py-2 text-sm  hover:bg-gray-100  dark:hover:bg-gray-700'
+              className='block px-2 py-2 text-sm  hover:bg-gray-100  '
               onClick={handleLinkClick} // Use the click handler
             >
               {t('Notifications')}
             </Link> */}
 
 
-            {/* <hr className='my-1 border-gray-200 dark:border-gray-700' /> */}
+            {/* <hr className='my-1 border-gray-200 ' /> */}
 
             {/* Logout Button - ALREADY uses t() for translation */}
             <button
@@ -263,7 +263,7 @@ const UserDropdown: FC<Props> = ({
 
                 router.push(`/${locale}/auth/login`); // Redirect to login page with the current locale
               }}
-              className='block w-full px-2 py-2 text-left text-sm text-red-600 hover:bg-gray-100 focus:bg-gray-100 focus:outline-none dark:text-red-500 dark:hover:bg-gray-700 dark:focus:bg-gray-700'
+              className='block w-full px-2 py-2 text-left text-sm text-red-600 hover:bg-gray-100 focus:bg-gray-100 focus:outline-none '
             >
               {t('Logout')} {/* <-- Already uses t() */}
             </button>

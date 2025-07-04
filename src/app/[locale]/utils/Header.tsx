@@ -88,7 +88,7 @@ export const Header: FC<Props> = ({
       strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
-      className="lucide lucide-menu text-gray-700 dark:text-gray-300"
+      className="lucide lucide-menu text-gray-700 "
     >
       <line x1="4" x2="20" y1="12" y2="12" />
       <line x1="4" x2="20" y1="6" y2="6" />
@@ -107,7 +107,7 @@ export const Header: FC<Props> = ({
       strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
-      className="lucide lucide-x text-gray-700 dark:text-gray-300"
+      className="lucide lucide-x text-gray-700 "
     >
       <line x1="18" x2="6" y1="6" y2="18" />
       <line x1="6" x2="18" y1="6" y2="18" />
@@ -130,7 +130,7 @@ export const Header: FC<Props> = ({
       <div className="flex items-center gap-2 ml-2">
         <button
           onClick={toggleSidebar}
-          className="p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700 focus:outline-none transition-colors duration-200"
+          className="p-2 rounded hover:bg-gray-200  focus:outline-none transition-colors duration-200"
           aria-label={
             isSidebarOpen
               ? t('Header_AriaLabel_CloseSidebar')

@@ -89,7 +89,7 @@ export const viewport: Viewport = {
 }
 
 export function generateStaticParams() {
-  return [{ locale: 'en' }, { locale: 'vi' }];
+  return [{ locale: 'en' }];
 }
 
 export default async function RootLayout({
@@ -131,7 +131,7 @@ export default async function RootLayout({
             enableSystem
             attribute='class'
             defaultTheme='light'
-            themes={['light', 'dark']}
+            themes={['light']}
           >
             {/* --- ToastContainer đặt ở đây --- */}
             {/* Có thể thêm props để tùy chỉnh, ví dụ: position, autoClose, theme */}
@@ -145,7 +145,7 @@ export default async function RootLayout({
               pauseOnFocusLoss
               draggable
               pauseOnHover
-              theme='colored' // Sử dụng theme màu ('light', 'dark', 'colored') - 'colored' sẽ có màu theo type (success, error,...)
+              theme='colored' 
             />
 
             {/* --- NextIntlClientProvider --- */}

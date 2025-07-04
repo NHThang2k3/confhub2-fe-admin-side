@@ -90,7 +90,7 @@ export default function DashboardSidebar({ isSidebarOpen, locale, sidebarWidth, 
     <aside className={sidebarClasses}>
       {/* Logo and Title area */}
       <div
-        className='flex items-center p-2 border-b border-gray-200 dark:border-gray-700 transition-opacity duration-300 ease-in-out'
+        className='flex items-center p-2 border-b border-gray-200  transition-opacity duration-300 ease-in-out'
         style={{
           ...contentStyles,
           height: `${headerHeight}px`,
@@ -125,7 +125,7 @@ export default function DashboardSidebar({ isSidebarOpen, locale, sidebarWidth, 
                     border-l-4
                     ${isActive
                       ? 'border-primary bg-accent text-accent-foreground font-bold'
-                      : 'border-transparent text-foreground hover:bg-gray-100 dark:hover:bg-gray-700'
+                      : 'border-transparent text-foreground hover:bg-gray-100 '
                     }
                   `}
                   style={{
@@ -135,7 +135,7 @@ export default function DashboardSidebar({ isSidebarOpen, locale, sidebarWidth, 
                 >
                   <span className={`${isSidebarOpen ? 'mr-2' : 'mr-0'} transition-margin duration-300 ease-in-out`}>
                     {React.cloneElement(item.icon, {
-                      className: `${item.icon.props.className || ''} ${isActive ? 'text-primary' : 'text-gray-600 dark:text-gray-300'}`
+                      className: `${item.icon.props.className || ''} ${isActive ? 'text-primary' : 'text-gray-600 '}`
                     })}
                   </span>
                   
