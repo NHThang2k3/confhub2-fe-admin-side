@@ -1,8 +1,10 @@
 // src/components/crawl/steps/ConfigurationStep.tsx
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react'; // <<< THAY ĐỔI: Thêm useEffect
 import { useTranslations } from 'next-intl';
 import { ApiName, CrawlModelType } from '@/src/models/logAnalysis/crawl.types';
 
+const MIN_CHUNK_SIZE = 1;
+const MAX_CHUNK_SIZE = 50;
 const MIN_CHUNK_DELAY = 5;
 const MAX_CHUNK_DELAY = 300;
 
@@ -18,8 +20,8 @@ interface ConfigurationStepProps {
     setChunkSize: (size: number) => void;
     chunkDelay: number;
     setChunkDelay: (delay: number) => void;
-    recordFile: boolean; // <<< PROP MỚI
-    setRecordFile: (enabled: boolean) => void; // <<< PROP MỚI
+    recordFile: boolean;
+    setRecordFile: (enabled: boolean) => void;
     apiModels: Record<ApiName, CrawlModelType | null>;
     setApiModel: (apiName: ApiName, modelType: CrawlModelType) => void;
     apiStepsForUploader: ApiStepConfig[];
@@ -37,8 +39,8 @@ const ConfigurationStep: React.FC<ConfigurationStepProps> = ({
     setChunkSize,
     chunkDelay,
     setChunkDelay,
-    recordFile, // <<< NHẬN PROP MỚI
-    setRecordFile, // <<< NHẬN PROP MỚI
+    recordFile,
+    setRecordFile,
     apiModels,
     setApiModel,
     apiStepsForUploader,
@@ -49,6 +51,51 @@ const ConfigurationStep: React.FC<ConfigurationStepProps> = ({
     canProceed,
 }) => {
     const t = useTranslations('ConfigurationStep');
+
+    // <<< THAY ĐỔI: State cục bộ để quản lý giá trị hiển thị của input
+    const [displayChunkSize, setDisplayChunkSize] = useState<string | number>(chunkSize);
+    const [displayChunkDelay, setDisplayChunkDelay] = useState<string | number>(chunkDelay);
+
+    // <<< THAY ĐỔI: Đồng bộ state cục bộ khi props từ cha thay đổi
+    useEffect(() => {
+        setDisplayChunkSize(chunkSize);
+    }, [chunkSize]);
+
+    useEffect(() => {
+        setDisplayChunkDelay(chunkDelay);
+    }, [chunkDelay]);
+
+    // <<< THAY ĐỔI: Hàm xử lý khi người dùng rời khỏi ô input (onBlur)
+    const handleChunkSizeBlur = () => {
+        let value = parseInt(String(displayChunkSize), 10);
+
+        if (isNaN(value)) {
+            value = MIN_CHUNK_SIZE; // Nếu rỗng hoặc không phải số, đặt về giá trị min
+        }
+
+        // Kẹp giá trị trong khoảng min/max
+        const clampedValue = Math.max(MIN_CHUNK_SIZE, Math.min(MAX_CHUNK_SIZE, value));
+
+        // Cập nhật state cha và state hiển thị
+        setChunkSize(clampedValue);
+        setDisplayChunkSize(clampedValue);
+    };
+
+    const handleChunkDelayBlur = () => {
+        let value = parseInt(String(displayChunkDelay), 10);
+
+        if (isNaN(value)) {
+            value = MIN_CHUNK_DELAY; // Nếu rỗng hoặc không phải số, đặt về giá trị min
+        }
+
+        // Kẹp giá trị trong khoảng min/max
+        const clampedValue = Math.max(MIN_CHUNK_DELAY, Math.min(MAX_CHUNK_DELAY, value));
+
+        // Cập nhật state cha và state hiển thị
+        setChunkDelay(clampedValue);
+        setDisplayChunkDelay(clampedValue);
+    };
+
 
     const modelDescriptions: Record<CrawlModelType, string> = useMemo(() => ({
         'non-tuned': t('modelDescriptions.nonTuned'),
@@ -71,15 +118,14 @@ const ConfigurationStep: React.FC<ConfigurationStepProps> = ({
 
     return (
         <div className="space-y-6 rounded-lg border border-gray-200 p-5 bg-white shadow-md mb-6">
+            {/* ... phần code không đổi ... */}
             <div className="pb-3 border-b border-gray-200 mb-5">
                 <h3 className="text-xl font-semibold leading-6 text-gray-900">{t('header.title')}</h3>
                 <p className="mt-1 text-sm text-gray-600">{t('header.description')}</p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
-                {/* Column 1: Chunking & Output Configuration */}
                 <div className="space-y-6">
-                    {/* Chunking Settings */}
                     <div className='rounded-md border border-gray-200 bg-gray-5 p-5 space-y-4 shadow-sm'>
                         <h4 className='text-base font-semibold text-gray-800'>{t('chunking.title')}</h4>
                         <p className="text-sm text-gray-600 mb-3">{t('chunking.description')}</p>
@@ -90,19 +136,47 @@ const ConfigurationStep: React.FC<ConfigurationStepProps> = ({
                         <p className="text-xs text-gray-500 mb-4">{t('chunking.enableDescription')}</p>
                         <div className={`space-y-4 transition-opacity duration-300 ${!enableChunking ? 'opacity-50 pointer-events-none' : ''}`}>
                             <div>
-                                <label htmlFor='chunk-size' className='block text-sm font-medium text-gray-700'>{t('chunking.sizeLabel', { min: 1, max: 50 })}</label>
-                                <div className="mt-1"><input id='chunk-size' type='number' min='1' max='50' className='w-24 rounded-md border border-gray-300 py-1.5 px-2 shadow-sm' value={chunkSize} onChange={e => setChunkSize(parseInt(e.target.value, 10) || 1)} disabled={!enableChunking || isCrawling} /></div>
+                                <label htmlFor='chunk-size' className='block text-sm font-medium text-gray-700'>{t('chunking.sizeLabel', { min: MIN_CHUNK_SIZE, max: MAX_CHUNK_SIZE })}</label>
+                                <div className="mt-1">
+                                    {/* <<< THAY ĐỔI: Sử dụng state cục bộ và các handler mới */}
+                                    <input
+                                        id='chunk-size'
+                                        type='number'
+                                        min={MIN_CHUNK_SIZE}
+                                        max={MAX_CHUNK_SIZE}
+                                        defaultValue={MAX_CHUNK_SIZE}
+                                        className='w-24 rounded-md border border-gray-300 py-1.5 px-2 shadow-sm'
+                                        value={displayChunkSize}
+                                        onChange={e => setDisplayChunkSize(e.target.value)}
+                                        onBlur={handleChunkSizeBlur}
+                                        disabled={!enableChunking || isCrawling}
+                                    />
+                                </div>
                                 <p className="text-xs text-gray-500 mt-1">{t('chunking.sizeDescription')}</p>
                             </div>
                             <div>
                                 <label htmlFor='chunk-delay' className='block text-sm font-medium text-gray-700'>{t('chunking.delayLabel', { min: MIN_CHUNK_DELAY, max: MAX_CHUNK_DELAY })}</label>
-                                <div className="mt-1"><input id='chunk-delay' type='number' min={MIN_CHUNK_DELAY} max={MAX_CHUNK_DELAY} className='w-24 rounded-md border border-gray-300 py-1.5 px-2 shadow-sm' value={chunkDelay} onChange={e => { const value = parseInt(e.target.value, 10); if (!isNaN(value)) { setChunkDelay(value); } }} disabled={!enableChunking || isCrawling} /></div>
+                                <div className="mt-1">
+                                    {/* <<< THAY ĐỔI: Sử dụng state cục bộ và các handler mới */}
+                                    <input
+                                        id='chunk-delay'
+                                        type='number'
+                                        min={MIN_CHUNK_DELAY}
+                                        max={MAX_CHUNK_DELAY}
+                                        defaultValue={MAX_CHUNK_DELAY}
+                                        className='w-24 rounded-md border border-gray-300 py-1.5 px-2 shadow-sm'
+                                        value={displayChunkDelay}
+                                        onChange={e => setDisplayChunkDelay(e.target.value)}
+                                        onBlur={handleChunkDelayBlur}
+                                        disabled={!enableChunking || isCrawling}
+                                    />
+                                </div>
                                 <p className="text-xs text-gray-500 mt-1">{t('chunking.delayDescription')}</p>
                             </div>
                         </div>
                     </div>
 
-                    {/* --- SECTION MỚI: OUTPUT CONFIGURATION --- */}
+                    {/* ... các phần còn lại của component không thay đổi ... */}
                     <div className='rounded-md border border-gray-200 bg-gray-5 p-5 space-y-4 shadow-sm'>
                         <h4 className='text-base font-semibold text-gray-800'>{t('output.title')}</h4>
                         <div className='flex items-center'>
@@ -120,10 +194,9 @@ const ConfigurationStep: React.FC<ConfigurationStepProps> = ({
                         </div>
                         <p className="text-xs text-gray-500">{t('output.recordFileDescription')}</p>
                     </div>
-                    {/* --- KẾT THÚC SECTION MỚI --- */}
                 </div>
 
-                {/* Column 2: API Model Selection */}
+                {/* ... các phần còn lại của component không thay đổi ... */}
                 <div>
                     <div className="rounded-md border border-gray-200 bg-gray-5 p-5 space-y-4 shadow-sm h-full">
                         <h4 className='text-base font-semibold text-gray-800'>{t('apiSelection.title')}</h4>
@@ -135,12 +208,12 @@ const ConfigurationStep: React.FC<ConfigurationStepProps> = ({
                                     <label className='block text-xs font-semibold text-gray-700 mb-1.5'>{step.displayName}:</label>
                                     <div className='flex flex-wrap gap-x-5 gap-y-2'>
                                         {(['non-tuned', 'tuned'] as CrawlModelType[]).map(modelValue => {
-                                            const isDisabled = isCrawling || (step.name === 'extractCfp' && modelValue === 'tuned');
+                                            const isDisabled = isCrawling || (modelValue === 'tuned');
                                             return (
                                                 <div key={modelValue} className='flex items-center'>
                                                     <input id={`model-${step.name}-${modelValue}`} name={`model-${step.name}`} type='radio' value={modelValue} checked={apiModels[step.name] === modelValue} onChange={() => setApiModel(step.name, modelValue)} disabled={isDisabled} className='h-4 w-4 border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer disabled:cursor-not-allowed' />
                                                     <label htmlFor={`model-${step.name}-${modelValue}`} className={`ml-2 block text-sm font-medium text-gray-900 capitalize ${isDisabled ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'}`}>{t(`modelValues.${modelValue}`)}</label>
-                                                    {step.name === 'extractCfp' && modelValue === 'tuned' && isDisabled && (<span className="ml-2 px-1.5 py-0.5 text-xs font-medium text-red-700 bg-red-100 rounded-full">{t('apiSelection.temporarilyDisabled')}</span>)}
+                                                    {modelValue === 'tuned' && isDisabled && (<span className="ml-2 px-1.5 py-0.5 text-xs font-medium text-red-700 bg-red-100 rounded-full">{t('apiSelection.temporarilyDisabled')}</span>)}
                                                 </div>
                                             );
                                         })}
@@ -177,7 +250,7 @@ const ConfigurationStep: React.FC<ConfigurationStepProps> = ({
             )}
 
             <div className="mt-6 flex justify-between">
-                <button type="button" onClick={onPrev} disabled={isCrawling} className="inline-flex items-center px-5 py-2.5 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-60 disabled:cursor-not-allowed disabled:shadow-none">{t('navigation.previousStep')}</button>
+                <button type="button" onClick={onPrev} disabled={isCrawling} className="inline-flex items-center px-5 py-2.5 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-10 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-60 disabled:cursor-not-allowed disabled:shadow-none">{t('navigation.previousStep')}</button>
                 <button type="button" onClick={onNext} disabled={!canProceed || isCrawling} className="inline-flex items-center px-5 py-2.5 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-60 disabled:cursor-not-allowed disabled:bg-blue-400 disabled:shadow-none">{t('navigation.nextStep')}</button>
             </div>
         </div>

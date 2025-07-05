@@ -528,6 +528,11 @@
     "navigation": {
       "previousStep": "Previous: Select Conferences",
       "nextStep": "Next: Start Processing"
+    },
+    "output": {
+      "title": "Output Configuration",
+      "recordFileLabel": "Record Output File",
+      "recordFileDescription": "If enabled, JSON and CSV file containing the full API responses will be saved for debugging and analysis."
     }
   },
   "FileUploadStep": {
