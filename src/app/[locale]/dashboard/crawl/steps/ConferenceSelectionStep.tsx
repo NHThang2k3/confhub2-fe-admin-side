@@ -199,9 +199,10 @@ const ConferenceSelectionStep: React.FC<ConferenceSelectionStepProps> = ({
       <TableFilters table={table} />
 
       <div className="w-full rounded-lg border border-gray-200">
-        <div className="overflow-x-auto">
+        {/* CHANGE: Thêm max-height và overflow-y-auto để tạo thanh cuộn dọc cho bảng */}
+        <div className="overflow-x-auto overflow-y-auto max-h-[60vh]">
           <div className="inline-block min-w-full align-middle">
-            <div className="overflow-y-auto max-h-[560px]">
+            <div>
               <table className="min-w-full divide-y divide-gray-200 table-fixed">
                 <thead className="bg-blue-50 sticky top-0 z-10">
                   {table.getHeaderGroups().map(headerGroup => (
@@ -247,7 +248,8 @@ const ConferenceSelectionStep: React.FC<ConferenceSelectionStepProps> = ({
                         {row.getVisibleCells().map(cell => (
                           <td
                             key={cell.id}
-                            className="px-4 py-3 text-sm text-gray-900"
+                            // CHANGE: Thêm `align-middle` để canh giữa nội dung theo chiều dọc
+                            className="px-4 py-3 text-sm text-gray-900 align-middle"
                             style={{ width: cell.column.getSize() ? `${cell.column.getSize()}px` : 'auto' }}
                           >
                             {flexRender(cell.column.columnDef.cell, cell.getContext())}

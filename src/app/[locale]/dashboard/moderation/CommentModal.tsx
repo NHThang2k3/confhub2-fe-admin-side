@@ -1,98 +1,78 @@
 // src/components/Moderation/CommentModal.tsx
-'use client'; // <-- Add directive
+'use client';
 
 import React from 'react';
-// Import ConferenceStatus
-import { ConferenceStatus } from '@/src/types'; // Ensure this uses uppercase status strings
-// Import useTranslations
-import { useTranslations } from 'next-intl'; // <-- Added import
-
+import { ConferenceStatus } from '@/src/types';
+import { useTranslations } from 'next-intl';
+import { X } from 'lucide-react';
 
 interface CommentModalProps {
     show: boolean;
-    targetStatus: ConferenceStatus | null; // 'PENDING', 'APPROVED', 'REJECTED'
+    targetStatus: ConferenceStatus | null;
     comment: string;
-    commentError: string; // Assuming this string is already translated by the parent
+    commentError: string;
     setComment: (comment: string) => void;
     onSubmit: () => void;
     onCancel: () => void;
-    // If using namespaces, pass the 't' function related to this component's namespace
-    // t: ReturnType<typeof useTranslations>; // Or get t inside the component
 }
 
 const CommentModal: React.FC<CommentModalProps> = ({
-    show,
-    targetStatus,
-    comment,
-    commentError, // Use directly, assume translated
-    setComment,
-    onSubmit,
-    onCancel,
-    // If receiving t as prop: t,
+    show, targetStatus, comment, commentError, setComment, onSubmit, onCancel,
 }) => {
-    // Call useTranslations hook here
-    const t = useTranslations('CommentModal'); // <-- Added hook call (using a namespace example)
-    // Alternatively, if passing t from parent: const { t } = props;
+    const t = useTranslations('CommentModal');
 
-    if (!show) {
-        return null;
-    }
+    if (!show) return null;
 
-    // Determine button text and modal title based on targetStatus (uppercase)
-    let modalTitle = t('Title_Default'); // <-- Translate default title
-    let submitButtonText = t('Button_Submit_Default'); // <-- Translate default submit text
-    let submitButtonColor = 'bg-blue-500 hover:bg-blue-600'; // Default color
+    let modalTitle = t('Title_Default');
+    let submitButtonText = t('Button_Submit_Default');
+    let submitButtonColor = 'bg-indigo-600 hover:bg-indigo-700';
 
     if (targetStatus === 'APPROVED') {
-        modalTitle = t('Title_Approved'); // <-- Translate title
-        submitButtonText = t('Button_Approve'); // <-- Translate button text
-        submitButtonColor = 'bg-green-500 hover:bg-green-600';
+        modalTitle = t('Title_Approved');
+        submitButtonText = t('Button_Approve');
+        submitButtonColor = 'bg-green-600 hover:bg-green-700';
     } else if (targetStatus === 'REJECTED') {
-        modalTitle = t('Title_Rejected'); // <-- Translate title
-        submitButtonText = t('Button_Reject'); // <-- Translate button text
-        submitButtonColor = 'bg-red-500 hover:bg-red-600';
+        modalTitle = t('Title_Rejected');
+        submitButtonText = t('Button_Reject');
+        submitButtonColor = 'bg-red-600 hover:bg-red-700';
     } else if (targetStatus === 'PENDING') {
-        modalTitle = t('Title_Pending'); // <-- Translate title
-        submitButtonText = t('Button_Pending'); // <-- Translate button text
-        submitButtonColor = 'bg-gray-40 hover:bg-gray-60';
+        modalTitle = t('Title_Pending');
+        submitButtonText = t('Button_Pending');
+        submitButtonColor = 'bg-slate-600 hover:bg-slate-700';
     }
 
-    // Determine dynamic placeholder and prompt text
-    const commentPlaceholder = targetStatus === 'REJECTED' ? t('Placeholder_Rejected') : t('Placeholder_Generic'); // <-- Translate placeholders
-    const promptText = targetStatus === 'REJECTED' ? t('ReasonRequired_Rejected_Label') : null; // <-- Translate conditional prompt
-
+    const commentPlaceholder = targetStatus === 'REJECTED' ? t('Placeholder_Rejected') : t('Placeholder_Generic');
+    const promptText = targetStatus === 'REJECTED' ? t('ReasonRequired_Rejected_Label') : null;
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
-            <div className="relative w-full max-w-md rounded-lg bg-white-pure p-6 shadow-xl">
-                <h3 className="mb-4 text-lg font-semibold ">
-                   {modalTitle} {/* Use translated dynamic title */}
-                </h3>
-                {/* Show prompt text if determined */}
-                 {promptText && <p className="mb-4 ">{promptText}</p>} {/* <-- Use translated prompt */}
-
-                <textarea
-                    value={comment}
-                    onChange={(e) => setComment(e.target.value)}
-                    className={`w-full rounded border p-2  focus:outline-none focus:ring-2 focus:ring-blue-500 ${commentError ? 'border-red-500' : 'border-gray-30'}`}
-                    rows={4}
-                    placeholder={commentPlaceholder} // Use translated dynamic placeholder
-                ></textarea>
-                {/* commentError is assumed to be pre-translated string from parent */}
-                {commentError && <p className="text-red-500 text-sm mt-1">{commentError}</p>}
-                <div className="mt-6 flex justify-end gap-3">
-                    <button
-                        onClick={onCancel}
-                        className="rounded bg-gray-30 px-4 py-2 text-sm  hover:bg-gray-40"
-                    >
-                        {/* Translate Cancel button */}
-                        {t('Button_Cancel')} {/* <-- Translated */}
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" aria-modal="true" role="dialog">
+            <div className="relative w-full max-w-lg transform rounded-xl bg-white p-6 text-left shadow-xl transition-all">
+                <div className="flex items-start justify-between">
+                    <h3 className="text-xl font-bold leading-6 text-slate-900">{modalTitle}</h3>
+                    <button type="button" className="rounded-md text-slate-400 hover:text-slate-500" onClick={onCancel}>
+                        <span className="sr-only">Close</span>
+                        <X className="h-6 w-6" aria-hidden="true" />
                     </button>
-                    <button
-                        onClick={onSubmit}
-                        className={`rounded px-4 py-2 text-sm text-white ${submitButtonColor}`}
-                    >
-                        {submitButtonText} {/* Use translated dynamic text */}
+                </div>
+
+                <div className="mt-4">
+                    {promptText && <p className="mb-2 text-sm text-amber-700">{promptText}</p>}
+                    <textarea
+                        value={comment}
+                        onChange={(e) => setComment(e.target.value)}
+                        className={`w-full rounded-md border p-2 text-base text-slate-800 shadow-sm focus:outline-none focus:ring-2 ${commentError ? 'border-red-500 ring-red-500' : 'border-slate-300 focus:ring-indigo-500'}`}
+                        rows={5}
+                        placeholder={commentPlaceholder}
+                    ></textarea>
+                    {commentError && <p className="mt-1 text-sm text-red-600">{commentError}</p>}
+                </div>
+
+                <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+                    <button type="button" onClick={onCancel} className="w-full justify-center rounded-md bg-white px-4 py-2 text-sm font-semibold text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 hover:bg-slate-50 sm:w-auto">
+                        {t('Button_Cancel')}
+                    </button>
+                    <button type="button" onClick={onSubmit} className={`w-full justify-center rounded-md px-4 py-2 text-sm font-semibold text-white shadow-sm ${submitButtonColor} focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 sm:w-auto`}>
+                        {submitButtonText}
                     </button>
                 </div>
             </div>

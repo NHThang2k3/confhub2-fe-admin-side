@@ -44,6 +44,11 @@ export default function DashboardSidebar({ locale, sidebarWidth, headerHeight }:
       href: '/dashboard/crawl',
     },
     {
+      label: t('Cron'),
+      icon: <FaChartBar className="h-5 w-5" />,
+      href: '/dashboard/cron',
+    },
+    {
       label: t('Analysis'),
       icon: <FaChartBar className="h-5 w-5" />,
       href: '/dashboard/logAnalysis',

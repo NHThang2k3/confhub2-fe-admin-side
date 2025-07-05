@@ -55,20 +55,19 @@ export const getConferenceTableColumns = (
     {
       accessorKey: 'acronym',
       header: 'Acronym',
-      cell: ({ row }) => <div className="font-medium whitespace-nowrap">{row.getValue('acronym')}</div>,
-      sortingFn: sortingFns.alphanumeric, // Built-in alphanumeric sort
-      filterFn: filterFns.includesString, // Default text filter (contains)
+      // CHANGE: Loại bỏ `whitespace-nowrap`
+      cell: ({ row }) => <div className="font-medium">{row.getValue('acronym')}</div>,
+      sortingFn: sortingFns.alphanumeric,
+      filterFn: filterFns.includesString,
       size: 150,
     },
     {
       accessorKey: 'title',
       header: 'Title',
-      // cell: ({ row, cell }) => ( // Sửa ở đây: thêm `cell` vào props
-      // Hoặc nếu bạn chỉ cần column size, có thể dùng cell.column.getSize()
-      cell: (info: CellContext<Conference, unknown>) => ( // Sử dụng CellContext để có type an toàn hơn
+      // Cột này giữ nguyên là đúng vì chúng ta muốn có hiệu ứng "..."
+      cell: (info: CellContext<Conference, unknown>) => (
         <div
           className="font-medium overflow-hidden whitespace-nowrap text-ellipsis"
-          // SỬA Ở ĐÂY: sử dụng info.cell.column.getSize()
           style={{ maxWidth: `${info.cell.column.getSize()}px` }}
           title={info.row.getValue('title') as string}
         >
@@ -79,7 +78,6 @@ export const getConferenceTableColumns = (
       filterFn: filterFns.includesString,
       size: 250,
     },
-
     {
       accessorKey: 'crawlType',
       header: 'Action Type',
@@ -90,14 +88,14 @@ export const getConferenceTableColumns = (
             value={crawlType}
             onChange={(e) => {
               const newValue = e.target.value as 'crawl' | 'update';
-              // Only call update if the value actually changed
               if (newValue !== crawlType) {
                 onUpdateActionTypeForRow(newValue, row.original);
               }
             }}
-            onClick={(e) => e.stopPropagation()} // Prevent row selection when clicking the select
+            onClick={(e) => e.stopPropagation()}
+            // CHANGE: Loại bỏ `whitespace-nowrap`
             className={`font-semibold w-full py-1 px-2 rounded border-gray-300 focus:ring-indigo-500 focus:border-indigo-500 text-sm ${crawlType === 'crawl' ? 'text-blue-700 bg-blue-50' : 'text-green-700 bg-green-50'
-              } hover:bg-gray-100 whitespace-nowrap`}
+              } hover:bg-gray-100`}
           >
             <option value="crawl">Crawl</option>
             <option value="update">Update</option>
@@ -105,12 +103,12 @@ export const getConferenceTableColumns = (
         );
       },
       sortingFn: sortingFns.alphanumeric,
-      // No filterFn needed here as it's not a typical filterable column from UI
       size: 120,
     },
     {
       accessorKey: 'sources',
       header: 'Sources',
+      // Cột này đã đúng, giữ nguyên
       cell: ({ row }) => (
         <div className="flex flex-wrap gap-1">
           {(row.getValue('sources') as string[])?.map((source: string, index: number) => (
@@ -127,6 +125,7 @@ export const getConferenceTableColumns = (
     {
       accessorKey: 'ranks',
       header: 'Ranks',
+      // Cột này đã đúng, giữ nguyên
       cell: ({ row }) => (
         <div className="flex flex-wrap gap-1">
           {(row.getValue('ranks') as string[])?.map((rank: string, index: number) => (
@@ -143,6 +142,7 @@ export const getConferenceTableColumns = (
     {
       accessorKey: 'researchFields',
       header: 'Research Fields',
+      // Cột này là nguyên nhân chính và code đã đúng, giữ nguyên
       cell: ({ row }) => (
         <div className="flex flex-wrap gap-1">
           {(row.getValue('researchFields') as string[])?.map((field: string, index: number) => (
@@ -167,46 +167,38 @@ export const getConferenceTableColumns = (
         } else if (status === 'NOT CRAWLED') {
           statusColor = 'text-red-700';
         }
-        // Add more conditions for other statuses if needed
-        return <div className={`whitespace-nowrap font-medium ${statusColor}`}>{status}</div>;
+        // CHANGE: Loại bỏ `whitespace-nowrap`
+        return <div className={`font-medium ${statusColor}`}>{status}</div>;
       },
       sortingFn: sortingFns.alphanumeric,
-      filterFn: filterFns.equalsString, // Use exact match for status filter
-      // If you need case-insensitive exact match:
-      // filterFn: (row, columnId, filterValue) => {
-      //   if (filterValue === undefined || filterValue === null || String(filterValue).trim() === '') {
-      //     return true;
-      //   }
-      //   const rowValue = String(row.getValue(columnId) ?? '').toLowerCase();
-      //   const filter = String(filterValue).toLowerCase();
-      //   return rowValue === filter;
-      // },
-      size: 120, // Adjusted size
+      filterFn: filterFns.equalsString,
+      size: 120,
     },
     {
       accessorKey: 'updatedAt',
       header: 'Updated At',
       cell: ({ row }) => {
         const dateVal = row.getValue('updatedAt');
-        // Ensure dateVal is a string or number before passing to new Date()
-        return <div className="whitespace-nowrap">{dateVal ? new Date(dateVal as string | number).toLocaleString() : 'N/A'}</div>;
+        // CHANGE: Loại bỏ `whitespace-nowrap`
+        return <div>{dateVal ? new Date(dateVal as string | number).toLocaleString() : 'N/A'}</div>;
       },
-      sortingFn: dateStringSort, // Use custom date sort
+      sortingFn: dateStringSort,
       size: 200,
     },
+    // Các cột link cũng được bỏ `whitespace-nowrap`
     {
       accessorKey: 'link',
       header: 'Link (for Update)',
       cell: ({ row }) => {
-        const crawlType = row.original.crawlType; // Access from original data for consistency
+        const crawlType = row.original.crawlType;
         const linkValue = row.getValue('link') as string | null | undefined;
         return (
-          <div className={`whitespace-nowrap ${crawlType === 'crawl' ? 'italic text-gray-400' : ''}`}>
+          <div className={`${crawlType === 'crawl' ? 'italic text-gray-400' : ''}`}>
             {linkValue || (crawlType === 'crawl' ? 'N/A for Crawl' : 'Not Provided')}
           </div>
         );
       },
-      enableSorting: false, // Links are usually not sorted
+      enableSorting: false,
       size: 250,
     },
     {
@@ -216,7 +208,7 @@ export const getConferenceTableColumns = (
         const crawlType = row.original.crawlType;
         const impLinkValue = row.getValue('impLink') as string | null | undefined;
         return (
-          <div className={`whitespace-nowrap ${crawlType === 'crawl' ? 'italic text-gray-400' : ''}`}>
+          <div className={`${crawlType === 'crawl' ? 'italic text-gray-400' : ''}`}>
             {impLinkValue || (crawlType === 'crawl' ? 'N/A for Crawl' : 'Not Provided')}
           </div>
         );
@@ -231,7 +223,7 @@ export const getConferenceTableColumns = (
         const crawlType = row.original.crawlType;
         const cfpLinkValue = row.getValue('cfpLink') as string | null | undefined;
         return (
-          <div className={`whitespace-nowrap ${crawlType === 'crawl' ? 'italic text-gray-400' : ''}`}>
+          <div className={`${crawlType === 'crawl' ? 'italic text-gray-400' : ''}`}>
             {cfpLinkValue || (crawlType === 'crawl' ? 'N/A for Crawl' : 'Not Provided')}
           </div>
         );

@@ -1,18 +1,15 @@
 // src/components/Moderation/ModerationControls.tsx
-'use client'; // <-- Marked as client component
+'use client';
 
 import React from 'react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import DateRangeInput from './DateRangeInput';
-// Import useTranslations
-import { useTranslations } from 'next-intl'; // <-- Added import
-
-// Import types
+import { useTranslations } from 'next-intl';
 import { ConferenceStatus, SortKey, SortDirection } from '@/src/types';
+import { Search, X } from 'lucide-react';
 
 interface ModerationControlsProps {
-    // Filter Props
     filterStatus: ConferenceStatus | 'all';
     setFilterStatus: (status: ConferenceStatus | 'all') => void;
     searchTerm: string;
@@ -22,173 +19,113 @@ interface ModerationControlsProps {
     filterEndDate: Date | null;
     setFilterEndDate: (date: Date | null) => void;
     handleClearDateFilter: () => void;
-
-    // Sort Props
     sortKey: SortKey;
     sortDirection: SortDirection;
     handleSortByName: () => void;
     handleSortByCreationDate: () => void;
     handleSortByUpdateDate: () => void;
-
-    // Data for counts
-    allConferencesCount: number;
-    pendingCount: number;
-    approvedCount: number;
-    rejectedCount: number;
-
-    // Loading state
+    counts: { all: number; pending: number; approved: number; rejected: number; };
     isLoading?: boolean;
-
-    // (Optional) If not using useTranslations here, receive t as prop:
-    // t: ReturnType<typeof useTranslations>;
 }
 
 const ModerationControls: React.FC<ModerationControlsProps> = ({
-    filterStatus,
-    setFilterStatus,
-    searchTerm,
-    setSearchTerm,
-    filterStartDate,
-    setFilterStartDate,
-    filterEndDate,
-    setFilterEndDate,
+    filterStatus, setFilterStatus,
+    searchTerm, setSearchTerm,
+    filterStartDate, setFilterStartDate,
+    filterEndDate, setFilterEndDate,
     handleClearDateFilter,
-    sortKey,
-    sortDirection,
-    handleSortByName,
-    handleSortByCreationDate,
-    handleSortByUpdateDate,
-    allConferencesCount,
-    pendingCount,
-    approvedCount,
-    rejectedCount,
-    isLoading,
-    // If receiving t as prop:
-    // t,
+    sortKey, sortDirection,
+    handleSortByName, handleSortByCreationDate, handleSortByUpdateDate,
+    counts, isLoading,
 }) => {
-    // Call useTranslations hook here
-    const t = useTranslations('ModerationControls'); // <-- Added hook call (using a namespace example)
+    const t = useTranslations('ModerationControls');
 
-    // Translate sort labels
-    const getDateSortLabel = (key: 'createdAt' | 'updatedAt') => {
-        if (sortKey === key) {
-            return sortDirection === 'asc' ? ` ${t('SortDirection_OldestFirst')}` : ` ${t('SortDirection_NewestFirst')}`; // <-- Translated
-        }
-        return ` ${t('SortDirection_NewestFirst')}`; // <-- Translated (default)
-    };
-
-     const getTitleSortLabel = () => {
-         if (sortKey === 'title') {
-              return sortDirection === 'asc' ? ` ${t('SortDirection_AZ')}` : ` ${t('SortDirection_ZA')}`; // <-- Translated
-         }
-         return ` ${t('SortDirection_AZ')}`; // <-- Translated (default)
-     };
-
+    const tabs = [
+        { name: t('Status_All', { count: counts.all }), value: 'all' },
+        { name: t('Status_Pending', { count: counts.pending }), value: 'PENDING' },
+        { name: t('Status_Approved', { count: counts.approved }), value: 'APPROVED' },
+        { name: t('Status_Rejected', { count: counts.rejected }), value: 'REJECTED' },
+    ];
 
     return (
-        <div className="mb-6 flex flex-col sm:flex-row sm:items-start sm:flex-wrap gap-4">
-            {/* Filter Control */}
-            <div className="flex items-center shrink-0">
-                {/* Translate label */}
-                <label htmlFor="statusFilter" className="mr-2  text-sm">{t('FilterByStatus_Label')}:</label> {/* <-- Translated */}
-                <select
-                    id="statusFilter"
-                    value={filterStatus}
-                    onChange={(e) => setFilterStatus(e.target.value as ConferenceStatus | 'all')}
-                    className="rounded border border-gray-30 px-3 py-1  text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-                    disabled={isLoading}
-                >
-                     {/* Translate options with counts */}
-                    <option value="all">{t('Status_All', { count: allConferencesCount })}</option> {/* <-- Translated with interpolation */}
-                    <option value="PENDING">{t('Status_Pending', { count: pendingCount })}</option> {/* <-- Translated with interpolation */}
-                    <option value="APPROVED">{t('Status_Approved', { count: approvedCount })}</option> {/* <-- Translated with interpolation */}
-                    <option value="REJECTED">{t('Status_Rejected', { count: rejectedCount })}</option> {/* <-- Translated with interpolation */}
-                </select>
+        <div>
+            {/* Status Filter Tabs */}
+            <div className="border-b border-slate-200">
+                <nav className="-mb-px flex space-x-6 overflow-x-auto" aria-label="Tabs">
+                    {tabs.map((tab) => (
+                        <button
+                            key={tab.name}
+                            onClick={() => !isLoading && setFilterStatus(tab.value as any)}
+                            disabled={isLoading}
+                            className={`
+                                whitespace-nowrap border-b-2 py-3 px-1 text-sm font-medium transition-colors
+                                ${filterStatus === tab.value
+                                    ? 'border-indigo-500 text-indigo-600'
+                                    : 'border-transparent text-slate-500 hover:border-slate-300 hover:text-slate-700'
+                                }
+                                disabled:cursor-not-allowed disabled:opacity-50
+                            `}
+                        >
+                            {tab.name}
+                        </button>
+                    ))}
+                </nav>
             </div>
 
-            {/* Search Control - Searching by Title */}
-            <div className="flex items-center flex-grow">
-                {/* Translate label */}
-                <label htmlFor="conferenceSearch" className="mr-2  text-sm shrink-0">{t('SearchByTitle_Label')}:</label> {/* <-- Translated */}
-                <input
-                    id="conferenceSearch"
-                    type="text"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    // Translate placeholder
-                    placeholder={t('SearchByTitle_Placeholder')} 
-                    className="w-full rounded border border-gray-30 px-3 py-1  text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-                    disabled={isLoading}
-                />
-            </div>
-
-            {/* Date Filter Control */}
-            <div className="flex items-center gap-2 shrink-0">
-                {/* Translate label */}
-                <label className=" text-sm shrink-0">{t('AddedDateRange_Label')}:</label> {/* <-- Translated */}
-                <DatePicker
-                    selected={filterStartDate}
-                    onChange={(dates: [Date | null, Date | null]) => {
-                        const [start, end] = dates;
-                        setFilterStartDate(start);
-                        setFilterEndDate(end);
-                    }}
-                    startDate={filterStartDate}
-                    endDate={filterEndDate}
-                    selectsRange
-                    // Assuming DateRangeInput takes a placeholder prop that needs translation
-                    customInput={<DateRangeInput placeholder={t('DateRangeInput_Placeholder')}/>} 
-                    dateFormat="yyyy/MM/dd"
-                    disabled={isLoading}
-                />
-                {(filterStartDate || filterEndDate) && (
-                    <button
-                        onClick={handleClearDateFilter}
-                        className="rounded bg-red-500 px-3 py-1 text-sm text-white hover:bg-red-600 shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
+            {/* Search, Date, and Sort Controls */}
+            <div className="mt-4 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                {/* Search Input */}
+                <div className="relative flex-grow">
+                    <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                        <Search className="h-5 w-5 text-slate-400" aria-hidden="true" />
+                    </div>
+                    <input
+                        type="text"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        placeholder={t('SearchByTitle_Placeholder')}
+                        className="block w-full rounded-md border-slate-300 py-2 pl-10 pr-3 text-sm placeholder-slate-400 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 disabled:opacity-50"
                         disabled={isLoading}
-                    >
-                        {/* Translate button text */}
-                        {t('ClearDates_Button')} {/* <-- Translated */}
-                    </button>
-                )}
-            </div>
+                    />
+                </div>
 
-            {/* Sort Controls */}
-            <div className="flex items-center gap-2 shrink-0 flex-wrap">
-                {/* Translate label */}
-                <label className=" text-sm shrink-0">{t('SortBy_Label')}:</label> {/* <-- Translated */}
-                <button
-                    onClick={handleSortByName}
-                    className={`rounded px-3 py-1 text-sm transition duration-150 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed
-                        ${sortKey === 'title' ? 'bg-blue-500 text-white hover:bg-blue-600' : 'bg-gray-20  hover:bg-gray-30'}
-                    `}
-                    disabled={isLoading}
-                >
-                    {/* Translate button text and append translated sort label */}
-                    {t('SortBy_Title_Button')}{getTitleSortLabel()} {/* <-- Translated */}
-                </button>
+                {/* Other Filters and Sorters */}
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:flex-wrap">
+                    {/* Date Filter */}
+                    <div className="flex items-center gap-2">
+                        <DatePicker
+                            selected={filterStartDate}
+                            onChange={(dates: [Date | null, Date | null]) => {
+                                const [start, end] = dates;
+                                setFilterStartDate(start);
+                                setFilterEndDate(end);
+                            }}
+                            startDate={filterStartDate}
+                            endDate={filterEndDate}
+                            selectsRange
+                            customInput={<DateRangeInput placeholder={t('DateRangeInput_Placeholder')} />}
+                            dateFormat="yyyy/MM/dd"
+                            disabled={isLoading}
+                        />
+                        {(filterStartDate || filterEndDate) && (
+                            <button
+                                onClick={handleClearDateFilter}
+                                className="flex h-9 w-9 items-center justify-center rounded-md bg-slate-200 text-sm text-slate-600 hover:bg-slate-300 disabled:opacity-50"
+                                disabled={isLoading}
+                                aria-label={t('ClearDates_Button')}
+                            >
+                                <X className="h-4 w-4" />
+                            </button>
+                        )}
+                    </div>
 
-                <button
-                    onClick={handleSortByCreationDate}
-                    className={`rounded px-3 py-1 text-sm transition duration-150 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed
-                        ${sortKey === 'createdAt' ? 'bg-blue-500 text-white hover:bg-blue-600' : 'bg-gray-20  hover:bg-gray-30'}
-                    `}
-                    disabled={isLoading}
-                >
-                    {/* Translate button text and append translated sort label */}
-                    {t('SortBy_AddedDate_Button')}{getDateSortLabel('createdAt')} {/* <-- Translated */}
-                </button>
-
-                 <button
-                    onClick={handleSortByUpdateDate}
-                    className={`rounded px-3 py-1 text-sm transition duration-150 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed
-                        ${sortKey === 'updatedAt' ? 'bg-blue-500 text-white hover:bg-blue-600' : 'bg-gray-20  hover:bg-gray-30'}
-                    `}
-                    disabled={isLoading}
-                >
-                    {/* Translate button text and append translated sort label */}
-                    {t('SortBy_UpdatedDate_Button')}{getDateSortLabel('updatedAt')} {/* <-- Translated */}
-                </button>
+                    {/* Sort Buttons */}
+                    <div className="flex items-center gap-2">
+                        <span className="text-sm font-medium text-slate-600">{t('SortBy_Label')}:</span>
+                        <button onClick={handleSortByName} className={`rounded-md px-3 py-2 text-sm font-semibold transition ${sortKey === 'title' ? 'bg-indigo-100 text-indigo-700' : 'bg-white text-slate-900 ring-1 ring-inset ring-slate-300 hover:bg-slate-50'} disabled:opacity-50`} disabled={isLoading}>{t('SortBy_Title_Button')}</button>
+                        <button onClick={handleSortByCreationDate} className={`rounded-md px-3 py-2 text-sm font-semibold transition ${sortKey === 'createdAt' ? 'bg-indigo-100 text-indigo-700' : 'bg-white text-slate-900 ring-1 ring-inset ring-slate-300 hover:bg-slate-50'} disabled:opacity-50`} disabled={isLoading}>{t('SortBy_AddedDate_Button')}</button>
+                    </div>
+                </div>
             </div>
         </div>
     );

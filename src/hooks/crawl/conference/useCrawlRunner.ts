@@ -10,7 +10,7 @@ import {
     CrawlRequestPayload, // <<< IMPORT TYPE NÀY
 } from '../../../models/logAnalysis/importConferenceCrawl';
 import { ApiModels } from '@/src/models/logAnalysis/crawl.types';
-import { chunkArray } from '../../../utils/arrayUtils';
+import { chunkArray } from '../../../utils/utils';
 import { API_CONFERENCE_ENDPOINT, MAX_ITEMS_PER_CRAWL_REQUEST } from '../constants';
 
 const API_STOP_CRAWL_ENDPOINT = `${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8080'}/api/v1/crawl-conferences/stop`;

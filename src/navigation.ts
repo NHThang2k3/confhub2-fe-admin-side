@@ -18,6 +18,8 @@ export const pathnames = {
   '/dashboard/requestAdminTab': '/dashboard/requestAdminTab',
   '/dashboard/logAnalysis': '/dashboard/logAnalysis',
   '/dashboard/crawl': '/dashboard/crawl',
+  '/dashboard/cron': '/dashboard/cron',
+
   '/dashboard/conferences': '/dashboard/conferences',
   '/dashboard/submitPapers': '/dashboard/submitPapers',
   '/dashboard/accounts/users': '/dashboard/accounts/users', // <-- Add this line

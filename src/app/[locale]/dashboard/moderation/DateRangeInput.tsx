@@ -1,7 +1,8 @@
 // src/components/Moderation/DateRangeInput.tsx
-'use client'; // <-- Add directive
+'use client';
 
 import React, { forwardRef } from 'react';
+import { Calendar } from 'lucide-react';
 
 interface DateRangeInputProps {
     value?: string;
@@ -9,19 +10,22 @@ interface DateRangeInputProps {
     placeholder?: string;
 }
 
-// Use forwardRef to allow DatePicker to attach ref to the input element
-// DatePicker automatically manages the 'value' prop for custom inputs when selectsRange is true
 const DateRangeInput = forwardRef<HTMLInputElement, DateRangeInputProps>(
 ({ value, onClick, placeholder }, ref) => (
-  <input
-    type="text"
-    className="rounded border border-gray-30 px-3 py-1  text-sm w-48 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
-    value={value}
-    onClick={onClick}
-    ref={ref}
-    placeholder={placeholder} // Placeholder prop is already translated by parent
-    readOnly // Prevent manual text input
-  />
+  <div className="relative">
+    <input
+      type="text"
+      className="w-full cursor-pointer rounded-md border-slate-300 py-2 pl-3 pr-10 text-sm placeholder-slate-400 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 disabled:opacity-50"
+      value={value}
+      onClick={onClick}
+      ref={ref}
+      placeholder={placeholder}
+      readOnly
+    />
+    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+        <Calendar className="h-5 w-5 text-slate-400" aria-hidden="true" />
+    </div>
+  </div>
 ));
 
 DateRangeInput.displayName = 'DateRangeInput';

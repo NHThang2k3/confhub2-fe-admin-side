@@ -1,7 +1,10 @@
 // src/types.ts
 
-// Assuming status is uppercase: 'PENDING', 'APPROVED', 'REJECTED'
-export type ConferenceStatus = 'PENDING' | 'APPROVED' | 'REJECTED' | 'all'; // Add 'all' for filter state
+// --- NEW: Define the actual status a conference can have ---
+export type ConferenceRealStatus = 'PENDING' | 'APPROVED' | 'REJECTED';
+
+// --- MODIFIED: This type is now specifically for the filter state ---
+export type ConferenceStatus = ConferenceRealStatus | 'all';
 
 // SortKey uses fields that are either on the request or the main conference object
 export type SortKey = 'createdAt' | 'updatedAt' | 'title';
@@ -56,7 +59,8 @@ export interface Conference {
     conferenceId: string; // The ID of the actual conference (used to fetch details)
     userId: string; // ID of the user who made the request
     adminId: string | null; // ID of the admin who acted
-    status: ConferenceStatus; // Status of the request ('PENDING', 'APPROVED', 'REJECTED')
+    // --- MODIFIED: A conference's status can only be one of the real statuses ---
+    status: ConferenceRealStatus;
     message: string | null; // User's original message
 
     // Use Date objects after mapping
@@ -92,23 +96,23 @@ export interface ConferenceDateStrings {
 
 // Helper type for organizations with date strings (raw API response structure)
 export interface OrganizationStrings {
-     id: string;
-     isAvailable: boolean;
-     createdAt: string;
-     updatedAt: string;
-     conferenceId: string;
-     year: number | null;
-     accessType: string | null;
-     summary: string | null;
-     callForPaper: string | null;
-     link: string | null;
-     impLink: string | null;
-     cfpLink: string | null;
-     summerize: string | null;
-     publisher: string | null;
-     locations: Location[] | null;
-     topics: string[] | null;
-     conferenceDates: ConferenceDateStrings[] | null; // Dates are strings here
+    id: string;
+    isAvailable: boolean;
+    createdAt: string;
+    updatedAt: string;
+    conferenceId: string;
+    year: number | null;
+    accessType: string | null;
+    summary: string | null;
+    callForPaper: string | null;
+    link: string | null;
+    impLink: string | null;
+    cfpLink: string | null;
+    summerize: string | null;
+    publisher: string | null;
+    locations: Location[] | null;
+    topics: string[] | null;
+    conferenceDates: ConferenceDateStrings[] | null; // Dates are strings here
 }
 
 // API response structure for GET /conference/{id}
@@ -139,7 +143,9 @@ export interface ApiConferenceRequest {
     conferenceId: string; // The actual conference ID
     userId: string;
     adminId: string | null;
-    status: ConferenceStatus; // 'PENDING', 'APPROVED', 'REJECTED'
+    // --- MODIFIED: The API will return one of the real statuses ---
+    status: ConferenceRealStatus;
+
     message: string | null;
     createdAt: string; // ISO string
     updatedAt: string; // ISO string
