@@ -1,7 +1,7 @@
 // src/hooks/crawl/conference/useConferenceCrawl.ts
 'use client';
 import { useCallback } from 'react';
-import { Conference, ConferenceForAction } from '../../../models/logAnalysis/importConferenceCrawl';
+import { Conference } from '../../../models/logAnalysis/importConferenceCrawl';
 import { useFileParser } from './useFileParser';
 import { useCrawlConfig } from './useCrawlConfig';
 import { useSelectionManager } from './useSelectionManager';
@@ -9,23 +9,41 @@ import { useCrawlRunner } from './useCrawlRunner';
 
 /**
  * Hook tổng hợp, điều phối toàn bộ quy trình crawl conference.
+ * Hook này tích hợp các hook con để quản lý file, cấu hình, lựa chọn và thực thi crawl.
  */
 export const useConferenceCrawl = () => {
     // 1. Khởi tạo các hooks con
     const {
-        file, parsedData, isParsing, parseError,
-        handleFileChange: performFileChange, setParsedData, reset: resetParser
+        file,
+        parsedData,
+        isParsing,
+        parseError,
+        processDataForUpload: performDataUpload, // Lấy hàm xử lý upload mới
+        setParsedData,
+        reset: resetParser
     } = useFileParser();
 
-    // Lấy tất cả các cấu hình, bao gồm cả recordFile
     const {
-        apiModels, enableChunking, chunkSize, chunkDelay, recordFile, // <<< LẤY STATE MỚI
-        setApiModel, setEnableChunking, setChunkSize, setChunkDelay, setRecordFile, // <<< LẤY SETTER MỚI
+        apiModels,
+        enableChunking,
+        chunkSize,
+        chunkDelay,
+        recordFile,
+        setApiModel,
+        setEnableChunking,
+        setChunkSize,
+        setChunkDelay,
+        setRecordFile,
         reset: resetConfig
     } = useCrawlConfig();
 
     const {
-        isCrawling, isPaused, countdown, crawlError, crawlProgress, crawlMessages,
+        isCrawling,
+        isPaused,
+        countdown,
+        crawlError,
+        crawlProgress,
+        crawlMessages,
         processCrawlRequest,
         resumeCrawl,
         stopCrawlProcess,
@@ -34,11 +52,30 @@ export const useConferenceCrawl = () => {
     } = useCrawlRunner();
 
     const {
-        selectedCsvRows, selectedCsvRowsCount,
-        onCsvSelectionChanged, updateActionTypeOfSelectedRows: performUpdateAction, reset: resetSelection
+        selectedCsvRows,
+        selectedCsvRowsCount,
+        onCsvSelectionChanged,
+        updateActionTypeOfSelectedRows: performUpdateAction,
+        reset: resetSelection
     } = useSelectionManager(parsedData, setParsedData);
 
     // 2. Tạo các hàm điều phối cấp cao
+
+    /**
+     * <<< THÊM HÀM MỚI >>>
+     * Reset các state cần thiết khi bắt đầu một lượt upload file mới.
+     * Điều này đảm bảo không có dữ liệu cũ nào ảnh hưởng đến luồng mới.
+     */
+    const resetForNewUpload = useCallback(() => {
+        console.log("Resetting parser and selection states for a new file upload.");
+        resetParser();
+        resetSelection();
+    }, [resetParser, resetSelection]);
+
+
+    /**
+     * Reset toàn bộ trạng thái của quy trình crawl về ban đầu.
+     */
     const resetCrawl = useCallback(() => {
         resetParser();
         resetConfig();
@@ -47,15 +84,28 @@ export const useConferenceCrawl = () => {
         console.log("Crawl state (including all configurations) has been fully reset.");
     }, [resetParser, resetConfig, resetRunner, resetSelection]);
 
-    const handleFileChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+    /**
+     * Hàm nhận dữ liệu đã được người dùng review và định dạng, sau đó
+     * chuyển cho file parser để tạo file CSV mới và upload lên server.
+     * @param data - Mảng các đối tượng Conference đã được định dạng.
+     * @param originalFile - File gốc người dùng đã chọn.
+     */
+    const processDataForUpload = useCallback((data: Conference[], originalFile: File) => {
         const onResetAll = () => {
+            // Reset các trạng thái liên quan trước khi bắt đầu một lần upload mới
             resetParser();
             resetRunner();
             resetSelection();
         };
-        performFileChange(event, addCrawlMessage, onResetAll);
-    }, [performFileChange, addCrawlMessage, resetParser, resetRunner, resetSelection]);
+        // Gọi hàm thực thi từ hook con
+        performDataUpload(data, originalFile, addCrawlMessage, onResetAll);
+    }, [performDataUpload, addCrawlMessage, resetParser, resetRunner, resetSelection]);
 
+    /**
+     * Cập nhật loại hành động ('crawl' hoặc 'update') cho các hàng đã được chọn.
+     * @param actionType - Loại hành động.
+     * @param selectedRows - Các hàng được áp dụng hành động.
+     */
     const updateActionTypeOfSelectedRows = useCallback((
         actionType: 'crawl' | 'update',
         selectedRows: Conference[]
@@ -66,25 +116,29 @@ export const useConferenceCrawl = () => {
         }
     }, [performUpdateAction, addCrawlMessage]);
 
-    // 3. Trả về một object có cấu trúc, bao gồm tất cả các phần cần thiết cho UI
+    // 3. Trả về một object có cấu trúc, bao gồm tất cả các state và hàm cần thiết cho UI
     return {
         // Từ useFileParser
         file,
         parsedData,
         isParsing,
         parseError,
-        handleFileChange,
+        setParsedData, // Dùng khi user chọn "Skip" và không upload
 
+
+          // <<< THÊM HÀM MỚI VÀO ĐÂY >>>
+        resetForNewUpload,
+        
         // Từ useCrawlConfig
         enableChunking,
         chunkSize,
         chunkDelay,
-        recordFile, // <<< EXPORT MỚI
+        recordFile,
         apiModels,
         setEnableChunking,
         setChunkSize,
         setChunkDelay,
-        setRecordFile, // <<< EXPORT MỚI
+        setRecordFile,
         setApiModel,
 
         // Từ useCrawlRunner
@@ -102,9 +156,10 @@ export const useConferenceCrawl = () => {
         selectedCsvRows,
         selectedCsvRowsCount,
         onCsvSelectionChanged,
-        onRowSelectionChange: onCsvSelectionChanged,
+        onRowSelectionChange: onCsvSelectionChanged, // Alias cho nhất quán
 
         // Các hàm điều phối cấp cao
+        processDataForUpload, // Hàm chính cho bước 1
         updateActionTypeOfSelectedRows,
         resetCrawl,
     };

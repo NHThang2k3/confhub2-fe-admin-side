@@ -1,5 +1,5 @@
 // src/components/crawl/steps/ConfigurationStep.tsx
-import React, { useState, useMemo, useEffect } from 'react'; // <<< THAY ĐỔI: Thêm useEffect
+import React, { useState, useMemo, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { ApiName, CrawlModelType } from '@/src/models/logAnalysis/crawl.types';
 
@@ -52,11 +52,9 @@ const ConfigurationStep: React.FC<ConfigurationStepProps> = ({
 }) => {
     const t = useTranslations('ConfigurationStep');
 
-    // <<< THAY ĐỔI: State cục bộ để quản lý giá trị hiển thị của input
     const [displayChunkSize, setDisplayChunkSize] = useState<string | number>(chunkSize);
     const [displayChunkDelay, setDisplayChunkDelay] = useState<string | number>(chunkDelay);
 
-    // <<< THAY ĐỔI: Đồng bộ state cục bộ khi props từ cha thay đổi
     useEffect(() => {
         setDisplayChunkSize(chunkSize);
     }, [chunkSize]);
@@ -65,18 +63,27 @@ const ConfigurationStep: React.FC<ConfigurationStepProps> = ({
         setDisplayChunkDelay(chunkDelay);
     }, [chunkDelay]);
 
-    // <<< THAY ĐỔI: Hàm xử lý khi người dùng rời khỏi ô input (onBlur)
+    // THAY ĐỔI LỚN NHẤT Ở ĐÂY:
+    // Sử dụng useEffect để set cứng model về 'non-tuned' khi component mount hoặc apiStepsForUploader thay đổi
+    useEffect(() => {
+        apiStepsForUploader.forEach(step => {
+            // Chỉ set nếu model hiện tại không phải là 'non-tuned'
+            // Điều này giúp tránh re-render không cần thiết nếu đã đúng
+            if (apiModels[step.name] !== 'non-tuned') {
+                setApiModel(step.name, 'non-tuned');
+            }
+        });
+    }, [apiStepsForUploader, apiModels, setApiModel]); // Thêm apiModels và setApiModel vào dependency array
+
     const handleChunkSizeBlur = () => {
         let value = parseInt(String(displayChunkSize), 10);
 
         if (isNaN(value)) {
-            value = MIN_CHUNK_SIZE; // Nếu rỗng hoặc không phải số, đặt về giá trị min
+            value = MIN_CHUNK_SIZE;
         }
 
-        // Kẹp giá trị trong khoảng min/max
         const clampedValue = Math.max(MIN_CHUNK_SIZE, Math.min(MAX_CHUNK_SIZE, value));
 
-        // Cập nhật state cha và state hiển thị
         setChunkSize(clampedValue);
         setDisplayChunkSize(clampedValue);
     };
@@ -85,13 +92,11 @@ const ConfigurationStep: React.FC<ConfigurationStepProps> = ({
         let value = parseInt(String(displayChunkDelay), 10);
 
         if (isNaN(value)) {
-            value = MIN_CHUNK_DELAY; // Nếu rỗng hoặc không phải số, đặt về giá trị min
+            value = MIN_CHUNK_DELAY;
         }
 
-        // Kẹp giá trị trong khoảng min/max
         const clampedValue = Math.max(MIN_CHUNK_DELAY, Math.min(MAX_CHUNK_DELAY, value));
 
-        // Cập nhật state cha và state hiển thị
         setChunkDelay(clampedValue);
         setDisplayChunkDelay(clampedValue);
     };
@@ -118,7 +123,6 @@ const ConfigurationStep: React.FC<ConfigurationStepProps> = ({
 
     return (
         <div className="space-y-6 rounded-lg border border-gray-200 p-5 bg-white shadow-md mb-6">
-            {/* ... phần code không đổi ... */}
             <div className="pb-3 border-b border-gray-200 mb-5">
                 <h3 className="text-xl font-semibold leading-6 text-gray-900">{t('header.title')}</h3>
                 <p className="mt-1 text-sm text-gray-600">{t('header.description')}</p>
@@ -138,7 +142,6 @@ const ConfigurationStep: React.FC<ConfigurationStepProps> = ({
                             <div>
                                 <label htmlFor='chunk-size' className='block text-sm font-medium text-gray-700'>{t('chunking.sizeLabel', { min: MIN_CHUNK_SIZE, max: MAX_CHUNK_SIZE })}</label>
                                 <div className="mt-1">
-                                    {/* <<< THAY ĐỔI: Sử dụng state cục bộ và các handler mới */}
                                     <input
                                         id='chunk-size'
                                         type='number'
@@ -157,7 +160,6 @@ const ConfigurationStep: React.FC<ConfigurationStepProps> = ({
                             <div>
                                 <label htmlFor='chunk-delay' className='block text-sm font-medium text-gray-700'>{t('chunking.delayLabel', { min: MIN_CHUNK_DELAY, max: MAX_CHUNK_DELAY })}</label>
                                 <div className="mt-1">
-                                    {/* <<< THAY ĐỔI: Sử dụng state cục bộ và các handler mới */}
                                     <input
                                         id='chunk-delay'
                                         type='number'
@@ -176,7 +178,6 @@ const ConfigurationStep: React.FC<ConfigurationStepProps> = ({
                         </div>
                     </div>
 
-                    {/* ... các phần còn lại của component không thay đổi ... */}
                     <div className='rounded-md border border-gray-200 bg-gray-5 p-5 space-y-4 shadow-sm'>
                         <h4 className='text-base font-semibold text-gray-800'>{t('output.title')}</h4>
                         <div className='flex items-center'>
@@ -196,7 +197,6 @@ const ConfigurationStep: React.FC<ConfigurationStepProps> = ({
                     </div>
                 </div>
 
-                {/* ... các phần còn lại của component không thay đổi ... */}
                 <div>
                     <div className="rounded-md border border-gray-200 bg-gray-5 p-5 space-y-4 shadow-sm h-full">
                         <h4 className='text-base font-semibold text-gray-800'>{t('apiSelection.title')}</h4>
@@ -208,12 +208,27 @@ const ConfigurationStep: React.FC<ConfigurationStepProps> = ({
                                     <label className='block text-xs font-semibold text-gray-700 mb-1.5'>{step.displayName}:</label>
                                     <div className='flex flex-wrap gap-x-5 gap-y-2'>
                                         {(['non-tuned', 'tuned'] as CrawlModelType[]).map(modelValue => {
-                                            const isDisabled = isCrawling || (modelValue === 'tuned');
+                                            // THAY ĐỔI: Luôn disabled các lựa chọn model
+                                            const isDisabled = true; // Luôn disabled
                                             return (
                                                 <div key={modelValue} className='flex items-center'>
-                                                    <input id={`model-${step.name}-${modelValue}`} name={`model-${step.name}`} type='radio' value={modelValue} checked={apiModels[step.name] === modelValue} onChange={() => setApiModel(step.name, modelValue)} disabled={isDisabled} className='h-4 w-4 border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer disabled:cursor-not-allowed' />
-                                                    <label htmlFor={`model-${step.name}-${modelValue}`} className={`ml-2 block text-sm font-medium text-gray-900 capitalize ${isDisabled ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'}`}>{t(`modelValues.${modelValue}`)}</label>
-                                                    {modelValue === 'tuned' && isDisabled && (<span className="ml-2 px-1.5 py-0.5 text-xs font-medium text-red-700 bg-red-100 rounded-full">{t('apiSelection.temporarilyDisabled')}</span>)}
+                                                    <input
+                                                        id={`model-${step.name}-${modelValue}`}
+                                                        name={`model-${step.name}`}
+                                                        type='radio'
+                                                        value={modelValue}
+                                                        // THAY ĐỔI: Luôn kiểm tra 'non-tuned'
+                                                        checked={apiModels[step.name] === 'non-tuned' && modelValue === 'non-tuned'}
+                                                        // THAY ĐỔI: Không cho phép thay đổi qua onChange
+                                                        onChange={() => { /* Do nothing, as it's disabled */ }}
+                                                        disabled={isDisabled} // Sử dụng biến isDisabled mới
+                                                        className='h-4 w-4 border-gray-300 text-blue-600 focus:ring-blue-500 disabled:cursor-not-allowed'
+                                                    />
+                                                    <label htmlFor={`model-${step.name}-${modelValue}`} className={`ml-2 block text-sm font-medium text-gray-900 capitalize ${isDisabled ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'}`}>
+                                                        {t(`modelValues.${modelValue}`)}
+                                                    </label>
+                                                    {/* THAY ĐỔI: Hiển thị thông báo disabled chung cho cả hai lựa chọn */}
+                                                    {/* {isDisabled && (<span className="ml-2 px-1.5 py-0.5 text-xs font-medium text-red-700 bg-red-100 rounded-full">{t('apiSelection.temporarilyDisabled')}</span>)} */}
                                                 </div>
                                             );
                                         })}
@@ -229,13 +244,15 @@ const ConfigurationStep: React.FC<ConfigurationStepProps> = ({
                                                 <p className="text-xs text-gray-600">
                                                     <span className="font-semibold">{t('details.modelCapabilities')}:</span><br />
                                                     <span className="font-semibold capitalize">{t('modelValues.non-tuned')}:</span> {modelDescriptions['non-tuned']}<br />
+                                                    {/* Giữ nguyên phần này nếu bạn muốn hiển thị thông tin về tuned model nhưng vẫn disabled */}
                                                     {step.name !== 'extractCfp' && (<><span className="font-semibold capitalize">{t('modelValues.tuned')}:</span> {modelDescriptions['tuned']}</>)}
-                                                    {step.name === 'extractCfp' && (<span className="text-red-500 italic">({t('apiSelection.cfpTunedUnavailable')})</span>)}
+                                                    {/* {step.name === 'extractCfp' && (<span className="text-red-500 italic">({t('apiSelection.cfpTunedUnavailable')})</span>)} */}
                                                 </p>
                                             </div>
                                         )}
                                     </div>
-                                    {apiModels[step.name] === null && !isCrawling && (<p className="text-xs text-red-600 mt-1.5">{t('apiSelection.selectModelWarning', { apiName: step.displayName.replace(' Model', '') })}</p>)}
+                                    {/* Cảnh báo này có thể không cần thiết nữa vì model luôn được chọn */}
+                                    {/* {apiModels[step.name] === null && !isCrawling && (<p className="text-xs text-red-600 mt-1.5">{t('apiSelection.selectModelWarning', { apiName: step.displayName.replace(' Model', '') })}</p>)} */}
                                 </div>
                             ))}
                         </div>
@@ -243,15 +260,16 @@ const ConfigurationStep: React.FC<ConfigurationStepProps> = ({
                 </div>
             </div>
 
-            {!allModelsSelected && !isCrawling && (
+            {/* Cảnh báo này cũng có thể không cần thiết nữa vì model luôn được chọn */}
+            {/* {!allModelsSelected && !isCrawling && (
                 <p className="text-sm text-red-600 mt-3 p-2.5 bg-red-50 border border-red-200 rounded-md">
                     <span className="font-semibold">{t('warning.important')}:</span> {t('warning.selectModelsBeforeProceeding')}
                 </p>
-            )}
+            )} */}
 
             <div className="mt-6 flex justify-between">
                 <button type="button" onClick={onPrev} disabled={isCrawling} className="inline-flex items-center px-5 py-2.5 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-10 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-60 disabled:cursor-not-allowed disabled:shadow-none">{t('navigation.previousStep')}</button>
-                <button type="button" onClick={onNext} disabled={!canProceed || isCrawling} className="inline-flex items-center px-5 py-2.5 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-60 disabled:cursor-not-allowed disabled:bg-blue-400 disabled:shadow-none">{t('navigation.nextStep')}</button>
+                <button type="button" onClick={onNext} disabled={!canProceed || isCrawling} className="inline-flex items-center px-5 py-2.5 border transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-60 disabled:cursor-not-allowed disabled:bg-blue-400 disabled:shadow-none">{t('navigation.nextStep')}</button>
             </div>
         </div>
     );

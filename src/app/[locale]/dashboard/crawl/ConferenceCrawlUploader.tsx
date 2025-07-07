@@ -27,28 +27,37 @@ export const ConferenceCrawlUploader: React.FC = () => {
     const crawlHook = useConferenceCrawl();
     const [currentStep, setCurrentStep] = useState(STEPS[0].id);
 
+    // Lấy các state và hàm từ hook đã được cập nhật
     const {
         // File Parser
         file,
         parsedData,
         isParsing,
         parseError,
-        handleFileChange,
+        processDataForUpload, // <<< LẤY HÀM MỚI
+        setParsedData,
+
+        resetForNewUpload, // <<< LẤY HÀM MỚI
+
+
+
         // Selection Manager
         selectedCsvRows,
         onCsvSelectionChanged,
         updateActionTypeOfSelectedRows,
+
         // Config
         apiModels,
         enableChunking,
         chunkSize,
         chunkDelay,
-        recordFile, // <<< LẤY STATE MỚI
+        recordFile,
         setApiModel,
         setEnableChunking,
         setChunkSize,
         setChunkDelay,
-        setRecordFile, // <<< LẤY SETTER MỚI
+        setRecordFile,
+
         // Runner
         isCrawling,
         isPaused,
@@ -59,17 +68,19 @@ export const ConferenceCrawlUploader: React.FC = () => {
         processCrawlRequest,
         resumeCrawl,
         stopCrawl,
+
         // General
         resetCrawl,
     } = crawlHook;
 
-    // --- Logic điều kiện (canProceed) giữ nguyên ---
+    // --- Logic điều kiện (canProceed) không thay đổi ---
     const canProceedToStep2 = useMemo(() => !!parsedData && parsedData.length > 0 && !isParsing && !parseError, [parsedData, isParsing, parseError]);
     const canProceedToStep3 = useMemo(() => selectedCsvRows.length > 0, [selectedCsvRows]);
     const allModelsSelected = useMemo(() => apiStepsForUploader.every(step => apiModels[step.name] !== null), [apiModels, apiStepsForUploader]);
     const canProceedToStep4 = useMemo(() => canProceedToStep3 && allModelsSelected, [canProceedToStep3, allModelsSelected]);
     const canStartProcessing = useMemo(() => canProceedToStep4 && !isCrawling, [canProceedToStep4, isCrawling]);
 
+    // --- Các hàm điều khiển (handlers) không thay đổi ---
     const handleNextStep = () => {
         if (currentStep === 1 && canProceedToStep2) {
             setCurrentStep(2);
@@ -105,7 +116,7 @@ export const ConferenceCrawlUploader: React.FC = () => {
             enableChunking,
             chunkSize,
             chunkDelay,
-            recordFile, // <<< TRUYỀN VÀO HÀM
+            recordFile,
             "CSV Selections",
             description
         );
@@ -126,9 +137,12 @@ export const ConferenceCrawlUploader: React.FC = () => {
                         isParsing={isParsing}
                         parseError={parseError}
                         parsedDataLength={parsedData?.length || 0}
-                        handleFileChange={handleFileChange}
+                        processDataForUpload={processDataForUpload} // <<< TRUYỀN HÀM MỚI
+                        setParsedData={setParsedData}
                         onNext={handleNextStep}
                         canProceed={canProceedToStep2}
+                        resetForNewUpload={resetForNewUpload} // <<< TRUYỀN HÀM MỚI
+
                     />
                 )}
 
@@ -151,8 +165,8 @@ export const ConferenceCrawlUploader: React.FC = () => {
                         setChunkSize={setChunkSize}
                         chunkDelay={chunkDelay}
                         setChunkDelay={setChunkDelay}
-                        recordFile={recordFile} // <<< TRUYỀN XUỐNG
-                        setRecordFile={setRecordFile} // <<< TRUYỀN XUỐNG
+                        recordFile={recordFile}
+                        setRecordFile={setRecordFile}
                         apiModels={apiModels}
                         setApiModel={setApiModel}
                         apiStepsForUploader={apiStepsForUploader}

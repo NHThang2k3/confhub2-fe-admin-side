@@ -118,9 +118,8 @@ const ConferenceSelectionStep: React.FC<ConferenceSelectionStepProps> = ({
 
     // Điều kiện để reset:
     // 1. Dữ liệu cũ không tồn tại VÀ dữ liệu mới tồn tại (lần tải đầu tiên).
-    // 2. Hoặc, độ dài của dữ liệu mới khác với độ dài dữ liệu cũ (tải file mới).
     // Chúng ta chỉ reset khi có sự thay đổi cấu trúc lớn, không phải update tại chỗ.
-    const isNewFileLoad = oldData && oldData.length !== newData.length;
+    const isNewFileLoad = oldData;
 
     if (isNewFileLoad) {
       console.log(`${LOG_PREFIX} New file detected (data length changed from ${oldData.length} to ${newData.length}). Resetting table state.`);

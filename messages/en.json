@@ -516,21 +516,54 @@
   "FileUploadStep": {
     "header": {
       "title": "Step 1: Import CSV File",
-      "description": "Select a CSV file containing conference data. Required columns: Title, Acronym"
+      "description": "Select a CSV file containing conference data. The file will be processed for the next steps."
     },
     "button": {
-      "parsing": "Parsing...",
+      "processing": "Processing...",
       "changeFile": "Change File",
       "chooseFile": "Choose File"
     },
     "status": {
-      "parsedSuccess": "Parsed {count} conferences. Ready to proceed.",
-      "noValidData": "Could not find valid conference data (Title, Acronym) in the selected file.",
-      "selectFilePrompt": "Please select a file to begin."
+      "readyForNextStep": "{count} records are ready. You can now proceed to the next step.",
+      "fileSelectedPrompt": "File selected. Please complete the review process.",
+      "selectFilePrompt": "Please select a file to begin.",
+      "invalidFileType": "Invalid file type. Please select a CSV file.",
+      "clientParseError": "Error parsing CSV file: {error}",
+      "noValidData": "File parsed, but no valid data was found."
     },
     "navigation": {
-      "nextStep": "Next: Select Conferences"
+      "nextStep": "Next Step"
     }
+  },
+  "ImportDatabaseConfirmationModal": {
+    "title": "Import Options",
+    "description": "Do you want to import the data from this file into the database? This allows for more detailed data mapping.",
+    "importButton": "Import to Database",
+    "skipButton": "Skip, Just Process",
+    "note": "Choosing 'Import' will enable mapping for all fields like Source, Rank, and Fields of Research."
+  },
+  "DataReviewModal": {
+    "title": "Review and Map Data",
+    "noData": "No data available to display. Please close this and select a valid file.",
+    "createHeader": "Map headers for my data",
+    "requiredFieldsWarning": "Please map all required fields to continue",
+    "dropdownPlaceholder": "— Do not map —",
+    "nextButton": "Next",
+    "backButton": "Back",
+    "confirmButton": "Confirm & Complete",
+    "reviewWarningTitle": "Optional Fields Missing",
+    "reviewWarningText": "You have not mapped the following fields: {fields}. The final data will not include them.",
+    "finalPreviewTitle": "Final Data Preview",
+    "records": "records",
+    "noHeadersMapped": "No headers were mapped. Please go back and map the required fields."
+  },
+  "WarningConfirmationModal": {
+    "title": "Final Confirmation",
+    "header": "Missing Optional Data",
+    "description": "You are about to proceed without the following optional fields:",
+    "confirmationPrompt": "Are you sure you want to continue?",
+    "cancelButton": "Go Back",
+    "confirmButton": "Yes, Continue"
   },
   "ProcessingStep": {
     "header": {
@@ -1315,5 +1348,6 @@
       "pleaseSelectCsv": "Please select a CSV file",
       "uploadFailed": "Failed to upload file. Please try again."
     }
-  }
+  },
+  "Cron": "Cron"
 }

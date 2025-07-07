@@ -15,7 +15,8 @@ import {
   FaShieldAlt,
   FaBookOpen,
   FaUser,
-  FaPaperPlane
+  FaPaperPlane,
+  FaClock
 } from 'react-icons/fa';
 
 interface MenuItem {
@@ -43,15 +44,16 @@ export default function DashboardSidebar({ locale, sidebarWidth, headerHeight }:
       icon: <FaDatabase className="h-5 w-5" />,
       href: '/dashboard/crawl',
     },
-    {
-      label: t('Cron'),
-      icon: <FaChartBar className="h-5 w-5" />,
-      href: '/dashboard/cron',
-    },
+ 
     {
       label: t('Analysis'),
       icon: <FaChartBar className="h-5 w-5" />,
       href: '/dashboard/logAnalysis',
+    },
+       {
+      label: t('Cron'),
+      icon: <FaClock className="h-5 w-5" />,
+      href: '/dashboard/cron',
     },
     {
       label: t('Moderation.Moderation'),

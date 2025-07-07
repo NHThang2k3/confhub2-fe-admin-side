@@ -1,4 +1,5 @@
-// src/hooks/useTableActions.ts
+// src/hooks/crawl/useTableActions.ts
+
 import { useState, useMemo, useCallback, useEffect } from 'react';
 import {
   ConferenceTableData,
@@ -43,7 +44,7 @@ export const useTableActions = ({
     enableChunking,
     chunkSize,
     chunkDelay,
-    recordFile, // Vẫn giữ lại để có giá trị mặc định
+    recordFile,
   } = useConferenceCrawl();
 
   useEffect(() => {
@@ -54,7 +55,6 @@ export const useTableActions = ({
     setItemsToProcessWithAction([]);
   }, [...resetDependencies]);
 
-  // ... (các hàm isSelectedWithProblem, isSaveEnabled, handleBulkSave giữ nguyên) ...
   const isSelectedWithProblem = useMemo(() => {
     if (selectedRowIds.length === 0) return false;
     const selectedOriginalData = allConferenceData.filter(
@@ -65,13 +65,28 @@ export const useTableActions = ({
     );
   }, [selectedRowIds, allConferenceData]);
 
+  // <<< THAY ĐỔI 1: Cập nhật logic isSaveEnabled >>>
   const isSaveEnabled = useMemo(() => {
+    // Điều kiện cơ bản: phải có hàng được chọn và không đang trong quá trình lưu
     if (selectedRowIds.length === 0 || mainSaveStatus === 'saving') {
       return false;
     }
+
     const selectedConfs = allConferenceData.filter(conf => selectedRowIds.includes(conf.uniqueRowId));
+
+    // Điều kiện 1: Không có hàng nào đã được lưu vào DB trước đó
     const anySelectedAlreadyPersisted = selectedConfs.some(conf => conf.persistedSaveStatus === 'SAVED_TO_DATABASE');
-    return !isSelectedWithProblem && !anySelectedAlreadyPersisted;
+    
+    // Điều kiện 2 (từ isSelectedWithProblem): Không có hàng nào có lỗi hoặc vấn đề chất lượng dữ liệu nghiêm trọng
+    if (isSelectedWithProblem) {
+      return false;
+    }
+
+    // Điều kiện 3 (MỚI): Tất cả các hàng được chọn phải có status là 'completed'
+    const allSelectedAreCompleted = selectedConfs.every(conf => conf.status === 'completed');
+
+    return !anySelectedAlreadyPersisted && allSelectedAreCompleted;
+
   }, [selectedRowIds, isSelectedWithProblem, mainSaveStatus, allConferenceData]);
 
 
@@ -85,9 +100,18 @@ export const useTableActions = ({
     setRowSaveStatus(initialRowStatus);
     setRowSaveErrors({});
 
+    // <<< THAY ĐỔI 2: Thêm kiểm tra an toàn để chỉ lấy các hàng hợp lệ >>>
+    // Lọc các hàng được chọn VÀ có status là 'completed'
     const conferencesToSave = allConferenceData.filter(
-      conf => selectedRowIds.includes(conf.uniqueRowId)
+      conf => selectedRowIds.includes(conf.uniqueRowId) && conf.status === 'completed'
     );
+
+    // Nếu sau khi lọc không còn hàng nào hợp lệ, hủy bỏ thao tác
+    if (conferencesToSave.length === 0) {
+      console.warn("Save operation aborted: No selected items meet the 'completed' status requirement.");
+      setMainSaveStatus('idle');
+      return;
+    }
 
     const conferencePayloads: ConferenceToSavePayload[] = conferencesToSave.map(conf => ({
       acronym: conf.acronym,
@@ -194,12 +218,11 @@ export const useTableActions = ({
     }
   }, [selectedRowIds, allConferenceData]);
 
-  // <<< THAY ĐỔI: Cập nhật signature và logic của hàm
   const handleConfirmProcessWithActionAndModels = useCallback(async (
     processedItemsFromModal: ConferenceForAction[],
     selectedModels: ApiModels,
     description: string | undefined,
-    recordFileOverride: boolean // Nhận giá trị ghi đè
+    recordFileOverride: boolean
   ) => {
     if (processedItemsFromModal.length > 0) {
       await processCrawlRequest(
@@ -208,8 +231,6 @@ export const useTableActions = ({
         enableChunking,
         chunkSize,
         chunkDelay,
-        // Sử dụng giá trị ghi đè từ modal.
-        // Giá trị `recordFile` từ useConferenceCrawl không còn được dùng trực tiếp ở đây.
         recordFileOverride,
         "Programmatic Re-Crawl from Table",
         description
@@ -222,7 +243,6 @@ export const useTableActions = ({
     enableChunking,
     chunkSize,
     chunkDelay,
-    // Không cần `recordFile` ở đây nữa vì chúng ta nhận giá trị ghi đè
   ]);
 
   return {

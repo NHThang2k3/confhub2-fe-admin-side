@@ -1,5 +1,4 @@
 import React from 'react';
-import { FaChevronUp, FaChevronDown } from 'react-icons/fa';
 import { CrawlerType } from '@/src/hooks/logAnalysis/useLogAnalysisData';
 import { useTranslations } from 'next-intl';
 import CrawlerTabs from './CrawlerTabs';
@@ -35,12 +34,6 @@ const CrawlerTools: React.FC<CrawlerToolsProps> = ({
                 aria-controls="crawler-tools-content"
             >
                 <h2 className="text-lg font-semibold text-gray-800">{t('dataCrawlingToolsTitle')}</h2>
-                <button
-                    className="text-gray-500 hover:text-blue-600 focus:outline-none p-1 rounded-full"
-                    aria-label={isExpanded ? t('collapseCrawlerToolsLabel') : t('expandCrawlerToolsLabel')}
-                >
-                    {isExpanded ? <FaChevronUp size={18} /> : <FaChevronDown size={18} />}
-                </button>
             </div>
             <div
                 id="crawler-tools-content"
