@@ -32,7 +32,7 @@ export const useCronJobManager = () => {
 
     const fetchCronStatus = useCallback(async () => {
         try {
-            const response = await api.get<CronStatus>("/conference-crawl-job/cron-status");
+            const response = await api.get<CronStatus>("/api/v1/conference-crawl-job/cron-status");
             setCronStatus(response.data);
         } catch (error) {
             console.error("Error fetching cron status:", error);
@@ -42,7 +42,7 @@ export const useCronJobManager = () => {
 
     const fetchUpdateStats = useCallback(async () => {
         try {
-            const response = await api.get<UpdateStats>("/conference-crawl-job/stats");
+            const response = await api.get<UpdateStats>("/api/v1/conference-crawl-job/stats");
             setUpdateStats(response.data);
         } catch (error) {
             console.error("Error fetching update stats:", error);
@@ -63,7 +63,7 @@ export const useCronJobManager = () => {
         setIsLoading(true);
         try {
             const schedule = generateCronExpression(cycleType, time, dayOfMonth);
-            await api.post("/conference-crawl-job/schedule-cron", {
+            await api.post("/api/v1/conference-crawl-job/schedule-cron", {
                 schedule,
                 batchSize
             });
@@ -86,7 +86,7 @@ export const useCronJobManager = () => {
     const handleCancelCron = async () => {
         setIsLoading(true);
         try {
-            await api.post("/conference-crawl-job/cancel-cron");
+            await api.post("/api/v1/conference-crawl-job/cancel-cron");
             toast({
                 title: "Success",
                 description: "Cron update cancelled successfully"
