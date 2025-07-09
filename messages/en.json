@@ -65,7 +65,7 @@
     "Location_Label": "Location",
     "Topics_Label": "Topics",
     "Summary_Label": "Summary",
-    "UserMessage_Label": "Message from User",
+    "UserMessage_Label": "Message from Admin",
     "ModerationComment_Label": "Moderator's Comment",
     "Error_DetailsLoadFailed_Label": "Failed to load details",
     "Approve_Button": "Approve",
@@ -1349,5 +1349,59 @@
       "uploadFailed": "Failed to upload file. Please try again."
     }
   },
-  "Cron": "Cron"
+  "Cron": "Cron",
+  "DashboardSidebar": {
+    "Chatbot_Analysis": "Chatbot Analysis"
+  },
+  "ChatbotLogAnalysisPage": {
+    "AuthStatus_Loading": "Checking authentication status...",
+    "PageTitle": "Chatbot Performance Analysis",
+    "RefreshButton_Refresh": "Refresh Data",
+    "RefreshButton_Refreshing": "Refreshing...",
+    "Status_Analyzing": "Analyzing chatbot performance logs...",
+    "Errors_Title": "An Error Occurred",
+    "Errors_RetryButton": "Try Again",
+    "Errors_NoData": "No analysis data available.",
+    "Summary": {
+      "SuccessRate": "Success Rate",
+      "ErrorsTimeouts": "Errors / Timeouts",
+      "TotalRequests": "Total Requests",
+      "AvgRoundTrip": "Avg. Round-Trip",
+      "AvgServerTime": "Avg. Server Time",
+      "AvgAITime": "Avg. AI Time"
+    },
+    "Table": {
+      "Header_StartTime": "Start Time",
+      "Header_Question": "Question",
+      "Header_Status": "Status",
+      "Header_Model": "Model",
+      "Header_RoundTrip": "Round-Trip (ms)",
+      "Header_ServerTime": "Server (ms)"
+    },
+    "Modal": {
+      "Title": "Request Details",
+      "Label_Question": "Question",
+      "Label_AIResponse": "AI Response",
+      "Label_ClientError": "Client Error",
+      "Section_PerfBreakdown": "Performance Breakdown",
+      "Section_AICallDetails": "AI Call Details",
+      "Perf_RoundTrip": "Round-Trip",
+      "Perf_TotalServer": "Total Server",
+      "Perf_NetworkQueue": "Network/Queue",
+      "Perf_Preparation": "Preparation",
+      "Perf_AICall": "AI Call",
+      "Perf_PostProcessing": "Post-processing",
+      "AICall_Turn": "Turn",
+      "AICall_Model": "Model",
+      "AICall_Requested": "Requested",
+      "Perf_NotAvailable": "Performance breakdown is not available for this request."
+    },
+    "Tooltip": {
+      "NetworkQueue": "Network & Queue",
+      "Preparation": "Preparation",
+      "AICall": "AI Call",
+      "PostProcessing": "Post-processing"
+    }
+  },
+  "Chatbot_Analysis": "Chatbot Analysis"
 }

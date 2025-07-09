@@ -1,14 +1,12 @@
-// src/app/[locale]/dashboard/DashboardSidebar.tsx
-
 'use client';
 
 import React from 'react';
 import { useTranslations } from 'next-intl';
 import { Link, AppPathname } from '@/src/navigation';
 import { usePathname } from 'next/navigation';
-import { useSidebar } from '@/src/contexts/SidebarContext'; // CHANGE: Import useSidebar
+import { useSidebar } from '@/src/contexts/SidebarContext';
 
-// Import React Icons (giữ nguyên)
+// Import React Icons
 import {
   FaDatabase,
   FaChartBar,
@@ -16,7 +14,8 @@ import {
   FaBookOpen,
   FaUser,
   FaPaperPlane,
-  FaClock
+  FaClock,
+  FaRobot // <<< THÊM MỚI: Icon cho Chatbot
 } from 'react-icons/fa';
 
 interface MenuItem {
@@ -26,7 +25,6 @@ interface MenuItem {
 }
 
 interface DashboardSidebarProps {
-  // REMOVED: isSidebarOpen không còn được truyền qua props
   locale: string;
   sidebarWidth: number;
   headerHeight: number;
@@ -35,22 +33,27 @@ interface DashboardSidebarProps {
 export default function DashboardSidebar({ locale, sidebarWidth, headerHeight }: DashboardSidebarProps) {
   const t = useTranslations('');
   const currentPathname = usePathname();
-  const { isSidebarOpen } = useSidebar(); // CHANGE: Lấy trạng thái từ context
+  const { isSidebarOpen } = useSidebar();
 
   const menuItems: MenuItem[] = [
-    // ... (mảng menuItems giữ nguyên)
     {
       label: t('Crawl'),
       icon: <FaDatabase className="h-5 w-5" />,
       href: '/dashboard/crawl',
     },
- 
     {
       label: t('Analysis'),
       icon: <FaChartBar className="h-5 w-5" />,
       href: '/dashboard/logAnalysis',
     },
-       {
+    // <<< THÊM MỚI: Mục Chatbot Analysis >>>
+    {
+      label: t('Chatbot_Analysis'), // Giả sử bạn sẽ thêm key này vào file translation
+      icon: <FaRobot className="h-5 w-5" />,
+      href: '/dashboard/chatbot',
+    },
+    // <<< KẾT THÚC THÊM MỚI >>>
+    {
       label: t('Cron'),
       icon: <FaClock className="h-5 w-5" />,
       href: '/dashboard/cron',
@@ -77,19 +80,17 @@ export default function DashboardSidebar({ locale, sidebarWidth, headerHeight }:
     },
   ];
 
-  // CHANGE: Cập nhật class để khớp với client pattern
   const sidebarClasses = `
     fixed left-0
     overflow-y-auto
     transition-transform duration-300 ease-in-out
     bg-background
     shadow-md
-    z-30 // CHANGE: Tăng z-index để nằm trên overlay
+    z-30
     w-[var(--sidebar-width)]
     ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
   `;
 
-  // CHANGE: Áp dụng style để sidebar nằm dưới header, giống client
   const sidebarStyles: React.CSSProperties & {
     '--sidebar-width': string;
   } = {
@@ -98,16 +99,11 @@ export default function DashboardSidebar({ locale, sidebarWidth, headerHeight }:
     height: `calc(100vh - ${headerHeight}px)`,
   };
   
-  // REMOVED: contentStyles không còn cần thiết
-
   return (
     <aside
       className={sidebarClasses}
-      style={sidebarStyles} // CHANGE: Sử dụng style object
+      style={sidebarStyles}
     >
-      {/* REMOVED: Phần Logo và Title đã được chuyển ra Header chung */}
-
-      {/* CHANGE: Thêm <nav> và transition opacity giống client */}
       <nav className={`h-full overflow-y-auto transition-opacity duration-300 ${isSidebarOpen ? 'opacity-100' : 'opacity-0'}`}>
         <ul className='w-full py-2'>
           {menuItems.map(item => {
@@ -128,9 +124,7 @@ export default function DashboardSidebar({ locale, sidebarWidth, headerHeight }:
                       : 'border-transparent text-foreground hover:bg-gray-100 '
                     }
                   `}
-                  // REMOVED: Inline style không cần thiết nữa
                 >
-                  {/* CHANGE: Đơn giản hóa cấu trúc span, giống client */}
                   <span className="mr-3">
                     {React.cloneElement(item.icon, {
                       className: `${item.icon.props.className || ''} ${isActive ? 'text-primary' : 'text-gray-600 '}`
