@@ -516,7 +516,7 @@
   "FileUploadStep": {
     "header": {
       "title": "Step 1: Import CSV File",
-      "description": "Select a CSV file containing conference data. The file will be processed for the next steps."
+      "description": "Select a CSV file containing conference data. The file will be processed for the next steps. The file should contain columns for Title, Acronym. The file should not include headers like 'Title', 'Acronym', 'Source', 'Rank', 'Fields of Research'. The first row should contain the data."
     },
     "button": {
       "processing": "Processing...",
