@@ -71,21 +71,24 @@ export default function ConferencesPage({ locale }: { locale: string }) {
       } catch (error) {
         console.error('Error deleting conference:', error);
         toast.error(tCommon('deleteError'));
+            
+    setIsDeleteDialogOpen(false);
+    setSelectedConference(null);
+    setSelectedOrganization(null);
       }
     } else if (selectedOrganization) {
       // Logic xóa Organization (chưa có trong code gốc, nhưng đây là cách xử lý)
       // Nếu bạn cần logic này, bạn sẽ thêm API call ở đây.
       // Ví dụ:
-      // await axios.delete(`${DATA_API_URL}/api/v1/admin/organizations/remove/${selectedOrganization.id}`);
-      // toast.success("Successfully deleted organization history");
+      await axios.delete(`${DATA_API_URL}/api/v1/admin/conferences/history/${selectedOrganization.id}`);
+      toast.success("Successfully deleted organization history");
       // Sau đó, bạn cần refresh lại dữ liệu của modal
-      console.log("Deleting organization:", selectedOrganization);
-      toast.info("Organization delete logic to be implemented.");
+      // console.log("Deleting organization:", selectedOrganization);
+      // toast.info("Organization delete logic to be implemented.");
+      // setSelectedOrganization(null);
+      return
     }
-    
-    setIsDeleteDialogOpen(false);
-    setSelectedConference(null);
-    setSelectedOrganization(null);
+
   };
 
   return (
