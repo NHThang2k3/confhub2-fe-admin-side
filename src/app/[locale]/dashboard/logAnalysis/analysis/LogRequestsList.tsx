@@ -1,6 +1,7 @@
 // src/app/[locale]/dashboard/logAnalysis/analysis/LogRequestsList.tsx
 import React, { useState, useMemo, useCallback } from 'react'; // Added useCallback
-import { FaListAlt, FaChevronUp, FaChevronDown, FaInfoCircle, FaChartBar, FaFileAlt, FaTrash } from 'react-icons/fa';
+// --- THÊM ICON MỚI ---
+import { FaListAlt, FaChevronUp, FaChevronDown, FaInfoCircle, FaChartBar, FaFileAlt, FaTrash, FaDownload } from 'react-icons/fa';
 import RequestsTable, { RequestSummaryUnionForTable, RequestSortableKey, ConferenceRequestSummaryForTable, JournalRequestSummaryForTable } from './RequestsTable';
 import NoDataDisplay from './NoDataDisplay';
 import { useTranslations } from 'next-intl';
@@ -37,13 +38,16 @@ interface LogRequestsListProps {
     totalRequestCount: number;
     sortConfig: SortConfig;
     onSort: (key: RequestSortableKey) => void;
-    
+
     // Props for selection and deletion
     selectedRequestIds: string[];
     onToggleSelectRequest: (requestId: string) => void; // For checkbox selection
     onDeleteSelected: () => void;
     isLoadingDelete: boolean;
     onUpdateSelectedIds: (idsToSelect: string[], idsToDeselect: string[]) => void;
+    // --- THÊM PROPS MỚI ---
+    onDownloadRequest: (requestId: string, crawlerType: CrawlerType) => void;
+    isDownloadingId: string | null; // ID của request đang được download
 }
 
 const LogRequestsList: React.FC<LogRequestsListProps> = ({
@@ -68,6 +72,9 @@ const LogRequestsList: React.FC<LogRequestsListProps> = ({
     onDeleteSelected,
     isLoadingDelete,
     onUpdateSelectedIds,
+    // --- NHẬN PROPS MỚI ---
+    onDownloadRequest,
+    isDownloadingId,
 }) => {
     const t = useTranslations('LogRequestsList');
     const tCommon = useTranslations('Common');
@@ -75,6 +82,15 @@ const LogRequestsList: React.FC<LogRequestsListProps> = ({
 
     const allRequestIdsOriginal = data.analyzedRequestIds || [];
     const requestsData = data.requests as { [key: string]: RequestSummaryUnionForTable };
+
+    // --- BỔ SUNG LOGIC KIỂM TRA CSV CHO CÁC MỤC ĐÃ CHỌN ---
+    const canDownloadSelected = useMemo(() => {
+        if (selectedRequestIds.length === 0) return false;
+        // Kiểm tra xem MỌI request được chọn có hasCsvOutput là true không
+        return selectedRequestIds.every(id => requestsData[id]?.hasCsvOutput === true);
+    }, [selectedRequestIds, requestsData]);
+    // -------------------------------------------------------
+
 
     const sortedRequestIds = useMemo(() => {
         const sortableArray = [...allRequestIdsOriginal];
@@ -153,7 +169,7 @@ const LogRequestsList: React.FC<LogRequestsListProps> = ({
     const totalPages = Math.ceil(sortedRequestIds.length / ITEMS_PER_PAGE);
     const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
     const endIndex = startIndex + ITEMS_PER_PAGE;
-    
+
     // Use useMemo for paginatedRequestIds as it depends on sortedRequestIds, startIndex, endIndex
     const paginatedRequestIds = useMemo(() => {
         return sortedRequestIds.slice(startIndex, endIndex);
@@ -180,6 +196,8 @@ const LogRequestsList: React.FC<LogRequestsListProps> = ({
     const summaryNavButtonBaseClass = "px-4 py-2 text-sm font-medium focus:outline-none transition-colors duration-150 ease-in-out flex items-center";
     const summaryNavButtonActiveClass = "bg-blue-600 text-white";
     const summaryNavButtonInactiveClass = "bg-gray-100 text-gray-700 hover:bg-gray-200";
+
+
 
     return (
         <div className="bg-white rounded-lg shadow-md border border-gray-200">
@@ -215,6 +233,20 @@ const LogRequestsList: React.FC<LogRequestsListProps> = ({
                                 <span className="text-sm text-gray-600">
                                     {t('selectedCount', { count: selectedRequestIds.length })}
                                 </span>
+
+                                <button
+                                    onClick={() => {
+                                        selectedRequestIds.forEach(id => onDownloadRequest(id, crawlerType));
+                                    }}
+                                    // --- CẬP NHẬT ĐIỀU KIỆN DISABLED ---
+                                    disabled={isLoadingDelete || !!isDownloadingId || !canDownloadSelected}
+                                    className="px-3 py-1.5 bg-blue-600 text-white text-xs font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+                                    title={canDownloadSelected ? t('downloadSelectedButtonAria', { count: selectedRequestIds.length }) : t('downloadSelectedDisabledTooltip')}
+                                >
+                                    <FaDownload className="mr-1.5 h-3.5 w-3.5" />
+                                    {t('downloadSelectedButton', { count: selectedRequestIds.length })}
+                                </button>
+
                                 <button
                                     onClick={onDeleteSelected}
                                     disabled={isLoadingDelete || selectedRequestIds.length === 0}
@@ -248,6 +280,9 @@ const LogRequestsList: React.FC<LogRequestsListProps> = ({
                             onToggleSelectRequest={onToggleSelectRequest} // For checkbox selection
                             onToggleSelectAllOnPage={handleToggleSelectAllOnPage}
                             isAllOnPageSelected={isAllOnPageSelected}
+                            // --- TRUYỀN PROPS MỚI XUỐNG BẢNG ---
+                            onDownloadRequest={onDownloadRequest}
+                            isDownloadingId={isDownloadingId}
                         />
                         {totalPages > 1 && (
                             <GeneralPagination

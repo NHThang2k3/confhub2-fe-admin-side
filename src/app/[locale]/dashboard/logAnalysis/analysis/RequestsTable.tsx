@@ -2,7 +2,9 @@ import React from 'react';
 import {
     FaLink, FaClock, FaStopwatch, FaInfoCircle, FaCheckCircle,
     FaTimesCircle, FaQuestionCircle, FaEllipsisH, FaListAlt, FaChartPie, FaExclamationTriangle,
-    FaSort, FaSortUp, FaSortDown, FaCommentAlt
+    FaSort, FaSortUp, FaSortDown, FaCommentAlt,
+    FaSpinner,
+    FaDownload
 } from 'react-icons/fa';
 import { useTranslations } from 'next-intl';
 import { CrawlerType } from '@/src/hooks/logAnalysis/useLogAnalysisData';
@@ -15,7 +17,7 @@ export interface RequestSummaryShared {
     status: string | undefined | null;
     originalRequestId?: string | null;
     description?: string | null;
-
+    hasCsvOutput?: boolean | null;
     dataSource?: 'scimago' | 'client' | string;
     requestId?: string;
 }
@@ -57,6 +59,9 @@ interface RequestsTableProps {
     onToggleSelectRequest: (requestId: string) => void;
     onToggleSelectAllOnPage: () => void;
     isAllOnPageSelected: boolean;
+    // --- THÊM PROPS MỚI ---
+    onDownloadRequest: (requestId: string, crawlerType: CrawlerType) => void;
+    isDownloadingId: string | null;
 }
 
 const RequestsTable: React.FC<RequestsTableProps> = ({
@@ -73,23 +78,25 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
     onToggleSelectRequest,
     onToggleSelectAllOnPage,
     isAllOnPageSelected,
+    onDownloadRequest,
+    isDownloadingId,
 }) => {
+
     const t = useTranslations('RequestsTable');
     const tCommon = useTranslations('Common');
 
     const TRUNCATE_LIMIT = 50;
 
-     // <<< THAY ĐỔI 1: Định nghĩa độ rộng các cột trong một object để dễ quản lý >>>
-    // Bạn có thể tùy chỉnh các giá trị này cho phù hợp với nhu cầu
     const columnWidths = {
-        select: 'w-12',                 // Cột checkbox, cố định
-        requestId: 'min-w-[160px]',     // ID có thể dài, đặt min-width và cho phép co giãn
-        originalRequestId: 'min-w-[160px]', // Tương tự requestId
-        description: 'w-1/10',           // Cột mô tả chiếm 1/3 không gian còn lại, cho phép wrap text
-        timeRange: 'w-[200px]',         // Cố định cho ngày giờ
-        duration: 'w-[60px]',          // Cố định cho thời gian chạy (vd: "12.34s")
-        status: 'w-[200px]',            // Cố định cho chip trạng thái
-        processedItemsRatio: 'w-[180px]'// Cố định cho thanh progress bar
+        select: 'w-12',
+        requestId: 'min-w-[160px]',
+        originalRequestId: 'min-w-[160px]',
+        description: 'w-1/10',
+        timeRange: 'w-[200px]',
+        duration: 'w-[60px]',
+        status: 'w-[200px]',
+        processedItemsRatio: 'w-[180px]',
+        actions: 'max-w-[30px]', // Cột actions, cố định
     };
 
     if (!requestIds || requestIds.length === 0) {
@@ -223,6 +230,10 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
                         <SortableHeader columnKey="processedItemsRatio" className={columnWidths.processedItemsRatio}>
                             <FaChartPie className="mr-1.5 h-3.5 w-3.5 text-gray-400" /> {successRateColumnHeader}
                         </SortableHeader>
+                        {/* --- THÊM HEADER CHO CỘT ACTIONS --- */}
+                        <th scope="col" className={`px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider ${columnWidths.actions}`}>
+                            {t('tableHeaders.actions')}
+                        </th>
                     </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
@@ -250,7 +261,13 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
                         const textColorForProgressBar = 'text-gray-700';
                         const isSelected = selectedRequestIds.includes(reqId);
 
-                         return (
+                     
+                        // --- BỔ SUNG LOGIC KIỂM TRA CSV ---
+                        const canDownload = details?.hasCsvOutput === true;
+                        // ------------------------------------
+
+
+                        return (
                             <tr
                                 key={reqId}
                                 className={`transition-colors duration-150 ${isSelected ? 'bg-blue-50 hover:bg-blue-100' : 'hover:bg-gray-10'}`}
@@ -306,11 +323,11 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
                                     {details ? (
                                         <div>
                                             <div className="flex items-center text-xs" title={t('tableHeaders.startTime')}>
-                                                <span className="font-semibold text-gray-500 w-6 text-right mr-3">Start:</span>
+                                                <span className="font-semibold text-gray-500 w-6 text-right mr-5">Start:</span>
                                                 <span>{formatDateTime(details.startTime)}</span>
                                             </div>
                                             <div className="flex items-center text-xs mt-1" title={t('tableHeaders.endTime')}>
-                                                <span className="font-semibold text-gray-500 w-6 text-right mr-3">End:</span>
+                                                <span className="font-semibold text-gray-500 w-6 text-right mr-5">End:</span>
                                                 <span>{formatDateTime(details.endTime)}</span>
                                             </div>
                                         </div>
@@ -348,6 +365,23 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
                                         <span className="text-gray-400 text-xs">{tCommon('na')}</span>
                                     )}
                                 </td>
+
+                               <td className="px-4 py-3 whitespace-nowrap text-sm text-center">
+                                    {/* --- CẬP NHẬT NÚT DOWNLOAD --- */}
+                                    <button
+                                        onClick={() => onDownloadRequest(reqId, crawlerType)}
+                                        // Vô hiệu hóa nếu đang download HOẶC không có file CSV
+                                        disabled={isDownloadingId === reqId || !canDownload}
+                                        className="p-2 text-gray-500 hover:text-blue-600 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-400 disabled:opacity-30 disabled:cursor-not-allowed"
+                                        title={canDownload ? t('downloadButtonAria', { requestId: reqId }) : t('downloadDisabledTooltip')}
+                                    >
+                                        {isDownloadingId === reqId ? (
+                                            <FaSpinner className="animate-spin h-4 w-4" />
+                                        ) : (
+                                            <FaDownload className="h-4 w-4" />
+                                        )}
+                                    </button>
+                                </td>
                             </tr>
                         );
                     })}
@@ -355,8 +389,8 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
                 {totalItemsInputOnPage > 0 && (
                     <tfoot className="bg-gray-10 border-t border-gray-200">
                         <tr>
-                            {/* <<< THAY ĐỔI: Cập nhật colspan từ 8 xuống 7 vì đã gộp 1 cột >>> */}
-                            <td colSpan={7} className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                            {/* --- CẬP NHẬT COLSPAN TỪ 7 LÊN 8 --- */}
+                            <td colSpan={8} className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
                                 <div className="flex items-center font-semibold">
                                     <FaChartPie className="mr-2 h-4 w-4 text-gray-600" />
                                     {t('tableFooter.currentPageSuccessRate')}:

@@ -23,8 +23,11 @@ export const useConferenceDataTransform = ({
   const conferenceDataArray: ConferenceTableData[] = useMemo(() => {
     if (!logAnalysisResult?.conferenceAnalysis) return [];
 
-    const { conferenceAnalysis, filterRequestId, analyzedRequestIds } =
+    // --- LẤY THÊM `fileOutput` TỪ KẾT QUẢ PHÂN TÍCH ---
+    const { conferenceAnalysis, fileOutput, filterRequestId, analyzedRequestIds } =
       logAnalysisResult;
+
+
 
     return Object.entries(conferenceAnalysis).map(([confKey, data]) => {
       const entryRequestId =
@@ -48,6 +51,25 @@ export const useConferenceDataTransform = ({
       const cfpLinkVal = data.finalResult?.cfpLink || data.finalResultPreview?.cfpLink;
       const impLinkVal = data.finalResult?.impLink || data.finalResultPreview?.impLink;
 
+
+      // --- TÌM TRẠNG THÁI CSV CHO CONFERENCE NÀY ---
+      // Logic này giả định rằng `fileOutput` chứa thông tin cho toàn bộ request,
+      // và chúng ta cần tìm conference tương ứng.
+      // Tuy nhiên, `csvFileGenerated` thường ở cấp độ request, không phải conference.
+      // Giả định đơn giản hơn: `csvFileGenerated` ở cấp độ request.
+      // Chúng ta sẽ lấy nó từ `logAnalysisResult.fileOutput`.
+      // Nhưng vì `conferenceAnalysis` là một mảng, chúng ta cần một cách để liên kết.
+      // Giả định đơn giản nhất: `csvFileGenerated` áp dụng cho tất cả.
+      // MỘT CÁCH TIẾP CẬN TỐT HƠN: `csvFileGenerated` nên nằm trong `requests[reqId]`.
+      // Giả sử bạn đã có logic để đưa `csvFileGenerated` vào `requests[reqId]`.
+      // Nếu chưa, chúng ta sẽ làm một cách đơn giản ở đây.
+
+      // Lấy thông tin từ request cha của conference này
+      const parentRequest = logAnalysisResult.requests[data.batchRequestId];
+      // Giả sử `parentRequest` có trường `csvFileGenerated`
+      const csvGeneratedForRequest = (parentRequest as any)?.csvFileGenerated ?? null;
+
+
       return {
         ...data,
         uniqueRowId,
@@ -61,6 +83,9 @@ export const useConferenceDataTransform = ({
         link: mainLink,
         cfpLink: cfpLinkVal,
         impLink: impLinkVal,
+        // --- GÁN GIÁ TRỊ MỚI ---
+        // Lấy từ request cha, nếu không có thì lấy từ fileOutput tổng
+        csvFileGenerated: csvGeneratedForRequest ?? fileOutput?.csvFileGenerated ?? null,
       };
     });
   }, [logAnalysisResult]);

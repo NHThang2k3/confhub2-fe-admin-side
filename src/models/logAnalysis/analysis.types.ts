@@ -1,4 +1,3 @@
-// src/types/analysis.types.ts
 /**
  * @fileoverview Định nghĩa các kiểu dữ liệu cho việc phân tích nhật ký (log analysis) của quá trình thu thập dữ liệu (crawl pipeline).
  * Bao gồm các tóm tắt tổng thể, chi tiết phân tích từng hội nghị, và kết quả phân tích tổng hợp từ các thành phần khác nhau.
@@ -64,6 +63,22 @@ export interface OverallAnalysis {
  * @description Định nghĩa loại thu thập dữ liệu cho một hội nghị: 'crawl' (thu thập mới) hoặc 'update' (cập nhật).
  */
 export type ConferenceCrawlType = 'crawl' | 'update';
+
+
+
+/**
+ * NEW: Interface to store detailed timings for each step of a conference task.
+ */
+export interface ConferenceTaskTimings {
+    googleSearchDurationMs?: number;
+    crawlInitialLinksDurationMs?: number; // Save flow: crawl links from Google
+    crawlUpdateLinksDurationMs?: number;  // Update flow: crawl main, cfp, imp
+    apiDetermineLinksDurationMs?: number; // Save flow: API 1
+    crawlDeterminedLinksDurationMs?: number; // Save flow: crawl official site
+    apiFinalExtractionDurationMs?: number; // Both flows: API extract + cfp
+}
+
+
 
 /**
  * @interface ConferenceAnalysisDetail
@@ -161,6 +176,7 @@ export interface ConferenceAnalysisDetail {
         search_filtered_count: number | null;
         search_limited_count: number | null; // <<<< THÊM TRƯỜNG MỚI
 
+
         html_save_attempted: boolean;
         html_save_success: boolean | 'skipped' | null;
         link_processing_attempted_count: number;
@@ -182,6 +198,10 @@ export interface ConferenceAnalysisDetail {
         gemini_cfp_success?: boolean | null;
         gemini_cfp_cache_used?: boolean | null;
     };
+    /**
+     * @property {ConferenceTaskTimings} timings - Detailed timings for each sub-step of the task.
+     */
+    timings: ConferenceTaskTimings;
     /**
      * @property {LogError[]} errors - Một mảng các lỗi cụ thể gặp phải cho hội nghị này trong quá trình xử lý.
      */
@@ -317,7 +337,7 @@ export interface ConferenceLogAnalysisResult {
     /**
      * @property {{[compositeKey: string]: ConferenceAnalysisDetail}} conferenceAnalysis - Một từ điển các đối tượng `ConferenceAnalysisDetail`, được lập chỉ mục bởi một khóa tổng hợp (ví dụ: `batchRequestId-conferenceTitle`).
      */
-    conferenceAnalysis?: {
+    conferenceAnalysis: {
         [compositeKey: string]: ConferenceAnalysisDetail;
     };
 }

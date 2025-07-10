@@ -6,14 +6,14 @@
  * cho các cấu trúc dữ liệu phân tích nhật ký.
  */
 
-import { OverallAnalysis, ConferenceLogAnalysisResult, ConferenceAnalysisDetail, ConferenceCrawlType } from './analysis.types';
+import { OverallAnalysis, ConferenceLogAnalysisResult } from './analysis.types';
 import { GoogleSearchAnalysis, GoogleSearchHealthData } from './search.types';
 import { GeminiApiAnalysis } from './gemini.types';
 import { PlaywrightAnalysis } from './playwright.types';
 import { BatchProcessingAnalysis } from './batchProcessing.types';
 import { FileOutputAnalysis } from './fileOutput.types';
-import { ValidationStats, DataQualityInsight } from './validation.types';
-import { RequestTimings, LogError } from './common.types'; // Đảm bảo đã import LogError
+import { ValidationStats } from './validation.types';
+
 
 /**
  * @function getInitialOverallAnalysis

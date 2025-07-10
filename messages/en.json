@@ -648,6 +648,9 @@
     }
   },
   "LogRequestsList": {
+    "downloadSelectedDisabledTooltip": "Cannot download. One or more selected requests do not have a CSV output file.",
+    "downloadSelectedButton": "Download CSV ({count})",
+    "downloadSelectedButtonAria": "Download CSV output for {count} selected requests",
     "title": "Log Requests",
     "ariaLabel": {
       "collapse": "Collapse log requests section",
@@ -678,6 +681,9 @@
     "noDetailsMessageConference": "No specific Conference analysis details available for this request."
   },
   "RequestsTable": {
+    "downloadDisabledTooltip": "CSV output is not available for this request.",
+    "downloadButtonAria": "Download CSV output for request {requestId}",
+    "noCsvFileTooltip": "CSV output file is not available for this request.",
     "tableHeaders": {
       "requestId": "Request ID",
       "originalRequestId": "Original Request ID",
@@ -1271,6 +1277,13 @@
       "conference": "Conference",
       "journal": "Journal"
     },
+    "downloadAction": {
+      "errorGeneric": "Could not download the file. Please try again.",
+      "errorNetwork": "A network error occurred while trying to download the file. Details: {errorDetail}",
+      "statusTitle": "Download Status",
+      "loading": "Downloading...",
+      "processing": "Your file download is being prepared..."
+    },
     "deleteAction": {
       "confirmDelete": "Are you sure you want to delete {count} request(s)? This action cannot be undone and will remove associated log and cache files.",
       "loading": "Processing Deletion...",
@@ -1281,7 +1294,10 @@
       "deletionFailed": "Deletion failed.",
       "errorGeneric": "Failed to delete one or more requests. Please check details.",
       "errorNetwork": "A network or unexpected error occurred: {errorDetail}",
-      "successGeneric": "Deletion process completed. Check details for status of each request."
+      "successGeneric": "Deletion process completed. Check details for status of each request.",
+      "confirmDeleteTitle": "Confirm Deletion",
+      "cancel": "Cancel",
+      "confirm": "Delete"
     },
     "noData": {
       "noRequestsMatchingFiltersOrPeriod": "No requests match the current filters or time period.",

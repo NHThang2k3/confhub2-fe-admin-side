@@ -19,7 +19,10 @@ import DeletionStatusDisplay from './analysis/DeletionStatusDisplay';
 import { useAnalysisFilters } from '@/src/hooks/logAnalysis/useAnalysisFilters';
 import { useListViewManagement } from '@/src/hooks/logAnalysis/useListViewManagement';
 import { useAnalysisDataProcessor } from '@/src/hooks/logAnalysis/useAnalysisDataProcessor';
-
+// --- THÊM IMPORT MỚI ---
+import { useDownloadLogOutput } from '../../../../hooks/logAnalysis/useDownloadLogOutput';
+// --- THÊM IMPORT MODAL ---
+import Modal from './Modal';
 
 const Analysis: React.FC = () => {
     const t = useTranslations('AnalysisPage');
@@ -32,7 +35,6 @@ const Analysis: React.FC = () => {
         tempCustomEndDate, setTempCustomEndDate,
         applyCustomDateFilter,
         handleTimeFilterChange, setTextFilterInput,
-        // THAY ĐỔI: Lấy hàm mới từ hook
         setTextFilterAndApplyImmediately,
         clearActiveTextFilter,
         setActiveCrawler,
@@ -70,21 +72,34 @@ const Analysis: React.FC = () => {
         clearMessages: clearDeleteMessages
     } = useDeleteLogRequests();
 
+
+    // --- GỌI HOOK MỚI ---
+    const { downloadFile, isDownloading, downloadError } = useDownloadLogOutput();
+
+
     // --- UI State & Handlers ---
     const [isSummaryExpanded, setIsSummaryExpanded] = useState(false);
     const [isLogRequestsExpanded, setIsLogRequestsExpanded] = useState(true);
+    // --- STATE MỚI CHO MODAL XÁC NHẬN XÓA ---
+    const [isConfirmDeleteModalOpen, setIsConfirmDeleteModalOpen] = useState(false);
 
     const handleToggleSummary = () => setIsSummaryExpanded(prev => !prev);
     const handleToggleLogRequests = () => setIsLogRequestsExpanded(prev => !prev);
 
     const handleSelectRequestFromList = (reqId: string) => {
-        // THAY ĐỔI: Sử dụng hàm mới để cập nhật filter ngay lập tức, bỏ qua debounce
         setTextFilterAndApplyImmediately(reqId);
     };
 
-    const handleDeleteSelectedRequests = async () => {
+    // --- HÀM MỚI ĐỂ MỞ MODAL XÁC NHẬN ---
+    const handleOpenConfirmDeleteModal = () => {
         if (selectedRequestIds.length === 0 || isLoadingDelete) return;
-        if (!window.confirm(t('deleteAction.confirmDelete', { count: selectedRequestIds.length }))) return;
+        setIsConfirmDeleteModalOpen(true);
+    };
+
+    // --- HÀM XÓA THỰC SỰ, ĐƯỢC GỌI TỪ MODAL ---
+    const handleDeleteConfirmed = async () => {
+        setIsConfirmDeleteModalOpen(false); // Đóng modal ngay lập tức
+        if (selectedRequestIds.length === 0 || isLoadingDelete) return;
 
         clearDeleteMessages();
         const apiCallSuccessful = await deleteRequests({
@@ -103,8 +118,6 @@ const Analysis: React.FC = () => {
         timeFilterOption,
         handleFilterChange: handleTimeFilterChange,
         textFilterInput,
-        // QUAN TRỌNG: Vẫn truyền `setTextFilterInput` gốc vào header
-        // để việc gõ phím vẫn có debounce.
         setTextFilterInput,
         tempCustomStartDate,
         setTempCustomStartDate,
@@ -151,6 +164,15 @@ const Analysis: React.FC = () => {
 
     return (
         <div className="bg-gradient-to-br from-gray-100 to-blue-50 min-h-screen font-sans space-y-6 relative p-4">
+
+            {/* Hiển thị lỗi download nếu có */}
+            {downloadError && (
+                <div className="fixed bottom-16 right-4 z-[100] w-full max-w-md p-1">
+                    <div className="relative p-4 pr-10 rounded-md shadow-lg border bg-red-100 border-red-300 text-red-700">
+                        <p>{downloadError}</p>
+                    </div>
+                </div>
+            )}
             <DeletionStatusDisplay
                 isLoading={isLoadingDelete}
                 error={deleteError}
@@ -196,9 +218,12 @@ const Analysis: React.FC = () => {
                     onSort={handleSort}
                     selectedRequestIds={selectedRequestIds}
                     onToggleSelectRequest={handleToggleRequestSelection}
-                    onDeleteSelected={handleDeleteSelectedRequests}
+                    // --- THAY ĐỔI: GỌI HÀM MỚI ĐỂ MỞ MODAL ---
+                    onDeleteSelected={handleOpenConfirmDeleteModal}
                     isLoadingDelete={isLoadingDelete}
                     onUpdateSelectedIds={handleUpdateSelectedIds}
+                    onDownloadRequest={downloadFile}
+                    isDownloadingId={isDownloading}
                 />
             )}
 
@@ -242,6 +267,34 @@ const Analysis: React.FC = () => {
                     <FaExclamationTriangle className="inline mr-1" /> {t('refreshing.error', { error: error.toString() })}
                 </div>
             )}
+
+            {/* --- MODAL XÁC NHẬN XÓA --- */}
+            <Modal
+                isOpen={isConfirmDeleteModalOpen}
+                onClose={() => setIsConfirmDeleteModalOpen(false)}
+                title={t('deleteAction.confirmDeleteTitle')}
+                size="sm"
+            >
+                <p className="text-gray-700 dark:text-gray-300">
+                    {t('deleteAction.confirmDelete', { count: selectedRequestIds.length })}
+                </p>
+                <div className="mt-4 flex justify-end space-x-3">
+                    <button
+                        type="button"
+                        className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+                        onClick={() => setIsConfirmDeleteModalOpen(false)}
+                    >
+                        {t('deleteAction.cancel')}
+                    </button>
+                    <button
+                        type="button"
+                        className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                        onClick={handleDeleteConfirmed}
+                    >
+                        {t('deleteAction.confirm')}
+                    </button>
+                </div>
+            </Modal>
         </div>
     );
 };

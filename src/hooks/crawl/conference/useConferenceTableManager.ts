@@ -1,6 +1,6 @@
 // src/hooks/crawl/useConferenceTableManager.ts
 
-import { ConferenceAnalysisDetail, ConferenceLogAnalysisResult, DataQualityInsight } from '@/src/models/logAnalysis';
+import { ConferenceAnalysisDetail, ConferenceLogAnalysisResult, DataQualityInsight, ConferenceTaskTimings } from '@/src/models/logAnalysis'; // Thêm ConferenceTaskTimings
 // Import các sub-hooks mới
 import { useConferenceDataTransform } from './useConferenceDataTransform';
 import { useTableSortingAndFiltering } from './useTableSortingAndFiltering';
@@ -34,9 +34,11 @@ export interface ColumnFiltersState {
   unrecoveredErrorCount?: SeverityFilterLevel;
 }
 
-export interface ConferenceTableData extends Omit<ConferenceAnalysisDetail, 'dataQualityInsights' | 'steps' | 'errors'> {
+export interface ConferenceTableData extends Omit<ConferenceAnalysisDetail, 'dataQualityInsights' | 'steps' | 'errors' | 'timings'> { // Thêm timings vào Omit
   crawlType: 'crawl' | 'update';
   steps: ConferenceAnalysisDetail['steps'];
+  // --- THÊM TRƯỜNG MỚI ---
+  timings: ConferenceTaskTimings; // Thêm trường timings vào đây
   errors: ConferenceAnalysisDetail['errors'];
   persistedSaveStatus?: 'SAVED_TO_DATABASE' | string;
   persistedSaveTimestamp?: string;
@@ -51,6 +53,8 @@ export interface ConferenceTableData extends Omit<ConferenceAnalysisDetail, 'dat
   link?: string;
   cfpLink?: string;
   impLink?: string;
+  // --- BỔ SUNG TRƯỜNG MỚI ---
+  csvFileGenerated: boolean | null;
 }
 
 export interface UseConferenceTableManagerProps {
