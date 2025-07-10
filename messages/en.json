@@ -32,7 +32,8 @@
     "ModerationPage_NoResultsHint": "Try adjusting your search or filter criteria to find what you're looking for.",
     "ModerationPage_NoRequestsFound": "No Requests to Moderate",
     "ModerationPage_NoRequestsHint": "The moderation queue is currently empty. Great job!",
-    "Error_Generic": "An error occurred while fetching data. Please try again later."
+    "Error_Generic": "An error occurred while fetching data. Please try again later.",
+    "Error_CommentRequiredForStatus": "A comment is required when changing the status of a conference."
   },
   "ModerationControls": {
     "FilterByStatus_Label": "Filter by status",
