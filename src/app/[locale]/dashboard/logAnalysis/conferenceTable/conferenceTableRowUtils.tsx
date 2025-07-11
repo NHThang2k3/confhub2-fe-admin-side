@@ -103,8 +103,8 @@ export const getExpandedGridColumnsClass = ({
   let activeColumnCount = 0;
   if (showPreview) activeColumnCount++;
   if (showErrors) activeColumnCount++;
-  if (showDataQualityAndOrStepsCombined) activeColumnCount++;
-  if (showStepsAsSeparateColumn) activeColumnCount++; // Sẽ chỉ true nếu showDataQualityAndOrStepsCombined là false
+  // if (showDataQualityAndOrStepsCombined) activeColumnCount++;
+  // if (showStepsAsSeparateColumn) activeColumnCount++; // Sẽ chỉ true nếu showDataQualityAndOrStepsCombined là false
 
   if (activeColumnCount === 3) {
     // Các trường hợp 3 cột:

@@ -544,6 +544,8 @@
     "note": "Choosing 'Import' will enable mapping for all fields like Source, Rank, and Fields of Research."
   },
   "DataReviewModal": {
+    "removeFirstRowAsHeader": "Exclude first row as data",
+    "noDataToDisplay": "No data available for preview.",
     "title": "Review and Map Data",
     "noData": "No data available to display. Please close this and select a valid file.",
     "createHeader": "Map headers for my data",

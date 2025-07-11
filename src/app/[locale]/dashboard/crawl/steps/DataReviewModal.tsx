@@ -25,10 +25,17 @@ const DataReviewModal: React.FC<DataReviewModalProps> = ({
     const [showHeaders] = useState(true); // Logic for toggling was removed, keeping state for consistency
     const [headerMap, setHeaderMap] = useState<Record<string, string>>({});
     const [isWarningModalOpen, setWarningModalOpen] = useState(false);
+    // BỔ SUNG: Thêm state mới cho checkbox loại bỏ header
+    const [removeHeaderRow, setRemoveHeaderRow] = useState(false); 
 
     // --- DERIVED DATA (MEMOS) ---
-    const data = useMemo(() => initialData, [initialData]);
-    const originalHeaders = useMemo(() => (data && data.length > 0 ? Object.keys(data[0]) : []), [data]);
+    // BỔ SUNG: Dữ liệu thực tế để hiển thị, loại bỏ hàng đầu tiên nếu removeHeaderRow là true
+    const displayData = useMemo(() => {
+        if (!initialData) return [];
+        return removeHeaderRow ? initialData.slice(1) : initialData;
+    }, [initialData, removeHeaderRow]);
+
+    const originalHeaders = useMemo(() => (displayData && displayData.length > 0 ? Object.keys(displayData[0]) : []), [displayData]);
     const mappedHeaders = useMemo(() => Object.values(headerMap), [headerMap]);
     const availableDropdownOptions = useMemo(() => isDbImport ? ALL_FIELDS : REQUIRED_FIELDS, [isDbImport]);
     const missingRequiredHeaders = useMemo(() => REQUIRED_FIELDS.filter(h => !mappedHeaders.includes(h)), [mappedHeaders]);
@@ -38,8 +45,8 @@ const DataReviewModal: React.FC<DataReviewModalProps> = ({
     }, [headerMap, isDbImport]);
 
     const finalData = useMemo(() => {
-        if (!data || !showHeaders) return [];
-        return data.map((row, index) => {
+        if (!displayData || !showHeaders) return []; // Sử dụng displayData ở đây
+        return displayData.map((row, index) => {
             const newRow: Partial<Conference> & { id: string } = { id: `row-${Date.now()}-${index}` };
             Object.keys(headerMap).forEach(originalHeader => {
                 const mappedKey = headerMap[originalHeader];
@@ -50,13 +57,14 @@ const DataReviewModal: React.FC<DataReviewModalProps> = ({
             });
             return newRow as Conference;
         }).filter(row => row.title && row.acronym);
-    }, [data, headerMap, showHeaders]);
+    }, [displayData, headerMap, showHeaders]); // Thay đổi data thành displayData
 
     // --- EFFECTS ---
     useEffect(() => {
         if (isOpen) {
             setStep('map');
             setHeaderMap({});
+            setRemoveHeaderRow(false); // Reset trạng thái khi mở modal
         }
     }, [isOpen]);
 
@@ -74,6 +82,9 @@ const DataReviewModal: React.FC<DataReviewModalProps> = ({
     };
 
     const handleNext = () => {
+        // Nếu người dùng chọn removeHeaderRow, thì headers sẽ lấy từ hàng thứ 2,
+        // nhưng MappingStep vẫn hiển thị hàng đầu tiên của initialData để chọn header.
+        // Logic kiểm tra missingRequiredHeaders vẫn đúng vì nó dựa trên headerMap và availableDropdownOptions.
         if (missingRequiredHeaders.length === 0) setStep('review');
     };
 
@@ -92,7 +103,7 @@ const DataReviewModal: React.FC<DataReviewModalProps> = ({
 
     // --- RENDER LOGIC ---
     const renderContent = () => {
-        if (!data || data.length === 0) {
+        if (!initialData || initialData.length === 0) { // Vẫn kiểm tra initialData
             return <div className="text-gray-500 flex items-center justify-center h-64"><AlertTriangle className="mr-2" />{t('noData')}</div>;
         }
 
@@ -102,11 +113,13 @@ const DataReviewModal: React.FC<DataReviewModalProps> = ({
                     showHeaders={showHeaders}
                     missingRequiredHeaders={missingRequiredHeaders}
                     originalHeaders={originalHeaders}
-                    tableData={data.slice(0, 10)}
+                    tableData={initialData.slice(0, 10)} // Vẫn truyền 10 hàng đầu tiên của initialData để người dùng xem và map
                     headerMap={headerMap}
                     availableDropdownOptions={availableDropdownOptions}
                     mappedHeaders={mappedHeaders}
                     onHeaderChange={handleHeaderChange}
+                    removeHeaderRow={removeHeaderRow} // BỔ SUNG: Truyền prop mới
+                    setRemoveHeaderRow={setRemoveHeaderRow} // BỔ SUNG: Truyền prop mới
                     t={t}
                 />
             );
@@ -134,7 +147,7 @@ const DataReviewModal: React.FC<DataReviewModalProps> = ({
                 title={t('title')}
                 size="7xl"
                 footer={
-                    data && data.length > 0 ? (
+                    initialData && initialData.length > 0 ? ( // Vẫn kiểm tra initialData
                         <ModalFooter
                             step={step}
                             onBack={() => setStep('map')}
