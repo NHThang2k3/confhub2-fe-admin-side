@@ -81,19 +81,6 @@ const DelayedCrawlCard: React.FC = () => {
                                 placeholder="0"
                             />
                         </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="delaySeconds" className="text-gray-700">Seconds</Label>
-                            <Input
-                                id="delaySeconds"
-                                type="number"
-                                min="0"
-                                max="59"
-                                value={delaySeconds}
-                                onChange={(e) => setDelaySeconds(Number(e.target.value))}
-                                className="border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-                                placeholder="0"
-                            />
-                        </div>
                     </div>
                 </div>
 
