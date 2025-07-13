@@ -325,6 +325,13 @@
         "countryPlaceholder": "Country",
         "continentPlaceholder": "Continent",
         "removeButton": "Remove"
+      },
+      "validation": {
+        "startDateMustBeBeforeEndDate": "Start date must be before or equal to end date for {name}",
+        "submissionMustBeforeNotification": "Submission deadline must be before notification date",
+        "notificationMustBeforeCameraReady": "Notification date must be before camera ready deadline",
+        "cameraReadyMustBeforeConference": "Camera ready deadline must be before conference date",
+        "registrationMustBeforeConference": "Registration deadline must be before conference date"
       }
     },
     "errorFetchingConferences": "Error fetching conferences:"

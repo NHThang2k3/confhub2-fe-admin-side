@@ -30,6 +30,17 @@
         "dateName": "Tên ngày",
         "startDate": "Ngày bắt đầu",
         "endDate": "Ngày kết thúc",
+        "loading": "Đang tải...",
+        "fetchError": "Lỗi khi tải chi tiết hội nghị",
+        "updateSuccess": "Cập nhật hội nghị thành công.",
+        "updateError": "Lỗi khi cập nhật hội nghị",
+        "validation": {
+          "startDateMustBeBeforeEndDate": "Ngày bắt đầu phải trước hoặc bằng ngày kết thúc cho {name}",
+          "submissionMustBeforeNotification": "Hạn nộp bài phải trước ngày thông báo",
+          "notificationMustBeforeCameraReady": "Ngày thông báo phải trước hạn camera ready",
+          "cameraReadyMustBeforeConference": "Hạn camera ready phải trước ngày diễn ra hội nghị",
+          "registrationMustBeforeConference": "Hạn đăng ký phải trước ngày diễn ra hội nghị"
+        },
         "pagination": {
           "pageSize": "Kích thước trang",
           "page": "Trang",

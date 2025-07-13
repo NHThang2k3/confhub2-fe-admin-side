@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl'; // Sử dụng hook dịch thuật
 import axios from 'axios';
@@ -8,9 +8,9 @@ import { useForm, useFieldArray, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { DATA_API_URL } from '@/src/config';
-import { toast, Toaster } from 'react-hot-toast';
+import { toast } from 'react-hot-toast';
 import TopicsTable from '../components/TopicsTable';
-import DatesTable from '../components/DatesTable';
+import DatesTable, { DatesTableRef } from '../components/DatesTable';
 import { Link } from '@/src/navigation';
 import { ConferenceDateType, ConferenceDate } from '../components/DatesTable';
 import dayjs from 'dayjs';
@@ -83,6 +83,9 @@ export default function EditConferenceHistory({ params }: { params: { id: string
   const t = useTranslations('conferencesPage'); // Sử dụng namespace 'conferencesPage'
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isDatesValid, setIsDatesValid] = useState(true);
+  const [dateValidationErrors, setDateValidationErrors] = useState<string[]>([]);
+  const datesTableRef = useRef<DatesTableRef>(null);
   const [editMode, setEditMode] = useState<EditMode>({
     basicInfo: false,
     links: false,
@@ -168,6 +171,12 @@ export default function EditConferenceHistory({ params }: { params: { id: string
     fetchConferenceData();
   }, [fetchConferenceData]);
 
+  const handleDatesValidationChange = useCallback((isValid: boolean, errors: string[]) => {
+    console.log('🔄 Date validation changed:', { isValid, errors });
+    setIsDatesValid(isValid);
+    setDateValidationErrors(errors);
+  }, []);
+
   const handleTopicsChange = (newTopics: string[]) => {
     // Update the form state directly using setValue
     setValue('topics', newTopics, {
@@ -198,9 +207,40 @@ export default function EditConferenceHistory({ params }: { params: { id: string
   };
 
   const onSubmit = async () => {
+    console.log('🔍 FORM SUBMISSION STARTED');
+    console.log('isDatesValid state:', isDatesValid);
+    console.log('dateValidationErrors:', dateValidationErrors);
+    
+    // Get current form state first
+    const formState = watch();
+    console.log('📝 Current form state:', formState);
+    
+    // Comprehensive validation check - only show one toast for all validation failures
+    const isActivelyValid = datesTableRef.current?.validateBeforeSubmit();
+    console.log('isActivelyValid from ref:', isActivelyValid);
+    
+    const currentDatesData = formState.dates as ConferenceDate[];
+    const isCurrentDataValid = datesTableRef.current?.validateCurrentData(currentDatesData);
+    console.log('isCurrentDataValid from direct data:', isCurrentDataValid);
+    
+    // Check all validation conditions and show single error message
+    if (!isDatesValid || !isActivelyValid || !isCurrentDataValid) {
+      console.log('❌ SUBMISSION BLOCKED: Validation failed', { 
+        isDatesValid, 
+        isActivelyValid, 
+        isCurrentDataValid 
+      });
+      toast.error('Date validation failed. Please fix the date errors before submitting.');
+      return;
+    }
+
+    console.log('✅ VALIDATION PASSED - Proceeding with API call');
+
     try {
       setIsSubmitting(true);
       const formState = watch();
+      
+      console.log('📝 Form state before submission:', formState);
       
       // Remove validation check
       const updatedData: Partial<FormValues> = {};
@@ -226,7 +266,7 @@ export default function EditConferenceHistory({ params }: { params: { id: string
       updatedData.topics = formState.topics;
       updatedData.dates = formState.dates;
 
-      console.log('Submitting form state:', updatedData);
+      console.log('📤 Submitting data to API:', updatedData);
 
       const response = await fetch(`${DATA_API_URL}/api/v1/admin/conferences/update-history`, {
         method: 'PUT',
@@ -239,8 +279,12 @@ export default function EditConferenceHistory({ params }: { params: { id: string
         }),
       });
 
+      console.log('📥 API Response status:', response.status);
+
       if (!response.ok) throw new Error('Failed to update data');
       const responseData = await response.json();
+
+      console.log('📥 API Response data:', responseData);
 
       await fetchConferenceData();
       
@@ -250,10 +294,11 @@ export default function EditConferenceHistory({ params }: { params: { id: string
         locations: false,
       });
 
+      console.log('✅ SUBMISSION COMPLETED SUCCESSFULLY');
       toast.success(t('modal.editForm.updateSuccess'));
 
     } catch (error) {
-      console.error('Error updating conference history:', error);
+      console.error('❌ API ERROR:', error);
       toast.error(t('modal.editForm.updateError'));
     } finally {
       setIsSubmitting(false);
@@ -262,7 +307,6 @@ export default function EditConferenceHistory({ params }: { params: { id: string
 
   return (
     <div className="p-6 max-w-4xl mx-auto">
-      <Toaster />
       <div className="flex justify-between items-center mb-6">
         {/* Sử dụng key dịch cho tiêu đề */}
         <h1 className="text-2xl font-bold">{t('editHistoryTitle')}</h1>
@@ -531,14 +575,25 @@ export default function EditConferenceHistory({ params }: { params: { id: string
           {/* Sử dụng key dịch cho tiêu đề nhóm */}
           <h2 className="text-lg font-semibold mb-4">{t('modal.editForm.dates')}</h2>
           <DatesTable
+            ref={datesTableRef}
             control={control}
             watch={watch}
             name="dates"
             onRefetch={fetchConferenceData}
+            onValidationChange={handleDatesValidationChange}
           />
         </div>
 
         <div className="flex justify-end gap-4 mt-6">
+          {/* Show validation status if there are date validation errors */}
+          {!isDatesValid && dateValidationErrors.length > 0 && (
+            <div className="flex items-center text-red-600 text-sm mr-4">
+              <svg className="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+              </svg>
+              Please fix date validation errors before saving
+            </div>
+          )}
            {/* Sử dụng key dịch cho nút Cancel cuối form */}
           <button
             type="button"
@@ -550,12 +605,17 @@ export default function EditConferenceHistory({ params }: { params: { id: string
            {/* Sử dụng key dịch cho nút Save */}
           <button
             type="submit"
-            disabled={isSubmitting}
-            className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 disabled:opacity-50"
+            disabled={isSubmitting || !isDatesValid}
+            className={`px-4 py-2 rounded-md ${
+              isSubmitting || !isDatesValid
+                ? 'bg-gray-400 cursor-not-allowed opacity-50'
+                : 'bg-blue-500 hover:bg-blue-600'
+            } text-white`}
             onClick={(e) => {
               e.preventDefault();
               handleSubmit(onSubmit)();
             }}
+            title={!isDatesValid ? 'Save is disabled due to date validation errors' : ''}
           >
             {isSubmitting ? t('modal.editForm.saving') : t('modal.editForm.save')}
           </button>
