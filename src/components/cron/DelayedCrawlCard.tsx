@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Checkbox } from "@/src/components/ui/checkbox";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Clock, Calendar, Users, Database, Infinity } from 'lucide-react';
 import { useDelayedCrawl } from '@/src/hooks/cron';
 
@@ -41,22 +42,22 @@ const DelayedCrawlCard: React.FC = () => {
     };
 
     return (
-        <div className='mx-auto rounded-lg border border-gray-200 bg-white p-4 shadow-lg md:p-6'>
-            <h2 className='mb-6 border-b border-gray-300 pb-3 text-xl font-semibold text-gray-700 flex items-center gap-2'>
-                <Clock className="w-5 h-5" />
+        <div className='mx-auto rounded-lg border border-gray-200 bg-gradient-to-br from-blue-50 via-white to-indigo-50 p-4 shadow-xl md:p-6 backdrop-blur-sm'>
+            <h2 className='mb-6 border-b border-blue-200 pb-3 text-xl font-semibold bg-gradient-to-r from-blue-700 to-indigo-700 bg-clip-text text-transparent flex items-center gap-2'>
+                <Clock className="w-5 h-5 text-blue-600" />
                 Delayed Crawl Scheduler
             </h2>
 
             <div className="space-y-6">
                 {/* Delay Configuration */}
-                <div className="space-y-4">
-                    <h3 className="text-lg font-medium text-gray-700 flex items-center gap-2">
-                        <Calendar className="w-4 h-4" />
+                <div className="space-y-4 bg-white/60 backdrop-blur-sm rounded-lg p-4 border border-blue-100">
+                    <h3 className="text-lg font-medium bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent flex items-center gap-2">
+                        <Calendar className="w-4 h-4 text-blue-500" />
                         Schedule Delay
                     </h3>
                     <div className="grid grid-cols-3 gap-4">
                         <div className="space-y-2">
-                            <Label htmlFor="delayHours" className="text-gray-700">Hours</Label>
+                            <Label htmlFor="delayHours" className="text-blue-700 font-medium">Hours</Label>
                             <Input
                                 id="delayHours"
                                 type="number"
@@ -64,12 +65,12 @@ const DelayedCrawlCard: React.FC = () => {
                                 max="23"
                                 value={delayHours}
                                 onChange={(e) => setDelayHours(Number(e.target.value))}
-                                className="border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                                className="border-blue-200 focus:border-blue-500 focus:ring-blue-500 bg-white/80"
                                 placeholder="0"
                             />
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="delayMinutes" className="text-gray-700">Minutes</Label>
+                            <Label htmlFor="delayMinutes" className="text-blue-700 font-medium">Minutes</Label>
                             <Input
                                 id="delayMinutes"
                                 type="number"
@@ -77,7 +78,7 @@ const DelayedCrawlCard: React.FC = () => {
                                 max="59"
                                 value={delayMinutes}
                                 onChange={(e) => setDelayMinutes(Number(e.target.value))}
-                                className="border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                                className="border-blue-200 focus:border-blue-500 focus:ring-blue-500 bg-white/80"
                                 placeholder="0"
                             />
                         </div>
@@ -85,30 +86,31 @@ const DelayedCrawlCard: React.FC = () => {
                 </div>
 
                 {/* Batch Configuration */}
-                <div className="space-y-4">
-                    <h3 className="text-lg font-medium text-gray-700 flex items-center gap-2">
-                        <Database className="w-4 h-4" />
+                <div className="space-y-4 bg-white/60 backdrop-blur-sm rounded-lg p-4 border border-indigo-100">
+                    <h3 className="text-lg font-medium bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent flex items-center gap-2">
+                        <Database className="w-4 h-4 text-indigo-500" />
                         Batch Configuration
                     </h3>
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                            <Label htmlFor="batchSize" className="text-gray-700 flex items-center gap-1">
-                                <Users className="w-3 h-3" />
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-3">
+                            <Label htmlFor="batchSize" className="text-blue-700 flex items-center gap-1 font-medium">
+                                <Users className="w-3 h-3 text-indigo-500" />
                                 Batch Size
                             </Label>
-                            <Input
-                                id="batchSize"
-                                type="number"
-                                min="1"
-                                max="50"
-                                value={batchSize}
-                                onChange={(e) => setBatchSize(Number(e.target.value))}
-                                className="border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-                            />
-                            <p className="text-sm text-gray-500">Conferences per batch</p>
+                            <div className="relative">
+                                <Select value={batchSize.toString()} onValueChange={(value) => setBatchSize(Number(value))}>
+                                    <SelectTrigger className="border-blue-200 focus:border-blue-500 focus:ring-blue-500 bg-white/80">
+                                        <SelectValue placeholder="Select batch size" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="1">1 conference per batch</SelectItem>
+                                        <SelectItem value="10">10 conferences per batch</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
                         </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="take" className="text-gray-700">Take Count</Label>
+                        <div className="space-y-3">
+                            <Label htmlFor="take" className="text-blue-700 font-medium">Take Count</Label>
                             <Input
                                 id="take"
                                 type="number"
@@ -116,21 +118,21 @@ const DelayedCrawlCard: React.FC = () => {
                                 max="100"
                                 value={take}
                                 onChange={(e) => setTake(Number(e.target.value))}
-                                className="border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                                className="border-blue-200 focus:border-blue-500 focus:ring-blue-500 bg-white/80"
                                 disabled={takeAll}
                             />
-                            <div className="flex items-center space-x-2 mt-2">
+                            <div className="flex items-center space-x-2">
                                 <Checkbox
                                     id="takeAll"
                                     checked={takeAll}
                                     onCheckedChange={(checked) => setTakeAll(!!checked)}
                                 />
-                                <Label htmlFor="takeAll" className="text-sm text-gray-700 flex items-center gap-1">
-                                    <Infinity className="w-3 h-3" />
+                                <Label htmlFor="takeAll" className="text-sm text-blue-700 flex items-center gap-1 font-medium">
+                                    <Infinity className="w-3 h-3 text-indigo-500" />
                                     Take All Conferences
                                 </Label>
                             </div>
-                            <p className="text-sm text-gray-500">
+                            <p className="text-sm text-blue-600">
                                 {takeAll ? "Will process all available conferences" : "Total conferences to fetch"}
                             </p>
                         </div>
@@ -167,7 +169,7 @@ const DelayedCrawlCard: React.FC = () => {
                     <Button
                         onClick={handleScheduleDelayedCrawl}
                         disabled={isLoading || totalDelaySeconds <= 0}
-                        className="bg-green-600 hover:bg-green-700 text-white flex items-center gap-2"
+                        className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white flex items-center gap-2 shadow-lg hover:shadow-xl transition-all duration-200"
                     >
                         {isLoading ? (
                             <>
