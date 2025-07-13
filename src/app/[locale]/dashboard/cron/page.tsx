@@ -37,8 +37,8 @@ export default function CronPage({ params: { locale } }: { params: { locale: str
     return (
         <div className="space-y-6 p-6">
             <div className="mb-6">
-                <h1 className="text-2xl font-bold text-gray-900">{t('PageTitle') || 'Cron Job Management'}</h1>
-                <p className="text-gray-600 mt-2">{t('PageDescription') || 'Manage automatic and delayed conference crawl jobs'}</p>
+                <h1 className="text-2xl font-bold text-gray-900">{'Cron Job Management'}</h1>
+                <p className="text-gray-600 mt-2">{'Manage automatic and delayed conference crawl jobs'}</p>
             </div>
             <CronUpdateCard />
             <DelayedCrawlCard />
