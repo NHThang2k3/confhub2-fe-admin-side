@@ -90,6 +90,12 @@ export const useFileParser = () => {
         // --- THAY ĐỔI CHÍNH Ở ĐÂY ---
         // Sử dụng Papa.unparse với tùy chọn `columns` để đảm bảo header
         // và thứ tự cột luôn được chuẩn hóa.
+        data = data.map((item: any) => ({
+            ...item,
+            fieldOfResearch1: item['field Of Research1'] || 'Unknown',
+            fieldOfResearch2: item['field Of Research2'] || 'Unknown',
+            fieldOfResearch3: item['field Of Research3'] || 'Unknown',
+        }));
         const csvString = Papa.unparse(data, {
             columns: NORMALIZED_CSV_HEADERS,
             header: true // Đảm bảo dòng header được tạo ra
