@@ -65,7 +65,7 @@ export const useCronJobManager = () => {
             const schedule = generateCronExpression(cycleType, time, dayOfMonth);
             await api.post("/api/v1/conference-crawl-job/schedule-cron", {
                 schedule,
-                batchSize
+                batchSize: 1
             });
             toast({
                 title: "Success",

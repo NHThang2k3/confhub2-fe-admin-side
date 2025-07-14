@@ -21,7 +21,7 @@ export const useDelayedCrawl = () => {
     const [delayHours, setDelayHours] = useState(0);
     const [delayMinutes, setDelayMinutes] = useState(0);
     const [delaySeconds, setDelaySeconds] = useState(0);
-    const [batchSize, setBatchSize] = useState(10);
+    const [batchSize, setBatchSize] = useState(1);
     const [take, setTake] = useState(10);
     const [takeAll, setTakeAll] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
@@ -71,7 +71,7 @@ export const useDelayedCrawl = () => {
             setDelayHours(0);
             setDelayMinutes(0);
             setDelaySeconds(0);
-            setBatchSize(10);
+            setBatchSize(1);
             setTake(10);
             setTakeAll(false);
         } catch (error: any) {

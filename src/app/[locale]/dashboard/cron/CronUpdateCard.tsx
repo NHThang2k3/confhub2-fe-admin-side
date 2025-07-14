@@ -10,14 +10,12 @@ const CronUpdateCard: React.FC = () => {
         cycleType,
         time,
         dayOfMonth,
-        batchSize,
         cronStatus,
         updateStats,
         isLoading,
         setCycleType,
         setTime,
         setDayOfMonth,
-        setBatchSize,
         handleScheduleCron,
         handleCancelCron,
     } = useCronJobManager();
@@ -75,19 +73,6 @@ const CronUpdateCard: React.FC = () => {
                         />
                     </div>
                 )}
-
-                <div className="space-y-2">
-                    <Label htmlFor="batchSize" className="text-gray-700">Batch Size</Label>
-                    <Input
-                        id="batchSize"
-                        type="number"
-                        value={batchSize}
-                        onChange={(e) => setBatchSize(Number(e.target.value))}
-                        min={1}
-                        max={50}
-                        className="border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-                    />
-                </div>
 
                 {cronStatus && (
                     <Alert className="border-gray-200 bg-gray-5">

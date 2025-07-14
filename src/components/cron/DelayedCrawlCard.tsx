@@ -54,7 +54,7 @@ const DelayedCrawlCard: React.FC = () => {
                         <Calendar className="w-4 h-4 text-blue-500" />
                         Schedule Delay
                     </h3>
-                    <div className="grid grid-cols-3 gap-4">
+                    <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
                             <Label htmlFor="delayHours" className="text-blue-700 font-medium">Hours</Label>
                             <Input
@@ -77,19 +77,6 @@ const DelayedCrawlCard: React.FC = () => {
                                 max="59"
                                 value={delayMinutes}
                                 onChange={(e) => setDelayMinutes(Number(e.target.value))}
-                                className="border-blue-200 focus:border-blue-500 focus:ring-blue-500 bg-white/80"
-                                placeholder="0"
-                            />
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="delaySeconds" className="text-blue-700 font-medium">Seconds</Label>
-                            <Input
-                                id="delaySeconds"
-                                type="number"
-                                min="0"
-                                max="59"
-                                value={delaySeconds}
-                                onChange={(e) => setDelaySeconds(Number(e.target.value))}
                                 className="border-blue-200 focus:border-blue-500 focus:ring-blue-500 bg-white/80"
                                 placeholder="0"
                             />
