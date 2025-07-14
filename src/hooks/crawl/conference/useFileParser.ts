@@ -92,9 +92,9 @@ export const useFileParser = () => {
         // và thứ tự cột luôn được chuẩn hóa.
         data = data.map((item: any) => ({
             ...item,
-            fieldOfResearch1: item['field Of Research1'] || 'Unknown',
-            fieldOfResearch2: item['field Of Research2'] || 'Unknown',
-            fieldOfResearch3: item['field Of Research3'] || 'Unknown',
+            fieldOfResearch1: item['field Of Research1'] || '',
+            fieldOfResearch2: item['field Of Research2'] || '',
+            fieldOfResearch3: item['field Of Research3'] || '',
         }));
         const csvString = Papa.unparse(data, {
             columns: NORMALIZED_CSV_HEADERS,
