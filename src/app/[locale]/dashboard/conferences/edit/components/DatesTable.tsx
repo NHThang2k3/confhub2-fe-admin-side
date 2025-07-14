@@ -12,11 +12,11 @@ ModuleRegistry.registerModules([AllCommunityModule, RowSelectionModule]);
 
 export enum ConferenceDateType {
   CONFERENCE_DATE = 'conferenceDates',
-  CAMERA_READY_DATE = 'cameraReadyDates',
-  NOTIFICATION_DATE = 'notificationDates',
-  SUBMISSION_DATE = 'submissionDates',
-  REGISTRATION_DATE = 'registrationDates',
-  OTHER_DATE = 'otherDates'
+  CAMERA_READY_DATE = 'cameraReadyDate',
+  NOTIFICATION_DATE = 'notificationDate',
+  SUBMISSION_DATE = 'submissionDate',
+  REGISTRATION_DATE = 'registrationDate',
+  OTHER_DATE = 'otherDate'
 }
 
 export interface ConferenceDate {
