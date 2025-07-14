@@ -4,8 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Checkbox } from "@/src/components/ui/checkbox";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Clock, Calendar, Users, Database, Infinity } from 'lucide-react';
+import { Clock, Calendar, Database, Infinity } from 'lucide-react';
 import { useDelayedCrawl } from '@/src/hooks/cron';
 
 const DelayedCrawlCard: React.FC = () => {
@@ -82,33 +81,29 @@ const DelayedCrawlCard: React.FC = () => {
                                 placeholder="0"
                             />
                         </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="delaySeconds" className="text-blue-700 font-medium">Seconds</Label>
+                            <Input
+                                id="delaySeconds"
+                                type="number"
+                                min="0"
+                                max="59"
+                                value={delaySeconds}
+                                onChange={(e) => setDelaySeconds(Number(e.target.value))}
+                                className="border-blue-200 focus:border-blue-500 focus:ring-blue-500 bg-white/80"
+                                placeholder="0"
+                            />
+                        </div>
                     </div>
                 </div>
 
-                {/* Batch Configuration */}
+                {/* Conference Configuration */}
                 <div className="space-y-4 bg-white/60 backdrop-blur-sm rounded-lg p-4 border border-indigo-100">
                     <h3 className="text-lg font-medium bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent flex items-center gap-2">
                         <Database className="w-4 h-4 text-indigo-500" />
-                        Batch Configuration
+                        Conference Configuration
                     </h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="space-y-3">
-                            <Label htmlFor="batchSize" className="text-blue-700 flex items-center gap-1 font-medium">
-                                <Users className="w-3 h-3 text-indigo-500" />
-                                Batch Size
-                            </Label>
-                            <div className="relative">
-                                <Select value={batchSize.toString()} onValueChange={(value) => setBatchSize(Number(value))}>
-                                    <SelectTrigger className="border-blue-200 focus:border-blue-500 focus:ring-blue-500 bg-white/80">
-                                        <SelectValue placeholder="Select batch size" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="1">1 conference per batch</SelectItem>
-                                        <SelectItem value="10">10 conferences per batch</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                        </div>
+                    <div className="max-w-md">
                         <div className="space-y-3">
                             <Label htmlFor="take" className="text-blue-700 font-medium">Take Count</Label>
                             <Input
@@ -148,7 +143,7 @@ const DelayedCrawlCard: React.FC = () => {
                             <div className="space-y-2 text-blue-700">
                                 <p><strong>Delay:</strong> {formatDuration(totalDelaySeconds)}</p>
                                 <p><strong>Scheduled for:</strong> {scheduledTime.toLocaleString()}</p>
-                                <p><strong>Will process:</strong> {takeAll ? "all available conferences" : `${take} conferences`} in batches of {batchSize}</p>
+                                <p><strong>Will process:</strong> {takeAll ? "all available conferences" : `${take} conferences`}</p>
                             </div>
                         </AlertDescription>
                     </Alert>
