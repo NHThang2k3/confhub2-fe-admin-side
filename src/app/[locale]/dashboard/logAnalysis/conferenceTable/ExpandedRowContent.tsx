@@ -104,20 +104,20 @@ export const ExpandedRowContent: React.FC<ExpandedRowContentProps> = ({ confData
         )}
 
         {/* Render Data Quality và/hoặc Steps (kết hợp) */}
-        {/* {showDataQualityAndOrStepsCombined && (
+        {showDataQualityAndOrStepsCombined && (
           <div className="space-y-4 min-w-0">
             {hasDataQualityInsights && <DataQualityInsightsSection confData={confData} />}
             {hasActualSteps && <StepDetailsSection confData={confData} />}
           </div>
-        )} */}
+        )}
 
         {/* Render Steps như một cột riêng (trường hợp đặc biệt) */}
         {/* hasActualSteps đã được bao gồm trong điều kiện của showStepsAsSeparateColumn */}
-        {/* {showStepsAsSeparateColumn && (
+        {showStepsAsSeparateColumn && (
           <div className="space-y-4 min-w-0">
             <StepDetailsSection confData={confData} />
           </div>
-        )} */}
+        )}
       </div>
     </td>
   );

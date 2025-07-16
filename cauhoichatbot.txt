@@ -1,0 +1,69 @@
+0. Chào hỏi đơn thuần:
+"Xin chào"
+"Bạn là ai?"
+"Bạn có thể làm gì?"
+
+1. Theo từ khóa hoặc tên hội nghị
+"Tìm hội nghị có từ khóa ‘machine learning’"
+"Cho mình biết về hội nghị tên là NeurIPS"
+"Hội nghị nào có tên viết tắt là ACL?"
+
+2. Theo địa lý
+"Có hội nghị nào diễn ra ở Việt Nam trong năm nay không?"
+"Liệt kê các hội nghị ở châu Á về AI vào quý 4 năm 2025"
+"Có hội nghị nào ở Mỹ, tổ chức offline trong tháng 10 không?"
+
+3. Theo mốc thời gian
+"Hội nghị nào có ngày nộp bài trước 30/7/2025?"
+"Cho mình danh sách các hội nghị diễn ra từ tháng 9 đến tháng 11 năm 2025"
+"Hội nghị nào diễn ra vào đúng ngày 15/8/2025?"
+
+4. Theo đặc điểm hội nghị
+"Tìm hội nghị về chủ đề Cybersecurity có rank A* theo CORE2023"
+"Hội nghị nào tổ chức hybrid và có chủ đề về NLP?"
+"Có hội nghị nào thuộc source Springer không?"
+
+1. Câu hỏi chi tiết
+"Cho mình chi tiết về hội nghị ICML 2025"
+"ACL 2025 diễn ra ở đâu, ngày nào?"
+"Deadline nộp bài của NeurIPS là khi nào?"
+"Rank của hội nghị ICRA là gì?"
+"Link CFP của hội nghị SIGGRAPH Asia 2025?"
+
+2. Dạng tóm tắt
+"Tóm tắt ngắn gọn thông tin chính của hội nghị ECCV 2025"
+
+🗺️ III. Mở địa điểm / bản đồ
+"Mở bản đồ vị trí tổ chức hội nghị ICLR 2025"
+"Chỉ đường đến địa điểm tổ chức hội nghị KDD 2025"
+"Xem địa chỉ tổ chức CVPR 2025 trên Google Maps"
+
+🌐 IV. Truy cập trang web hội nghị
+"Mở website chính thức của EMNLP 2025"
+"Mở link thông tin hội nghị AAAI 2025"
+"Mở link call for papers của hội nghị ICDM 2025"
+
+🛠️ V. Hướng dẫn sử dụng nền tảng tìm kiếm hội nghị
+"Làm sao để tìm hội nghị theo quý?"
+"Mình có thể lọc hội nghị theo rank như thế nào?"
+"Giải thích cách sử dụng bộ lọc theo thời gian diễn ra"
+
+👤 VI. Câu hỏi liên quan đến dữ liệu cá nhân người dùng
+Giả định chatbot được cá nhân hóa, có lưu dữ liệu người dùng
+
+1. Hội nghị đã theo dõi / quan tâm
+"Những hội nghị nào mình đã theo dõi?"
+"Hội nghị nào trong danh sách quan tâm của mình có deadline vào tháng 8?"
+
+2. Lịch cá nhân
+"Mở danh sách các hội nghị mình đã thêm vào lịch"
+"Có hội nghị nào mình đã lưu vào lịch diễn ra tuần tới không?"
+
+3. Danh sách đen
+"Hội nghị nào nằm trong danh sách đen của mình?"
+"Mình có từng cho ICANN vào blacklist không?"
+
+🧪 VII. Câu hỏi nâng cao / phức tạp
+"Tìm tất cả hội nghị diễn ra trong quý 3 năm 2025, ở châu Âu, có chủ đề là Data Mining, rank A theo CORE, tổ chức offline, deadline nộp bài trong tháng 7"
+"So sánh ngày diễn ra và rank của hội nghị NeurIPS và ICML 2025"
+"Trong các hội nghị mình đã theo dõi, có hội nghị nào trùng lịch với hội nghị mới tên là BigData 2025 không?"
