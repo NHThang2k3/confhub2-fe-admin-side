@@ -166,46 +166,6 @@ const ProcessActionModal: React.FC<ProcessActionModalProps> = ({
             </div>
         </div>
 
-        {/* <div className="mb-6 p-4 border rounded-md">
-            <h4 className="text-md font-semibold text-gray-800 mb-3">Model Selection for API Steps</h4>
-            <div className="space-y-3">
-                {apiSteps.map(step => (
-                    <div key={step.name} className="grid grid-cols-3 items-center gap-4 p-2 rounded-md hover:bg-gray-10">
-                        <div className="col-span-1">
-                            <p className="text-sm font-medium text-gray-800">{step.displayName}</p>
-                            <p className="text-xs text-gray-500">{step.description}</p>
-                        </div>
-                        <div className="col-span-1 flex items-center space-x-6">
-                            <label htmlFor={`${step.name}-non-tuned`} className="flex items-center cursor-pointer p-2 rounded-md hover:bg-indigo-50">
-                                <input
-                                    type="radio"
-                                    id={`${step.name}-non-tuned`}
-                                    name={step.name}
-                                    value="non-tuned"
-                                    checked={selectedApiModels[step.name] === 'non-tuned'}
-                                    onChange={() => handleModelChange(step.name, 'non-tuned')}
-                                    className="h-4 w-4 text-indigo-600 border-gray-300 focus:ring-indigo-500"
-                                />
-                                <span className="ml-2 block text-sm font-medium text-gray-700">Non-Tuned</span>
-                            </label>
-                            <label htmlFor={`${step.name}-tuned`} className={`flex items-center p-2 rounded-md ${step.name === 'extractCfp' ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:bg-indigo-50'}`}>
-                                <input
-                                    type="radio"
-                                    id={`${step.name}-tuned`}
-                                    name={step.name}
-                                    value="tuned"
-                                    checked={selectedApiModels[step.name] === 'tuned'}
-                                    onChange={() => handleModelChange(step.name, 'tuned')}
-                                    className="h-4 w-4 text-indigo-600 border-gray-300 focus:ring-indigo-500"
-                                    disabled={step.name === 'extractCfp'}
-                                />
-                                <span className="ml-2 block text-sm font-medium text-gray-700">Tuned</span>
-                            </label>
-                        </div>
-                    </div>
-                ))}
-            </div>
-        </div> */}
 
         {showValidationError && (
             <p className="text-sm text-red-600 mb-4 text-center font-medium">
