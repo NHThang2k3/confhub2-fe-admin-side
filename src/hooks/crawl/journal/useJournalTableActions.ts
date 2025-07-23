@@ -3,7 +3,6 @@
 import { useState, useCallback, useEffect, useMemo } from 'react';
 import { JournalTableData, MainSavingStatus, RowSaveStatus, JournalForAction } from './journalTableManagerTypes';
 import { importJournalsFromLog, BackendImportResult } from '@/src/app/api/logAnalysis/saveJournals';
-import { persistJournalSaveStatus, PersistJournalSaveStatusPayload } from '@/src/app/api/logAnalysis/persistJournalSaveStatus';
 
 interface UseJournalTableActionsProps {
   selectedRowIds: string[];

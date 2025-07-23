@@ -1,4 +1,4 @@
-// src/app/[locale]/dashboard/logAnalysis/journalTable/JournalTableRow.tsx (MODIFY EXISTING)
+// src/app/[locale]/dashboard/logAnalysis/journalTable/JournalTableRow.tsx (MODIFIED)
 import React from 'react';
 // Ensure RowSaveStatus is imported correctly
 import { JournalTableData, RowSaveStatus } from '@/src/hooks/crawl/journal/useJournalTableManager'; // Updated path based on manager
@@ -6,7 +6,8 @@ import { FaChevronDown, FaChevronUp, FaInfoCircle, FaTimesCircle, FaCheckCircle,
 import { useTranslations } from 'next-intl';
 import { LogError } from '@/src/models/logAnalysis';
 
-// --- MainJournalRowCells ---
+// --- MainJournalRowCells (No changes needed here) ---
+// ... (giữ nguyên code của MainJournalRowCells và ExpandedJournalRowContent)
 interface MainJournalRowCellsProps {
   journalData: JournalTableData;
   isSelected: boolean;
@@ -16,9 +17,9 @@ interface MainJournalRowCellsProps {
   formatDateTime: (isoString: string | null | undefined) => string;
   getStatusChipClass: (status: string | undefined | null) => string;
   t: (key: string, values?: any) => string;
-  saveStatus: RowSaveStatus; // Added
-  saveError?: string;        // Added
-  isAlreadyPersisted: boolean; // Added
+  saveStatus: RowSaveStatus;
+  saveError?: string;
+  isAlreadyPersisted: boolean;
 }
 
 const StatusStepIcon: React.FC<{ success: boolean | null; attempted: boolean }> = ({ success, attempted }) => {
@@ -32,14 +33,13 @@ const StatusStepIcon: React.FC<{ success: boolean | null; attempted: boolean }> 
 const MainJournalRowCells: React.FC<MainJournalRowCellsProps> = ({
   journalData, isSelected, isExpanded, onSelectToggle, onToggleExpand,
   formatDateTime, getStatusChipClass, t,
-  saveStatus, saveError, isAlreadyPersisted // Destructure new props
+  saveStatus, saveError, isAlreadyPersisted
 }) => {
   const {
     uniqueRowId, journalTitle, sourceId, dataSource, status,
-    issn, // Added ISSN
+    issn,
     durationSeconds, steps, errorCount
   } = journalData;
-  console.log ('issn', issn);
   const statusDisplay = status
     ? t(`statusNames.${status.toLowerCase()}`, { defaultValue: status })
     : t('statusNames.unknown');
@@ -57,7 +57,6 @@ const MainJournalRowCells: React.FC<MainJournalRowCellsProps> = ({
         return <FaExclamationTriangle className="text-red-500" title={`${t('saveStatus.saveError')}: ${saveError || t('unknownError')}`} />;
       case 'idle':
       default:
-        // If not persisted and no errors, show ready to save. If errors, show can't save.
         if (errorCount > 0) {
             return <FaTimesCircle className="text-gray-400" title={t('saveStatus.cannotSaveWithErrors')} />;
         }
@@ -83,7 +82,6 @@ const MainJournalRowCells: React.FC<MainJournalRowCellsProps> = ({
           <span className="truncate" title={journalTitle}>{journalTitle}</span>
         </div>
       </td>
-      {/* <td className='px-3 py-2 text-sm text-gray-500 max-w-[100px] truncate' title={sourceId}>{sourceId || '-'}</td> */}
       <td className='px-3 py-2 text-sm text-gray-500 max-w-[150px] truncate' title={issn}>{issn || '-'}</td>
       <td className='px-3 py-2 text-sm text-gray-500 max-w-[100px] truncate' title={dataSource}>{dataSource}</td>
       <td className='whitespace-nowrap px-3 py-2 text-sm'>
@@ -91,10 +89,6 @@ const MainJournalRowCells: React.FC<MainJournalRowCellsProps> = ({
           {statusDisplay}
         </span>
       </td>
-      {/* <td className='whitespace-nowrap px-3 py-2 text-sm text-gray-500 text-center'>
-        {durationSeconds != null ? `${durationSeconds.toFixed(1)}s` : '-'}
-      </td> */}
-      {/* Aligning step icons like conference */}
       <td className='whitespace-nowrap px-6 text-center text-lg'><StatusStepIcon success={steps.bioxbio_success} attempted={steps.bioxbio_attempted} /></td>
       <td className='whitespace-nowrap px-6 text-center text-lg'><StatusStepIcon success={steps.scimago_details_success} attempted={steps.scimago_details_attempted} /></td>
       <td className='whitespace-nowrap px-6 text-center text-lg'><StatusStepIcon success={steps.image_search_success} attempted={steps.image_search_attempted} /></td>
@@ -103,7 +97,6 @@ const MainJournalRowCells: React.FC<MainJournalRowCellsProps> = ({
         {errorCount > 0 && <FaTimesCircle className='mb-0.5 mr-1 inline text-red-500' title={t('errorCountTooltip', { count: errorCount })} />}
         {errorCount}
       </td>
-      {/* Save Status Column */}
       <td className="whitespace-nowrap px-10 py-2 text-center text-sm">
         {renderSaveStatusIcon()}
       </td>
@@ -111,7 +104,6 @@ const MainJournalRowCells: React.FC<MainJournalRowCellsProps> = ({
   );
 };
 
-// --- ExpandedJournalRowContent ---
 interface ExpandedJournalRowContentProps {
   journalData: JournalTableData;
   formatDateTime: (isoString: string | null | undefined) => string;
@@ -120,12 +112,11 @@ interface ExpandedJournalRowContentProps {
 
 const ExpandedJournalRowContent: React.FC<ExpandedJournalRowContentProps> = ({ journalData, formatDateTime, t }) => {
   const { errors, steps, originalInput, startTime, endTime } = journalData;
-  const colSpan = 13; // Adjusted: Original 11 cells + Error Count + Save = 13 (Sel, Title, SourceID, DS, Status, Duration, Bioxbio, Scimago, Image, JSONL, Errors, Save)
+  const colSpan = 13;
 
   return (
     <td colSpan={colSpan} className='px-4 py-3 text-sm text-gray-700 md:px-6 md:py-4 bg-slate-50'>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
-        {/* Section 1: Basic Info & Original Input */}
         <div className="space-y-2">
           <h4 className="font-semibold text-gray-800">{t('expanded.basicInfoTitle')}</h4>
           <p><strong>{t('expanded.startTimeLabel')}:</strong> {formatDateTime(startTime)}</p>
@@ -139,8 +130,6 @@ const ExpandedJournalRowContent: React.FC<ExpandedJournalRowContentProps> = ({ j
             </p>
           )}
         </div>
-
-        {/* Section 2: Steps Details */}
         <div className="space-y-2">
           <h4 className="font-semibold text-gray-800">{t('expanded.stepsTitle')}</h4>
           <ul className="list-disc list-inside pl-1 space-y-1 text-xs">
@@ -150,8 +139,6 @@ const ExpandedJournalRowContent: React.FC<ExpandedJournalRowContentProps> = ({ j
             <li><strong>{t('expanded.jsonlWriteSuccess')}:</strong> {steps.jsonl_write_success === null ? t('na') : steps.jsonl_write_success ? t('yes') : t('no')}</li>
           </ul>
         </div>
-
-        {/* Section 3: Errors (if any) */}
         {errors && errors.length > 0 && (
           <div className="md:col-span-2 space-y-2">
             <h4 className="font-semibold text-red-600">{t('expanded.errorsTitle', { count: errors.length })}</h4>
@@ -180,26 +167,27 @@ interface JournalTableRowProps {
   onToggleExpand: (uniqueRowId: string) => void;
   formatDateTime: (isoString: string | null | undefined) => string;
   getStatusChipClass: (status: string | undefined | null) => string;
-  saveStatus: RowSaveStatus; // Added
-  saveError?: string;        // Added
+  saveStatus: RowSaveStatus;
+  saveError?: string;
 }
 
 export const JournalTableRow: React.FC<JournalTableRowProps> = ({
   journalData, isSelected, isExpanded, onSelectToggle, onToggleExpand, formatDateTime, getStatusChipClass,
-  saveStatus, saveError // Destructure
+  saveStatus, saveError
 }) => {
-  console.log('JournalTableRow', journalData);
   const t = useTranslations('JournalTableRow');
   const { status, errorCount, persistedSaveStatus, uniqueRowId } = journalData;
 
-  let rowBgClass = 'hover:bg-gray-10'; // Default hover
+  // Logic to determine background class. The 'animate-pulse' class has been removed.
+  let rowBgClass = 'hover:bg-gray-100'; // Default hover
 
   if (saveStatus === 'saving') {
-    rowBgClass = isSelected ? 'bg-blue-200 hover:bg-blue-300 animate-pulse' : 'bg-blue-100 hover:bg-blue-200 animate-pulse';
+    // REMOVED 'animate-pulse'
+    rowBgClass = isSelected ? 'bg-blue-200 hover:bg-blue-300' : 'bg-blue-100 hover:bg-blue-200';
   } else if (saveStatus === 'success') {
     rowBgClass = isSelected ? 'bg-green-200 hover:bg-green-300' : 'bg-green-100 hover:bg-green-200';
   } else if (saveStatus === 'error') {
-    rowBgClass = isSelected ? 'bg-red-200 hover:bg-red-300' : 'bg-red-100 hover:bg-red-200'; // More distinct red for save error
+    rowBgClass = isSelected ? 'bg-red-200 hover:bg-red-300' : 'bg-red-100 hover:bg-red-200';
   }
   // Fallback to original logic if saveStatus is 'idle'
   else if (persistedSaveStatus === 'SAVED_TO_DATABASE') {
@@ -210,9 +198,10 @@ export const JournalTableRow: React.FC<JournalTableRowProps> = ({
     rowBgClass = 'bg-blue-50 hover:bg-blue-100';
   } else {
     if (status === 'failed') rowBgClass = 'bg-red-50 hover:bg-red-100';
-    else if (status === 'processing') rowBgClass = 'bg-blue-50 hover:bg-blue-100 animate-pulse';
+    // REMOVED 'animate-pulse' from processing status as well for consistency
+    else if (status === 'processing') rowBgClass = 'bg-blue-50 hover:bg-blue-100';
     else if (status === 'completed') rowBgClass = 'bg-white hover:bg-green-50';
-    else rowBgClass = 'bg-white hover:bg-gray-10'; // Ensure default has hover
+    else rowBgClass = 'bg-white hover:bg-gray-100';
   }
 
   return (

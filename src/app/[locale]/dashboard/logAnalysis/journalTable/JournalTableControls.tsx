@@ -110,7 +110,7 @@ export const JournalTableControls: React.FC<JournalTableControlsProps> = ({
             className={`inline-flex items-center justify-center rounded-md border border-transparent px-4 py-2 text-sm font-medium shadow-sm transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2
               ${(!isSaveEnabled || mainSaveStatus === 'saving') ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-green-600 text-white hover:bg-green-700 focus:ring-green-500'}
               ${mainSaveStatus === 'error' ? 'bg-red-600 text-white hover:bg-red-700 focus:ring-red-500' : ''}
-              ${mainSaveStatus === 'success' ? 'bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500' : ''}
+              ${mainSaveStatus === 'success' ? 'bg-blue-600 text-white hover:bg-gray-20 focus:ring-blue-500' : ''}
             `}
             title={!isSaveEnabled ? t('saveButton.disabledTooltip') : t('saveButton.tooltip')}
           >
@@ -118,7 +118,7 @@ export const JournalTableControls: React.FC<JournalTableControlsProps> = ({
           </button>
 
           {/* Re-crawl Button */}
-          {onReCrawlSelected && (
+          {/* {onReCrawlSelected && (
             <button
               type='button'
               onClick={onReCrawlSelected}
@@ -129,7 +129,7 @@ export const JournalTableControls: React.FC<JournalTableControlsProps> = ({
             >
               <FaRedo className='mr-2' /> {t('reCrawlButtonText')}
             </button>
-          )}
+          )} */}
         </div>
       </div>
     </div>
