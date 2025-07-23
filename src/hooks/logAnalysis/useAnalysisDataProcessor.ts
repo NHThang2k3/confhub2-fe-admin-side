@@ -32,20 +32,29 @@ export const useAnalysisDataProcessor = ({
 
     const currentData = useMemo(() => rawData as LogAnalysisResultUnion | null, [rawData]);
 
-    const isDetailView = useMemo(
-        () => !!activeRequestIdFilter && !!currentData && currentData.filterRequestId === activeRequestIdFilter,
-        [activeRequestIdFilter, currentData]
-    );
+    // --- START OF CHANGE ---
+    // Logic xác định isDetailView và isListView được làm lại để xử lý đúng các trường hợp
+    
+    const isDetailView = useMemo(() => {
+        // Điều kiện tiên quyết để là Detail View:
+        // 1. Phải có một filter ID đang được áp dụng (activeRequestIdFilter).
+        // 2. Phải có dữ liệu trả về từ backend (currentData).
+        // 3. Backend phải xác nhận rằng nó đã lọc theo đúng ID đó (currentData.filterRequestId === activeRequestIdFilter).
+        // Đây là tín hiệu mạnh nhất cho thấy người dùng đã chủ động yêu cầu xem chi tiết một request cụ thể.
+        return !!activeRequestIdFilter && !!currentData && currentData.filterRequestId === activeRequestIdFilter;
+    }, [activeRequestIdFilter, currentData]);
 
     const isListView = useMemo(() => {
+        // Nếu không phải là Detail View và có dữ liệu, thì nó là List View.
+        // Điều này bao gồm cả trường hợp danh sách có nhiều mục, một mục, hoặc không có mục nào (sẽ hiển thị thông báo NoData).
         if (!currentData) {
             return false;
         }
-        const isGeneralList = !activeRequestIdFilter && !currentData.filterRequestId;
-        const isFilteredList = !!activeRequestIdFilter && !currentData.filterRequestId;
-        
-        return isGeneralList || isFilteredList;
-    }, [activeRequestIdFilter, currentData]);
+        return !isDetailView;
+    }, [currentData, isDetailView]);
+
+    // --- END OF CHANGE ---
+
 
     const allRequestsFilteredOutDueToTime = useMemo(() => {
         if (!currentData || !currentData.requests || !currentData.analyzedRequestIds || currentData.analyzedRequestIds.length === 0) {
@@ -67,34 +76,23 @@ export const useAnalysisDataProcessor = ({
             return null;
         }
         
-        // --- START OF CORRECTION ---
-        // This logic now explicitly filters out all known "placeholder" request types.
         const filteredIds = currentData.analyzedRequestIds.filter(id => {
             const req = currentData.requests[id];
 
-            // Rule 1: Filter out if request data is missing or has no status.
-            // This handles the Conference backend's empty objects `{}`.
             if (!req || !req.status) {
                 return false;
             }
 
-            // Rule 2: Filter out if the status indicates it was not found.
-            // This handles the Journal backend's specific placeholder status.
-            // We assume the status string is 'NotFoundInAggregation' based on the UI.
             if (req.status === 'NotFoundInAggregation') {
                 return false;
             }
 
-            // Rule 3: Filter out the generic placeholder for when no requests match the time filter.
-            // This object should not appear as a row in the table.
             if (req.status === 'NoRequestsAnalyzed' && req.errorMessages?.some(msg => msg.toLowerCase().includes('matching filters'))) {
                 return false;
             }
 
-            // If none of the above placeholder conditions are met, it's a real request.
             return true;
         });
-        // --- END OF CORRECTION ---
 
         if (filteredIds.length === 0 && currentData.analyzedRequestIds.length > 0 && allRequestsFilteredOutDueToTime) {
             return null;
