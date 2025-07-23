@@ -166,7 +166,7 @@ const ProcessActionModal: React.FC<ProcessActionModalProps> = ({
             </div>
         </div>
 
-        <div className="mb-6 p-4 border rounded-md">
+        {/* <div className="mb-6 p-4 border rounded-md">
             <h4 className="text-md font-semibold text-gray-800 mb-3">Model Selection for API Steps</h4>
             <div className="space-y-3">
                 {apiSteps.map(step => (
@@ -175,7 +175,7 @@ const ProcessActionModal: React.FC<ProcessActionModalProps> = ({
                             <p className="text-sm font-medium text-gray-800">{step.displayName}</p>
                             <p className="text-xs text-gray-500">{step.description}</p>
                         </div>
-                        <div className="col-span-2 flex items-center space-x-6">
+                        <div className="col-span-1 flex items-center space-x-6">
                             <label htmlFor={`${step.name}-non-tuned`} className="flex items-center cursor-pointer p-2 rounded-md hover:bg-indigo-50">
                                 <input
                                     type="radio"
@@ -205,7 +205,7 @@ const ProcessActionModal: React.FC<ProcessActionModalProps> = ({
                     </div>
                 ))}
             </div>
-        </div>
+        </div> */}
 
         {showValidationError && (
             <p className="text-sm text-red-600 mb-4 text-center font-medium">
