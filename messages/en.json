@@ -524,7 +524,7 @@
   "FileUploadStep": {
     "header": {
       "title": "Step 1: Import CSV File",
-      "description": "Select a CSV file containing conference data. The file will be processed for the next steps. The file should contain columns for Title, Acronym. The file should not include headers like 'Title', 'Acronym', 'Source', 'Rank', 'Fields of Research'. The first row should contain the data."
+      "description": "This file will be processed in the next steps.\nRequired columns: Title, Acronym\n\nImportant: The file should not include column headers such as Title, Acronym, Source, Rank, or Fields of Research. The first row should be actual data, not labels.\n\nAfter uploading, the system will allow you to map each column in your file to the required fields.\n\nHowever, for flexibility, the system is also able to handle files that include headers, but this is not recommended."
     },
     "button": {
       "processing": "Processing...",

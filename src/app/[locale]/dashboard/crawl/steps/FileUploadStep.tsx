@@ -200,11 +200,15 @@ const FileUploadStep: React.FC<FileUploadStepProps> = ({
   const currentFile = selectedFile || file;
 
   return (
-    <div className="space-y-6 rounded-lg border border-gray-200 p-6 bg-white shadow">
-      <h3 className="text-lg font-medium leading-6 text-gray-900">{t('header.title')}</h3>
-      <p className="text-sm text-gray-600">{t('header.description')}</p>
+    <div className="space-y-0 rounded-lg border border-gray-200 p-6 bg-white shadow">
+      <h3 className="text-lg font-medium leading-6 text-gray-900 pb-6">{t('header.title')}</h3>
+      <p className="text-sm text-gray-600">This file will be processed in the next steps.</p>
+      <p className="text-sm text-gray-600">Required columns: Title, Acronym</p>
+      <p className="text-sm text-gray-600">Important: The file should not include column headers such as Title, Acronym, Source, Rank, or Fields of Research. The first row should be actual data, not labels.</p>
+      <p className="text-sm text-gray-600">After uploading, the system will allow you to map each column in your file to the required fields.</p>
+      <p className="text-sm text-gray-600">However, for flexibility, the system is also able to handle files that include headers, but this is not recommended.</p>
 
-      <div className='flex items-center space-x-4'>
+      <div className='flex items-center space-x-4 pt-6'>
         <label className={`relative inline-flex cursor-pointer items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-100 ${isLoading ? 'cursor-not-allowed opacity-50' : ''}`}>
           <FaFileUpload className={`mr-2 ${isLoading ? 'animate-spin' : ''}`} />
           <span>
