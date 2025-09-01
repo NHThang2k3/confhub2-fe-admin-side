@@ -74,7 +74,7 @@ export default function UserDetails() {
                 {error && <div className="text-center p-8 text-red-600 flex items-center justify-center"><FaExclamationCircle className="mr-2" /> {error}</div>}
                 {!isLoading && !error && !userData && <div className="text-center p-8 text-gray-500">Enter a User ID and click Search to see details.</div>}
                 
-                {userData && !userData.is_found && <div className="text-center p-8 text-orange-600">User '{userData.user_id}' not found in the model.</div>}
+                {userData && !userData.is_found && <div className="text-center p-8 text-orange-600">User &apos;{userData.user_id}&apos; not found in the model.</div>}
 
                 {userData && userData.is_found && (
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
