@@ -1377,7 +1377,7 @@
   },
   "Cron": "Cron",
   "DashboardSidebar": {
-    "Chatbot_Analysis": "Chatbot Analysis"
+    "Chatbot_Analysis": "Chatbot"
   },
   "ChatbotLogAnalysisPage": {
     "AuthStatus_Loading": "Checking authentication status...",
@@ -1429,5 +1429,35 @@
       "PostProcessing": "Post-processing"
     }
   },
-  "Chatbot_Analysis": "Chatbot Analysis"
+  "Chatbot_Analysis": "Chatbot",
+  "RecommendationAdmin": {
+    "statusPausedTitle": "Pipeline Paused",
+    "statusPausedMessage": "The process is waiting for an administrator's decision. Please see the controls panel.",
+    "actionRequiredTitle": "Action Required",
+    "actionRequiredDescription": "The embedding step was incomplete due to API errors. Choose how you want to proceed.",
+    "proceedAnywayButton": "Proceed to Next Steps (Incomplete Data)",
+    "runPipelineTitle": "Run Pipeline",
+    "modelTypeLabel": "Model Type",
+    "modelTypeMutifactor": "Mutifactor (Recommended)",
+    "modelTypePearson": "Pearson",
+    "embeddingStepTitle": "Embedding Step",
+    "embeddingStepDescription": "If embedding failed due to rate limits, use this to resume. It will only process missing users.",
+    "resumeEmbeddingButton": "Continue / Resume Embedding",
+    "rerunSectionTitle": "Full or Partial Rerun",
+    "forceFullRerunLabel": "Force Full Rerun (Deletes all artifacts)",
+    "forceSpecificStepsLabel": "Force Rerun Specific Steps (Deletes artifact):",
+    "runButtonInProgress": "Pipeline is Running...",
+    "runButtonIdle": "Run Selected Steps",
+    "statusTitle": "Pipeline Status",
+    "statusLoading": "Loading Status...",
+    "statusInProgress": "In Progress...",
+    "statusLastRun": "Last Run",
+    "statusModel": "Model",
+    "statusFinishedAt": "Finished at",
+    "logsTitle": "Execution Logs",
+    "logsNotAvailable": "No logs available."
+  },
+  "RecommendationPage": {
+    "AuthStatus_Loading": "Loading authentication status..."
+  }
 }

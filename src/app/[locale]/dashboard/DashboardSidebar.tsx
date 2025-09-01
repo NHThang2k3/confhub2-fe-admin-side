@@ -6,7 +6,6 @@ import { Link, AppPathname } from '@/src/navigation';
 import { usePathname } from 'next/navigation';
 import { useSidebar } from '@/src/contexts/SidebarContext';
 
-// Import React Icons
 import {
   FaDatabase,
   FaChartBar,
@@ -15,7 +14,8 @@ import {
   FaUser,
   FaPaperPlane,
   FaClock,
-  FaRobot // <<< THÊM MỚI: Icon cho Chatbot
+  FaRobot,
+  FaLightbulb // Icon cho Recommendation
 } from 'react-icons/fa';
 
 interface MenuItem {
@@ -46,13 +46,16 @@ export default function DashboardSidebar({ locale, sidebarWidth, headerHeight }:
       icon: <FaChartBar className="h-5 w-5" />,
       href: '/dashboard/logAnalysis',
     },
-    // <<< THÊM MỚI: Mục Chatbot Analysis >>>
     {
-      label: t('Chatbot_Analysis'), // Giả sử bạn sẽ thêm key này vào file translation
+      label: t('Chatbot_Analysis'),
       icon: <FaRobot className="h-5 w-5" />,
       href: '/dashboard/chatbot',
     },
-    // <<< KẾT THÚC THÊM MỚI >>>
+    {
+      label: t('Recommendation'),
+      icon: <FaLightbulb className="h-5 w-5" />, // Sử dụng FaLightbulb cho Recommendation
+      href: '/dashboard/recommendation',
+    },
     {
       label: t('Cron'),
       icon: <FaClock className="h-5 w-5" />,

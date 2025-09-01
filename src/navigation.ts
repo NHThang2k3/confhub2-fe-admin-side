@@ -20,6 +20,7 @@ export const pathnames = {
   '/dashboard/crawl': '/dashboard/crawl',
   '/dashboard/cron': '/dashboard/cron',
   '/dashboard/chatbot': '/dashboard/chatbot',
+  '/dashboard/recommendation': '/dashboard/recommendation',
 
   '/dashboard/conferences': '/dashboard/conferences',
   '/dashboard/submitPapers': '/dashboard/submitPapers',
