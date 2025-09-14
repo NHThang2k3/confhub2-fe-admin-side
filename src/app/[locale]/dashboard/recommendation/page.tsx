@@ -1,4 +1,3 @@
-// src/app/[locale]/dashboard/recommendation/page.tsx
 'use client';
 
 import React, { useEffect, useState, useCallback } from 'react';
@@ -12,15 +11,16 @@ import { appConfig } from '@/src/middleware';
 import ArtifactSummary from '@/src/app/[locale]/dashboard/recommendation/ArtifactSummary';
 import UserDetails from '@/src/app/[locale]/dashboard/recommendation/UserDetails';
 import SchedulerControls from '@/src/app/[locale]/dashboard/recommendation/SchedulerControls';
+// THÊM MỚI: Import component ConfigControls
+import ConfigControls from '@/src/app/[locale]/dashboard/recommendation/ConfigControls';
 
-// --- THÊM MỚI: Import icons cho các tab ---
-import { FaCogs, FaClock, FaBoxOpen, FaUser } from 'react-icons/fa';
+// THÊM MỚI: Import icons cho các tab
+import { FaCogs, FaClock, FaBoxOpen, FaUser, FaSlidersH } from 'react-icons/fa'; // Thêm FaSlidersH
 
-// Define the API base URL. Use environment variables for production.
 const API_BASE_URL = appConfig.NEXT_PUBLIC_RECOMMENDATION_SYSTEM_URL;
 
-// --- THÊM MỚI: Định nghĩa kiểu cho các tab để code an toàn hơn ---
-type Tab = 'control' | 'scheduler' | 'artifacts' | 'user';
+// THÊM MỚI: Cập nhật kiểu cho các tab
+type Tab = 'control' | 'config' | 'scheduler' | 'artifacts' | 'user';
 
 export default function RecommendationPage({ params: { locale } }: { params: { locale: string } }) {
     const t = useTranslations('RecommendationPage');
@@ -28,10 +28,10 @@ export default function RecommendationPage({ params: { locale } }: { params: { l
     const router = useRouter();
 
     const [statusData, setStatusData] = useState<any>(null);
-    // --- THÊM MỚI: State để quản lý tab đang hoạt động, mặc định là 'control' ---
     const [activeTab, setActiveTab] = useState<Tab>('control');
 
     const fetchStatus = useCallback(async () => {
+        // ... (hàm này giữ nguyên không đổi)
         try {
             const response = await fetch(`${API_BASE_URL}/pipeline-status`);
             if (!response.ok) {
@@ -46,19 +46,21 @@ export default function RecommendationPage({ params: { locale } }: { params: { l
     }, []);
 
     useEffect(() => {
+        // ... (hook này giữ nguyên không đổi)
         if (isInitializing) return;
         if (!isLoggedIn) {
             router.replace(`/${locale}/auth/login`);
             return;
         }
 
-        fetchStatus(); // Initial fetch
-        const interval = setInterval(fetchStatus, 5000); // Poll every 5 seconds
+        fetchStatus();
+        const interval = setInterval(fetchStatus, 5000);
 
-        return () => clearInterval(interval); // Cleanup on unmount
+        return () => clearInterval(interval);
     }, [isLoggedIn, isInitializing, locale, router, fetchStatus]);
 
     const handleRunPipeline = async (options: any) => {
+        // ... (hàm này giữ nguyên không đổi)
         try {
             const response = await fetch(`${API_BASE_URL}/run-pipeline`, {
                 method: 'POST',
@@ -70,7 +72,7 @@ export default function RecommendationPage({ params: { locale } }: { params: { l
                 throw new Error(data.detail || 'Failed to start pipeline');
             }
             toast.success('Pipeline run has been successfully triggered!');
-            fetchStatus(); // Immediately fetch status to reflect the change
+            fetchStatus();
         } catch (error: any) {
             console.error('Error running pipeline:', error);
             toast.error(`Error: ${error.message}`);
@@ -82,23 +84,23 @@ export default function RecommendationPage({ params: { locale } }: { params: { l
     }
 
     if (!isLoggedIn) return null;
-    
-    // --- THÊM MỚI: Cấu hình cho các tab để dễ dàng render và quản lý ---
+
+    // THAY ĐỔI: Thêm tab "Configuration" vào mảng tabs
     const tabs = [
         { id: 'control', label: 'Control Panel', icon: FaCogs },
+        { id: 'config', label: 'Configuration', icon: FaSlidersH },
         { id: 'scheduler', label: 'Scheduler', icon: FaClock },
         { id: 'artifacts', label: 'Artifacts', icon: FaBoxOpen },
         { id: 'user', label: 'User Lookup', icon: FaUser },
     ];
 
     return (
-        <div className="space-y-6 p-6 bg-gray-20 min-h-screen"> {/* Cập nhật lại bg và space */}
+        <div className="space-y-6 p-6 bg-gray-10 min-h-screen">
             <div className="mb-6">
                 <h1 className="text-3xl font-bold text-gray-900">Recommendation Management</h1>
                 <p className="text-gray-600 mt-1">Monitor status, control the pipeline, and analyze model artifacts.</p>
             </div>
 
-            {/* --- THAY ĐỔI: Giao diện Tab Navigation --- */}
             <div className="border-b border-gray-200">
                 <nav className="-mb-px flex space-x-6" aria-label="Tabs">
                     {tabs.map((tab) => (
@@ -120,7 +122,6 @@ export default function RecommendationPage({ params: { locale } }: { params: { l
                 </nav>
             </div>
 
-            {/* --- THAY ĐỔI: Render component dựa trên tab đang hoạt động --- */}
             <div className="mt-6">
                 {activeTab === 'control' && (
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -131,6 +132,11 @@ export default function RecommendationPage({ params: { locale } }: { params: { l
                         />
                         <PipelineStatus statusData={statusData} />
                     </div>
+                )}
+
+                {/* THÊM MỚI: Render component ConfigControls khi tab 'config' được chọn */}
+                {activeTab === 'config' && (
+                    <ConfigControls />
                 )}
 
                 {activeTab === 'scheduler' && (
